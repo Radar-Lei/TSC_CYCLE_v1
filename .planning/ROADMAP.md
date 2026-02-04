@@ -47,10 +47,12 @@ Plans:
   3. 每条数据包含模拟预测的排队车辆数(真实值加波动)
   4. 每条数据包含带波动的最小绿/最大绿时间(±2-5秒)
   5. 生成约 10,000 条数据并保存为 JSON 格式
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD during plan-phase
+- [ ] 02-01-PLAN.md - 数据生成基础设施 (数据模型 + 自适应采样器 + 状态管理器)
+- [ ] 02-02-PLAN.md - Prompt 构建与数据收集 (噪声生成 + 交通收集器 + Prompt 构建器)
+- [ ] 02-03-PLAN.md - 并行仿真与 CLI (单天仿真 + 并行调度 + CLI 入口)
 
 ### Phase 3: SFT 预训练
 **Goal**: Qwen3-4B 模型学会输出 `<think>...</think>[{phase_id, final}...]` 格式
@@ -105,7 +107,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. 相位处理系统 | 3/3 | ✓ Complete | 2026-02-04 |
-| 2. 训练数据生成 | 0/? | Not started | - |
+| 2. 训练数据生成 | 0/3 | Planned | - |
 | 3. SFT 预训练 | 0/? | Not started | - |
 | 4. GRPO 强化学习 | 0/? | Not started | - |
 | 5. Docker 部署环境 | 0/? | Not started | - |
