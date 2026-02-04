@@ -30,10 +30,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. 每个路口至少有 2 个互斥的有效相位(绿灯车道不重叠)
   4. 冲突相位按规则解决(保留绿灯数多的,相等时随机保留)
   5. 每个相位都有明确的最小绿/最大绿时间配置
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: TBD during plan-phase
+- [ ] 01-01-PLAN.md - 基础设施 (数据模型 + 日志配置 + XML 解析器)
+- [ ] 01-02-PLAN.md - 相位处理核心 (无效过滤 + 冲突检测解决 + 验证)
+- [ ] 01-03-PLAN.md - 主处理流程 (时间配置 + 处理器编排 + CLI)
 
 ### Phase 2: 训练数据生成
 **Goal**: 生成覆盖不同时段和交叉口的 ~10,000 条 GRPO 训练数据
@@ -102,7 +104,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. 相位处理系统 | 0/? | Not started | - |
+| 1. 相位处理系统 | 0/3 | Planned | - |
 | 2. 训练数据生成 | 0/? | Not started | - |
 | 3. SFT 预训练 | 0/? | Not started | - |
 | 4. GRPO 强化学习 | 0/? | Not started | - |
