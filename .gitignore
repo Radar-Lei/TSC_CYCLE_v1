@@ -1,0 +1,6 @@
+sumo_simulation/
+.planning/
+grpo_reference_only/
+sample_prompt_result.md
+*.ipynb
+*.pyc

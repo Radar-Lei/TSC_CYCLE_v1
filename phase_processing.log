@@ -1,0 +1,7 @@
+2026-02-04 22:10:03,744 - phase_processor - INFO - Test
+2026-02-04 22:11:45,883 - phase_processor - INFO - 开始解析网络文件: sumo_simulation/environments/chengdu/chengdu.net.xml
+2026-02-04 22:11:45,909 - phase_processor - INFO - 解析到 46 个信号灯的连接映射
+2026-02-04 22:11:45,910 - phase_processor - INFO - 解析完成,共 46 个信号灯
+2026-02-04 22:13:02,102 - phase_processor - INFO - 开始解析网络文件: sumo_simulation/environments/chengdu/chengdu.net.xml
+2026-02-04 22:13:02,127 - phase_processor - INFO - 解析到 46 个信号灯的连接映射
+2026-02-04 22:13:02,128 - phase_processor - INFO - 解析完成,共 46 个信号灯
