@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 2 of 5 (训练数据生成)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-02-04 — Completed 02-01-PLAN.md (数据生成基础设施)
+Last activity: 2026-02-05 — Completed 02-02-PLAN.md (Prompt 构建与数据收集)
 
-Progress: [████░░░░░░] 40%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
+- Total plans completed: 5
 - Average duration: 5 min
-- Total execution time: 0.33 hours
+- Total execution time: 0.42 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 | 3 | 15 min | 5 min |
-| 2 | 1 | 5 min | 5 min |
+| 2 | 2 | 11 min | 5.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (4 min), 01-02 (6 min), 01-03 (5 min), 02-01 (5 min)
+- Last 5 plans: 01-02 (6 min), 01-03 (5 min), 02-01 (5 min), 02-02 (6 min)
 - Trend: Steady
 
 *Updated after each plan completion*
@@ -62,6 +62,10 @@ Recent decisions affecting current work:
 - 自适应采样采用三级策略 (02-01) - 高变化(>50%)立即采样,中等变化(>30%)缩短间隔,低变化使用基础间隔
 - prev_queue_state 在 record_sample 更新 (02-01) - 使用 .copy() 避免外部修改,用于 should_sample 计算变化率
 - 状态文件名包含日期、时间、信号灯ID (02-01) - 避免冲突,默认使用 .xml.gz 压缩节省空间
+- 高斯噪声标准差默认为真实值的 10% (02-02) - 平衡数据多样性和真实性,10% 是合理的测量误差范围
+- 时间波动范围 ±2-5 秒,边界约束 5-120s (02-02) - 2-5 秒波动增加多样性且不偏离原始配置,min_green 5-60s 避免频繁切换,max_green 30-120s 确保足够时间
+- 容量估算每条车道 15 辆车 (02-02) - 简单线性估算,总容量 15-60 避免极端值
+- traci 调用失败时返回默认值 0 (02-02) - 避免异常中断数据收集,在无 SUMO 连接时也能测试
 
 ### Pending Todos
 
@@ -77,7 +81,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-04
-Stopped at: Completed 02-01-PLAN.md (数据生成基础设施)
+Last session: 2026-02-05
+Stopped at: Completed 02-02-PLAN.md (Prompt 构建与数据收集)
 Resume file: None
-Next: 02-02 - Prompt 构建与数据收集
+Next: 02-03 - 数据生成主流程
