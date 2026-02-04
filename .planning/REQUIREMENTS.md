@@ -7,13 +7,13 @@
 
 ### 相位处理 (Phase Processing)
 
-- [ ] **PHASE-01**: 从 SUMO .net.xml 文件解析所有信号灯的相位定义
-- [ ] **PHASE-02**: 过滤无效相位(只有黄灯 'y' 或红灯 'r' 的相位)
-- [ ] **PHASE-03**: 提取每个相位的绿灯控制车道列表
-- [ ] **PHASE-04**: 检测相位间绿灯车道重叠冲突
-- [ ] **PHASE-05**: 冲突解决 - 保留绿灯车道数多的相位,删除少的,相等时随机保留
-- [ ] **PHASE-06**: 验证每个路口至少有 2 个互斥的有效相位,不满足则跳过该路口
-- [ ] **PHASE-07**: 从相位定义读取或推断最小绿/最大绿时间
+- [x] **PHASE-01**: 从 SUMO .net.xml 文件解析所有信号灯的相位定义
+- [x] **PHASE-02**: 过滤无效相位(只有黄灯 'y' 或红灯 'r' 的相位)
+- [x] **PHASE-03**: 提取每个相位的绿灯控制车道列表
+- [x] **PHASE-04**: 检测相位间绿灯车道重叠冲突
+- [x] **PHASE-05**: 冲突解决 - 保留绿灯车道数多的相位,删除少的,相等时随机保留
+- [x] **PHASE-06**: 验证每个路口至少有 2 个互斥的有效相位,不满足则跳过该路口
+- [x] **PHASE-07**: 从相位定义读取或推断最小绿/最大绿时间
 
 ### 数据生成 (Data Generation)
 
@@ -87,13 +87,13 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PHASE-01 | Phase 1 | Pending |
-| PHASE-02 | Phase 1 | Pending |
-| PHASE-03 | Phase 1 | Pending |
-| PHASE-04 | Phase 1 | Pending |
-| PHASE-05 | Phase 1 | Pending |
-| PHASE-06 | Phase 1 | Pending |
-| PHASE-07 | Phase 1 | Pending |
+| PHASE-01 | Phase 1 | Complete |
+| PHASE-02 | Phase 1 | Complete |
+| PHASE-03 | Phase 1 | Complete |
+| PHASE-04 | Phase 1 | Complete |
+| PHASE-05 | Phase 1 | Complete |
+| PHASE-06 | Phase 1 | Complete |
+| PHASE-07 | Phase 1 | Complete |
 | DATA-01 | Phase 2 | Pending |
 | DATA-02 | Phase 2 | Pending |
 | DATA-03 | Phase 2 | Pending |
@@ -128,4 +128,4 @@
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-04 after initial definition*
+*Last updated: 2026-02-04 after Phase 1 completion*
