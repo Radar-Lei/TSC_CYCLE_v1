@@ -5,32 +5,33 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** 让模型自己学会"思考"如何优化交通信号周期
-**Current focus:** Phase 1 - 相位处理系统
+**Current focus:** Phase 2 - 训练数据生成
 
 ## Current Position
 
-Phase: 1 of 5 (相位处理系统)
-Plan: 3 of 3 in current phase
-Status: Phase complete
-Last activity: 2026-02-04 — Completed 01-03-PLAN.md (主处理流程)
+Phase: 2 of 5 (训练数据生成)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-02-04 — Completed 02-01-PLAN.md (数据生成基础设施)
 
-Progress: [███░░░░░░░] 30%
+Progress: [████░░░░░░] 40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
+- Total plans completed: 4
 - Average duration: 5 min
-- Total execution time: 0.25 hours
+- Total execution time: 0.33 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 | 3 | 15 min | 5 min |
+| 2 | 1 | 5 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (4 min), 01-02 (6 min), 01-03 (5 min)
+- Last 5 plans: 01-01 (4 min), 01-02 (6 min), 01-03 (5 min), 02-01 (5 min)
 - Trend: Steady
 
 *Updated after each plan completion*
@@ -57,6 +58,10 @@ Recent decisions affecting current work:
 - 缺失值在 5-120 秒范围内随机生成 (01-03) - 太短导致频繁切换,太长影响通行效率
 - apply_time_variation 应用 ±2-5 秒随机波动 (01-03) - 生成训练数据多样性,避免过拟合固定时间配置
 - CLI 输出同时包含 console 摘要和详细日志 (01-03) - 用户需要快速查看结果,同时保留完整日志用于调试
+- 使用 dataclass 实现数据模型 (02-01) - 自动生成 __init__ 和 __repr__,支持 to_dict/from_dict 序列化
+- 自适应采样采用三级策略 (02-01) - 高变化(>50%)立即采样,中等变化(>30%)缩短间隔,低变化使用基础间隔
+- prev_queue_state 在 record_sample 更新 (02-01) - 使用 .copy() 避免外部修改,用于 should_sample 计算变化率
+- 状态文件名包含日期、时间、信号灯ID (02-01) - 避免冲突,默认使用 .xml.gz 压缩节省空间
 
 ### Pending Todos
 
@@ -73,6 +78,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 01-03-PLAN.md (Phase 1 完成)
+Stopped at: Completed 02-01-PLAN.md (数据生成基础设施)
 Resume file: None
-Next: Phase 2 - SUMO 环境封装
+Next: 02-02 - Prompt 构建与数据收集
