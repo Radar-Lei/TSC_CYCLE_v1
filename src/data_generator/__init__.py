@@ -8,9 +8,14 @@
 """
 
 from .models import TrainingSample, Prediction, PhaseWait
+from .sampler import AdaptiveSampler, calculate_queue_change_rate
+from .state_manager import StateManager
 
 __all__ = [
     'TrainingSample',
     'Prediction',
     'PhaseWait',
+    'AdaptiveSampler',
+    'calculate_queue_change_rate',
+    'StateManager',
 ]
