@@ -210,8 +210,7 @@ stage_data_generation() {
     # 执行数据生成
     if run_with_logging "$stage_name" \
         python3 -m src.scripts.generate_training_data \
-            --parallel "$PARALLEL_WORKERS" \
-            --extend-seconds "$EXTEND_SECONDS" \
+            --workers "$PARALLEL_WORKERS" \
             --warmup-steps "$WARMUP_STEPS" \
             --output-dir "outputs/data"
     then

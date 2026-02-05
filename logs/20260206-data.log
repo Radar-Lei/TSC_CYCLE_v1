@@ -1,0 +1,224 @@
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T00:01:44+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T00:01:44+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --parallel 4 --extend-seconds 5 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+usage: generate_training_data.py [-h] [--rou-dir ROU_DIR]
+                                 [--phase-config PHASE_CONFIG]
+                                 [--output-dir OUTPUT_DIR]
+                                 [--state-dir STATE_DIR] [--workers WORKERS]
+                                 [--sim-end SIM_END]
+                                 [--warmup-steps WARMUP_STEPS] [--incremental]
+                                 [--no-incremental] [--dry-run] [-v]
+generate_training_data.py: error: unrecognized arguments: --parallel 4 --extend-seconds 5
+
+==========================================
+Stage: data
+Exit code: 2
+Timestamp: 2026-02-06T00:01:44+08:00
+==========================================
+
+
+==================================================
+=== Stage: data FAILED ===
+End time: 2026-02-06T00:01:44+08:00
+Exit code: 2
+Duration: 00:00:00
+==================================================
+
+[ERROR] 2026-02-06 00:01:44 数据生成失败,退出码: 2
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T00:02:37+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T00:02:37+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --parallel 4 --extend-seconds 5 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+usage: generate_training_data.py [-h] [--rou-dir ROU_DIR]
+                                 [--phase-config PHASE_CONFIG]
+                                 [--output-dir OUTPUT_DIR]
+                                 [--state-dir STATE_DIR] [--workers WORKERS]
+                                 [--sim-end SIM_END]
+                                 [--warmup-steps WARMUP_STEPS] [--incremental]
+                                 [--no-incremental] [--dry-run] [-v]
+generate_training_data.py: error: unrecognized arguments: --parallel 4 --extend-seconds 5
+
+==========================================
+Stage: data
+Exit code: 2
+Timestamp: 2026-02-06T00:02:37+08:00
+==========================================
+
+
+==================================================
+=== Stage: data FAILED ===
+End time: 2026-02-06T00:02:37+08:00
+Exit code: 2
+Duration: 00:00:00
+==================================================
+
+[ERROR] 2026-02-06 00:02:37 数据生成失败,退出码: 2
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T00:20:49+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T00:20:49+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --workers 4 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+============================================================
+训练数据生成配置
+============================================================
+流量文件: 30 个
+相位配置: /home/samuel/TSC_CYCLE/output/phase_config.json
+输出目录: /home/samuel/TSC_CYCLE/outputs/data
+状态快照目录: /home/samuel/TSC_CYCLE/data/states
+并行进程数: 4
+仿真时长: 86400s (24.0 小时)
+预热步数: 300
+增量模式: 是
+============================================================
+
+Running 30 days with 4 workers...
+Simulating days:   0%|          | 0/30 [00:00<?, ?it/s]Simulating days: 100%|██████████| 30/30 [00:00<00:00, 2321.31it/s]
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+
+============================================================
+生成完成
+============================================================
+处理天数: 30
+成功: 0
+失败: 30
+总样本数: 0
+
+============================================================
+
+错误:
+  - Day 1 failed: No module named 'sumo_sim'
+  - Day 3 failed: No module named 'sumo_sim'
+  - Day 2 failed: No module named 'sumo_sim'
+  - Day 0 failed: No module named 'sumo_sim'
+  - Day 4 failed: No module named 'sumo_sim'
+  - Day 5 failed: No module named 'sumo_sim'
+  - Day 8 failed: No module named 'sumo_sim'
+  - Day 9 failed: No module named 'sumo_sim'
+  - Day 6 failed: No module named 'sumo_sim'
+  - Day 7 failed: No module named 'sumo_sim'
+  - Day 10 failed: No module named 'sumo_sim'
+  - Day 11 failed: No module named 'sumo_sim'
+  - Day 14 failed: No module named 'sumo_sim'
+  - Day 12 failed: No module named 'sumo_sim'
+  - Day 15 failed: No module named 'sumo_sim'
+  - Day 13 failed: No module named 'sumo_sim'
+  - Day 16 failed: No module named 'sumo_sim'
+  - Day 18 failed: No module named 'sumo_sim'
+  - Day 20 failed: No module named 'sumo_sim'
+  - Day 17 failed: No module named 'sumo_sim'
+  - Day 21 failed: No module named 'sumo_sim'
+  - Day 19 failed: No module named 'sumo_sim'
+  - Day 22 failed: No module named 'sumo_sim'
+  - Day 24 failed: No module named 'sumo_sim'
+  - Day 26 failed: No module named 'sumo_sim'
+  - Day 23 failed: No module named 'sumo_sim'
+  - Day 27 failed: No module named 'sumo_sim'
+  - Day 28 failed: No module named 'sumo_sim'
+  - Day 25 failed: No module named 'sumo_sim'
+  - Day 29 failed: No module named 'sumo_sim'
+
+训练数据保存在: /home/samuel/TSC_CYCLE/outputs/data
+状态快照保存在: /home/samuel/TSC_CYCLE/data/states
+元数据: /home/samuel/TSC_CYCLE/outputs/data/metadata.json
+
+==========================================
+Stage: data
+Exit code: 0
+Timestamp: 2026-02-06T00:20:49+08:00
+==========================================
+
+
+==================================================
+=== Stage: data SUCCESS ===
+End time: 2026-02-06T00:20:49+08:00
+Exit code: 0
+Duration: 00:00:00
+==================================================
+
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T00:40:34+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T00:40:34+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --parallel 4 --extend-seconds 5 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+usage: generate_training_data.py [-h] [--rou-dir ROU_DIR]
+                                 [--phase-config PHASE_CONFIG]
+                                 [--output-dir OUTPUT_DIR]
+                                 [--state-dir STATE_DIR] [--workers WORKERS]
+                                 [--sim-end SIM_END]
+                                 [--warmup-steps WARMUP_STEPS] [--incremental]
+                                 [--no-incremental] [--dry-run] [-v]
+generate_training_data.py: error: unrecognized arguments: --parallel 4 --extend-seconds 5
+
+==========================================
+Stage: data
+Exit code: 2
+Timestamp: 2026-02-06T00:40:34+08:00
+==========================================
+
+
+==================================================
+=== Stage: data FAILED ===
+End time: 2026-02-06T00:40:34+08:00
+Exit code: 2
+Duration: 00:00:00
+==================================================
+
+[ERROR] 2026-02-06 00:40:34 数据生成失败,退出码: 2
