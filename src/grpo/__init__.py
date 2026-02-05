@@ -23,6 +23,12 @@ from src.grpo.reward_combiner import (
 
 from .sumo_evaluator import SUMOEvaluator, EvaluationResult, evaluate_single
 
+from .simulation_reward import (
+    compute_metric_reward,
+    compute_simulation_reward,
+    parallel_evaluate,
+)
+
 __all__ = [
     # Format rewards
     "match_format_exactly",
@@ -38,4 +44,8 @@ __all__ = [
     "SUMOEvaluator",
     "EvaluationResult",
     "evaluate_single",
+    # Simulation reward
+    "compute_metric_reward",
+    "compute_simulation_reward",
+    "parallel_evaluate",
 ]
