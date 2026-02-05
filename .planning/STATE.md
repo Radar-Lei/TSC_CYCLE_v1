@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 
 ## Current Position
 
-Phase: 4 of 5 (GRPO 强化学习)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-02-05 — Completed 04-02-PLAN.md (SUMO 仿真评估器与奖励函数)
+Phase: 5 of 5 (Docker 部署环境)
+Plan: 0 of ? in current phase
+Status: Phase 4 complete
+Last activity: 2026-02-05 — Completed Phase 4 (GRPO 强化学习)
 
-Progress: [████████░░] 80%
+Progress: [█████████░] 93%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
-- Average duration: 6.0 min
-- Total execution time: 1.1 hours
+- Total plans completed: 12
+- Average duration: 6.3 min
+- Total execution time: 1.3 hours
 
 **By Phase:**
 
@@ -30,11 +30,11 @@ Progress: [████████░░] 80%
 | 1 | 3 | 15 min | 5 min |
 | 2 | 3 | 20 min | 6.7 min |
 | 3 | 3 | 18 min | 6 min |
-| 4 | 2 | 15 min | 7.5 min |
+| 4 | 3 | 19 min | 6.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (5 min), 03-02 (4 min), 03-03 (18 min), 04-01 (8 min), 04-02 (7 min)
-- Trend: Phase 4 进展顺利,奖励函数实现稳定推进
+- Last 5 plans: 03-03 (18 min), 04-01 (6 min), 04-02 (7 min), 04-03 (6 min)
+- Trend: Phase 4 完成,GRPO 奖励函数和训练流程全部就绪
 
 *Updated after each plan completion*
 
@@ -86,6 +86,10 @@ Recent decisions affecting current work:
 - 评估失败返回 -1.0,JSON 解析失败返回 0.0 (04-02) - 引导模型避免无效方案,避免过度惩罚格式错误
 - 三个指标等权分配 (04-02) - 排队 33%、通行 33%、等待 34%,平衡三个维度
 - 参考值选择排队 50 辆、通行 100 辆、等待 60 秒 (04-02) - 基于典型路口规模
+- 数据加载支持 limit 参数 (04-03) - 调试时可以快速验证流程,例: --data-limit 100
+- 支持 --disable-simulation 参数 (04-03) - 仿真需要 SUMO 环境,调试时可以只用格式奖励
+- GRPO 使用 4bit 量化 (04-03) - GRPO 显存占用高,4bit 节省内存,可在 16GB GPU 上训练
+- 复用 SFT 的 chat_template (04-03) - 保持 SFT 和 GRPO 的输入格式一致,训练更稳定
 
 ### Pending Todos
 
@@ -102,6 +106,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed 04-02-PLAN.md (SUMO 仿真评估器与奖励函数)
+Stopped at: Completed Phase 4 (GRPO 强化学习)
 Resume file: None
-Next: 04-03 - GRPO 训练循环
+Next: Phase 5 - Docker 部署环境 (一键运行完整训练流程)

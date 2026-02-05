@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: 相位处理系统** - 从 SUMO 网络文件提取、验证、过滤相位,解决绿灯冲突
 - [x] **Phase 2: 训练数据生成** - 并行 SUMO 仿真生成 ~10,000 条 GRPO 训练数据
 - [x] **Phase 3: SFT 预训练** - 手工编写示例,训练 Qwen3-4B 学会输出格式
-- [ ] **Phase 4: GRPO 强化学习** - 实现奖励函数,通过仿真反馈训练模型推理能力
+- [x] **Phase 4: GRPO 强化学习** - 实现奖励函数,通过仿真反馈训练模型推理能力
 - [ ] **Phase 5: Docker 部署环境** - 一键运行脚本,整合完整训练流程
 
 ## Phase Details
@@ -86,9 +86,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 04-01-PLAN.md - 奖励函数基础设施 (格式奖励 + 奖励组合器)
-- [ ] 04-02-PLAN.md - SUMO 仿真评估器 (状态恢复 + 指标收集 + 并行评估)
-- [ ] 04-03-PLAN.md - GRPO 训练循环 (数据加载 + 训练配置 + 训练脚本)
+- [x] 04-01-PLAN.md - 奖励函数基础设施 (格式奖励 + 奖励组合器)
+- [x] 04-02-PLAN.md - SUMO 仿真评估器 (状态恢复 + 指标收集 + 并行评估)
+- [x] 04-03-PLAN.md - GRPO 训练循环 (数据加载 + 训练配置 + 训练脚本)
 
 ### Phase 5: Docker 部署环境
 **Goal**: 一键运行完整的训练流程(数据生成 -> SFT -> GRPO)
@@ -115,5 +115,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. 相位处理系统 | 3/3 | Complete | 2026-02-04 |
 | 2. 训练数据生成 | 3/3 | Complete | 2026-02-05 |
 | 3. SFT 预训练 | 3/3 | Complete | 2026-02-05 |
-| 4. GRPO 强化学习 | 0/3 | Planning complete | - |
+| 4. GRPO 强化学习 | 3/3 | Complete | 2026-02-05 |
 | 5. Docker 部署环境 | 0/? | Not started | - |
