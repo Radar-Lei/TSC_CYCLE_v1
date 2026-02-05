@@ -58,17 +58,19 @@ Plans:
 **Goal**: Qwen3-4B 模型学会输出 `<think>...</think>[{phase_id, final}...]` 格式
 **Depends on**: Phase 2
 **Requirements**: SFT-01, SFT-02, SFT-03, SFT-04, SFT-05, SFT-06
+**Constraint**: **必须在 Docker 环境中执行训练** (使用 docker/publish.sh 或 docker run)
 **Success Criteria** (what must be TRUE):
   1. 手工编写的 50-100 条示例数据格式正确且包含推理过程
   2. 模型能够加载 Qwen3-4B 基础模型并配置 LoRA 参数
   3. 训练后的模型能够输出符合格式的响应(包含 <think> 和 JSON 数组)
   4. SFT 模型和 tokenizer 保存在指定路径可供后续使用
+  5. **训练在 Docker 容器中成功执行**
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md - 数据准备 (格式验证器 + 手工示例生成)
-- [ ] 03-02-PLAN.md - 训练基础设施 (模型加载 + LoRA 配置 + Chat Template)
-- [ ] 03-03-PLAN.md - 训练与保存 (SFT 训练脚本 + 模型保存 + 格式验证)
+- [x] 03-01-PLAN.md - 数据准备 (格式验证器 + 手工示例生成)
+- [x] 03-02-PLAN.md - 训练基础设施 (模型加载 + LoRA 配置 + Chat Template)
+- [ ] 03-03-PLAN.md - 训练与保存 (SFT 训练脚本 + Docker 执行 + 模型保存)
 
 ### Phase 4: GRPO 强化学习
 **Goal**: 模型从 SUMO 仿真反馈中学会推理最优信号周期
@@ -110,6 +112,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. 相位处理系统 | 3/3 | ✓ Complete | 2026-02-04 |
 | 2. 训练数据生成 | 3/3 | ✓ Complete | 2026-02-05 |
-| 3. SFT 预训练 | 0/3 | Ready for execution | - |
+| 3. SFT 预训练 | 2/3 | In progress (Docker训练待执行) | - |
 | 4. GRPO 强化学习 | 0/? | Not started | - |
 | 5. Docker 部署环境 | 0/? | Not started | - |

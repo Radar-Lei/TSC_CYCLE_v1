@@ -64,10 +64,12 @@ def load_model_for_sft(config: SFTConfig = None) -> Tuple[Any, Any]:
         config = SFTConfig()
 
     # 加载基础模型
+    # device_map 必须设为 None,否则与 Trainer 不兼容
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=config.model_name,
         max_seq_length=config.max_seq_length,
         load_in_4bit=config.load_in_4bit,
+        device_map=None,  # 禁用 auto device_map,使用 Trainer 的设备管理
         fast_inference=True,
         max_lora_rank=config.lora_rank,
         gpu_memory_utilization=config.gpu_memory_utilization,
