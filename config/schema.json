@@ -1,0 +1,138 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TSC GRPO Training Configuration",
+  "description": "配置文件结构定义",
+  "type": "object",
+  "required": ["training", "simulation", "rewards", "paths"],
+  "properties": {
+    "training": {
+      "type": "object",
+      "required": ["sft", "grpo"],
+      "properties": {
+        "sft": {
+          "type": "object",
+          "required": ["max_steps", "batch_size", "learning_rate", "gradient_accumulation_steps"],
+          "properties": {
+            "max_steps": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "SFT 训练最大步数"
+            },
+            "batch_size": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "SFT 训练 batch size"
+            },
+            "learning_rate": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "SFT 学习率"
+            },
+            "gradient_accumulation_steps": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "梯度累积步数"
+            }
+          }
+        },
+        "grpo": {
+          "type": "object",
+          "required": ["max_steps", "num_generations", "learning_rate", "gradient_accumulation_steps"],
+          "properties": {
+            "max_steps": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "GRPO 训练最大步数"
+            },
+            "num_generations": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "每批生成数量"
+            },
+            "learning_rate": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "GRPO 学习率"
+            },
+            "gradient_accumulation_steps": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "梯度累积步数"
+            }
+          }
+        }
+      }
+    },
+    "simulation": {
+      "type": "object",
+      "required": ["parallel_workers", "extend_seconds", "warmup_steps", "cycle_duration"],
+      "properties": {
+        "parallel_workers": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16,
+          "description": "并行仿真进程数"
+        },
+        "extend_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "决策延长秒数"
+        },
+        "warmup_steps": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "仿真预热步数"
+        },
+        "cycle_duration": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "信号周期时长(秒)"
+        }
+      }
+    },
+    "rewards": {
+      "type": "object",
+      "required": ["format_weight", "simulation_weight"],
+      "properties": {
+        "format_weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "格式奖励权重"
+        },
+        "simulation_weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "仿真奖励权重"
+        }
+      }
+    },
+    "paths": {
+      "type": "object",
+      "required": ["data_dir", "sft_output", "grpo_output", "net_file", "sumocfg"],
+      "properties": {
+        "data_dir": {
+          "type": "string",
+          "description": "训练数据目录"
+        },
+        "sft_output": {
+          "type": "string",
+          "description": "SFT 输出目录"
+        },
+        "grpo_output": {
+          "type": "string",
+          "description": "GRPO 输出目录"
+        },
+        "net_file": {
+          "type": "string",
+          "description": "SUMO 路网文件路径"
+        },
+        "sumocfg": {
+          "type": "string",
+          "description": "SUMO 配置文件路径"
+        }
+      }
+    }
+  }
+}
