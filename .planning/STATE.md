@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 3 of 5 (SFT 预训练)
-Plan: 2 of ? in current phase
-Status: In progress
-Last activity: 2026-02-05 — Completed 03-02-PLAN.md (模型加载与 Chat Template 配置)
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-02-05 — Completed 03-03-PLAN.md (SFT 训练与模型保存)
 
-Progress: [██████░░░░] 65%
+Progress: [███████░░░] 70%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: 5.5 min
-- Total execution time: 0.73 hours
+- Total plans completed: 9
+- Average duration: 5.7 min
+- Total execution time: 0.85 hours
 
 **By Phase:**
 
@@ -29,11 +29,11 @@ Progress: [██████░░░░] 65%
 |-------|-------|-------|----------|
 | 1 | 3 | 15 min | 5 min |
 | 2 | 3 | 20 min | 6.7 min |
-| 3 | 2 | 9 min | 4.5 min |
+| 3 | 3 | 18 min | 6 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (5 min), 02-02 (6 min), 02-03 (9 min), 03-01 (5 min), 03-02 (4 min)
-- Trend: Phase 3 开局高效 (infrastructure setup)
+- Last 5 plans: 02-02 (6 min), 02-03 (9 min), 03-01 (5 min), 03-02 (4 min), 03-03 (18 min)
+- Trend: Phase 3 完成,03-03 包含实际训练时间
 
 *Updated after each plan completion*
 
@@ -75,6 +75,9 @@ Recent decisions affecting current work:
 - LoRA rank=32, alpha=64 (03-02) - 参考 Qwen3 GRPO notebook,中等配置平衡性能和训练速度
 - SFT 使用 16bit 而非 4bit (03-02) - 16bit 精度更高,SFT 阶段需要准确学习格式
 - 集成 chat_template 到 load_model_for_sft (03-02) - 确保模型加载后 tokenizer 已配置好,避免遗忘
+- device_map=None 避免与 Trainer 冲突 (03-03) - Unsloth 默认 device_map='auto',与 Transformers Trainer 不兼容
+- Docker 使用 --user 和 --entrypoint (03-03) - 绕过容器入口脚本权限问题,直接执行 python3
+- SFT 训练 300 steps (03-03) - 对 80 个手工示例足够学习格式,生成 253MB LoRA adapter
 
 ### Pending Todos
 
@@ -91,6 +94,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed 03-02-PLAN.md (模型加载与 Chat Template 配置)
+Stopped at: Completed Phase 3 (SFT 预训练)
 Resume file: None
-Next: Phase 03-03 - SFT 示例数据构建
+Next: Phase 4 planning - GRPO 强化学习
