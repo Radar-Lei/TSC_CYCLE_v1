@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 
 ## Current Position
 
-Phase: 3 of 5 (SFT 预训练)
-Plan: 3 of 3 in current phase
-Status: Phase complete
-Last activity: 2026-02-05 — Completed 03-03-PLAN.md (SFT 训练与模型保存)
+Phase: 4 of 5 (GRPO 强化学习)
+Plan: 2 of 3 in current phase
+Status: In progress
+Last activity: 2026-02-05 — Completed 04-02-PLAN.md (SUMO 仿真评估器与奖励函数)
 
-Progress: [███████░░░] 70%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
-- Average duration: 5.7 min
-- Total execution time: 0.85 hours
+- Total plans completed: 11
+- Average duration: 6.0 min
+- Total execution time: 1.1 hours
 
 **By Phase:**
 
@@ -30,10 +30,11 @@ Progress: [███████░░░] 70%
 | 1 | 3 | 15 min | 5 min |
 | 2 | 3 | 20 min | 6.7 min |
 | 3 | 3 | 18 min | 6 min |
+| 4 | 2 | 15 min | 7.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (6 min), 02-03 (9 min), 03-01 (5 min), 03-02 (4 min), 03-03 (18 min)
-- Trend: Phase 3 完成,03-03 包含实际训练时间
+- Last 5 plans: 03-01 (5 min), 03-02 (4 min), 03-03 (18 min), 04-01 (8 min), 04-02 (7 min)
+- Trend: Phase 4 进展顺利,奖励函数实现稳定推进
 
 *Updated after each plan completion*
 
@@ -78,6 +79,13 @@ Recent decisions affecting current work:
 - device_map=None 避免与 Trainer 冲突 (03-03) - Unsloth 默认 device_map='auto',与 Transformers Trainer 不兼容
 - Docker 使用 --user 和 --entrypoint (03-03) - 绕过容器入口脚本权限问题,直接执行 python3
 - SFT 训练 300 steps (03-03) - 对 80 个手工示例足够学习格式,生成 253MB LoRA adapter
+- 格式奖励参考 Qwen3 GRPO notebook (04-01) - 完全匹配 +3.0, 部分匹配按符号计分
+- 无效相位配置返回 -2.0 (04-01) - 引导模型学习有效配置
+- 奖励权重默认格式 20%, 仿真 80% (04-01) - 优先关注交通效果,保留格式引导
+- 使用 signal.alarm 实现 120 秒超时机制 (04-02) - 防止 SUMO 仿真卡死
+- 评估失败返回 -1.0,JSON 解析失败返回 0.0 (04-02) - 引导模型避免无效方案,避免过度惩罚格式错误
+- 三个指标等权分配 (04-02) - 排队 33%、通行 33%、等待 34%,平衡三个维度
+- 参考值选择排队 50 辆、通行 100 辆、等待 60 秒 (04-02) - 基于典型路口规模
 
 ### Pending Todos
 
@@ -94,6 +102,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed Phase 3 (SFT 预训练)
+Stopped at: Completed 04-02-PLAN.md (SUMO 仿真评估器与奖励函数)
 Resume file: None
-Next: Phase 4 planning - GRPO 强化学习
+Next: 04-03 - GRPO 训练循环
