@@ -13,7 +13,7 @@
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: 相位处理系统** - 从 SUMO 网络文件提取、验证、过滤相位,解决绿灯冲突
-- [ ] **Phase 2: 训练数据生成** - 并行 SUMO 仿真生成 ~10,000 条 GRPO 训练数据
+- [x] **Phase 2: 训练数据生成** - 并行 SUMO 仿真生成 ~10,000 条 GRPO 训练数据
 - [ ] **Phase 3: SFT 预训练** - 手工编写示例,训练 Qwen3-4B 学会输出格式
 - [ ] **Phase 4: GRPO 强化学习** - 实现奖励函数,通过仿真反馈训练模型推理能力
 - [ ] **Phase 5: Docker 部署环境** - 一键运行脚本,整合完整训练流程
@@ -50,9 +50,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md - 数据生成基础设施 (数据模型 + 自适应采样器 + 状态管理器)
-- [ ] 02-02-PLAN.md - Prompt 构建与数据收集 (噪声生成 + 交通收集器 + Prompt 构建器)
-- [ ] 02-03-PLAN.md - 并行仿真与 CLI (单天仿真 + 并行调度 + CLI 入口)
+- [x] 02-01-PLAN.md - 数据生成基础设施 (数据模型 + 自适应采样器 + 状态管理器)
+- [x] 02-02-PLAN.md - Prompt 构建与数据收集 (噪声生成 + 交通收集器 + Prompt 构建器)
+- [x] 02-03-PLAN.md - 并行仿真与 CLI (单天仿真 + 并行调度 + CLI 入口)
 
 ### Phase 3: SFT 预训练
 **Goal**: Qwen3-4B 模型学会输出 `<think>...</think>[{phase_id, final}...]` 格式
@@ -63,10 +63,12 @@ Plans:
   2. 模型能够加载 Qwen3-4B 基础模型并配置 LoRA 参数
   3. 训练后的模型能够输出符合格式的响应(包含 <think> 和 JSON 数组)
   4. SFT 模型和 tokenizer 保存在指定路径可供后续使用
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: TBD during plan-phase
+- [ ] 03-01-PLAN.md - 数据准备 (格式验证器 + 手工示例生成)
+- [ ] 03-02-PLAN.md - 训练基础设施 (模型加载 + LoRA 配置 + Chat Template)
+- [ ] 03-03-PLAN.md - 训练与保存 (SFT 训练脚本 + 模型保存 + 格式验证)
 
 ### Phase 4: GRPO 强化学习
 **Goal**: 模型从 SUMO 仿真反馈中学会推理最优信号周期
@@ -107,7 +109,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. 相位处理系统 | 3/3 | ✓ Complete | 2026-02-04 |
-| 2. 训练数据生成 | 0/3 | Planned | - |
-| 3. SFT 预训练 | 0/? | Not started | - |
+| 2. 训练数据生成 | 3/3 | ✓ Complete | 2026-02-05 |
+| 3. SFT 预训练 | 0/3 | Ready for execution | - |
 | 4. GRPO 强化学习 | 0/? | Not started | - |
 | 5. Docker 部署环境 | 0/? | Not started | - |

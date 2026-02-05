@@ -5,34 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** 让模型自己学会"思考"如何优化交通信号周期
-**Current focus:** Phase 2 - 训练数据生成
+**Current focus:** Phase 3 - SFT 预训练
 
 ## Current Position
 
-Phase: 2 of 5 (训练数据生成)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-02-05 — Completed 02-02-PLAN.md (Prompt 构建与数据收集)
+Phase: 3 of 5 (SFT 预训练)
+Plan: 0 of ? in current phase
+Status: Ready for planning
+Last activity: 2026-02-05 — Completed Phase 2 (训练数据生成)
 
-Progress: [█████░░░░░] 50%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 5 min
-- Total execution time: 0.42 hours
+- Total plans completed: 6
+- Average duration: 6 min
+- Total execution time: 0.57 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 | 3 | 15 min | 5 min |
-| 2 | 2 | 11 min | 5.5 min |
+| 2 | 3 | 20 min | 6.7 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (6 min), 01-03 (5 min), 02-01 (5 min), 02-02 (6 min)
-- Trend: Steady
+- Last 5 plans: 01-03 (5 min), 02-01 (5 min), 02-02 (6 min), 02-03 (9 min)
+- Trend: Slight increase (complex integration tasks)
 
 *Updated after each plan completion*
 
@@ -66,6 +66,10 @@ Recent decisions affecting current work:
 - 时间波动范围 ±2-5 秒,边界约束 5-120s (02-02) - 2-5 秒波动增加多样性且不偏离原始配置,min_green 5-60s 避免频繁切换,max_green 30-120s 确保足够时间
 - 容量估算每条车道 15 辆车 (02-02) - 简单线性估算,总容量 15-60 避免极端值
 - traci 调用失败时返回默认值 0 (02-02) - 避免异常中断数据收集,在无 SUMO 连接时也能测试
+- 时段定义: 早高峰 07:00-09:00, 晚高峰 17:00-19:00 (02-03) - 基于典型城市交通模式
+- 端口分配策略: 10000 + day_index (02-03) - 避免并行 SUMO 实例的 TraCI 端口冲突
+- 增量模式默认开启 (02-03) - 跳过已存在输出文件,支持中断后继续运行
+- 每天数据保存为独立 JSONL 文件 (02-03) - 便于按日期管理,支持流式读取
 
 ### Pending Todos
 
@@ -82,6 +86,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed 02-02-PLAN.md (Prompt 构建与数据收集)
+Stopped at: Completed 02-03-PLAN.md (并行仿真与 CLI) - Phase 2 complete
 Resume file: None
-Next: 02-03 - 数据生成主流程
+Next: Phase 03 - 强化学习训练
