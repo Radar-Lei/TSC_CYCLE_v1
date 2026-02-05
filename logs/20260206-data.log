@@ -222,3 +222,995 @@ Duration: 00:00:00
 ==================================================
 
 [ERROR] 2026-02-06 00:40:34 数据生成失败,退出码: 2
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T00:48:19+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T00:48:19+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --workers 4 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+============================================================
+训练数据生成配置
+============================================================
+流量文件: 30 个
+相位配置: /home/samuel/TSC_CYCLE/output/phase_config.json
+输出目录: /home/samuel/TSC_CYCLE/outputs/data
+状态快照目录: /home/samuel/TSC_CYCLE/data/states
+并行进程数: 4
+仿真时长: 86400s (24.0 小时)
+预热步数: 300
+增量模式: 是
+============================================================
+
+Running 30 days with 4 workers...
+Simulating days:   0%|          | 0/30 [00:00<?, ?it/s]Simulating days: 100%|██████████| 30/30 [00:00<00:00, 2064.36it/s]
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+
+============================================================
+生成完成
+============================================================
+处理天数: 30
+成功: 0
+失败: 30
+总样本数: 0
+
+============================================================
+
+错误:
+  - Day 1 failed: No module named 'sumo_sim'
+  - Day 3 failed: No module named 'sumo_sim'
+  - Day 2 failed: No module named 'sumo_sim'
+  - Day 0 failed: No module named 'sumo_sim'
+  - Day 4 failed: No module named 'sumo_sim'
+  - Day 6 failed: No module named 'sumo_sim'
+  - Day 8 failed: No module named 'sumo_sim'
+  - Day 5 failed: No module named 'sumo_sim'
+  - Day 7 failed: No module named 'sumo_sim'
+  - Day 9 failed: No module named 'sumo_sim'
+  - Day 10 failed: No module named 'sumo_sim'
+  - Day 14 failed: No module named 'sumo_sim'
+  - Day 11 failed: No module named 'sumo_sim'
+  - Day 12 failed: No module named 'sumo_sim'
+  - Day 15 failed: No module named 'sumo_sim'
+  - Day 13 failed: No module named 'sumo_sim'
+  - Day 18 failed: No module named 'sumo_sim'
+  - Day 17 failed: No module named 'sumo_sim'
+  - Day 16 failed: No module named 'sumo_sim'
+  - Day 20 failed: No module named 'sumo_sim'
+  - Day 19 failed: No module named 'sumo_sim'
+  - Day 23 failed: No module named 'sumo_sim'
+  - Day 21 failed: No module named 'sumo_sim'
+  - Day 22 failed: No module named 'sumo_sim'
+  - Day 25 failed: No module named 'sumo_sim'
+  - Day 24 failed: No module named 'sumo_sim'
+  - Day 28 failed: No module named 'sumo_sim'
+  - Day 26 failed: No module named 'sumo_sim'
+  - Day 27 failed: No module named 'sumo_sim'
+  - Day 29 failed: No module named 'sumo_sim'
+
+训练数据保存在: /home/samuel/TSC_CYCLE/outputs/data
+状态快照保存在: /home/samuel/TSC_CYCLE/data/states
+元数据: /home/samuel/TSC_CYCLE/outputs/data/metadata.json
+
+==========================================
+Stage: data
+Exit code: 0
+Timestamp: 2026-02-06T00:48:19+08:00
+==========================================
+
+
+==================================================
+=== Stage: data SUCCESS ===
+End time: 2026-02-06T00:48:19+08:00
+Exit code: 0
+Duration: 00:00:00
+==================================================
+
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T00:52:48+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T00:52:48+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --workers 4 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+============================================================
+训练数据生成配置
+============================================================
+流量文件: 30 个
+相位配置: /home/samuel/TSC_CYCLE/output/phase_config.json
+输出目录: /home/samuel/TSC_CYCLE/outputs/data
+状态快照目录: /home/samuel/TSC_CYCLE/data/states
+并行进程数: 4
+仿真时长: 86400s (24.0 小时)
+预热步数: 300
+增量模式: 是
+============================================================
+
+Running 30 days with 4 workers...
+Simulating days:   0%|          | 0/30 [00:00<?, ?it/s]Simulating days: 100%|██████████| 30/30 [00:00<00:00, 2434.40it/s]
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+
+============================================================
+生成完成
+============================================================
+处理天数: 30
+成功: 0
+失败: 30
+总样本数: 0
+
+============================================================
+
+错误:
+  - Day 0 failed: No module named 'sumo_sim'
+  - Day 2 failed: No module named 'sumo_sim'
+  - Day 1 failed: No module named 'sumo_sim'
+  - Day 3 failed: No module named 'sumo_sim'
+  - Day 4 failed: No module named 'sumo_sim'
+  - Day 6 failed: No module named 'sumo_sim'
+  - Day 7 failed: No module named 'sumo_sim'
+  - Day 8 failed: No module named 'sumo_sim'
+  - Day 9 failed: No module named 'sumo_sim'
+  - Day 5 failed: No module named 'sumo_sim'
+  - Day 10 failed: No module named 'sumo_sim'
+  - Day 11 failed: No module named 'sumo_sim'
+  - Day 12 failed: No module named 'sumo_sim'
+  - Day 14 failed: No module named 'sumo_sim'
+  - Day 15 failed: No module named 'sumo_sim'
+  - Day 16 failed: No module named 'sumo_sim'
+  - Day 13 failed: No module named 'sumo_sim'
+  - Day 17 failed: No module named 'sumo_sim'
+  - Day 18 failed: No module named 'sumo_sim'
+  - Day 19 failed: No module named 'sumo_sim'
+  - Day 21 failed: No module named 'sumo_sim'
+  - Day 22 failed: No module named 'sumo_sim'
+  - Day 23 failed: No module named 'sumo_sim'
+  - Day 24 failed: No module named 'sumo_sim'
+  - Day 20 failed: No module named 'sumo_sim'
+  - Day 25 failed: No module named 'sumo_sim'
+  - Day 26 failed: No module named 'sumo_sim'
+  - Day 27 failed: No module named 'sumo_sim'
+  - Day 29 failed: No module named 'sumo_sim'
+  - Day 28 failed: No module named 'sumo_sim'
+
+训练数据保存在: /home/samuel/TSC_CYCLE/outputs/data
+状态快照保存在: /home/samuel/TSC_CYCLE/data/states
+元数据: /home/samuel/TSC_CYCLE/outputs/data/metadata.json
+
+==========================================
+Stage: data
+Exit code: 0
+Timestamp: 2026-02-06T00:52:49+08:00
+==========================================
+
+
+==================================================
+=== Stage: data SUCCESS ===
+End time: 2026-02-06T00:52:49+08:00
+Exit code: 0
+Duration: 00:00:01
+==================================================
+
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T00:58:43+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T00:58:43+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --workers 4 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+============================================================
+训练数据生成配置
+============================================================
+流量文件: 30 个
+相位配置: /home/samuel/TSC_CYCLE/output/phase_config.json
+输出目录: /home/samuel/TSC_CYCLE/outputs/data
+状态快照目录: /home/samuel/TSC_CYCLE/data/states
+并行进程数: 4
+仿真时长: 86400s (24.0 小时)
+预热步数: 300
+增量模式: 是
+============================================================
+
+Running 30 days with 4 workers...
+Simulating days:   0%|          | 0/30 [00:00<?, ?it/s]Simulating days: 100%|██████████| 30/30 [00:00<00:00, 2533.15it/s]
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+
+============================================================
+生成完成
+============================================================
+处理天数: 30
+成功: 0
+失败: 30
+总样本数: 0
+
+============================================================
+
+错误:
+  - Day 0 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 1 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 2 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 3 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 4 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 5 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 7 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 6 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 8 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 9 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 10 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 11 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 12 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 13 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 14 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 15 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 16 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 17 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 18 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 19 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 20 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 21 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 22 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 23 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 24 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 25 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 26 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 27 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 28 failed: 'SUMOSimulator' object has no attribute 'start'
+  - Day 29 failed: 'SUMOSimulator' object has no attribute 'start'
+
+训练数据保存在: /home/samuel/TSC_CYCLE/outputs/data
+状态快照保存在: /home/samuel/TSC_CYCLE/data/states
+元数据: /home/samuel/TSC_CYCLE/outputs/data/metadata.json
+
+==========================================
+Stage: data
+Exit code: 0
+Timestamp: 2026-02-06T00:58:43+08:00
+==========================================
+
+
+==================================================
+=== Stage: data SUCCESS ===
+End time: 2026-02-06T00:58:43+08:00
+Exit code: 0
+Duration: 00:00:00
+==================================================
+
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T01:00:40+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T01:00:40+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --workers 4 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+============================================================
+训练数据生成配置
+============================================================
+流量文件: 30 个
+相位配置: /home/samuel/TSC_CYCLE/output/phase_config.json
+输出目录: /home/samuel/TSC_CYCLE/outputs/data
+状态快照目录: /home/samuel/TSC_CYCLE/data/states
+并行进程数: 4
+仿真时长: 86400s (24.0 小时)
+预热步数: 300
+增量模式: 是
+============================================================
+
+Running 30 days with 4 workers...
+Simulating days:   0%|          | 0/30 [00:00<?, ?it/s]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+
+Quitting (on error).Quitting (on error).
+
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:   3%|▎         | 1/30 [00:05<02:25,  5.01s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  17%|█▋        | 5/30 [00:10<00:45,  1.81s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  30%|███       | 9/30 [00:15<00:31,  1.50s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).Quitting (on error).
+
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Simulating days:  43%|████▎     | 13/30 [00:20<00:23,  1.39s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  57%|█████▋    | 17/30 [00:25<00:17,  1.34s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+
+Quitting (on error).
+Quitting (on error).
+Simulating days:  70%|███████   | 21/30 [00:30<00:11,  1.31s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  83%|████████▎ | 25/30 [00:35<00:06,  1.29s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  97%|█████████▋| 29/30 [00:40<00:01,  1.28s/it]Simulating days: 100%|██████████| 30/30 [00:40<00:00,  1.33s/it]
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+
+============================================================
+生成完成
+============================================================
+处理天数: 30
+成功: 0
+失败: 30
+总样本数: 0
+
+============================================================
+
+错误:
+  - Day 1 failed: 仿真未连接，无法保存状态
+  - Day 2 failed: 仿真未连接，无法保存状态
+  - Day 0 failed: 仿真未连接，无法保存状态
+  - Day 3 failed: 仿真未连接，无法保存状态
+  - Day 4 failed: 仿真未连接，无法保存状态
+  - Day 5 failed: 仿真未连接，无法保存状态
+  - Day 6 failed: 仿真未连接，无法保存状态
+  - Day 7 failed: 仿真未连接，无法保存状态
+  - Day 9 failed: 仿真未连接，无法保存状态
+  - Day 8 failed: 仿真未连接，无法保存状态
+  - Day 10 failed: 仿真未连接，无法保存状态
+  - Day 11 failed: 仿真未连接，无法保存状态
+  - Day 13 failed: 仿真未连接，无法保存状态
+  - Day 12 failed: 仿真未连接，无法保存状态
+  - Day 14 failed: 仿真未连接，无法保存状态
+  - Day 15 failed: 仿真未连接，无法保存状态
+  - Day 16 failed: 仿真未连接，无法保存状态
+  - Day 17 failed: 仿真未连接，无法保存状态
+  - Day 18 failed: 仿真未连接，无法保存状态
+  - Day 19 failed: 仿真未连接，无法保存状态
+  - Day 20 failed: 仿真未连接，无法保存状态
+  - Day 21 failed: 仿真未连接，无法保存状态
+  - Day 22 failed: 仿真未连接，无法保存状态
+  - Day 23 failed: 仿真未连接，无法保存状态
+  - Day 24 failed: 仿真未连接，无法保存状态
+  - Day 25 failed: 仿真未连接，无法保存状态
+  - Day 26 failed: 仿真未连接，无法保存状态
+  - Day 27 failed: 仿真未连接，无法保存状态
+  - Day 28 failed: 仿真未连接，无法保存状态
+  - Day 29 failed: 仿真未连接，无法保存状态
+
+训练数据保存在: /home/samuel/TSC_CYCLE/outputs/data
+状态快照保存在: /home/samuel/TSC_CYCLE/data/states
+元数据: /home/samuel/TSC_CYCLE/outputs/data/metadata.json
+
+==========================================
+Stage: data
+Exit code: 0
+Timestamp: 2026-02-06T01:01:20+08:00
+==========================================
+
+
+==================================================
+=== Stage: data SUCCESS ===
+End time: 2026-02-06T01:01:20+08:00
+Exit code: 0
+Duration: 00:00:40
+==================================================
+
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T01:04:23+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T01:04:23+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --workers 4 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+============================================================
+训练数据生成配置
+============================================================
+流量文件: 30 个
+相位配置: /home/samuel/TSC_CYCLE/output/phase_config.json
+输出目录: /home/samuel/TSC_CYCLE/outputs/data
+状态快照目录: /home/samuel/TSC_CYCLE/data/states
+并行进程数: 4
+仿真时长: 86400s (24.0 小时)
+预热步数: 300
+增量模式: 是
+============================================================
+
+Running 30 days with 4 workers...
+Simulating days:   0%|          | 0/30 [00:00<?, ?it/s]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:   3%|▎         | 1/30 [00:05<02:25,  5.01s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+
+Quitting (on error).Quitting (on error).
+
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  17%|█▋        | 5/30 [00:10<00:45,  1.81s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  30%|███       | 9/30 [00:15<00:31,  1.50s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  43%|████▎     | 13/30 [00:20<00:23,  1.39s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  57%|█████▋    | 17/30 [00:25<00:17,  1.34s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  70%|███████   | 21/30 [00:30<00:11,  1.31s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  83%|████████▎ | 25/30 [00:35<00:06,  1.29s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  97%|█████████▋| 29/30 [00:40<00:01,  1.28s/it]Simulating days: 100%|██████████| 30/30 [00:40<00:00,  1.33s/it]
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+
+============================================================
+生成完成
+============================================================
+处理天数: 30
+成功: 0
+失败: 30
+总样本数: 0
+
+============================================================
+
+错误:
+  - Day 3 failed: 仿真未连接，无法保存状态
+  - Day 1 failed: 仿真未连接，无法保存状态
+  - Day 2 failed: 仿真未连接，无法保存状态
+  - Day 0 failed: 仿真未连接，无法保存状态
+  - Day 6 failed: 仿真未连接，无法保存状态
+  - Day 4 failed: 仿真未连接，无法保存状态
+  - Day 5 failed: 仿真未连接，无法保存状态
+  - Day 7 failed: 仿真未连接，无法保存状态
+  - Day 8 failed: 仿真未连接，无法保存状态
+  - Day 10 failed: 仿真未连接，无法保存状态
+  - Day 9 failed: 仿真未连接，无法保存状态
+  - Day 11 failed: 仿真未连接，无法保存状态
+  - Day 12 failed: 仿真未连接，无法保存状态
+  - Day 13 failed: 仿真未连接，无法保存状态
+  - Day 14 failed: 仿真未连接，无法保存状态
+  - Day 15 failed: 仿真未连接，无法保存状态
+  - Day 16 failed: 仿真未连接，无法保存状态
+  - Day 17 failed: 仿真未连接，无法保存状态
+  - Day 18 failed: 仿真未连接，无法保存状态
+  - Day 19 failed: 仿真未连接，无法保存状态
+  - Day 20 failed: 仿真未连接，无法保存状态
+  - Day 21 failed: 仿真未连接，无法保存状态
+  - Day 22 failed: 仿真未连接，无法保存状态
+  - Day 23 failed: 仿真未连接，无法保存状态
+  - Day 24 failed: 仿真未连接，无法保存状态
+  - Day 25 failed: 仿真未连接，无法保存状态
+  - Day 26 failed: 仿真未连接，无法保存状态
+  - Day 27 failed: 仿真未连接，无法保存状态
+  - Day 29 failed: 仿真未连接，无法保存状态
+  - Day 28 failed: 仿真未连接，无法保存状态
+
+训练数据保存在: /home/samuel/TSC_CYCLE/outputs/data
+状态快照保存在: /home/samuel/TSC_CYCLE/data/states
+元数据: /home/samuel/TSC_CYCLE/outputs/data/metadata.json
+
+==========================================
+Stage: data
+Exit code: 0
+Timestamp: 2026-02-06T01:05:04+08:00
+==========================================
+
+
+==================================================
+=== Stage: data SUCCESS ===
+End time: 2026-02-06T01:05:04+08:00
+Exit code: 0
+Duration: 00:00:41
+==================================================
+

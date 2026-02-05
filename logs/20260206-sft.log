@@ -63,3 +63,328 @@ Duration: 00:00:25
 ==================================================
 
 [ERROR] 2026-02-06 00:21:14 SFT 训练失败,退出码: 1
+
+==================================================
+=== Stage: sft START ===
+Start time: 2026-02-06T00:48:19+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T00:48:19+08:00
+Stage: sft
+Command: python3 -m src.scripts.train_sft --config config/config.json --output-dir outputs/sft
+==========================================
+
+==================================================
+SFT Training - Format Learning
+==================================================
+
+[1/4] Loading model...
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+Unsloth: DGX Spark detected - `fast_inference=True` is currently broken as of January 2026.
+Defaulting to native Unsloth inference.
+Downloading Model from https://www.modelscope.cn to directory: /home/samuel/TSC_CYCLE/model/models/unsloth/Qwen3-4B-Base
+==((====))==  Unsloth 2026.1.4: Fast Qwen3 patching. Transformers: 4.57.1. vLLM: 0.1.dev1+g18d4e481d.d20260108.cu130.
+   \\   /|    NVIDIA GB10. Num GPUs = 1. Max memory: 119.697 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.10.0a0+b558c986e8.nv25.11. CUDA: 12.1. CUDA Toolkit: 13.0. Triton: 3.5.1
+\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.33.post1. FA2 = True]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 171.66it/s]
+Unsloth 2026.1.4 patched 36 layers with 36 QKV layers, 36 O layers and 36 MLP layers.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/samuel/TSC_CYCLE/src/scripts/train_sft.py", line 172, in <module>
+    main()
+  File "/home/samuel/TSC_CYCLE/src/scripts/train_sft.py", line 75, in main
+    train_dataset = prepare_dataset(f"{args.data_dir}/train.jsonl", tokenizer)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/samuel/TSC_CYCLE/src/sft/trainer.py", line 131, in prepare_dataset
+    with open(data_path, 'r', encoding='utf-8') as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/training/train.jsonl'
+  ✓ Model loaded: Qwen3-4B + LoRA (rank=32, alpha=64)
+Trainable params: 66,060,288
+All params: 4,088,528,384
+Trainable%: 1.62%
+
+[2/4] Preparing dataset...
+
+==========================================
+Stage: sft
+Exit code: 1
+Timestamp: 2026-02-06T00:48:44+08:00
+==========================================
+
+
+==================================================
+=== Stage: sft FAILED ===
+End time: 2026-02-06T00:48:44+08:00
+Exit code: 1
+Duration: 00:00:25
+==================================================
+
+[ERROR] 2026-02-06 00:48:44 SFT 训练失败,退出码: 1
+
+==================================================
+=== Stage: sft START ===
+Start time: 2026-02-06T00:52:49+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T00:52:49+08:00
+Stage: sft
+Command: python3 -m src.scripts.train_sft --config config/config.json --output-dir outputs/sft
+==========================================
+
+==================================================
+SFT Training - Format Learning
+==================================================
+
+[1/4] Loading model...
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+Unsloth: DGX Spark detected - `fast_inference=True` is currently broken as of January 2026.
+Defaulting to native Unsloth inference.
+Downloading Model from https://www.modelscope.cn to directory: /home/samuel/TSC_CYCLE/model/models/unsloth/Qwen3-4B-Base
+==((====))==  Unsloth 2026.1.4: Fast Qwen3 patching. Transformers: 4.57.1. vLLM: 0.1.dev1+g18d4e481d.d20260108.cu130.
+   \\   /|    NVIDIA GB10. Num GPUs = 1. Max memory: 119.697 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.10.0a0+b558c986e8.nv25.11. CUDA: 12.1. CUDA Toolkit: 13.0. Triton: 3.5.1
+\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.33.post1. FA2 = True]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 170.19it/s]
+Unsloth 2026.1.4 patched 36 layers with 36 QKV layers, 36 O layers and 36 MLP layers.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/samuel/TSC_CYCLE/src/scripts/train_sft.py", line 172, in <module>
+    main()
+  File "/home/samuel/TSC_CYCLE/src/scripts/train_sft.py", line 75, in main
+    train_dataset = prepare_dataset(f"{args.data_dir}/train.jsonl", tokenizer)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/samuel/TSC_CYCLE/src/sft/trainer.py", line 131, in prepare_dataset
+    with open(data_path, 'r', encoding='utf-8') as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/training/train.jsonl'
+  ✓ Model loaded: Qwen3-4B + LoRA (rank=32, alpha=64)
+Trainable params: 66,060,288
+All params: 4,088,528,384
+Trainable%: 1.62%
+
+[2/4] Preparing dataset...
+
+==========================================
+Stage: sft
+Exit code: 1
+Timestamp: 2026-02-06T00:53:13+08:00
+==========================================
+
+
+==================================================
+=== Stage: sft FAILED ===
+End time: 2026-02-06T00:53:13+08:00
+Exit code: 1
+Duration: 00:00:24
+==================================================
+
+[ERROR] 2026-02-06 00:53:13 SFT 训练失败,退出码: 1
+
+==================================================
+=== Stage: sft START ===
+Start time: 2026-02-06T00:58:43+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T00:58:43+08:00
+Stage: sft
+Command: python3 -m src.scripts.train_sft --config config/config.json --output-dir outputs/sft
+==========================================
+
+==================================================
+SFT Training - Format Learning
+==================================================
+
+[1/4] Loading model...
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+Unsloth: DGX Spark detected - `fast_inference=True` is currently broken as of January 2026.
+Defaulting to native Unsloth inference.
+Downloading Model from https://www.modelscope.cn to directory: /home/samuel/TSC_CYCLE/model/models/unsloth/Qwen3-4B-Base
+==((====))==  Unsloth 2026.1.4: Fast Qwen3 patching. Transformers: 4.57.1. vLLM: 0.1.dev1+g18d4e481d.d20260108.cu130.
+   \\   /|    NVIDIA GB10. Num GPUs = 1. Max memory: 119.697 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.10.0a0+b558c986e8.nv25.11. CUDA: 12.1. CUDA Toolkit: 13.0. Triton: 3.5.1
+\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.33.post1. FA2 = True]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 173.24it/s]
+Unsloth 2026.1.4 patched 36 layers with 36 QKV layers, 36 O layers and 36 MLP layers.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/samuel/TSC_CYCLE/src/scripts/train_sft.py", line 172, in <module>
+    main()
+  File "/home/samuel/TSC_CYCLE/src/scripts/train_sft.py", line 75, in main
+    train_dataset = prepare_dataset(f"{args.data_dir}/train.jsonl", tokenizer)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/samuel/TSC_CYCLE/src/sft/trainer.py", line 131, in prepare_dataset
+    with open(data_path, 'r', encoding='utf-8') as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/training/train.jsonl'
+  ✓ Model loaded: Qwen3-4B + LoRA (rank=32, alpha=64)
+Trainable params: 66,060,288
+All params: 4,088,528,384
+Trainable%: 1.62%
+
+[2/4] Preparing dataset...
+
+==========================================
+Stage: sft
+Exit code: 1
+Timestamp: 2026-02-06T00:59:08+08:00
+==========================================
+
+
+==================================================
+=== Stage: sft FAILED ===
+End time: 2026-02-06T00:59:08+08:00
+Exit code: 1
+Duration: 00:00:25
+==================================================
+
+[ERROR] 2026-02-06 00:59:08 SFT 训练失败,退出码: 1
+
+==================================================
+=== Stage: sft START ===
+Start time: 2026-02-06T01:01:20+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T01:01:20+08:00
+Stage: sft
+Command: python3 -m src.scripts.train_sft --config config/config.json --output-dir outputs/sft
+==========================================
+
+==================================================
+SFT Training - Format Learning
+==================================================
+
+[1/4] Loading model...
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+Unsloth: DGX Spark detected - `fast_inference=True` is currently broken as of January 2026.
+Defaulting to native Unsloth inference.
+Downloading Model from https://www.modelscope.cn to directory: /home/samuel/TSC_CYCLE/model/models/unsloth/Qwen3-4B-Base
+==((====))==  Unsloth 2026.1.4: Fast Qwen3 patching. Transformers: 4.57.1. vLLM: 0.1.dev1+g18d4e481d.d20260108.cu130.
+   \\   /|    NVIDIA GB10. Num GPUs = 1. Max memory: 119.697 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.10.0a0+b558c986e8.nv25.11. CUDA: 12.1. CUDA Toolkit: 13.0. Triton: 3.5.1
+\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.33.post1. FA2 = True]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 172.59it/s]
+Unsloth 2026.1.4 patched 36 layers with 36 QKV layers, 36 O layers and 36 MLP layers.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/samuel/TSC_CYCLE/src/scripts/train_sft.py", line 172, in <module>
+    main()
+  File "/home/samuel/TSC_CYCLE/src/scripts/train_sft.py", line 75, in main
+    train_dataset = prepare_dataset(f"{args.data_dir}/train.jsonl", tokenizer)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/samuel/TSC_CYCLE/src/sft/trainer.py", line 131, in prepare_dataset
+    with open(data_path, 'r', encoding='utf-8') as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/training/train.jsonl'
+  ✓ Model loaded: Qwen3-4B + LoRA (rank=32, alpha=64)
+Trainable params: 66,060,288
+All params: 4,088,528,384
+Trainable%: 1.62%
+
+[2/4] Preparing dataset...
+
+==========================================
+Stage: sft
+Exit code: 1
+Timestamp: 2026-02-06T01:01:44+08:00
+==========================================
+
+
+==================================================
+=== Stage: sft FAILED ===
+End time: 2026-02-06T01:01:44+08:00
+Exit code: 1
+Duration: 00:00:24
+==================================================
+
+[ERROR] 2026-02-06 01:01:44 SFT 训练失败,退出码: 1
+
+==================================================
+=== Stage: sft START ===
+Start time: 2026-02-06T01:05:04+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T01:05:04+08:00
+Stage: sft
+Command: python3 -m src.scripts.train_sft --config config/config.json --output-dir outputs/sft
+==========================================
+
+==================================================
+SFT Training - Format Learning
+==================================================
+
+[1/4] Loading model...
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+Unsloth: DGX Spark detected - `fast_inference=True` is currently broken as of January 2026.
+Defaulting to native Unsloth inference.
+Downloading Model from https://www.modelscope.cn to directory: /home/samuel/TSC_CYCLE/model/models/unsloth/Qwen3-4B-Base
+==((====))==  Unsloth 2026.1.4: Fast Qwen3 patching. Transformers: 4.57.1. vLLM: 0.1.dev1+g18d4e481d.d20260108.cu130.
+   \\   /|    NVIDIA GB10. Num GPUs = 1. Max memory: 119.697 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.10.0a0+b558c986e8.nv25.11. CUDA: 12.1. CUDA Toolkit: 13.0. Triton: 3.5.1
+\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.33.post1. FA2 = True]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 173.53it/s]
+Unsloth 2026.1.4 patched 36 layers with 36 QKV layers, 36 O layers and 36 MLP layers.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/samuel/TSC_CYCLE/src/scripts/train_sft.py", line 172, in <module>
+    main()
+  File "/home/samuel/TSC_CYCLE/src/scripts/train_sft.py", line 75, in main
+    train_dataset = prepare_dataset(f"{args.data_dir}/train.jsonl", tokenizer)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/samuel/TSC_CYCLE/src/sft/trainer.py", line 131, in prepare_dataset
+    with open(data_path, 'r', encoding='utf-8') as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data/training/train.jsonl'
+  ✓ Model loaded: Qwen3-4B + LoRA (rank=32, alpha=64)
+Trainable params: 66,060,288
+All params: 4,088,528,384
+Trainable%: 1.62%
+
+[2/4] Preparing dataset...
+
+==========================================
+Stage: sft
+Exit code: 1
+Timestamp: 2026-02-06T01:05:28+08:00
+==========================================
+
+
+==================================================
+=== Stage: sft FAILED ===
+End time: 2026-02-06T01:05:28+08:00
+Exit code: 1
+Duration: 00:00:24
+==================================================
+
+[ERROR] 2026-02-06 01:05:28 SFT 训练失败,退出码: 1

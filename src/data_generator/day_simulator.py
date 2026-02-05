@@ -202,7 +202,7 @@ class DaySimulator:
             tl_ids = collector.get_all_tl_ids()
 
             # 5. 启动仿真
-            self.simulator.start()
+            self.simulator.start_simulation()
 
             # 6. 预热 (让车辆进入路网)
             for _ in range(self.warmup_steps):
