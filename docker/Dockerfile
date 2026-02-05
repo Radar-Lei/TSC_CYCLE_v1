@@ -12,6 +12,7 @@ RUN apt-get update -o Acquire::Retries=5 && \
         ca-certificates \
         gnupg \
         tzdata \
+        jq \
         software-properties-common && \
     rm -rf /var/lib/apt/lists/*
 
@@ -45,12 +46,23 @@ RUN if id ${USER_ID} >/dev/null 2>&1; then \
     echo 'samuel ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 # 创建工作目录并设置权限
-RUN mkdir -p /home/samuel/SCU_TSC && \
+RUN mkdir -p /home/samuel/SCU_TSC \
+    /home/samuel/SCU_TSC/logs \
+    /home/samuel/SCU_TSC/outputs \
+    /home/samuel/SCU_TSC/.checkpoints && \
     chown -R samuel:samuel /home/samuel/SCU_TSC
+
+# 复制 entrypoint.sh
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # 切换到非root用户
 USER samuel
 WORKDIR /home/samuel/SCU_TSC
 
-# 正确设置PATH - 系统路径优先，然后是SUMO
+# 正确设置PATH - 系统路径优先,然后是SUMO
 ENV PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/sumo/bin:/usr/local/cuda/bin"
+
+# 设置入口点
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["bash"]

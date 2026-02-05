@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 5 of 5 (Docker 部署环境)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-02-05 — Completed 05-02-PLAN.md
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-02-05 — Completed 05-03-PLAN.md (一键训练脚本重构)
 
-Progress: [█████████░] 95%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
-- Average duration: 6.0 min
-- Total execution time: 1.4 hours
+- Total plans completed: 15
+- Average duration: 5.9 min
+- Total execution time: 1.5 hours
 
 **By Phase:**
 
@@ -31,11 +31,11 @@ Progress: [█████████░] 95%
 | 2 | 3 | 20 min | 6.7 min |
 | 3 | 3 | 18 min | 6 min |
 | 4 | 3 | 19 min | 6.3 min |
-| 5 | 2 | 10 min | 5 min |
+| 5 | 3 | 13 min | 4.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-02 (7 min), 04-03 (6 min), 05-01 (5 min), 05-02 (5 min)
-- Trend: Phase 5 进展顺利,Shell 函数库就绪
+- Last 5 plans: 04-03 (6 min), 05-01 (5 min), 05-02 (5 min), 05-03 (3 min)
+- Trend: Phase 5 完成,Docker 部署环境就绪,可一键运行完整训练流程
 
 *Updated after each plan completion*
 
@@ -97,6 +97,9 @@ Recent decisions affecting current work:
 - 检查点双重验证 (05-02) - 状态文件 + 输出文件存在性双重检查,防止不一致
 - 日志按阶段分离 (05-02) - logs/${DATE}-${stage_name}.log 模式,便于调试
 - PIPESTATUS[0] 保留退出码 (05-02) - tee 管道中获取真实命令退出码
+- 使用 JSON 配置替代 YAML (05-03) - jq 读取 config.json,简化配置管理
+- 阶段函数返回值表示成功/失败 (05-03) - 主流程用 || exit 1 快速失败
+- entrypoint.sh 启动 Xvfb (05-03) - 提供虚拟 X server 给 SUMO 使用
 
 ### Pending Todos
 
@@ -113,6 +116,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed 05-02-PLAN.md
+Stopped at: Completed 05-03-PLAN.md (Phase 5 完成)
 Resume file: None
-Next: 05-03 - 重构 docker/publish.sh 使用函数库
+Next: 全部 5 个 Phase 已完成,系统就绪,可运行完整训练流程
