@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: 相位处理系统** - 从 SUMO 网络文件提取、验证、过滤相位,解决绿灯冲突
 - [x] **Phase 2: 训练数据生成** - 并行 SUMO 仿真生成 ~10,000 条 GRPO 训练数据
-- [ ] **Phase 3: SFT 预训练** - 手工编写示例,训练 Qwen3-4B 学会输出格式
+- [x] **Phase 3: SFT 预训练** - 手工编写示例,训练 Qwen3-4B 学会输出格式
 - [ ] **Phase 4: GRPO 强化学习** - 实现奖励函数,通过仿真反馈训练模型推理能力
 - [ ] **Phase 5: Docker 部署环境** - 一键运行脚本,整合完整训练流程
 
@@ -70,7 +70,7 @@ Plans:
 Plans:
 - [x] 03-01-PLAN.md - 数据准备 (格式验证器 + 手工示例生成)
 - [x] 03-02-PLAN.md - 训练基础设施 (模型加载 + LoRA 配置 + Chat Template)
-- [ ] 03-03-PLAN.md - 训练与保存 (SFT 训练脚本 + Docker 执行 + 模型保存)
+- [x] 03-03-PLAN.md - 训练与保存 (SFT 训练脚本 + Docker 执行 + 模型保存)
 
 ### Phase 4: GRPO 强化学习
 **Goal**: 模型从 SUMO 仿真反馈中学会推理最优信号周期
@@ -80,23 +80,25 @@ Plans:
   1. 格式奖励函数能够验证模型输出格式正确性
   2. 仿真奖励函数能够并行启动 SUMO 评估方案效果(等待时间、通行量等)
   3. 多个奖励函数成功组合为综合奖励信号
-  4. GRPO 训练循环正常运行(生成 → 评估 → 更新)
+  4. GRPO 训练循环正常运行(生成 -> 评估 -> 更新)
   5. 训练指标被记录(reward, reward_std, completion_length, kl)
   6. 最终 GRPO 模型保存在指定路径
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 04-01: TBD during plan-phase
+- [ ] 04-01-PLAN.md - 奖励函数基础设施 (格式奖励 + 奖励组合器)
+- [ ] 04-02-PLAN.md - SUMO 仿真评估器 (状态恢复 + 指标收集 + 并行评估)
+- [ ] 04-03-PLAN.md - GRPO 训练循环 (数据加载 + 训练配置 + 训练脚本)
 
 ### Phase 5: Docker 部署环境
-**Goal**: 一键运行完整的训练流程(数据生成 → SFT → GRPO)
+**Goal**: 一键运行完整的训练流程(数据生成 -> SFT -> GRPO)
 **Depends on**: Phase 4
 **Requirements**: DOCKER-01, DOCKER-02, DOCKER-03, DOCKER-04, DOCKER-05, DOCKER-06
 **Success Criteria** (what must be TRUE):
   1. Docker 镜像包含所有依赖(CUDA, SUMO, Python packages)
   2. 环境变量正确配置(SUMO_HOME, HF_HOME, PARALLEL 等)
   3. 数据和模型目录正确挂载到容器
-  4. 执行 docker/publish.sh 能够一键运行完整流程(依赖检查 → 数据生成 → SFT → GRPO)
+  4. 执行 docker/publish.sh 能够一键运行完整流程(依赖检查 -> 数据生成 -> SFT -> GRPO)
   5. 训练完成后输出摘要(数据量、训练时间、模型路径)
 **Plans**: TBD
 
@@ -106,12 +108,12 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. 相位处理系统 | 3/3 | ✓ Complete | 2026-02-04 |
-| 2. 训练数据生成 | 3/3 | ✓ Complete | 2026-02-05 |
-| 3. SFT 预训练 | 2/3 | In progress (Docker训练待执行) | - |
-| 4. GRPO 强化学习 | 0/? | Not started | - |
+| 1. 相位处理系统 | 3/3 | Complete | 2026-02-04 |
+| 2. 训练数据生成 | 3/3 | Complete | 2026-02-05 |
+| 3. SFT 预训练 | 3/3 | Complete | 2026-02-05 |
+| 4. GRPO 强化学习 | 0/3 | Planning complete | - |
 | 5. Docker 部署环境 | 0/? | Not started | - |
