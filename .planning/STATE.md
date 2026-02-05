@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 5 of 5 (Docker 部署环境)
-Plan: 0 of ? in current phase
-Status: Phase 4 complete
-Last activity: 2026-02-05 — Completed Phase 4 (GRPO 强化学习)
+Plan: 2 of 3 in current phase
+Status: In progress
+Last activity: 2026-02-05 — Completed 05-02-PLAN.md
 
-Progress: [█████████░] 93%
+Progress: [█████████░] 95%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
-- Average duration: 6.3 min
-- Total execution time: 1.3 hours
+- Total plans completed: 14
+- Average duration: 6.0 min
+- Total execution time: 1.4 hours
 
 **By Phase:**
 
@@ -31,10 +31,11 @@ Progress: [█████████░] 93%
 | 2 | 3 | 20 min | 6.7 min |
 | 3 | 3 | 18 min | 6 min |
 | 4 | 3 | 19 min | 6.3 min |
+| 5 | 2 | 10 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-03 (18 min), 04-01 (6 min), 04-02 (7 min), 04-03 (6 min)
-- Trend: Phase 4 完成,GRPO 奖励函数和训练流程全部就绪
+- Last 5 plans: 04-02 (7 min), 04-03 (6 min), 05-01 (5 min), 05-02 (5 min)
+- Trend: Phase 5 进展顺利,Shell 函数库就绪
 
 *Updated after each plan completion*
 
@@ -90,6 +91,12 @@ Recent decisions affecting current work:
 - 支持 --disable-simulation 参数 (04-03) - 仿真需要 SUMO 环境,调试时可以只用格式奖励
 - GRPO 使用 4bit 量化 (04-03) - GRPO 显存占用高,4bit 节省内存,可在 16GB GPU 上训练
 - 复用 SFT 的 chat_template (04-03) - 保持 SFT 和 GRPO 的输入格式一致,训练更稳定
+- 使用 JSON 而非 YAML (05-01) - 单一 config.json 文件简化配置管理
+- jsonschema 作为可选依赖 (05-01) - fallback 机制确保在缺少 jsonschema 时也能工作
+- 点号路径访问嵌套配置 (05-01) - get_config_value 支持 "training.sft.max_steps" 格式
+- 检查点双重验证 (05-02) - 状态文件 + 输出文件存在性双重检查,防止不一致
+- 日志按阶段分离 (05-02) - logs/${DATE}-${stage_name}.log 模式,便于调试
+- PIPESTATUS[0] 保留退出码 (05-02) - tee 管道中获取真实命令退出码
 
 ### Pending Todos
 
@@ -106,6 +113,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed Phase 4 (GRPO 强化学习)
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None
-Next: Phase 5 - Docker 部署环境 (一键运行完整训练流程)
+Next: 05-03 - 重构 docker/publish.sh 使用函数库
