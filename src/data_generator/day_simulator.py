@@ -59,6 +59,11 @@ def create_temp_sumocfg(
     tree = ET.parse(template_path)
     root = tree.getroot()
 
+    # 移除 GUI 设置文件引用(无头模式不需要)
+    gui_settings_elem = root.find('gui-settings-file')
+    if gui_settings_elem is not None:
+        root.remove(gui_settings_elem)
+
     # 修改 route-files
     input_elem = root.find('input')
     if input_elem is None:
