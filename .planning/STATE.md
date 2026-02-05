@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 3 of 5 (SFT 预训练)
-Plan: 0 of ? in current phase
-Status: Ready for planning
-Last activity: 2026-02-05 — Completed Phase 2 (训练数据生成)
+Plan: 2 of ? in current phase
+Status: In progress
+Last activity: 2026-02-05 — Completed 03-02-PLAN.md (模型加载与 Chat Template 配置)
 
-Progress: [██████░░░░] 60%
+Progress: [██████░░░░] 65%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 6 min
-- Total execution time: 0.57 hours
+- Total plans completed: 8
+- Average duration: 5.5 min
+- Total execution time: 0.73 hours
 
 **By Phase:**
 
@@ -29,10 +29,11 @@ Progress: [██████░░░░] 60%
 |-------|-------|-------|----------|
 | 1 | 3 | 15 min | 5 min |
 | 2 | 3 | 20 min | 6.7 min |
+| 3 | 2 | 9 min | 4.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-03 (5 min), 02-01 (5 min), 02-02 (6 min), 02-03 (9 min)
-- Trend: Slight increase (complex integration tasks)
+- Last 5 plans: 02-01 (5 min), 02-02 (6 min), 02-03 (9 min), 03-01 (5 min), 03-02 (4 min)
+- Trend: Phase 3 开局高效 (infrastructure setup)
 
 *Updated after each plan completion*
 
@@ -70,6 +71,10 @@ Recent decisions affecting current work:
 - 端口分配策略: 10000 + day_index (02-03) - 避免并行 SUMO 实例的 TraCI 端口冲突
 - 增量模式默认开启 (02-03) - 跳过已存在输出文件,支持中断后继续运行
 - 每天数据保存为独立 JSONL 文件 (02-03) - 便于按日期管理,支持流式读取
+- THINKING_START/END 使用 <think></think> (03-02) - 与 DeepSeek R1 格式一致,清晰标记思考过程
+- LoRA rank=32, alpha=64 (03-02) - 参考 Qwen3 GRPO notebook,中等配置平衡性能和训练速度
+- SFT 使用 16bit 而非 4bit (03-02) - 16bit 精度更高,SFT 阶段需要准确学习格式
+- 集成 chat_template 到 load_model_for_sft (03-02) - 确保模型加载后 tokenizer 已配置好,避免遗忘
 
 ### Pending Todos
 
@@ -86,6 +91,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed 02-03-PLAN.md (并行仿真与 CLI) - Phase 2 complete
+Stopped at: Completed 03-02-PLAN.md (模型加载与 Chat Template 配置)
 Resume file: None
-Next: Phase 03 - 强化学习训练
+Next: Phase 03-03 - SFT 示例数据构建
