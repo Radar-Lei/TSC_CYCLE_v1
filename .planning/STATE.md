@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 5 of 5 (Docker 部署环境)
-Plan: 3 of 3 in current phase
-Status: Phase complete
-Last activity: 2026-02-05 — Completed 05-03-PLAN.md (一键训练脚本重构)
+Plan: 5 of 5 in current phase
+Status: All phases complete
+Last activity: 2026-02-05 — Completed 05-05-PLAN.md (Gap Closure: --config 参数 + Docker 入口脚本)
 
 Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
-- Average duration: 5.9 min
-- Total execution time: 1.5 hours
+- Total plans completed: 17
+- Average duration: 6.0 min
+- Total execution time: 1.7 hours
 
 **By Phase:**
 
@@ -31,11 +31,11 @@ Progress: [██████████] 100%
 | 2 | 3 | 20 min | 6.7 min |
 | 3 | 3 | 18 min | 6 min |
 | 4 | 3 | 19 min | 6.3 min |
-| 5 | 3 | 13 min | 4.3 min |
+| 5 | 5 | 33 min | 6.6 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-03 (6 min), 05-01 (5 min), 05-02 (5 min), 05-03 (3 min)
-- Trend: Phase 5 完成,Docker 部署环境就绪,可一键运行完整训练流程
+- Last 5 plans: 05-01 (5 min), 05-02 (5 min), 05-03 (3 min), 05-04 (8 min), 05-05 (12 min)
+- Trend: 全部 5 个 Phase 完成,Gap Closure 完成,Docker 部署环境完全就绪,可一键运行完整训练流程
 
 *Updated after each plan completion*
 
@@ -100,6 +100,9 @@ Recent decisions affecting current work:
 - 使用 JSON 配置替代 YAML (05-03) - jq 读取 config.json,简化配置管理
 - 阶段函数返回值表示成功/失败 (05-03) - 主流程用 || exit 1 快速失败
 - entrypoint.sh 启动 Xvfb (05-03) - 提供虚拟 X server 给 SUMO 使用
+- 在第一个 apt-get 步骤添加 jq (05-04) - 避免额外的镜像层,减少镜像大小
+- COPY entrypoint.sh 在 USER 切换前 (05-04) - 确保 entrypoint.sh 具有正确权限
+- 预创建工作目录 (05-04) - 避免运行时权限问题
 
 ### Pending Todos
 
@@ -116,6 +119,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed 05-03-PLAN.md (Phase 5 完成)
+Stopped at: Completed 05-05-PLAN.md (Gap Closure 完成,全部 5 个 Phase 完成)
 Resume file: None
-Next: 全部 5 个 Phase 已完成,系统就绪,可运行完整训练流程
+Next: 执行 ./docker/run.sh 启动一键训练流程
