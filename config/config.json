@@ -1,0 +1,33 @@
+{
+  "training": {
+    "sft": {
+      "max_steps": 300,
+      "batch_size": 4,
+      "learning_rate": 2e-5,
+      "gradient_accumulation_steps": 4
+    },
+    "grpo": {
+      "max_steps": 100,
+      "num_generations": 4,
+      "learning_rate": 1e-6,
+      "gradient_accumulation_steps": 4
+    }
+  },
+  "simulation": {
+    "parallel_workers": 4,
+    "extend_seconds": 5,
+    "warmup_steps": 300,
+    "cycle_duration": 90
+  },
+  "rewards": {
+    "format_weight": 0.2,
+    "simulation_weight": 0.8
+  },
+  "paths": {
+    "data_dir": "data/training",
+    "sft_output": "outputs/sft",
+    "grpo_output": "outputs/grpo",
+    "net_file": "sumo_simulation/environments/chengdu/chengdu.net.xml",
+    "sumocfg": "sumo_simulation/environments/chengdu/chengdu.sumocfg"
+  }
+}

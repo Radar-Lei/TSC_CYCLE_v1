@@ -100,10 +100,13 @@ Plans:
   3. 数据和模型目录正确挂载到容器
   4. 执行 docker/publish.sh 能够一键运行完整流程(依赖检查 -> 数据生成 -> SFT -> GRPO)
   5. 训练完成后输出摘要(数据量、训练时间、模型路径)
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 05-01: TBD during plan-phase
+- [ ] 05-01-PLAN.md - JSON 配置系统 (config.json + schema + 验证脚本)
+- [ ] 05-02-PLAN.md - Shell 函数库 (检查点 + 日志 + 摘要)
+- [ ] 05-03-PLAN.md - 一键运行脚本 (重构 publish.sh)
+- [ ] 05-04-PLAN.md - Dockerfile 更新 (jq + entrypoint)
 
 ## Progress
 
@@ -116,4 +119,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. 训练数据生成 | 3/3 | Complete | 2026-02-05 |
 | 3. SFT 预训练 | 3/3 | Complete | 2026-02-05 |
 | 4. GRPO 强化学习 | 3/3 | Complete | 2026-02-05 |
-| 5. Docker 部署环境 | 0/? | Not started | - |
+| 5. Docker 部署环境 | 0/4 | Not started | - |
