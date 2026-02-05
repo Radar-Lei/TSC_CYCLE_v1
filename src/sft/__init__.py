@@ -22,6 +22,12 @@ from .format_validator import (
     extract_think_content,
     extract_json_array,
 )
+from .trainer import (
+    TrainingArgs,
+    SFTTrainerWrapper,
+    prepare_dataset,
+    validate_model_output,
+)
 
 __all__ = [
     "THINKING_START",
@@ -36,4 +42,8 @@ __all__ = [
     "validate_json_structure",
     "extract_think_content",
     "extract_json_array",
+    "TrainingArgs",
+    "SFTTrainerWrapper",
+    "prepare_dataset",
+    "validate_model_output",
 ]
