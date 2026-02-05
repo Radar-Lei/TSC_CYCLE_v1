@@ -4,3 +4,9 @@ grpo_reference_only/
 sample_prompt_result.md
 *.ipynb
 *.pyc
+output/
+*.log/
+unsloth_compiled_cache/
+model/
+outputs/
+.checkpoints/

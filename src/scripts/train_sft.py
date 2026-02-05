@@ -14,13 +14,46 @@ import json
 from pathlib import Path
 
 
+def load_config(config_path):
+    """从 JSON 文件加载配置"""
+    if config_path and Path(config_path).exists():
+        with open(config_path) as f:
+            return json.load(f)
+    return {}
+
+
+def get_nested(config, *keys, default=None):
+    """获取嵌套配置值"""
+    value = config
+    for key in keys:
+        if isinstance(value, dict):
+            value = value.get(key)
+        else:
+            return default
+    return value if value is not None else default
+
+
 def main():
     parser = argparse.ArgumentParser(description="Train SFT model")
-    parser.add_argument("--data-dir", default="data/sft", help="训练数据目录")
-    parser.add_argument("--output-dir", default="outputs/sft", help="输出目录")
-    parser.add_argument("--max-steps", type=int, default=300, help="训练步数")
-    parser.add_argument("--validate-every", type=int, default=50, help="每 N 步验证格式")
+    parser.add_argument("--config", help="JSON 配置文件路径")
+    parser.add_argument("--data-dir", default=None, help="训练数据目录")
+    parser.add_argument("--output-dir", default=None, help="输出目录")
+    parser.add_argument("--max-steps", type=int, default=None, help="训练步数")
+    parser.add_argument("--validate-every", type=int, default=None, help="每 N 步验证格式")
     args = parser.parse_args()
+
+    # 加载 JSON 配置
+    config = load_config(args.config)
+
+    # 应用配置优先级: 命令行 > config.json > 代码默认值
+    if args.data_dir is None:
+        args.data_dir = get_nested(config, "paths", "data_dir", default="data/sft")
+    if args.output_dir is None:
+        args.output_dir = get_nested(config, "paths", "sft_output", default="outputs/sft")
+    if args.max_steps is None:
+        args.max_steps = get_nested(config, "training", "sft", "max_steps", default=300)
+    if args.validate_every is None:
+        args.validate_every = get_nested(config, "training", "sft", "validate_every", default=50)
 
     print("=" * 50)
     print("SFT Training - Format Learning")

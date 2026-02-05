@@ -5,3 +5,846 @@
 2026-02-04 22:13:02,102 - phase_processor - INFO - 开始解析网络文件: sumo_simulation/environments/chengdu/chengdu.net.xml
 2026-02-04 22:13:02,127 - phase_processor - INFO - 解析到 46 个信号灯的连接映射
 2026-02-04 22:13:02,128 - phase_processor - INFO - 解析完成,共 46 个信号灯
+2026-02-04 22:22:43,183 - phase_processor - INFO - 开始解析网络文件: sumo_simulation/environments/chengdu/chengdu.net.xml
+2026-02-04 22:22:43,208 - phase_processor - INFO - 解析到 46 个信号灯的连接映射
+2026-02-04 22:22:43,209 - phase_processor - INFO - 解析完成,共 46 个信号灯
+2026-02-04 22:22:43,210 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=rrrryyyy
+2026-02-04 22:22:43,210 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyyrrrr
+2026-02-04 22:22:43,210 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yrrryyyyyyyyyyy
+2026-02-04 22:22:43,211 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyyrrrrryrrrrr
+2026-02-04 22:22:43,211 - phase_processor - INFO - 冲突解决: 保留 phase_0 (11 绿灯车道), 移除 phase_2 (3 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:22:43,211 - phase_processor - WARNING - 路口 1388442962 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:22:43,211 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyrrrr
+2026-02-04 22:22:43,211 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrrryyyy
+2026-02-04 22:22:43,211 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=rrryyyyy
+2026-02-04 22:22:43,211 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyrrorr
+2026-02-04 22:22:43,211 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=rrrYYYYY
+2026-02-04 22:22:43,211 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=YYYrrrrr
+2026-02-04 22:24:08,136 - phase_processor - INFO - 开始解析网络文件: sumo_simulation/environments/chengdu/chengdu.net.xml
+2026-02-04 22:24:08,160 - phase_processor - INFO - 解析到 46 个信号灯的连接映射
+2026-02-04 22:24:08,161 - phase_processor - INFO - 解析完成,共 46 个信号灯
+2026-02-04 22:31:11,702 - phase_processor - INFO - ============================================================
+2026-02-04 22:31:11,702 - phase_processor - INFO - 开始处理 SUMO 网络文件: sumo_simulation/environments/chengdu/chengdu.net.xml
+2026-02-04 22:31:11,702 - phase_processor - INFO - ============================================================
+2026-02-04 22:31:11,702 - phase_processor - INFO - 开始解析网络文件: sumo_simulation/environments/chengdu/chengdu.net.xml
+2026-02-04 22:31:11,726 - phase_processor - INFO - 解析到 46 个信号灯的连接映射
+2026-02-04 22:31:11,727 - phase_processor - INFO - 解析完成,共 46 个信号灯
+2026-02-04 22:31:11,728 - phase_processor - INFO - 解析完成,共 46 个信号灯
+2026-02-04 22:31:11,728 - phase_processor - INFO - 
+处理信号灯: 1159176756 (原始相位数: 4)
+2026-02-04 22:31:11,728 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=rrrryyyy
+2026-02-04 22:31:11,728 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyyrrrr
+2026-02-04 22:31:11,728 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,728 - phase_processor - INFO -   ✓ 信号灯 1159176756 处理完成: 2 个互斥相位
+2026-02-04 22:31:11,728 - phase_processor - INFO - 
+处理信号灯: 1388442962 (原始相位数: 4)
+2026-02-04 22:31:11,728 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yrrryyyyyyyyyyy
+2026-02-04 22:31:11,728 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyyrrrrryrrrrr
+2026-02-04 22:31:11,728 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,728 - phase_processor - INFO - 冲突解决: 保留 phase_0 (11 绿灯车道), 移除 phase_2 (3 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,728 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,728 - phase_processor - WARNING - 路口 1388442962 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,728 - phase_processor - WARNING -   跳过信号灯 1388442962: 相位不足 (1 < 2)
+2026-02-04 22:31:11,728 - phase_processor - INFO - 
+处理信号灯: 1492574988 (原始相位数: 4)
+2026-02-04 22:31:11,728 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyrrrr
+2026-02-04 22:31:11,728 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrrryyyy
+2026-02-04 22:31:11,728 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,728 - phase_processor - INFO -   ✓ 信号灯 1492574988 处理完成: 2 个互斥相位
+2026-02-04 22:31:11,728 - phase_processor - INFO - 
+处理信号灯: 1492574990 (原始相位数: 4)
+2026-02-04 22:31:11,728 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=rrryyyyy
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyrrorr
+2026-02-04 22:31:11,729 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,729 - phase_processor - INFO -   ✓ 信号灯 1492574990 处理完成: 2 个互斥相位
+2026-02-04 22:31:11,729 - phase_processor - INFO - 
+处理信号灯: 1492645720 (原始相位数: 4)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=rrrYYYYY
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=YYYrrrrr
+2026-02-04 22:31:11,729 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,729 - phase_processor - INFO -   ✓ 信号灯 1492645720 处理完成: 2 个互斥相位
+2026-02-04 22:31:11,729 - phase_processor - INFO - 
+处理信号灯: 1916386518 (原始相位数: 4)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrr
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyrryy
+2026-02-04 22:31:11,729 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,729 - phase_processor - INFO - 冲突解决: 保留 phase_2 (4 绿灯车道), 移除 phase_0 (3 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,729 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,729 - phase_processor - WARNING - 路口 1916386518 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,729 - phase_processor - WARNING -   跳过信号灯 1916386518: 相位不足 (1 < 2)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 
+处理信号灯: 1916386562 (原始相位数: 4)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyrrr
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrryyyyy
+2026-02-04 22:31:11,729 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,729 - phase_processor - INFO - 冲突解决: 保留 phase_0 (3 绿灯车道), 移除 phase_2 (3 绿灯车道), 原因=random_kept_existing
+2026-02-04 22:31:11,729 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,729 - phase_processor - WARNING - 路口 1916386562 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,729 - phase_processor - WARNING -   跳过信号灯 1916386562: 相位不足 (1 < 2)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 
+处理信号灯: 276556799 (原始相位数: 4)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyryyyyyr
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrrryyrrrry
+2026-02-04 22:31:11,729 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,729 - phase_processor - INFO - 冲突解决: 保留 phase_0 (8 绿灯车道), 移除 phase_2 (4 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,729 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,729 - phase_processor - WARNING - 路口 276556799 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,729 - phase_processor - WARNING -   跳过信号灯 276556799: 相位不足 (1 < 2)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 
+处理信号灯: 2852225599 (原始相位数: 4)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yryyyyyy
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyrrrrr
+2026-02-04 22:31:11,729 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,729 - phase_processor - INFO - 冲突解决: 保留 phase_0 (5 绿灯车道), 移除 phase_2 (2 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,729 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,729 - phase_processor - WARNING - 路口 2852225599 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,729 - phase_processor - WARNING -   跳过信号灯 2852225599: 相位不足 (1 < 2)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 
+处理信号灯: 314622964 (原始相位数: 4)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyyrrrrrrrryyyyy
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrrrryyyyyyyyrrrrr
+2026-02-04 22:31:11,729 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,729 - phase_processor - INFO - 冲突解决: 保留 phase_0 (10 绿灯车道), 移除 phase_2 (5 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,729 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,729 - phase_processor - WARNING - 路口 314622964 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,729 - phase_processor - WARNING -   跳过信号灯 314622964: 相位不足 (1 < 2)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 
+处理信号灯: 314635491 (原始相位数: 4)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyrrrrryyy
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrryyyyyrrr
+2026-02-04 22:31:11,729 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,729 - phase_processor - INFO -   ✓ 信号灯 314635491 处理完成: 2 个互斥相位
+2026-02-04 22:31:11,729 - phase_processor - INFO - 
+处理信号灯: 314655170 (原始相位数: 6)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=rrrrryyyyyy
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrrrrrryyy
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yyyyyrrrrrr
+2026-02-04 22:31:11,729 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:31:11,729 - phase_processor - INFO -   ✓ 信号灯 314655170 处理完成: 3 个互斥相位
+2026-02-04 22:31:11,729 - phase_processor - INFO - 
+处理信号灯: 3523298662 (原始相位数: 4)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrr
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrryy
+2026-02-04 22:31:11,729 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,729 - phase_processor - INFO -   ✓ 信号灯 3523298662 处理完成: 2 个互斥相位
+2026-02-04 22:31:11,729 - phase_processor - INFO - 
+处理信号灯: 3562004404 (原始相位数: 4)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yrryyyyrryyy
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyyrryyyyrr
+2026-02-04 22:31:11,729 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,729 - phase_processor - INFO - 冲突解决: 保留 phase_2 (4 绿灯车道), 移除 phase_0 (4 绿灯车道), 原因=random_kept_new
+2026-02-04 22:31:11,729 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,729 - phase_processor - WARNING - 路口 3562004404 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,729 - phase_processor - WARNING -   跳过信号灯 3562004404: 相位不足 (1 < 2)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 
+处理信号灯: 432429372 (原始相位数: 4)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyrrrrryy
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rryyyyyrr
+2026-02-04 22:31:11,729 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,729 - phase_processor - INFO -   ✓ 信号灯 432429372 处理完成: 2 个互斥相位
+2026-02-04 22:31:11,729 - phase_processor - INFO - 
+处理信号灯: 432452908 (原始相位数: 4)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrr
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrryy
+2026-02-04 22:31:11,729 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,729 - phase_processor - INFO - 冲突解决: 保留 phase_0 (4 绿灯车道), 移除 phase_2 (2 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,729 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,729 - phase_processor - WARNING - 路口 432452908 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,729 - phase_processor - WARNING -   跳过信号灯 432452908: 相位不足 (1 < 2)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 
+处理信号灯: 432452909 (原始相位数: 6)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrrrrrrrr
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrrrryyyyrr
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=rrrryyrrrryy
+2026-02-04 22:31:11,729 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:31:11,729 - phase_processor - INFO -   ✓ 信号灯 432452909 处理完成: 3 个互斥相位
+2026-02-04 22:31:11,729 - phase_processor - INFO - 
+处理信号灯: 432452987 (原始相位数: 6)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyrrrryyyyrrrr
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rryrrrrrrryrrr
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=rrryyyrrrrryyy
+2026-02-04 22:31:11,729 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:31:11,729 - phase_processor - INFO - 冲突解决: 保留 phase_0 (3 绿灯车道), 移除 phase_2 (2 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,729 - phase_processor - INFO -   冲突解决: 3 -> 2 个相位
+2026-02-04 22:31:11,729 - phase_processor - INFO -   ✓ 信号灯 432452987 处理完成: 2 个互斥相位
+2026-02-04 22:31:11,729 - phase_processor - INFO - 
+处理信号灯: 432452989 (原始相位数: 4)
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrryyyyyy
+2026-02-04 22:31:11,729 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrryyyyrrrr
+2026-02-04 22:31:11,729 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,729 - phase_processor - INFO - 冲突解决: 保留 phase_0 (8 绿灯车道), 移除 phase_2 (3 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,730 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,730 - phase_processor - WARNING - 路口 432452989 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,730 - phase_processor - WARNING -   跳过信号灯 432452989: 相位不足 (1 < 2)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 
+处理信号灯: 4550018600 (原始相位数: 4)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyyyyyyyr
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrrrryyyyyy
+2026-02-04 22:31:11,730 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,730 - phase_processor - INFO - 冲突解决: 保留 phase_0 (8 绿灯车道), 移除 phase_2 (5 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,730 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,730 - phase_processor - WARNING - 路口 4550018600 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,730 - phase_processor - WARNING -   跳过信号灯 4550018600: 相位不足 (1 < 2)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 
+处理信号灯: 4701464324 (原始相位数: 4)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrrrr
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrryyyy
+2026-02-04 22:31:11,730 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,730 - phase_processor - INFO -   ✓ 信号灯 4701464324 处理完成: 2 个互斥相位
+2026-02-04 22:31:11,730 - phase_processor - INFO - 
+处理信号灯: 4779165760 (原始相位数: 4)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyr
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrry
+2026-02-04 22:31:11,730 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,730 - phase_processor - INFO -   ✓ 信号灯 4779165760 处理完成: 2 个互斥相位
+2026-02-04 22:31:11,730 - phase_processor - INFO - 
+处理信号灯: 4794975945 (原始相位数: 6)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=rrrrryyyyyyyyyyr
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyrryrrrrryyyyy
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yyyyyyrrrrrrrrrr
+2026-02-04 22:31:11,730 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:31:11,730 - phase_processor - INFO - 冲突解决: 保留 phase_0 (9 绿灯车道), 移除 phase_2 (7 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,730 - phase_processor - INFO - 冲突解决: 保留 phase_0 (9 绿灯车道), 移除 phase_4 (4 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,730 - phase_processor - INFO -   冲突解决: 3 -> 1 个相位
+2026-02-04 22:31:11,730 - phase_processor - WARNING - 路口 4794975945 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,730 - phase_processor - WARNING -   跳过信号灯 4794975945: 相位不足 (1 < 2)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 
+处理信号灯: 5488650286 (原始相位数: 4)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyyrrrr
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrrryyyyy
+2026-02-04 22:31:11,730 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,730 - phase_processor - INFO - 冲突解决: 保留 phase_0 (4 绿灯车道), 移除 phase_2 (3 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,730 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,730 - phase_processor - WARNING - 路口 5488650286 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,730 - phase_processor - WARNING -   跳过信号灯 5488650286: 相位不足 (1 < 2)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 
+处理信号灯: 671587313 (原始相位数: 4)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyrrryyyyyrrr
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrryyyyyrrryyyy
+2026-02-04 22:31:11,730 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,730 - phase_processor - INFO - 冲突解决: 保留 phase_0 (6 绿灯车道), 移除 phase_2 (6 绿灯车道), 原因=random_kept_existing
+2026-02-04 22:31:11,730 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,730 - phase_processor - WARNING - 路口 671587313 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,730 - phase_processor - WARNING -   跳过信号灯 671587313: 相位不足 (1 < 2)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 
+处理信号灯: 8013476764 (原始相位数: 4)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrr
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrryy
+2026-02-04 22:31:11,730 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,730 - phase_processor - INFO -   ✓ 信号灯 8013476764 处理完成: 2 个互斥相位
+2026-02-04 22:31:11,730 - phase_processor - INFO - 
+处理信号灯: J29 (原始相位数: 4)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrr
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrryy
+2026-02-04 22:31:11,730 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,730 - phase_processor - INFO -   ✓ 信号灯 J29 处理完成: 2 个互斥相位
+2026-02-04 22:31:11,730 - phase_processor - INFO - 
+处理信号灯: J52 (原始相位数: 4)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyrrr
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=ryyyy
+2026-02-04 22:31:11,730 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,730 - phase_processor - INFO - 冲突解决: 保留 phase_2 (3 绿灯车道), 移除 phase_0 (2 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,730 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,730 - phase_processor - WARNING - 路口 J52 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,730 - phase_processor - WARNING -   跳过信号灯 J52: 相位不足 (1 < 2)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 
+处理信号灯: J54 (原始相位数: 4)
+2026-02-04 22:31:11,730 - phase_processor - INFO -   ✓ 信号灯 J54 处理完成: 4 个互斥相位
+2026-02-04 22:31:11,730 - phase_processor - INFO - 
+处理信号灯: cluster_1159517082_4794944089 (原始相位数: 4)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyyrrrr
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrrryyyyy
+2026-02-04 22:31:11,730 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,730 - phase_processor - INFO - 冲突解决: 保留 phase_0 (5 绿灯车道), 移除 phase_2 (2 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,730 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,730 - phase_processor - WARNING - 路口 cluster_1159517082_4794944089 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,730 - phase_processor - WARNING -   跳过信号灯 cluster_1159517082_4794944089: 相位不足 (1 < 2)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 
+处理信号灯: cluster_1159517085_5436607864 (原始相位数: 4)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yrrryyyyyrrryyyy
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyyrrrryyyyrrrr
+2026-02-04 22:31:11,730 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,730 - phase_processor - INFO - 冲突解决: 保留 phase_0 (10 绿灯车道), 移除 phase_2 (7 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,730 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,730 - phase_processor - WARNING - 路口 cluster_1159517085_5436607864 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,730 - phase_processor - WARNING -   跳过信号灯 cluster_1159517085_5436607864: 相位不足 (1 < 2)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 
+处理信号灯: cluster_1916386555_432429395 (原始相位数: 6)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yrrryyyyryrrryyr
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrryrrryyrrrrry
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yyyyyrrrryyyyrrr
+2026-02-04 22:31:11,730 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:31:11,730 - phase_processor - INFO - 冲突解决: 保留 phase_0 (6 绿灯车道), 移除 phase_2 (5 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,730 - phase_processor - INFO - 冲突解决: 保留 phase_0 (6 绿灯车道), 移除 phase_4 (5 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,730 - phase_processor - INFO -   冲突解决: 3 -> 1 个相位
+2026-02-04 22:31:11,730 - phase_processor - WARNING - 路口 cluster_1916386555_432429395 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,730 - phase_processor - WARNING -   跳过信号灯 cluster_1916386555_432429395: 相位不足 (1 < 2)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 
+处理信号灯: cluster_3028924422_314614336 (原始相位数: 4)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyrrrryyyyyyrrr
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrrryyyyyrrrryyyy
+2026-02-04 22:31:11,730 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,730 - phase_processor - INFO - 冲突解决: 保留 phase_2 (9 绿灯车道), 移除 phase_0 (9 绿灯车道), 原因=random_kept_new
+2026-02-04 22:31:11,730 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,730 - phase_processor - WARNING - 路口 cluster_3028924422_314614336 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,730 - phase_processor - WARNING -   跳过信号灯 cluster_3028924422_314614336: 相位不足 (1 < 2)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 
+处理信号灯: cluster_432429373_5213238455 (原始相位数: 6)
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrrrryyyyrr
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrryyyrrrrryyr
+2026-02-04 22:31:11,730 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=rrryrryyrrryyy
+2026-02-04 22:31:11,731 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_0 (8 绿灯车道), 移除 phase_2 (4 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_0 (8 绿灯车道), 移除 phase_4 (5 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,731 - phase_processor - INFO -   冲突解决: 3 -> 1 个相位
+2026-02-04 22:31:11,731 - phase_processor - WARNING - 路口 cluster_432429373_5213238455 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,731 - phase_processor - WARNING -   跳过信号灯 cluster_432429373_5213238455: 相位不足 (1 < 2)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 
+处理信号灯: cluster_4548141054_4548141062_4548142597_4548142605 (原始相位数: 8)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyyrrryrrrrrrrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrrrrrrryyyyyyrrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yrrrryrrrrrrrryyyyy
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=7, state=yrrrryyyyyrrrryrrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO -   过滤了 4 个无效相位
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_0 (6 绿灯车道), 移除 phase_2 (6 绿灯车道), 原因=random_kept_existing
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_4 (6 绿灯车道), 移除 phase_0 (6 绿灯车道), 原因=random_kept_new
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_4 (6 绿灯车道), 移除 phase_6 (5 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,731 - phase_processor - INFO -   冲突解决: 4 -> 1 个相位
+2026-02-04 22:31:11,731 - phase_processor - WARNING - 路口 cluster_4548141054_4548141062_4548142597_4548142605 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,731 - phase_processor - WARNING -   跳过信号灯 cluster_4548141054_4548141062_4548142597_4548142605: 相位不足 (1 < 2)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 
+处理信号灯: cluster_4548211590_8013476765 (原始相位数: 6)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyrrrrrrrryyyyr
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrrrrrrrrrrryyyyy
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=rrrrryyyyyyyyrrrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_0 (7 绿灯车道), 移除 phase_2 (4 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,731 - phase_processor - INFO -   冲突解决: 3 -> 2 个相位
+2026-02-04 22:31:11,731 - phase_processor - INFO -   ✓ 信号灯 cluster_4548211590_8013476765 处理完成: 2 个互斥相位
+2026-02-04 22:31:11,731 - phase_processor - INFO - 
+处理信号灯: cluster_4548211609_5789411073_cluster_4548211261_5789411072 (原始相位数: 6)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=rrrrryyyyyrryyyy
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyyrrrrrryrrrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yrrryrrrrrryyrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_0 (9 绿灯车道), 移除 phase_4 (4 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,731 - phase_processor - INFO -   冲突解决: 3 -> 2 个相位
+2026-02-04 22:31:11,731 - phase_processor - INFO -   ✓ 信号灯 cluster_4548211609_5789411073_cluster_4548211261_5789411072 处理完成: 2 个互斥相位
+2026-02-04 22:31:11,731 - phase_processor - INFO - 
+处理信号灯: cluster_4550018629_4550018932 (原始相位数: 6)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyyrryyyyryryr
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrrryrryyyyyyryr
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yrrrryyyyrrrryyyy
+2026-02-04 22:31:11,731 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_0 (10 绿灯车道), 移除 phase_2 (8 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_0 (10 绿灯车道), 移除 phase_4 (6 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,731 - phase_processor - INFO -   冲突解决: 3 -> 1 个相位
+2026-02-04 22:31:11,731 - phase_processor - WARNING - 路口 cluster_4550018629_4550018932 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,731 - phase_processor - WARNING -   跳过信号灯 cluster_4550018629_4550018932: 相位不足 (1 < 2)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 
+处理信号灯: cluster_4550018780_4550018980_4550019087_4550019099 (原始相位数: 8)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yrrrrryyyyryrrrrryyyyyy
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrrrryyyyyyrrrrryrrrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yyyyyyyrrrryrrrrryrrrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=7, state=yrrrrryrrrryyyyyyyrrrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO -   过滤了 4 个无效相位
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_0 (10 绿灯车道), 移除 phase_2 (7 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_0 (10 绿灯车道), 移除 phase_4 (7 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_0 (10 绿灯车道), 移除 phase_6 (7 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,731 - phase_processor - INFO -   冲突解决: 4 -> 1 个相位
+2026-02-04 22:31:11,731 - phase_processor - WARNING - 路口 cluster_4550018780_4550018980_4550019087_4550019099 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,731 - phase_processor - WARNING -   跳过信号灯 cluster_4550018780_4550018980_4550019087_4550019099: 相位不足 (1 < 2)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 
+处理信号灯: cluster_4580811894_J22_J30_J5 (原始相位数: 6)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyyyrrrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrryyyyrrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yrrrrrrryyyy
+2026-02-04 22:31:11,731 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_0 (7 绿灯车道), 移除 phase_2 (5 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_0 (7 绿灯车道), 移除 phase_4 (4 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,731 - phase_processor - INFO -   冲突解决: 3 -> 1 个相位
+2026-02-04 22:31:11,731 - phase_processor - WARNING - 路口 cluster_4580811894_J22_J30_J5 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,731 - phase_processor - WARNING -   跳过信号灯 cluster_4580811894_J22_J30_J5: 相位不足 (1 < 2)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 
+处理信号灯: cluster_5213238458_J22 (原始相位数: 4)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyryyyy
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyyyrrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_0 (7 绿灯车道), 移除 phase_2 (4 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,731 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,731 - phase_processor - WARNING - 路口 cluster_5213238458_J22 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,731 - phase_processor - WARNING -   跳过信号灯 cluster_5213238458_J22: 相位不足 (1 < 2)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 
+处理信号灯: cluster_5436607838_J47_J69_J76_J78 (原始相位数: 6)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyryrrrrryyyyyrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrrryyrrrrryrrrryyy
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yrrrrryyyyyyyrrrrrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_0 (9 绿灯车道), 移除 phase_2 (7 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_0 (9 绿灯车道), 移除 phase_4 (7 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,731 - phase_processor - INFO -   冲突解决: 3 -> 1 个相位
+2026-02-04 22:31:11,731 - phase_processor - WARNING - 路口 cluster_5436607838_J47_J69_J76_J78 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,731 - phase_processor - WARNING -   跳过信号灯 cluster_5436607838_J47_J69_J76_J78: 相位不足 (1 < 2)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 
+处理信号灯: cluster_672362123_8640094718 (原始相位数: 4)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyrryyyyy
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrryyyyrrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_0 (9 绿灯车道), 移除 phase_2 (4 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,731 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,731 - phase_processor - WARNING - 路口 cluster_672362123_8640094718 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,731 - phase_processor - WARNING -   跳过信号灯 cluster_672362123_8640094718: 相位不足 (1 < 2)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 
+处理信号灯: cluster_J100_J94_J95_J99 (原始相位数: 8)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yrrrrryrrrryrrrrryyyyy
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrrrryyyyyyrrrrryrrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yyyyyyyrrrryrrrrryrrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=7, state=yrrrrryrrrryyyyyyyrrrr
+2026-02-04 22:31:11,731 - phase_processor - INFO -   过滤了 4 个无效相位
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_0 (6 绿灯车道), 移除 phase_2 (6 绿灯车道), 原因=random_kept_existing
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_4 (8 绿灯车道), 移除 phase_0 (6 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,731 - phase_processor - INFO - 冲突解决: 保留 phase_4 (8 绿灯车道), 移除 phase_6 (8 绿灯车道), 原因=random_kept_existing
+2026-02-04 22:31:11,731 - phase_processor - INFO -   冲突解决: 4 -> 1 个相位
+2026-02-04 22:31:11,731 - phase_processor - WARNING - 路口 cluster_J100_J94_J95_J99 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,731 - phase_processor - WARNING -   跳过信号灯 cluster_J100_J94_J95_J99: 相位不足 (1 < 2)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 
+处理信号灯: cluster_J18_J5 (原始相位数: 4)
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyrrrrryyy
+2026-02-04 22:31:11,731 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rryyyyyrrr
+2026-02-04 22:31:11,732 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,732 - phase_processor - INFO -   ✓ 信号灯 cluster_J18_J5 处理完成: 2 个互斥相位
+2026-02-04 22:31:11,732 - phase_processor - INFO - 
+处理信号灯: cluster_J18_cluster_1159519336_J5 (原始相位数: 4)
+2026-02-04 22:31:11,732 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yrrryyyyyyyyy
+2026-02-04 22:31:11,732 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyyrrrryrrrr
+2026-02-04 22:31:11,732 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:31:11,732 - phase_processor - INFO - 冲突解决: 保留 phase_0 (9 绿灯车道), 移除 phase_2 (3 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:31:11,732 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:31:11,732 - phase_processor - WARNING - 路口 cluster_J18_cluster_1159519336_J5 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:31:11,732 - phase_processor - WARNING -   跳过信号灯 cluster_J18_cluster_1159519336_J5: 相位不足 (1 < 2)
+2026-02-04 22:31:11,732 - phase_processor - INFO - 
+============================================================
+2026-02-04 22:31:11,732 - phase_processor - INFO - 处理完成摘要
+2026-02-04 22:31:11,732 - phase_processor - INFO - ============================================================
+2026-02-04 22:31:11,732 - phase_processor - INFO - 总信号灯数: 46
+2026-02-04 22:31:11,732 - phase_processor - INFO - 有效信号灯数: 18
+2026-02-04 22:31:11,732 - phase_processor - INFO - 跳过信号灯数: 28
+2026-02-04 22:31:11,732 - phase_processor - INFO - 总相位数: 40
+2026-02-04 22:31:11,732 - phase_processor - INFO - 过滤的无效相位数: 107
+2026-02-04 22:31:11,732 - phase_processor - INFO - 冲突解决次数: 43
+2026-02-04 22:31:11,732 - phase_processor - INFO - ============================================================
+2026-02-04 22:33:49,326 - phase_processor - INFO - 输入文件: sumo_simulation/environments/chengdu/chengdu.net.xml
+2026-02-04 22:33:49,326 - phase_processor - INFO - 输出文件: output/phase_config.json
+2026-02-04 22:33:49,326 - phase_processor - INFO - ============================================================
+2026-02-04 22:33:49,326 - phase_processor - INFO - 开始处理 SUMO 网络文件: sumo_simulation/environments/chengdu/chengdu.net.xml
+2026-02-04 22:33:49,326 - phase_processor - INFO - ============================================================
+2026-02-04 22:33:49,326 - phase_processor - INFO - 开始解析网络文件: sumo_simulation/environments/chengdu/chengdu.net.xml
+2026-02-04 22:33:49,351 - phase_processor - INFO - 解析到 46 个信号灯的连接映射
+2026-02-04 22:33:49,352 - phase_processor - INFO - 解析完成,共 46 个信号灯
+2026-02-04 22:33:49,353 - phase_processor - INFO - 解析完成,共 46 个信号灯
+2026-02-04 22:33:49,353 - phase_processor - INFO - 
+处理信号灯: 1159176756 (原始相位数: 4)
+2026-02-04 22:33:49,353 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=rrrryyyy
+2026-02-04 22:33:49,353 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyyrrrr
+2026-02-04 22:33:49,353 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,353 - phase_processor - INFO -   ✓ 信号灯 1159176756 处理完成: 2 个互斥相位
+2026-02-04 22:33:49,353 - phase_processor - INFO - 
+处理信号灯: 1388442962 (原始相位数: 4)
+2026-02-04 22:33:49,353 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yrrryyyyyyyyyyy
+2026-02-04 22:33:49,353 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyyrrrrryrrrrr
+2026-02-04 22:33:49,353 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,353 - phase_processor - INFO - 冲突解决: 保留 phase_0 (11 绿灯车道), 移除 phase_2 (3 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,353 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,353 - phase_processor - WARNING - 路口 1388442962 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,353 - phase_processor - WARNING -   跳过信号灯 1388442962: 相位不足 (1 < 2)
+2026-02-04 22:33:49,353 - phase_processor - INFO - 
+处理信号灯: 1492574988 (原始相位数: 4)
+2026-02-04 22:33:49,353 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyrrrr
+2026-02-04 22:33:49,353 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrrryyyy
+2026-02-04 22:33:49,353 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,353 - phase_processor - INFO -   ✓ 信号灯 1492574988 处理完成: 2 个互斥相位
+2026-02-04 22:33:49,353 - phase_processor - INFO - 
+处理信号灯: 1492574990 (原始相位数: 4)
+2026-02-04 22:33:49,353 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=rrryyyyy
+2026-02-04 22:33:49,353 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyrrorr
+2026-02-04 22:33:49,353 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,353 - phase_processor - INFO -   ✓ 信号灯 1492574990 处理完成: 2 个互斥相位
+2026-02-04 22:33:49,353 - phase_processor - INFO - 
+处理信号灯: 1492645720 (原始相位数: 4)
+2026-02-04 22:33:49,353 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=rrrYYYYY
+2026-02-04 22:33:49,353 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=YYYrrrrr
+2026-02-04 22:33:49,353 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,353 - phase_processor - INFO -   ✓ 信号灯 1492645720 处理完成: 2 个互斥相位
+2026-02-04 22:33:49,353 - phase_processor - INFO - 
+处理信号灯: 1916386518 (原始相位数: 4)
+2026-02-04 22:33:49,353 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrr
+2026-02-04 22:33:49,353 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyrryy
+2026-02-04 22:33:49,353 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,353 - phase_processor - INFO - 冲突解决: 保留 phase_2 (4 绿灯车道), 移除 phase_0 (3 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,353 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,353 - phase_processor - WARNING - 路口 1916386518 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,353 - phase_processor - WARNING -   跳过信号灯 1916386518: 相位不足 (1 < 2)
+2026-02-04 22:33:49,353 - phase_processor - INFO - 
+处理信号灯: 1916386562 (原始相位数: 4)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyrrr
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrryyyyy
+2026-02-04 22:33:49,354 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,354 - phase_processor - INFO - 冲突解决: 保留 phase_2 (3 绿灯车道), 移除 phase_0 (3 绿灯车道), 原因=random_kept_new
+2026-02-04 22:33:49,354 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,354 - phase_processor - WARNING - 路口 1916386562 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,354 - phase_processor - WARNING -   跳过信号灯 1916386562: 相位不足 (1 < 2)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 
+处理信号灯: 276556799 (原始相位数: 4)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyryyyyyr
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrrryyrrrry
+2026-02-04 22:33:49,354 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,354 - phase_processor - INFO - 冲突解决: 保留 phase_0 (8 绿灯车道), 移除 phase_2 (4 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,354 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,354 - phase_processor - WARNING - 路口 276556799 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,354 - phase_processor - WARNING -   跳过信号灯 276556799: 相位不足 (1 < 2)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 
+处理信号灯: 2852225599 (原始相位数: 4)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yryyyyyy
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyrrrrr
+2026-02-04 22:33:49,354 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,354 - phase_processor - INFO - 冲突解决: 保留 phase_0 (5 绿灯车道), 移除 phase_2 (2 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,354 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,354 - phase_processor - WARNING - 路口 2852225599 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,354 - phase_processor - WARNING -   跳过信号灯 2852225599: 相位不足 (1 < 2)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 
+处理信号灯: 314622964 (原始相位数: 4)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyyrrrrrrrryyyyy
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrrrryyyyyyyyrrrrr
+2026-02-04 22:33:49,354 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,354 - phase_processor - INFO - 冲突解决: 保留 phase_0 (10 绿灯车道), 移除 phase_2 (5 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,354 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,354 - phase_processor - WARNING - 路口 314622964 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,354 - phase_processor - WARNING -   跳过信号灯 314622964: 相位不足 (1 < 2)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 
+处理信号灯: 314635491 (原始相位数: 4)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyrrrrryyy
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrryyyyyrrr
+2026-02-04 22:33:49,354 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,354 - phase_processor - INFO -   ✓ 信号灯 314635491 处理完成: 2 个互斥相位
+2026-02-04 22:33:49,354 - phase_processor - INFO - 
+处理信号灯: 314655170 (原始相位数: 6)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=rrrrryyyyyy
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrrrrrryyy
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yyyyyrrrrrr
+2026-02-04 22:33:49,354 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:33:49,354 - phase_processor - INFO -   ✓ 信号灯 314655170 处理完成: 3 个互斥相位
+2026-02-04 22:33:49,354 - phase_processor - INFO - 
+处理信号灯: 3523298662 (原始相位数: 4)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrr
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrryy
+2026-02-04 22:33:49,354 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,354 - phase_processor - INFO -   ✓ 信号灯 3523298662 处理完成: 2 个互斥相位
+2026-02-04 22:33:49,354 - phase_processor - INFO - 
+处理信号灯: 3562004404 (原始相位数: 4)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yrryyyyrryyy
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyyrryyyyrr
+2026-02-04 22:33:49,354 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,354 - phase_processor - INFO - 冲突解决: 保留 phase_2 (4 绿灯车道), 移除 phase_0 (4 绿灯车道), 原因=random_kept_new
+2026-02-04 22:33:49,354 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,354 - phase_processor - WARNING - 路口 3562004404 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,354 - phase_processor - WARNING -   跳过信号灯 3562004404: 相位不足 (1 < 2)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 
+处理信号灯: 432429372 (原始相位数: 4)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyrrrrryy
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rryyyyyrr
+2026-02-04 22:33:49,354 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,354 - phase_processor - INFO -   ✓ 信号灯 432429372 处理完成: 2 个互斥相位
+2026-02-04 22:33:49,354 - phase_processor - INFO - 
+处理信号灯: 432452908 (原始相位数: 4)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrr
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrryy
+2026-02-04 22:33:49,354 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,354 - phase_processor - INFO - 冲突解决: 保留 phase_0 (4 绿灯车道), 移除 phase_2 (2 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,354 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,354 - phase_processor - WARNING - 路口 432452908 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,354 - phase_processor - WARNING -   跳过信号灯 432452908: 相位不足 (1 < 2)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 
+处理信号灯: 432452909 (原始相位数: 6)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrrrrrrrr
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrrrryyyyrr
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=rrrryyrrrryy
+2026-02-04 22:33:49,354 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:33:49,354 - phase_processor - INFO -   ✓ 信号灯 432452909 处理完成: 3 个互斥相位
+2026-02-04 22:33:49,354 - phase_processor - INFO - 
+处理信号灯: 432452987 (原始相位数: 6)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyrrrryyyyrrrr
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rryrrrrrrryrrr
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=rrryyyrrrrryyy
+2026-02-04 22:33:49,354 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:33:49,354 - phase_processor - INFO - 冲突解决: 保留 phase_0 (3 绿灯车道), 移除 phase_2 (2 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,354 - phase_processor - INFO -   冲突解决: 3 -> 2 个相位
+2026-02-04 22:33:49,354 - phase_processor - INFO -   ✓ 信号灯 432452987 处理完成: 2 个互斥相位
+2026-02-04 22:33:49,354 - phase_processor - INFO - 
+处理信号灯: 432452989 (原始相位数: 4)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrryyyyyy
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrryyyyrrrr
+2026-02-04 22:33:49,354 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,354 - phase_processor - INFO - 冲突解决: 保留 phase_0 (8 绿灯车道), 移除 phase_2 (3 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,354 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,354 - phase_processor - WARNING - 路口 432452989 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,354 - phase_processor - WARNING -   跳过信号灯 432452989: 相位不足 (1 < 2)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 
+处理信号灯: 4550018600 (原始相位数: 4)
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyyyyyyyr
+2026-02-04 22:33:49,354 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrrrryyyyyy
+2026-02-04 22:33:49,354 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,355 - phase_processor - INFO - 冲突解决: 保留 phase_0 (8 绿灯车道), 移除 phase_2 (5 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,355 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,355 - phase_processor - WARNING - 路口 4550018600 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,355 - phase_processor - WARNING -   跳过信号灯 4550018600: 相位不足 (1 < 2)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 
+处理信号灯: 4701464324 (原始相位数: 4)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrrrr
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrryyyy
+2026-02-04 22:33:49,355 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,355 - phase_processor - INFO -   ✓ 信号灯 4701464324 处理完成: 2 个互斥相位
+2026-02-04 22:33:49,355 - phase_processor - INFO - 
+处理信号灯: 4779165760 (原始相位数: 4)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyr
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrry
+2026-02-04 22:33:49,355 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,355 - phase_processor - INFO -   ✓ 信号灯 4779165760 处理完成: 2 个互斥相位
+2026-02-04 22:33:49,355 - phase_processor - INFO - 
+处理信号灯: 4794975945 (原始相位数: 6)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=rrrrryyyyyyyyyyr
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyrryrrrrryyyyy
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yyyyyyrrrrrrrrrr
+2026-02-04 22:33:49,355 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:33:49,355 - phase_processor - INFO - 冲突解决: 保留 phase_0 (9 绿灯车道), 移除 phase_2 (7 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,355 - phase_processor - INFO - 冲突解决: 保留 phase_0 (9 绿灯车道), 移除 phase_4 (4 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,355 - phase_processor - INFO -   冲突解决: 3 -> 1 个相位
+2026-02-04 22:33:49,355 - phase_processor - WARNING - 路口 4794975945 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,355 - phase_processor - WARNING -   跳过信号灯 4794975945: 相位不足 (1 < 2)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 
+处理信号灯: 5488650286 (原始相位数: 4)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyyrrrr
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrrryyyyy
+2026-02-04 22:33:49,355 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,355 - phase_processor - INFO - 冲突解决: 保留 phase_0 (4 绿灯车道), 移除 phase_2 (3 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,355 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,355 - phase_processor - WARNING - 路口 5488650286 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,355 - phase_processor - WARNING -   跳过信号灯 5488650286: 相位不足 (1 < 2)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 
+处理信号灯: 671587313 (原始相位数: 4)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyrrryyyyyrrr
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrryyyyyrrryyyy
+2026-02-04 22:33:49,355 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,355 - phase_processor - INFO - 冲突解决: 保留 phase_2 (6 绿灯车道), 移除 phase_0 (6 绿灯车道), 原因=random_kept_new
+2026-02-04 22:33:49,355 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,355 - phase_processor - WARNING - 路口 671587313 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,355 - phase_processor - WARNING -   跳过信号灯 671587313: 相位不足 (1 < 2)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 
+处理信号灯: 8013476764 (原始相位数: 4)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrr
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrryy
+2026-02-04 22:33:49,355 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,355 - phase_processor - INFO -   ✓ 信号灯 8013476764 处理完成: 2 个互斥相位
+2026-02-04 22:33:49,355 - phase_processor - INFO - 
+处理信号灯: J29 (原始相位数: 4)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrr
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrryy
+2026-02-04 22:33:49,355 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,355 - phase_processor - INFO -   ✓ 信号灯 J29 处理完成: 2 个互斥相位
+2026-02-04 22:33:49,355 - phase_processor - INFO - 
+处理信号灯: J52 (原始相位数: 4)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyrrr
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=ryyyy
+2026-02-04 22:33:49,355 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,355 - phase_processor - INFO - 冲突解决: 保留 phase_2 (3 绿灯车道), 移除 phase_0 (2 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,355 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,355 - phase_processor - WARNING - 路口 J52 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,355 - phase_processor - WARNING -   跳过信号灯 J52: 相位不足 (1 < 2)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 
+处理信号灯: J54 (原始相位数: 4)
+2026-02-04 22:33:49,355 - phase_processor - INFO -   ✓ 信号灯 J54 处理完成: 4 个互斥相位
+2026-02-04 22:33:49,355 - phase_processor - INFO - 
+处理信号灯: cluster_1159517082_4794944089 (原始相位数: 4)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyyrrrr
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrrryyyyy
+2026-02-04 22:33:49,355 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,355 - phase_processor - INFO - 冲突解决: 保留 phase_0 (5 绿灯车道), 移除 phase_2 (2 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,355 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,355 - phase_processor - WARNING - 路口 cluster_1159517082_4794944089 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,355 - phase_processor - WARNING -   跳过信号灯 cluster_1159517082_4794944089: 相位不足 (1 < 2)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 
+处理信号灯: cluster_1159517085_5436607864 (原始相位数: 4)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yrrryyyyyrrryyyy
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyyrrrryyyyrrrr
+2026-02-04 22:33:49,355 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,355 - phase_processor - INFO - 冲突解决: 保留 phase_0 (10 绿灯车道), 移除 phase_2 (7 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,355 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,355 - phase_processor - WARNING - 路口 cluster_1159517085_5436607864 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,355 - phase_processor - WARNING -   跳过信号灯 cluster_1159517085_5436607864: 相位不足 (1 < 2)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 
+处理信号灯: cluster_1916386555_432429395 (原始相位数: 6)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yrrryyyyryrrryyr
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrryrrryyrrrrry
+2026-02-04 22:33:49,355 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yyyyyrrrryyyyrrr
+2026-02-04 22:33:49,355 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:33:49,355 - phase_processor - INFO - 冲突解决: 保留 phase_0 (6 绿灯车道), 移除 phase_2 (5 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,355 - phase_processor - INFO - 冲突解决: 保留 phase_0 (6 绿灯车道), 移除 phase_4 (5 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,355 - phase_processor - INFO -   冲突解决: 3 -> 1 个相位
+2026-02-04 22:33:49,355 - phase_processor - WARNING - 路口 cluster_1916386555_432429395 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,355 - phase_processor - WARNING -   跳过信号灯 cluster_1916386555_432429395: 相位不足 (1 < 2)
+2026-02-04 22:33:49,355 - phase_processor - INFO - 
+处理信号灯: cluster_3028924422_314614336 (原始相位数: 4)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyrrrryyyyyyrrr
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrrryyyyyrrrryyyy
+2026-02-04 22:33:49,356 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (9 绿灯车道), 移除 phase_2 (9 绿灯车道), 原因=random_kept_existing
+2026-02-04 22:33:49,356 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,356 - phase_processor - WARNING - 路口 cluster_3028924422_314614336 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,356 - phase_processor - WARNING -   跳过信号灯 cluster_3028924422_314614336: 相位不足 (1 < 2)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 
+处理信号灯: cluster_432429373_5213238455 (原始相位数: 6)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyrrrryyyyrr
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrryyyrrrrryyr
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=rrryrryyrrryyy
+2026-02-04 22:33:49,356 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (8 绿灯车道), 移除 phase_2 (4 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (8 绿灯车道), 移除 phase_4 (5 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,356 - phase_processor - INFO -   冲突解决: 3 -> 1 个相位
+2026-02-04 22:33:49,356 - phase_processor - WARNING - 路口 cluster_432429373_5213238455 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,356 - phase_processor - WARNING -   跳过信号灯 cluster_432429373_5213238455: 相位不足 (1 < 2)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 
+处理信号灯: cluster_4548141054_4548141062_4548142597_4548142605 (原始相位数: 8)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyyrrryrrrrrrrrr
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrrrrrrryyyyyyrrrr
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yrrrryrrrrrrrryyyyy
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=7, state=yrrrryyyyyrrrryrrrr
+2026-02-04 22:33:49,356 - phase_processor - INFO -   过滤了 4 个无效相位
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (6 绿灯车道), 移除 phase_2 (6 绿灯车道), 原因=random_kept_existing
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (6 绿灯车道), 移除 phase_4 (6 绿灯车道), 原因=random_kept_existing
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (6 绿灯车道), 移除 phase_6 (5 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,356 - phase_processor - INFO -   冲突解决: 4 -> 1 个相位
+2026-02-04 22:33:49,356 - phase_processor - WARNING - 路口 cluster_4548141054_4548141062_4548142597_4548142605 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,356 - phase_processor - WARNING -   跳过信号灯 cluster_4548141054_4548141062_4548142597_4548142605: 相位不足 (1 < 2)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 
+处理信号灯: cluster_4548211590_8013476765 (原始相位数: 6)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyrrrrrrrryyyyr
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrrrrrrrrrrryyyyy
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=rrrrryyyyyyyyrrrrr
+2026-02-04 22:33:49,356 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (7 绿灯车道), 移除 phase_2 (4 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,356 - phase_processor - INFO -   冲突解决: 3 -> 2 个相位
+2026-02-04 22:33:49,356 - phase_processor - INFO -   ✓ 信号灯 cluster_4548211590_8013476765 处理完成: 2 个互斥相位
+2026-02-04 22:33:49,356 - phase_processor - INFO - 
+处理信号灯: cluster_4548211609_5789411073_cluster_4548211261_5789411072 (原始相位数: 6)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=rrrrryyyyyrryyyy
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyyrrrrrryrrrrr
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yrrryrrrrrryyrrr
+2026-02-04 22:33:49,356 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (9 绿灯车道), 移除 phase_4 (4 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,356 - phase_processor - INFO -   冲突解决: 3 -> 2 个相位
+2026-02-04 22:33:49,356 - phase_processor - INFO -   ✓ 信号灯 cluster_4548211609_5789411073_cluster_4548211261_5789411072 处理完成: 2 个互斥相位
+2026-02-04 22:33:49,356 - phase_processor - INFO - 
+处理信号灯: cluster_4550018629_4550018932 (原始相位数: 6)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyyrryyyyryryr
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrrryrryyyyyyryr
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yrrrryyyyrrrryyyy
+2026-02-04 22:33:49,356 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (10 绿灯车道), 移除 phase_2 (8 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (10 绿灯车道), 移除 phase_4 (6 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,356 - phase_processor - INFO -   冲突解决: 3 -> 1 个相位
+2026-02-04 22:33:49,356 - phase_processor - WARNING - 路口 cluster_4550018629_4550018932 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,356 - phase_processor - WARNING -   跳过信号灯 cluster_4550018629_4550018932: 相位不足 (1 < 2)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 
+处理信号灯: cluster_4550018780_4550018980_4550019087_4550019099 (原始相位数: 8)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yrrrrryyyyryrrrrryyyyyy
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrrrryyyyyyrrrrryrrrrr
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yyyyyyyrrrryrrrrryrrrrr
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=7, state=yrrrrryrrrryyyyyyyrrrrr
+2026-02-04 22:33:49,356 - phase_processor - INFO -   过滤了 4 个无效相位
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (10 绿灯车道), 移除 phase_2 (7 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (10 绿灯车道), 移除 phase_4 (7 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (10 绿灯车道), 移除 phase_6 (7 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,356 - phase_processor - INFO -   冲突解决: 4 -> 1 个相位
+2026-02-04 22:33:49,356 - phase_processor - WARNING - 路口 cluster_4550018780_4550018980_4550019087_4550019099 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,356 - phase_processor - WARNING -   跳过信号灯 cluster_4550018780_4550018980_4550019087_4550019099: 相位不足 (1 < 2)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 
+处理信号灯: cluster_4580811894_J22_J30_J5 (原始相位数: 6)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyyyrrrrr
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrryyyyrrrr
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yrrrrrrryyyy
+2026-02-04 22:33:49,356 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (7 绿灯车道), 移除 phase_2 (5 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (7 绿灯车道), 移除 phase_4 (4 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,356 - phase_processor - INFO -   冲突解决: 3 -> 1 个相位
+2026-02-04 22:33:49,356 - phase_processor - WARNING - 路口 cluster_4580811894_J22_J30_J5 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,356 - phase_processor - WARNING -   跳过信号灯 cluster_4580811894_J22_J30_J5: 相位不足 (1 < 2)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 
+处理信号灯: cluster_5213238458_J22 (原始相位数: 4)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyryyyy
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyyyrrrr
+2026-02-04 22:33:49,356 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (7 绿灯车道), 移除 phase_2 (4 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,356 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,356 - phase_processor - WARNING - 路口 cluster_5213238458_J22 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,356 - phase_processor - WARNING -   跳过信号灯 cluster_5213238458_J22: 相位不足 (1 < 2)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 
+处理信号灯: cluster_5436607838_J47_J69_J76_J78 (原始相位数: 6)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyryrrrrryyyyyrrr
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrrryyrrrrryrrrryyy
+2026-02-04 22:33:49,356 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yrrrrryyyyyyyrrrrrrr
+2026-02-04 22:33:49,356 - phase_processor - INFO -   过滤了 3 个无效相位
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (9 绿灯车道), 移除 phase_2 (7 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,356 - phase_processor - INFO - 冲突解决: 保留 phase_0 (9 绿灯车道), 移除 phase_4 (7 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,356 - phase_processor - INFO -   冲突解决: 3 -> 1 个相位
+2026-02-04 22:33:49,356 - phase_processor - WARNING - 路口 cluster_5436607838_J47_J69_J76_J78 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,356 - phase_processor - WARNING -   跳过信号灯 cluster_5436607838_J47_J69_J76_J78: 相位不足 (1 < 2)
+2026-02-04 22:33:49,356 - phase_processor - INFO - 
+处理信号灯: cluster_672362123_8640094718 (原始相位数: 4)
+2026-02-04 22:33:49,357 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyyyyrryyyyy
+2026-02-04 22:33:49,357 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rrrryyyyrrrr
+2026-02-04 22:33:49,357 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,357 - phase_processor - INFO - 冲突解决: 保留 phase_0 (9 绿灯车道), 移除 phase_2 (4 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,357 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,357 - phase_processor - WARNING - 路口 cluster_672362123_8640094718 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,357 - phase_processor - WARNING -   跳过信号灯 cluster_672362123_8640094718: 相位不足 (1 < 2)
+2026-02-04 22:33:49,357 - phase_processor - INFO - 
+处理信号灯: cluster_J100_J94_J95_J99 (原始相位数: 8)
+2026-02-04 22:33:49,357 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yrrrrryrrrryrrrrryyyyy
+2026-02-04 22:33:49,357 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yrrrrryyyyyyrrrrryrrrr
+2026-02-04 22:33:49,357 - phase_processor - INFO - 过滤无效相位: phase_index=5, state=yyyyyyyrrrryrrrrryrrrr
+2026-02-04 22:33:49,357 - phase_processor - INFO - 过滤无效相位: phase_index=7, state=yrrrrryrrrryyyyyyyrrrr
+2026-02-04 22:33:49,357 - phase_processor - INFO -   过滤了 4 个无效相位
+2026-02-04 22:33:49,357 - phase_processor - INFO - 冲突解决: 保留 phase_2 (6 绿灯车道), 移除 phase_0 (6 绿灯车道), 原因=random_kept_new
+2026-02-04 22:33:49,357 - phase_processor - INFO - 冲突解决: 保留 phase_4 (8 绿灯车道), 移除 phase_2 (6 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,357 - phase_processor - INFO - 冲突解决: 保留 phase_6 (8 绿灯车道), 移除 phase_4 (8 绿灯车道), 原因=random_kept_new
+2026-02-04 22:33:49,357 - phase_processor - INFO -   冲突解决: 4 -> 1 个相位
+2026-02-04 22:33:49,357 - phase_processor - WARNING - 路口 cluster_J100_J94_J95_J99 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,357 - phase_processor - WARNING -   跳过信号灯 cluster_J100_J94_J95_J99: 相位不足 (1 < 2)
+2026-02-04 22:33:49,357 - phase_processor - INFO - 
+处理信号灯: cluster_J18_J5 (原始相位数: 4)
+2026-02-04 22:33:49,357 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yyrrrrryyy
+2026-02-04 22:33:49,357 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=rryyyyyrrr
+2026-02-04 22:33:49,357 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,357 - phase_processor - INFO -   ✓ 信号灯 cluster_J18_J5 处理完成: 2 个互斥相位
+2026-02-04 22:33:49,357 - phase_processor - INFO - 
+处理信号灯: cluster_J18_cluster_1159519336_J5 (原始相位数: 4)
+2026-02-04 22:33:49,357 - phase_processor - INFO - 过滤无效相位: phase_index=1, state=yrrryyyyyyyyy
+2026-02-04 22:33:49,357 - phase_processor - INFO - 过滤无效相位: phase_index=3, state=yyyyrrrryrrrr
+2026-02-04 22:33:49,357 - phase_processor - INFO -   过滤了 2 个无效相位
+2026-02-04 22:33:49,357 - phase_processor - INFO - 冲突解决: 保留 phase_0 (9 绿灯车道), 移除 phase_2 (3 绿灯车道), 原因=more_green_lanes
+2026-02-04 22:33:49,357 - phase_processor - INFO -   冲突解决: 2 -> 1 个相位
+2026-02-04 22:33:49,357 - phase_processor - WARNING - 路口 cluster_J18_cluster_1159519336_J5 相位不足: 需要至少 2 个,实际 1 个
+2026-02-04 22:33:49,357 - phase_processor - WARNING -   跳过信号灯 cluster_J18_cluster_1159519336_J5: 相位不足 (1 < 2)
+2026-02-04 22:33:49,357 - phase_processor - INFO - 
+============================================================
+2026-02-04 22:33:49,357 - phase_processor - INFO - 处理完成摘要
+2026-02-04 22:33:49,357 - phase_processor - INFO - ============================================================
+2026-02-04 22:33:49,357 - phase_processor - INFO - 总信号灯数: 46
+2026-02-04 22:33:49,357 - phase_processor - INFO - 有效信号灯数: 18
+2026-02-04 22:33:49,357 - phase_processor - INFO - 跳过信号灯数: 28
+2026-02-04 22:33:49,357 - phase_processor - INFO - 总相位数: 40
+2026-02-04 22:33:49,357 - phase_processor - INFO - 过滤的无效相位数: 107
+2026-02-04 22:33:49,357 - phase_processor - INFO - 冲突解决次数: 43
+2026-02-04 22:33:49,357 - phase_processor - INFO - ============================================================
+2026-02-04 22:55:30,698 - phase_processor - INFO - 开始解析网络文件: sumo_simulation/environments/chengdu/chengdu.net.xml
+2026-02-04 22:55:30,723 - phase_processor - INFO - 解析到 46 个信号灯的连接映射
+2026-02-04 22:55:30,723 - phase_processor - INFO - 解析完成,共 46 个信号灯

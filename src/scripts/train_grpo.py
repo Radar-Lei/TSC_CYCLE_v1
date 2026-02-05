@@ -28,6 +28,7 @@ Docker 执行:
 """
 
 import argparse
+import json
 import os
 from pathlib import Path
 
@@ -41,29 +42,56 @@ from src.grpo.format_reward import (
 from src.grpo.simulation_reward import compute_simulation_reward
 
 
+def load_config(config_path):
+    """从 JSON 文件加载配置"""
+    if config_path and Path(config_path).exists():
+        with open(config_path) as f:
+            return json.load(f)
+    return {}
+
+
+def get_nested(config, *keys, default=None):
+    """获取嵌套配置值"""
+    value = config
+    for key in keys:
+        if isinstance(value, dict):
+            value = value.get(key)
+        else:
+            return default
+    return value if value is not None else default
+
+
 def parse_args():
     """解析命令行参数"""
     parser = argparse.ArgumentParser(
         description="GRPO training for traffic signal cycle optimization"
     )
 
+    # 配置文件
+    parser.add_argument(
+        "--config",
+        type=str,
+        default=None,
+        help="JSON 配置文件路径"
+    )
+
     # 模型和数据路径
     parser.add_argument(
         "--sft-adapter",
         type=str,
-        default="outputs/sft/final",
+        default=None,
         help="SFT adapter 路径 (默认: outputs/sft/final)"
     )
     parser.add_argument(
         "--data-dir",
         type=str,
-        default="data/training",
+        default=None,
         help="训练数据目录 (默认: data/training)"
     )
     parser.add_argument(
         "--output-dir",
         type=str,
-        default="outputs/grpo",
+        default=None,
         help="输出目录 (默认: outputs/grpo)"
     )
 
@@ -71,8 +99,14 @@ def parse_args():
     parser.add_argument(
         "--max-steps",
         type=int,
-        default=100,
+        default=None,
         help="最大训练步数 (默认: 100)"
+    )
+    parser.add_argument(
+        "--num-generations",
+        type=int,
+        default=None,
+        help="每个 prompt 生成的样本数 (默认: 4)"
     )
     parser.add_argument(
         "--data-limit",
@@ -92,34 +126,75 @@ def parse_args():
     parser.add_argument(
         "--net-file",
         type=str,
-        default="sumo_simulation/environments/chengdu/chengdu.net.xml",
+        default=None,
         help="SUMO 网络文件路径"
     )
     parser.add_argument(
         "--sumocfg",
         type=str,
-        default="sumo_simulation/environments/chengdu/chengdu.sumocfg",
+        default=None,
         help="SUMO 配置文件路径"
     )
     parser.add_argument(
         "--cycle-duration",
         type=int,
-        default=90,
+        default=None,
         help="评估周期时长 (秒, 默认: 90)"
     )
     parser.add_argument(
         "--max-workers",
         type=int,
-        default=4,
+        default=None,
         help="并行 SUMO 评估的 worker 数量 (默认: 4)"
     )
 
     return parser.parse_args()
 
 
+def apply_config(args):
+    """应用配置优先级: 命令行 > config.json > 代码默认值"""
+    config = load_config(args.config)
+
+    # 路径配置
+    if args.sft_adapter is None:
+        sft_output = get_nested(config, "paths", "sft_output", default="outputs/sft")
+        args.sft_adapter = f"{sft_output}/final"
+    if args.data_dir is None:
+        args.data_dir = get_nested(config, "paths", "data_dir", default="data/training")
+    if args.output_dir is None:
+        args.output_dir = get_nested(config, "paths", "grpo_output", default="outputs/grpo")
+    if args.net_file is None:
+        args.net_file = get_nested(
+            config, "paths", "net_file",
+            default="sumo_simulation/environments/chengdu/chengdu.net.xml"
+        )
+    if args.sumocfg is None:
+        args.sumocfg = get_nested(
+            config, "paths", "sumocfg",
+            default="sumo_simulation/environments/chengdu/chengdu.sumocfg"
+        )
+
+    # 训练配置
+    if args.max_steps is None:
+        args.max_steps = get_nested(config, "training", "grpo", "max_steps", default=100)
+    if args.num_generations is None:
+        args.num_generations = get_nested(config, "training", "grpo", "num_generations", default=4)
+
+    # 仿真配置
+    if args.cycle_duration is None:
+        args.cycle_duration = get_nested(config, "simulation", "cycle_duration", default=90)
+    if args.max_workers is None:
+        args.max_workers = get_nested(config, "simulation", "parallel_workers", default=4)
+
+    return args
+
+
 def main():
     """主训练流程"""
     args = parse_args()
+
+    # 应用配置优先级: 命令行 > config.json > 代码默认值
+    args = apply_config(args)
 
     print("=" * 60)
     print("GRPO Training for Traffic Signal Cycle Optimization")
@@ -192,6 +267,7 @@ def main():
     print(f"\n[4/6] Creating GRPO trainer...")
     config = GRPOConfig(
         max_steps=args.max_steps,
+        num_generations=args.num_generations,
         output_dir=args.output_dir,
     )
     print(f"  Configuration:")
