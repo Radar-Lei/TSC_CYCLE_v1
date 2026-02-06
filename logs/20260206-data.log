@@ -1214,3 +1214,3382 @@ Exit code: 0
 Duration: 00:00:41
 ==================================================
 
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T01:07:55+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T01:07:55+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --workers 4 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+============================================================
+训练数据生成配置
+============================================================
+流量文件: 30 个
+相位配置: /home/samuel/TSC_CYCLE/output/phase_config.json
+输出目录: /home/samuel/TSC_CYCLE/outputs/data
+状态快照目录: /home/samuel/TSC_CYCLE/data/states
+并行进程数: 4
+仿真时长: 86400s (24.0 小时)
+预热步数: 300
+增量模式: 是
+============================================================
+
+Running 30 days with 4 workers...
+Simulating days:   0%|          | 0/30 [00:00<?, ?it/s]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+
+Quitting (on error).Quitting (on error).
+
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:   3%|▎         | 1/30 [00:05<02:25,  5.01s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+
+Quitting (on error).Quitting (on error).
+
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+
+Quitting (on error).Quitting (on error).
+
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  17%|█▋        | 5/30 [00:10<00:45,  1.81s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  30%|███       | 9/30 [00:15<00:31,  1.50s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  43%|████▎     | 13/30 [00:20<00:23,  1.39s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  57%|█████▋    | 17/30 [00:25<00:17,  1.34s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  70%|███████   | 21/30 [00:30<00:11,  1.31s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  83%|████████▎ | 25/30 [00:35<00:06,  1.29s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  97%|█████████▋| 29/30 [00:40<00:01,  1.28s/it]Simulating days: 100%|██████████| 30/30 [00:40<00:00,  1.33s/it]
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+
+============================================================
+生成完成
+============================================================
+处理天数: 30
+成功: 0
+失败: 30
+总样本数: 0
+
+============================================================
+
+错误:
+  - Day 0 failed: 仿真未连接，无法保存状态
+  - Day 1 failed: 仿真未连接，无法保存状态
+  - Day 2 failed: 仿真未连接，无法保存状态
+  - Day 3 failed: 仿真未连接，无法保存状态
+  - Day 4 failed: 仿真未连接，无法保存状态
+  - Day 5 failed: 仿真未连接，无法保存状态
+  - Day 6 failed: 仿真未连接，无法保存状态
+  - Day 7 failed: 仿真未连接，无法保存状态
+  - Day 8 failed: 仿真未连接，无法保存状态
+  - Day 9 failed: 仿真未连接，无法保存状态
+  - Day 10 failed: 仿真未连接，无法保存状态
+  - Day 11 failed: 仿真未连接，无法保存状态
+  - Day 12 failed: 仿真未连接，无法保存状态
+  - Day 13 failed: 仿真未连接，无法保存状态
+  - Day 14 failed: 仿真未连接，无法保存状态
+  - Day 15 failed: 仿真未连接，无法保存状态
+  - Day 16 failed: 仿真未连接，无法保存状态
+  - Day 17 failed: 仿真未连接，无法保存状态
+  - Day 18 failed: 仿真未连接，无法保存状态
+  - Day 19 failed: 仿真未连接，无法保存状态
+  - Day 21 failed: 仿真未连接，无法保存状态
+  - Day 20 failed: 仿真未连接，无法保存状态
+  - Day 22 failed: 仿真未连接，无法保存状态
+  - Day 23 failed: 仿真未连接，无法保存状态
+  - Day 24 failed: 仿真未连接，无法保存状态
+  - Day 25 failed: 仿真未连接，无法保存状态
+  - Day 26 failed: 仿真未连接，无法保存状态
+  - Day 27 failed: 仿真未连接，无法保存状态
+  - Day 29 failed: 仿真未连接，无法保存状态
+  - Day 28 failed: 仿真未连接，无法保存状态
+
+训练数据保存在: /home/samuel/TSC_CYCLE/outputs/data
+状态快照保存在: /home/samuel/TSC_CYCLE/data/states
+元数据: /home/samuel/TSC_CYCLE/outputs/data/metadata.json
+
+==========================================
+Stage: data
+Exit code: 0
+Timestamp: 2026-02-06T01:08:35+08:00
+==========================================
+
+
+==================================================
+=== Stage: data SUCCESS ===
+End time: 2026-02-06T01:08:35+08:00
+Exit code: 0
+Duration: 00:00:40
+==================================================
+
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T01:25:06+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T01:25:06+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --workers 4 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+============================================================
+训练数据生成配置
+============================================================
+流量文件: 30 个
+相位配置: /home/samuel/TSC_CYCLE/output/phase_config.json
+输出目录: /home/samuel/TSC_CYCLE/outputs/data
+状态快照目录: /home/samuel/TSC_CYCLE/data/states
+并行进程数: 4
+仿真时长: 86400s (24.0 小时)
+预热步数: 300
+增量模式: 是
+============================================================
+
+Running 30 days with 4 workers...
+Simulating days:   0%|          | 0/30 [00:00<?, ?it/s]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+
+Quitting (on error).Quitting (on error).
+
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:   3%|▎         | 1/30 [00:05<02:25,  5.01s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).Quitting (on error).
+
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  17%|█▋        | 5/30 [00:10<00:45,  1.81s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  30%|███       | 9/30 [00:15<00:31,  1.50s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  43%|████▎     | 13/30 [00:20<00:23,  1.39s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  57%|█████▋    | 17/30 [00:25<00:17,  1.34s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  70%|███████   | 21/30 [00:30<00:11,  1.31s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  83%|████████▎ | 25/30 [00:35<00:06,  1.29s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Simulating days:  97%|█████████▋| 29/30 [00:40<00:01,  1.28s/it]Simulating days: 100%|██████████| 30/30 [00:40<00:00,  1.34s/it]
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+
+============================================================
+生成完成
+============================================================
+处理天数: 30
+成功: 0
+失败: 30
+总样本数: 0
+
+============================================================
+
+错误:
+  - Day 2 failed: 仿真未连接，无法保存状态
+  - Day 1 failed: 仿真未连接，无法保存状态
+  - Day 0 failed: 仿真未连接，无法保存状态
+  - Day 3 failed: 仿真未连接，无法保存状态
+  - Day 4 failed: 仿真未连接，无法保存状态
+  - Day 5 failed: 仿真未连接，无法保存状态
+  - Day 6 failed: 仿真未连接，无法保存状态
+  - Day 7 failed: 仿真未连接，无法保存状态
+  - Day 8 failed: 仿真未连接，无法保存状态
+  - Day 9 failed: 仿真未连接，无法保存状态
+  - Day 10 failed: 仿真未连接，无法保存状态
+  - Day 11 failed: 仿真未连接，无法保存状态
+  - Day 12 failed: 仿真未连接，无法保存状态
+  - Day 13 failed: 仿真未连接，无法保存状态
+  - Day 14 failed: 仿真未连接，无法保存状态
+  - Day 15 failed: 仿真未连接，无法保存状态
+  - Day 16 failed: 仿真未连接，无法保存状态
+  - Day 17 failed: 仿真未连接，无法保存状态
+  - Day 18 failed: 仿真未连接，无法保存状态
+  - Day 19 failed: 仿真未连接，无法保存状态
+  - Day 20 failed: 仿真未连接，无法保存状态
+  - Day 21 failed: 仿真未连接，无法保存状态
+  - Day 23 failed: 仿真未连接，无法保存状态
+  - Day 22 failed: 仿真未连接，无法保存状态
+  - Day 24 failed: 仿真未连接，无法保存状态
+  - Day 25 failed: 仿真未连接，无法保存状态
+  - Day 26 failed: 仿真未连接，无法保存状态
+  - Day 27 failed: 仿真未连接，无法保存状态
+  - Day 28 failed: 仿真未连接，无法保存状态
+  - Day 29 failed: 仿真未连接，无法保存状态
+
+训练数据保存在: /home/samuel/TSC_CYCLE/outputs/data
+状态快照保存在: /home/samuel/TSC_CYCLE/data/states
+元数据: /home/samuel/TSC_CYCLE/outputs/data/metadata.json
+
+==========================================
+Stage: data
+Exit code: 0
+Timestamp: 2026-02-06T01:25:46+08:00
+==========================================
+
+
+==================================================
+=== Stage: data SUCCESS ===
+End time: 2026-02-06T01:25:46+08:00
+Exit code: 0
+Duration: 00:00:40
+==================================================
+
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T01:28:00+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T01:28:00+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --workers 4 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+============================================================
+训练数据生成配置
+============================================================
+流量文件: 30 个
+相位配置: /home/samuel/TSC_CYCLE/output/phase_config.json
+输出目录: /home/samuel/TSC_CYCLE/outputs/data
+状态快照目录: /home/samuel/TSC_CYCLE/data/states
+并行进程数: 4
+仿真时长: 86400s (24.0 小时)
+预热步数: 300
+增量模式: 是
+============================================================
+
+Running 30 days with 4 workers...
+Simulating days:   0%|          | 0/30 [00:00<?, ?it/s]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:   3%|▎         | 1/30 [00:05<02:25,  5.01s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  17%|█▋        | 5/30 [00:10<00:45,  1.81s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  30%|███       | 9/30 [00:15<00:31,  1.50s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  43%|████▎     | 13/30 [00:20<00:23,  1.39s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  57%|█████▋    | 17/30 [00:25<00:17,  1.34s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  70%|███████   | 21/30 [00:30<00:11,  1.31s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  83%|████████▎ | 25/30 [00:35<00:06,  1.29s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  97%|█████████▋| 29/30 [00:40<00:01,  1.28s/it]Simulating days: 100%|██████████| 30/30 [00:40<00:00,  1.33s/it]
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+
+============================================================
+生成完成
+============================================================
+处理天数: 30
+成功: 0
+失败: 30
+总样本数: 0
+
+============================================================
+
+错误:
+  - Day 3 failed: 仿真未连接，无法保存状态
+  - Day 0 failed: 仿真未连接，无法保存状态
+  - Day 1 failed: 仿真未连接，无法保存状态
+  - Day 2 failed: 仿真未连接，无法保存状态
+  - Day 4 failed: 仿真未连接，无法保存状态
+  - Day 6 failed: 仿真未连接，无法保存状态
+  - Day 5 failed: 仿真未连接，无法保存状态
+  - Day 7 failed: 仿真未连接，无法保存状态
+  - Day 9 failed: 仿真未连接，无法保存状态
+  - Day 10 failed: 仿真未连接，无法保存状态
+  - Day 8 failed: 仿真未连接，无法保存状态
+  - Day 11 failed: 仿真未连接，无法保存状态
+  - Day 13 failed: 仿真未连接，无法保存状态
+  - Day 14 failed: 仿真未连接，无法保存状态
+  - Day 12 failed: 仿真未连接，无法保存状态
+  - Day 15 failed: 仿真未连接，无法保存状态
+  - Day 16 failed: 仿真未连接，无法保存状态
+  - Day 17 failed: 仿真未连接，无法保存状态
+  - Day 18 failed: 仿真未连接，无法保存状态
+  - Day 19 failed: 仿真未连接，无法保存状态
+  - Day 21 failed: 仿真未连接，无法保存状态
+  - Day 20 failed: 仿真未连接，无法保存状态
+  - Day 22 failed: 仿真未连接，无法保存状态
+  - Day 23 failed: 仿真未连接，无法保存状态
+  - Day 25 failed: 仿真未连接，无法保存状态
+  - Day 24 failed: 仿真未连接，无法保存状态
+  - Day 26 failed: 仿真未连接，无法保存状态
+  - Day 27 failed: 仿真未连接，无法保存状态
+  - Day 29 failed: 仿真未连接，无法保存状态
+  - Day 28 failed: 仿真未连接，无法保存状态
+
+训练数据保存在: /home/samuel/TSC_CYCLE/outputs/data
+状态快照保存在: /home/samuel/TSC_CYCLE/data/states
+元数据: /home/samuel/TSC_CYCLE/outputs/data/metadata.json
+
+==========================================
+Stage: data
+Exit code: 0
+Timestamp: 2026-02-06T01:28:40+08:00
+==========================================
+
+
+==================================================
+=== Stage: data SUCCESS ===
+End time: 2026-02-06T01:28:40+08:00
+Exit code: 0
+Duration: 00:00:40
+==================================================
+
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T01:30:40+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T01:30:40+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --workers 4 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+============================================================
+训练数据生成配置
+============================================================
+流量文件: 30 个
+相位配置: /home/samuel/TSC_CYCLE/output/phase_config.json
+输出目录: /home/samuel/TSC_CYCLE/outputs/data
+状态快照目录: /home/samuel/TSC_CYCLE/data/states
+并行进程数: 4
+仿真时长: 86400s (24.0 小时)
+预热步数: 300
+增量模式: 是
+============================================================
+
+Running 30 days with 4 workers...
+Simulating days:   0%|          | 0/30 [00:00<?, ?it/s]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+
+Quitting (on error).Quitting (on error).
+
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:   3%|▎         | 1/30 [00:05<02:25,  5.01s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  17%|█▋        | 5/30 [00:10<00:45,  1.81s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  30%|███       | 9/30 [00:15<00:31,  1.50s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).Quitting (on error).
+
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  43%|████▎     | 13/30 [00:20<00:23,  1.39s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  57%|█████▋    | 17/30 [00:25<00:17,  1.34s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  70%|███████   | 21/30 [00:30<00:11,  1.31s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  83%|████████▎ | 25/30 [00:35<00:06,  1.29s/it]Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  97%|█████████▋| 29/30 [00:40<00:01,  1.28s/it]Simulating days: 100%|██████████| 30/30 [00:40<00:00,  1.33s/it]
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_juybc8a4.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10003
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_juybc8a4.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10003
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_juybc8a4.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10003
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_q0spfznu.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10005
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_q0spfznu.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10005
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_q0spfznu.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10005
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ttlind6s.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10010
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ttlind6s.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10010
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ttlind6s.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10010
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_fvealtlr.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10013
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_fvealtlr.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10013
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_fvealtlr.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10013
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_9v1yl_1o.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10018
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_9v1yl_1o.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10018
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_9v1yl_1o.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10018
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp__xwxvc2f.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10022
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp__xwxvc2f.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10022
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp__xwxvc2f.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10022
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_p29_6fu_.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10026
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_p29_6fu_.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10026
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_p29_6fu_.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10026
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_vi0s6c_s.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10001
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_vi0s6c_s.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10001
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_vi0s6c_s.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10001
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6l4wosfs.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10006
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6l4wosfs.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10006
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6l4wosfs.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10006
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_w4d59ykn.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10009
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_w4d59ykn.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10009
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_w4d59ykn.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10009
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_hg2tpch0.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10014
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_hg2tpch0.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10014
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_hg2tpch0.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10014
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_t2b8tcjo.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10017
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_t2b8tcjo.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10017
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_t2b8tcjo.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10017
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_2vx5y8oo.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10021
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_2vx5y8oo.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10021
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_2vx5y8oo.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10021
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_b_sftqpn.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10025
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_b_sftqpn.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10025
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_b_sftqpn.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10025
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_bseyelff.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10028
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_bseyelff.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10028
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_bseyelff.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10028
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_8o4njg_y.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10000
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_8o4njg_y.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10000
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_8o4njg_y.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10000
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_0sgbbgnk.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10004
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_0sgbbgnk.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10004
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_0sgbbgnk.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10004
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_0cc83s84.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10008
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_0cc83s84.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10008
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_0cc83s84.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10008
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_okl5_dmi.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10012
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_okl5_dmi.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10012
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_okl5_dmi.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10012
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_qddi9znc.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10016
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_qddi9znc.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10016
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_qddi9znc.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10016
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp__j2txj6d.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10020
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp__j2txj6d.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10020
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp__j2txj6d.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10020
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_dulqf_d9.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10024
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_dulqf_d9.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10024
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_dulqf_d9.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10024
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_jc_9t9xt.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10029
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_jc_9t9xt.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10029
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_jc_9t9xt.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10029
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_4fzfi9re.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10002
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_4fzfi9re.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10002
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_4fzfi9re.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10002
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_goa_gyku.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10007
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_goa_gyku.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10007
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_goa_gyku.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10007
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6b_4c2ab.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10011
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6b_4c2ab.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10011
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6b_4c2ab.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10011
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_dc31r4b3.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10015
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_dc31r4b3.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10015
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_dc31r4b3.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10015
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_nu7k86qr.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10019
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_nu7k86qr.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10019
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_nu7k86qr.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10019
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_eoztpb6a.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10023
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_eoztpb6a.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10023
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_eoztpb6a.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10023
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ratoirwj.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10027
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ratoirwj.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10027
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ratoirwj.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10027
+Error starting simulation: Could not connect.
+
+============================================================
+生成完成
+============================================================
+处理天数: 30
+成功: 0
+失败: 30
+总样本数: 0
+
+============================================================
+
+错误:
+  - Day 0 failed: 仿真未连接，无法保存状态
+  - Day 3 failed: 仿真未连接，无法保存状态
+  - Day 1 failed: 仿真未连接，无法保存状态
+  - Day 2 failed: 仿真未连接，无法保存状态
+  - Day 4 failed: 仿真未连接，无法保存状态
+  - Day 6 failed: 仿真未连接，无法保存状态
+  - Day 5 failed: 仿真未连接，无法保存状态
+  - Day 7 failed: 仿真未连接，无法保存状态
+  - Day 8 failed: 仿真未连接，无法保存状态
+  - Day 10 failed: 仿真未连接，无法保存状态
+  - Day 9 failed: 仿真未连接，无法保存状态
+  - Day 11 failed: 仿真未连接，无法保存状态
+  - Day 12 failed: 仿真未连接，无法保存状态
+  - Day 14 failed: 仿真未连接，无法保存状态
+  - Day 13 failed: 仿真未连接，无法保存状态
+  - Day 15 failed: 仿真未连接，无法保存状态
+  - Day 16 failed: 仿真未连接，无法保存状态
+  - Day 17 failed: 仿真未连接，无法保存状态
+  - Day 18 failed: 仿真未连接，无法保存状态
+  - Day 19 failed: 仿真未连接，无法保存状态
+  - Day 20 failed: 仿真未连接，无法保存状态
+  - Day 21 failed: 仿真未连接，无法保存状态
+  - Day 22 failed: 仿真未连接，无法保存状态
+  - Day 23 failed: 仿真未连接，无法保存状态
+  - Day 25 failed: 仿真未连接，无法保存状态
+  - Day 24 failed: 仿真未连接，无法保存状态
+  - Day 26 failed: 仿真未连接，无法保存状态
+  - Day 27 failed: 仿真未连接，无法保存状态
+  - Day 28 failed: 仿真未连接，无法保存状态
+  - Day 29 failed: 仿真未连接，无法保存状态
+
+训练数据保存在: /home/samuel/TSC_CYCLE/outputs/data
+状态快照保存在: /home/samuel/TSC_CYCLE/data/states
+元数据: /home/samuel/TSC_CYCLE/outputs/data/metadata.json
+
+==========================================
+Stage: data
+Exit code: 0
+Timestamp: 2026-02-06T01:31:20+08:00
+==========================================
+
+
+==================================================
+=== Stage: data SUCCESS ===
+End time: 2026-02-06T01:31:20+08:00
+Exit code: 0
+Duration: 00:00:40
+==================================================
+
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T01:33:18+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T01:33:18+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --workers 4 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+============================================================
+训练数据生成配置
+============================================================
+流量文件: 30 个
+相位配置: /home/samuel/TSC_CYCLE/output/phase_config.json
+输出目录: /home/samuel/TSC_CYCLE/outputs/data
+状态快照目录: /home/samuel/TSC_CYCLE/data/states
+并行进程数: 4
+仿真时长: 86400s (24.0 小时)
+预热步数: 300
+增量模式: 是
+============================================================
+
+Running 30 days with 4 workers...
+Simulating days:   0%|          | 0/30 [00:00<?, ?it/s][DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_qf0z5vsn.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_cq4in7u2.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10001
+[DEBUG] Port: 10000
+[DEBUG] GUI mode: False
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_i5ifca6m.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10002
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_nmtj_l2_.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] GUI mode: False
+[DEBUG] Port: 10003
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_cq4in7u2.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10000
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_qf0z5vsn.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10001
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_nmtj_l2_.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10003
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_i5ifca6m.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10002
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_cq4in7u2.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10000
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_qf0z5vsn.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10001
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_nmtj_l2_.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_i5ifca6m.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10003
+[DEBUG] Port: 10002
+[DEBUG] GUI mode: False
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:   3%|▎         | 1/30 [00:05<02:25,  5.01s/it][DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_suompqon.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10004
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_akkcgvmf.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10005
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_yvtvz5p2.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10006
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_k8omzkjs.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10007
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_suompqon.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_akkcgvmf.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10004
+[DEBUG] Port: 10005
+[DEBUG] GUI mode: False
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_k8omzkjs.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10007
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_yvtvz5p2.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10006
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_k8omzkjs.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_akkcgvmf.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10007
+[DEBUG] Port: 10005
+[DEBUG] GUI mode: False
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_yvtvz5p2.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10006
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_suompqon.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10004
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  17%|█▋        | 5/30 [00:10<00:45,  1.81s/it][DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp__ix_o6jl.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10008
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_cfaavaux.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10010
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_4yxa789o.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10009
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ut9jiyfm.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10011
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp__ix_o6jl.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10008
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_cfaavaux.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10010
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ut9jiyfm.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10011
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_4yxa789o.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10009
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp__ix_o6jl.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10008
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_cfaavaux.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ut9jiyfm.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10010
+[DEBUG] Port: 10011
+[DEBUG] GUI mode: False
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_4yxa789o.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10009
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  30%|███       | 9/30 [00:15<00:31,  1.50s/it][DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_thk0gxw5.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10012
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_hcos2uhz.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6nrnbl2n.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10013
+[DEBUG] Port: 10014
+[DEBUG] GUI mode: False
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6tuhmrff.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10015
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_thk0gxw5.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10012
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6nrnbl2n.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_hcos2uhz.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10014
+[DEBUG] Port: 10013
+[DEBUG] GUI mode: False
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6tuhmrff.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10015
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_thk0gxw5.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10012
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_hcos2uhz.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10013
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6nrnbl2n.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10014
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6tuhmrff.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10015
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+
+Quitting (on error).Quitting (on error).
+
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  43%|████▎     | 13/30 [00:20<00:23,  1.39s/it][DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_tyi8sdu_.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10016
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ys7yu01g.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_vbeyucxz.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10017
+[DEBUG] Port: 10018
+[DEBUG] GUI mode: False
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_wy8_xls0.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10019
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_tyi8sdu_.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10016
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ys7yu01g.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Port: 10017
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_vbeyucxz.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] GUI mode: False
+[DEBUG] Port: 10018
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_wy8_xls0.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10019
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_tyi8sdu_.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10016
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_vbeyucxz.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10018
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ys7yu01g.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10017
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_wy8_xls0.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10019
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  57%|█████▋    | 17/30 [00:25<00:17,  1.34s/it][DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ppo2iu_p.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10020
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_o9tu3h6a.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10021
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_av4pali8.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10022
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp__bysepcz.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10023
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).Quitting (on error).
+
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ppo2iu_p.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10020
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_o9tu3h6a.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10021
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_av4pali8.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10022
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp__bysepcz.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10023
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_o9tu3h6a.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10021
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_av4pali8.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10022
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ppo2iu_p.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10020
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp__bysepcz.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10023
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  70%|███████   | 21/30 [00:30<00:11,  1.31s/it][DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6fdf04fs.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10024
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_p4q4d7i2.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10025
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_vwxj7qxr.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10026
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_tocpp9lf.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10027
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6fdf04fs.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10024
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_p4q4d7i2.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10025
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_vwxj7qxr.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10026
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_tocpp9lf.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10027
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6fdf04fs.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10024
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_p4q4d7i2.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10025
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_vwxj7qxr.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10026
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_tocpp9lf.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10027
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  83%|████████▎ | 25/30 [00:35<00:06,  1.29s/it][DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_r5sqwc1a.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_oq_bq32p.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10029
+[DEBUG] Port: 10028
+[DEBUG] GUI mode: False
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_oq_bq32p.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10028
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_r5sqwc1a.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10029
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_oq_bq32p.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_r5sqwc1a.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10028
+[DEBUG] Port: 10029
+[DEBUG] GUI mode: False
+[DEBUG] GUI mode: False
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/gui-settings.cfg' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  97%|█████████▋| 29/30 [00:40<00:01,  1.28s/it]Simulating days: 100%|██████████| 30/30 [00:40<00:00,  1.33s/it]
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Could not connect.
+
+============================================================
+生成完成
+============================================================
+处理天数: 30
+成功: 0
+失败: 30
+总样本数: 0
+
+============================================================
+
+错误:
+  - Day 0 failed: 仿真未连接，无法保存状态
+  - Day 1 failed: 仿真未连接，无法保存状态
+  - Day 2 failed: 仿真未连接，无法保存状态
+  - Day 3 failed: 仿真未连接，无法保存状态
+  - Day 7 failed: 仿真未连接，无法保存状态
+  - Day 5 failed: 仿真未连接，无法保存状态
+  - Day 4 failed: 仿真未连接，无法保存状态
+  - Day 6 failed: 仿真未连接，无法保存状态
+  - Day 8 failed: 仿真未连接，无法保存状态
+  - Day 11 failed: 仿真未连接，无法保存状态
+  - Day 10 failed: 仿真未连接，无法保存状态
+  - Day 9 failed: 仿真未连接，无法保存状态
+  - Day 12 failed: 仿真未连接，无法保存状态
+  - Day 14 failed: 仿真未连接，无法保存状态
+  - Day 13 failed: 仿真未连接，无法保存状态
+  - Day 15 failed: 仿真未连接，无法保存状态
+  - Day 17 failed: 仿真未连接，无法保存状态
+  - Day 18 failed: 仿真未连接，无法保存状态
+  - Day 16 failed: 仿真未连接，无法保存状态
+  - Day 19 failed: 仿真未连接，无法保存状态
+  - Day 21 failed: 仿真未连接，无法保存状态
+  - Day 22 failed: 仿真未连接，无法保存状态
+  - Day 20 failed: 仿真未连接，无法保存状态
+  - Day 23 failed: 仿真未连接，无法保存状态
+  - Day 24 failed: 仿真未连接，无法保存状态
+  - Day 25 failed: 仿真未连接，无法保存状态
+  - Day 26 failed: 仿真未连接，无法保存状态
+  - Day 27 failed: 仿真未连接，无法保存状态
+  - Day 28 failed: 仿真未连接，无法保存状态
+  - Day 29 failed: 仿真未连接，无法保存状态
+
+训练数据保存在: /home/samuel/TSC_CYCLE/outputs/data
+状态快照保存在: /home/samuel/TSC_CYCLE/data/states
+元数据: /home/samuel/TSC_CYCLE/outputs/data/metadata.json
+
+==========================================
+Stage: data
+Exit code: 0
+Timestamp: 2026-02-06T01:33:58+08:00
+==========================================
+
+
+==================================================
+=== Stage: data SUCCESS ===
+End time: 2026-02-06T01:33:58+08:00
+Exit code: 0
+Duration: 00:00:40
+==================================================
+
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T01:34:57+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T01:34:57+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --workers 4 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+============================================================
+训练数据生成配置
+============================================================
+流量文件: 30 个
+相位配置: /home/samuel/TSC_CYCLE/output/phase_config.json
+输出目录: /home/samuel/TSC_CYCLE/outputs/data
+状态快照目录: /home/samuel/TSC_CYCLE/data/states
+并行进程数: 4
+仿真时长: 86400s (24.0 小时)
+预热步数: 300
+增量模式: 是
+============================================================
+
+Running 30 days with 4 workers...
+Simulating days:   0%|          | 0/30 [00:00<?, ?it/s][DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_pr956ysd.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10000
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_qrqsgsag.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_nvr5vda2.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10003
+[DEBUG] Port: 10001
+[DEBUG] GUI mode: False
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_0l8uv4va.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10002
+[DEBUG] GUI mode: False
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+
+
+Quitting (on error).Quitting (on error).Quitting (on error).
+
+
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_nvr5vda2.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10001
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_pr956ysd.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10000
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_qrqsgsag.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10003
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_0l8uv4va.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10002
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_nvr5vda2.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10001
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_pr956ysd.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10000
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_qrqsgsag.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10003
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_0l8uv4va.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10002
+[DEBUG] GUI mode: False
+Simulating days:   3%|▎         | 1/30 [00:03<01:27,  3.00s/it][DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_rxudqppo.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_jo_7ib7z.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10004
+[DEBUG] Port: 10005
+[DEBUG] GUI mode: False
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_sp1j3et9.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10006
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_fycsf1na.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10007
+[DEBUG] GUI mode: False
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).Quitting (on error).
+
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_jo_7ib7z.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10005
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_sp1j3et9.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10006
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_rxudqppo.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10004
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_fycsf1na.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10007
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_jo_7ib7z.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10005
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_sp1j3et9.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10006
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_rxudqppo.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10004
+[DEBUG] GUI mode: False
+Simulating days:  17%|█▋        | 5/30 [00:06<00:27,  1.09s/it][DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp__k4vudtg.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10008
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_1ygba52j.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10009
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_2nkfm_ph.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10010
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_fycsf1na.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10007
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_0flt7yoi.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10011
+[DEBUG] GUI mode: False
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_1ygba52j.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10009
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp__k4vudtg.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_2nkfm_ph.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10008
+[DEBUG] Port: 10010
+[DEBUG] GUI mode: False
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_0flt7yoi.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10011
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_1ygba52j.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp__k4vudtg.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10009
+[DEBUG] Port: 10008
+[DEBUG] GUI mode: False
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_2nkfm_ph.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10010
+[DEBUG] GUI mode: False
+Simulating days:  30%|███       | 9/30 [00:09<00:18,  1.11it/s][DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_k_oheuxm.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10012
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_3ssbpawd.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10014
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_2rzqjpcv.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10013
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_0flt7yoi.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10011
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_5rredjkd.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10015
+[DEBUG] GUI mode: False
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_k_oheuxm.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10012
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_3ssbpawd.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10014
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_2rzqjpcv.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10013
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_5rredjkd.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10015
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_k_oheuxm.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10012
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_3ssbpawd.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10014
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_2rzqjpcv.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10013
+[DEBUG] GUI mode: False
+Simulating days:  43%|████▎     | 13/30 [00:12<00:14,  1.20it/s][DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6bxl681m.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10016
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_btkony07.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10017
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_4uqzu7e5.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10018
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_5rredjkd.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10015
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_adoga_8e.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10019
+[DEBUG] GUI mode: False
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6bxl681m.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10016
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_btkony07.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10017
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_4uqzu7e5.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10018
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_adoga_8e.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10019
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_6bxl681m.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10016
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_btkony07.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10017
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_4uqzu7e5.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10018
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_adoga_8e.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10019
+[DEBUG] GUI mode: False
+Simulating days:  57%|█████▋    | 17/30 [00:15<00:10,  1.24it/s][DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_t37jkli6.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10020
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_sjvyzbys.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10022
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_4mvul7na.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10021
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_nolrx6wq.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10023
+[DEBUG] GUI mode: False
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).Quitting (on error).
+
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_t37jkli6.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10020
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_sjvyzbys.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10022
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_4mvul7na.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10021
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_nolrx6wq.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10023
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_sjvyzbys.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_t37jkli6.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10020
+[DEBUG] Port: 10022
+[DEBUG] GUI mode: False
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_4mvul7na.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10021
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_nolrx6wq.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10023
+[DEBUG] GUI mode: False
+Simulating days:  70%|███████   | 21/30 [00:18<00:07,  1.27it/s][DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_tlla8fg0.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10024
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_un5851bw.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10025
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_l7j9j8op.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10026
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_xmvb29dc.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10027
+[DEBUG] GUI mode: False
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_tlla8fg0.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10024
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_un5851bw.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10025
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_l7j9j8op.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10026
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_xmvb29dc.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10027
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_tlla8fg0.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10024
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_un5851bw.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10025
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_l7j9j8op.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10026
+[DEBUG] GUI mode: False
+Simulating days:  83%|████████▎ | 25/30 [00:21<00:03,  1.29it/s][DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_xmvb29dc.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10027
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_y53zv1nd.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10028
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ove9xsh9.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10029
+[DEBUG] GUI mode: False
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_y53zv1nd.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10028
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ove9xsh9.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10029
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_y53zv1nd.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10028
+[DEBUG] GUI mode: False
+[DEBUG] SUMO Binary: /usr/share/sumo/bin/sumo
+[DEBUG] Command: /usr/share/sumo/bin/sumo -c /tmp/sumo_temp_ove9xsh9.sumocfg --step-length 1.0 --no-warnings true --no-step-log --duration-log.disable
+[DEBUG] Port: 10029
+[DEBUG] GUI mode: False
+Simulating days:  97%|█████████▋| 29/30 [00:24<00:00,  1.31it/s]Simulating days: 100%|██████████| 30/30 [00:24<00:00,  1.25it/s]
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+
+============================================================
+生成完成
+============================================================
+处理天数: 30
+成功: 0
+失败: 30
+总样本数: 0
+
+============================================================
+
+错误:
+  - Day 1 failed: 仿真未连接，无法保存状态
+  - Day 3 failed: 仿真未连接，无法保存状态
+  - Day 0 failed: 仿真未连接，无法保存状态
+  - Day 2 failed: 仿真未连接，无法保存状态
+  - Day 5 failed: 仿真未连接，无法保存状态
+  - Day 6 failed: 仿真未连接，无法保存状态
+  - Day 4 failed: 仿真未连接，无法保存状态
+  - Day 7 failed: 仿真未连接，无法保存状态
+  - Day 9 failed: 仿真未连接，无法保存状态
+  - Day 8 failed: 仿真未连接，无法保存状态
+  - Day 10 failed: 仿真未连接，无法保存状态
+  - Day 11 failed: 仿真未连接，无法保存状态
+  - Day 12 failed: 仿真未连接，无法保存状态
+  - Day 14 failed: 仿真未连接，无法保存状态
+  - Day 13 failed: 仿真未连接，无法保存状态
+  - Day 15 failed: 仿真未连接，无法保存状态
+  - Day 16 failed: 仿真未连接，无法保存状态
+  - Day 17 failed: 仿真未连接，无法保存状态
+  - Day 18 failed: 仿真未连接，无法保存状态
+  - Day 19 failed: 仿真未连接，无法保存状态
+  - Day 20 failed: 仿真未连接，无法保存状态
+  - Day 22 failed: 仿真未连接，无法保存状态
+  - Day 21 failed: 仿真未连接，无法保存状态
+  - Day 23 failed: 仿真未连接，无法保存状态
+  - Day 24 failed: 仿真未连接，无法保存状态
+  - Day 25 failed: 仿真未连接，无法保存状态
+  - Day 26 failed: 仿真未连接，无法保存状态
+  - Day 27 failed: 仿真未连接，无法保存状态
+  - Day 28 failed: 仿真未连接，无法保存状态
+  - Day 29 failed: 仿真未连接，无法保存状态
+
+训练数据保存在: /home/samuel/TSC_CYCLE/outputs/data
+状态快照保存在: /home/samuel/TSC_CYCLE/data/states
+元数据: /home/samuel/TSC_CYCLE/outputs/data/metadata.json
+
+==========================================
+Stage: data
+Exit code: 0
+Timestamp: 2026-02-06T01:35:22+08:00
+==========================================
+
+
+==================================================
+=== Stage: data SUCCESS ===
+End time: 2026-02-06T01:35:22+08:00
+Exit code: 0
+Duration: 00:00:25
+==================================================
+
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T08:14:46+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T08:14:46+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --workers 4 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+============================================================
+训练数据生成配置
+============================================================
+流量文件: 30 个
+相位配置: /home/samuel/TSC_CYCLE/output/phase_config.json
+输出目录: /home/samuel/TSC_CYCLE/outputs/data
+状态快照目录: /home/samuel/TSC_CYCLE/data/states
+并行进程数: 4
+仿真时长: 86400s (24.0 小时)
+预热步数: 300
+增量模式: 是
+============================================================
+
+Running 30 days with 4 workers...
+Simulating days:   0%|          | 0/30 [00:00<?, ?it/s]Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).Quitting (on error).
+
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:   3%|▎         | 1/30 [00:03<01:27,  3.01s/it]Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).Quitting (on error).
+
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  17%|█▋        | 5/30 [00:06<00:27,  1.09s/it]Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  30%|███       | 9/30 [00:09<00:18,  1.11it/s]Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  43%|████▎     | 13/30 [00:12<00:14,  1.20it/s]Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  57%|█████▋    | 17/30 [00:15<00:10,  1.25it/s]Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  70%|███████   | 21/30 [00:18<00:07,  1.28it/s]Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  83%|████████▎ | 25/30 [00:21<00:03,  1.29it/s]Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  97%|█████████▋| 29/30 [00:24<00:00,  1.31it/s]Simulating days: 100%|██████████| 30/30 [00:24<00:00,  1.25it/s]
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+
+============================================================
+生成完成
+============================================================
+处理天数: 30
+成功: 0
+失败: 30
+总样本数: 0
+
+============================================================
+
+错误:
+  - Day 1 failed: 仿真未连接，无法保存状态
+  - Day 3 failed: 仿真未连接，无法保存状态
+  - Day 0 failed: 仿真未连接，无法保存状态
+  - Day 2 failed: 仿真未连接，无法保存状态
+  - Day 4 failed: 仿真未连接，无法保存状态
+  - Day 5 failed: 仿真未连接，无法保存状态
+  - Day 6 failed: 仿真未连接，无法保存状态
+  - Day 7 failed: 仿真未连接，无法保存状态
+  - Day 8 failed: 仿真未连接，无法保存状态
+  - Day 9 failed: 仿真未连接，无法保存状态
+  - Day 10 failed: 仿真未连接，无法保存状态
+  - Day 11 failed: 仿真未连接，无法保存状态
+  - Day 12 failed: 仿真未连接，无法保存状态
+  - Day 14 failed: 仿真未连接，无法保存状态
+  - Day 13 failed: 仿真未连接，无法保存状态
+  - Day 15 failed: 仿真未连接，无法保存状态
+  - Day 16 failed: 仿真未连接，无法保存状态
+  - Day 17 failed: 仿真未连接，无法保存状态
+  - Day 18 failed: 仿真未连接，无法保存状态
+  - Day 19 failed: 仿真未连接，无法保存状态
+  - Day 20 failed: 仿真未连接，无法保存状态
+  - Day 21 failed: 仿真未连接，无法保存状态
+  - Day 22 failed: 仿真未连接，无法保存状态
+  - Day 23 failed: 仿真未连接，无法保存状态
+  - Day 24 failed: 仿真未连接，无法保存状态
+  - Day 26 failed: 仿真未连接，无法保存状态
+  - Day 25 failed: 仿真未连接，无法保存状态
+  - Day 27 failed: 仿真未连接，无法保存状态
+  - Day 28 failed: 仿真未连接，无法保存状态
+  - Day 29 failed: 仿真未连接，无法保存状态
+
+训练数据保存在: /home/samuel/TSC_CYCLE/outputs/data
+状态快照保存在: /home/samuel/TSC_CYCLE/data/states
+元数据: /home/samuel/TSC_CYCLE/outputs/data/metadata.json
+
+==========================================
+Stage: data
+Exit code: 0
+Timestamp: 2026-02-06T08:15:10+08:00
+==========================================
+
+
+==================================================
+=== Stage: data SUCCESS ===
+End time: 2026-02-06T08:15:10+08:00
+Exit code: 0
+Duration: 00:00:24
+==================================================
+
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T08:17:24+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T08:17:24+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --workers 4 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+============================================================
+训练数据生成配置
+============================================================
+流量文件: 30 个
+相位配置: /home/samuel/TSC_CYCLE/output/phase_config.json
+输出目录: /home/samuel/TSC_CYCLE/outputs/data
+状态快照目录: /home/samuel/TSC_CYCLE/data/states
+并行进程数: 4
+仿真时长: 86400s (24.0 小时)
+预热步数: 300
+增量模式: 是
+============================================================
+
+Running 30 days with 4 workers...
+Simulating days:   0%|          | 0/30 [00:00<?, ?it/s]Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).Quitting (on error).
+
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:   3%|▎         | 1/30 [00:03<01:27,  3.00s/it]Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+
+Quitting (on error).Quitting (on error).
+
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  17%|█▋        | 5/30 [00:06<00:27,  1.09s/it]Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).Quitting (on error).
+
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  30%|███       | 9/30 [00:09<00:18,  1.11it/s]Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  43%|████▎     | 13/30 [00:12<00:14,  1.20it/s]Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  57%|█████▋    | 17/30 [00:15<00:10,  1.25it/s]Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  70%|███████   | 21/30 [00:18<00:07,  1.28it/s]Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  83%|████████▎ | 25/30 [00:21<00:03,  1.29it/s]Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Error: File '/tmp/chengdu.net.xml' is not accessible (No such file or directory).
+Quitting (on error).
+Simulating days:  97%|█████████▋| 29/30 [00:24<00:00,  1.31it/s]Simulating days: 100%|██████████| 30/30 [00:24<00:00,  1.25it/s]
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+Error starting simulation: Connection 'default' is already active.
+
+============================================================
+生成完成
+============================================================
+处理天数: 30
+成功: 0
+失败: 30
+总样本数: 0
+
+============================================================
+
+错误:
+  - Day 0 failed: 仿真未连接，无法保存状态
+  - Day 1 failed: 仿真未连接，无法保存状态
+  - Day 2 failed: 仿真未连接，无法保存状态
+  - Day 3 failed: 仿真未连接，无法保存状态
+  - Day 5 failed: 仿真未连接，无法保存状态
+  - Day 4 failed: 仿真未连接，无法保存状态
+  - Day 6 failed: 仿真未连接，无法保存状态
+  - Day 7 failed: 仿真未连接，无法保存状态
+  - Day 9 failed: 仿真未连接，无法保存状态
+  - Day 8 failed: 仿真未连接，无法保存状态
+  - Day 10 failed: 仿真未连接，无法保存状态
+  - Day 11 failed: 仿真未连接，无法保存状态
+  - Day 13 failed: 仿真未连接，无法保存状态
+  - Day 12 failed: 仿真未连接，无法保存状态
+  - Day 14 failed: 仿真未连接，无法保存状态
+  - Day 15 failed: 仿真未连接，无法保存状态
+  - Day 17 failed: 仿真未连接，无法保存状态
+  - Day 16 failed: 仿真未连接，无法保存状态
+  - Day 18 failed: 仿真未连接，无法保存状态
+  - Day 19 failed: 仿真未连接，无法保存状态
+  - Day 21 failed: 仿真未连接，无法保存状态
+  - Day 20 failed: 仿真未连接，无法保存状态
+  - Day 22 failed: 仿真未连接，无法保存状态
+  - Day 23 failed: 仿真未连接，无法保存状态
+  - Day 24 failed: 仿真未连接，无法保存状态
+  - Day 25 failed: 仿真未连接，无法保存状态
+  - Day 26 failed: 仿真未连接，无法保存状态
+  - Day 27 failed: 仿真未连接，无法保存状态
+  - Day 28 failed: 仿真未连接，无法保存状态
+  - Day 29 failed: 仿真未连接，无法保存状态
+
+训练数据保存在: /home/samuel/TSC_CYCLE/outputs/data
+状态快照保存在: /home/samuel/TSC_CYCLE/data/states
+元数据: /home/samuel/TSC_CYCLE/outputs/data/metadata.json
+
+==========================================
+Stage: data
+Exit code: 0
+Timestamp: 2026-02-06T08:17:49+08:00
+==========================================
+
+
+==================================================
+=== Stage: data SUCCESS ===
+End time: 2026-02-06T08:17:49+08:00
+Exit code: 0
+Duration: 00:00:25
+==================================================
+
+
+==================================================
+=== Stage: data START ===
+Start time: 2026-02-06T08:25:15+08:00
+==================================================
+
+
+==========================================
+Timestamp: 2026-02-06T08:25:15+08:00
+Stage: data
+Command: python3 -m src.scripts.generate_training_data --workers 4 --warmup-steps 300 --output-dir outputs/data
+==========================================
+
+============================================================
+训练数据生成配置
+============================================================
+流量文件: 30 个
+相位配置: /home/samuel/TSC_CYCLE/output/phase_config.json
+输出目录: /home/samuel/TSC_CYCLE/outputs/data
+状态快照目录: /home/samuel/TSC_CYCLE/data/states
+并行进程数: 4
+仿真时长: 86400s (24.0 小时)
+预热步数: 300
+增量模式: 是
+============================================================
+
+Running 30 days with 4 workers...
+Simulating days:   0%|          | 0/30 [00:00<?, ?it/s]Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-01_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Simulating days:   3%|▎         | 1/30 [00:01<00:32,  1.14s/it]Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-02_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-04_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-03_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-06_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-05_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Simulating days:  17%|█▋        | 5/30 [00:02<00:10,  2.42it/s]Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-07_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-08_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-09_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Simulating days:  30%|███       | 9/30 [00:03<00:07,  2.91it/s]Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-11_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-10_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-12_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-14_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-13_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Simulating days:  43%|████▎     | 13/30 [00:04<00:05,  3.11it/s]Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-15_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-16_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-19_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Simulating days:  57%|█████▋    | 17/30 [00:05<00:04,  3.24it/s]Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-20_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-18_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-17_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-21_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-24_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-22_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Simulating days:  70%|███████   | 21/30 [00:06<00:02,  3.31it/s]Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-23_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-25_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-27_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-26_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Simulating days:  83%|████████▎ | 25/30 [00:08<00:01,  3.37it/s]Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-28_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-30_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Error: Could not build output file 'temp_grpo_checkpoint_/home/samuel/TSC_CYCLE/data/states/state_2026-01-29_T00-05-00_1159176756.xml.gz_601.xml' (No such file or directory).
+Quitting (on error).
+Simulating days:  97%|█████████▋| 29/30 [00:09<00:00,  3.42it/s]Simulating days: 100%|██████████| 30/30 [00:09<00:00,  3.26it/s]
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+警告: 路口数据文件未找到，将跳过加载并使用空配置: /home/samuel/TSC_CYCLE/sumo_sim/J54_data.json
+
+============================================================
+生成完成
+============================================================
+处理天数: 30
+成功: 0
+失败: 30
+总样本数: 0
+
+============================================================
+
+错误:
+  - Day 0 failed: Connection closed by SUMO.
+  - Day 1 failed: Connection closed by SUMO.
+  - Day 3 failed: Connection closed by SUMO.
+  - Day 2 failed: Connection closed by SUMO.
+  - Day 5 failed: Connection closed by SUMO.
+  - Day 4 failed: Connection closed by SUMO.
+  - Day 6 failed: Connection closed by SUMO.
+  - Day 7 failed: Connection closed by SUMO.
+  - Day 8 failed: Connection closed by SUMO.
+  - Day 10 failed: Connection closed by SUMO.
+  - Day 9 failed: Connection closed by SUMO.
+  - Day 11 failed: Connection closed by SUMO.
+  - Day 13 failed: Connection closed by SUMO.
+  - Day 12 failed: Connection closed by SUMO.
+  - Day 14 failed: Connection closed by SUMO.
+  - Day 15 failed: Connection closed by SUMO.
+  - Day 18 failed: Connection closed by SUMO.
+  - Day 19 failed: Connection closed by SUMO.
+  - Day 17 failed: Connection closed by SUMO.
+  - Day 16 failed: Connection closed by SUMO.
+  - Day 20 failed: Connection closed by SUMO.
+  - Day 23 failed: Connection closed by SUMO.
+  - Day 21 failed: Connection closed by SUMO.
+  - Day 22 failed: Connection closed by SUMO.
+  - Day 24 failed: Connection closed by SUMO.
+  - Day 26 failed: Connection closed by SUMO.
+  - Day 25 failed: Connection closed by SUMO.
+  - Day 27 failed: Connection closed by SUMO.
+  - Day 29 failed: Connection closed by SUMO.
+  - Day 28 failed: Connection closed by SUMO.
+
+训练数据保存在: /home/samuel/TSC_CYCLE/outputs/data
+状态快照保存在: /home/samuel/TSC_CYCLE/data/states
+元数据: /home/samuel/TSC_CYCLE/outputs/data/metadata.json
+
+==========================================
+Stage: data
+Exit code: 0
+Timestamp: 2026-02-06T08:25:24+08:00
+==========================================
+
+
+==================================================
+=== Stage: data SUCCESS ===
+End time: 2026-02-06T08:25:24+08:00
+Exit code: 0
+Duration: 00:00:09
+==================================================
+
