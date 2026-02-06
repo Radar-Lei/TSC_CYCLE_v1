@@ -30,6 +30,58 @@ from src.data_generator.models import PhaseWait, Prediction, TrainingSample
 from src.data_generator.time_period import identify_time_period
 
 
+def parse_time_to_seconds(time_str: str) -> int:
+    """
+    将 HH:MM 格式的时间字符串转换为秒数。
+
+    Args:
+        time_str: 时间字符串，格式 "HH:MM"
+
+    Returns:
+        从 0:00 开始的秒数
+
+    Example:
+        >>> parse_time_to_seconds("07:00")
+        25200
+        >>> parse_time_to_seconds("17:30")
+        63000
+    """
+    parts = time_str.split(':')
+    hours = int(parts[0])
+    minutes = int(parts[1])
+    return hours * 3600 + minutes * 60
+
+
+def is_in_time_ranges(sim_time: float, time_ranges: List[Dict[str, str]]) -> bool:
+    """
+    检查仿真时间是否在配置的时间段内。
+
+    Args:
+        sim_time: 仿真时间（秒）
+        time_ranges: 时间段列表，每个元素格式 {"start": "HH:MM", "end": "HH:MM"}
+
+    Returns:
+        True 如果在任一时间段内，否则 False
+
+    Example:
+        >>> time_ranges = [{"start": "07:00", "end": "09:00"}]
+        >>> is_in_time_ranges(28800, time_ranges)  # 08:00
+        True
+        >>> is_in_time_ranges(43200, time_ranges)  # 12:00
+        False
+    """
+    if not time_ranges:
+        return True  # 空列表表示全天采样
+
+    for tr in time_ranges:
+        start_sec = parse_time_to_seconds(tr['start'])
+        end_sec = parse_time_to_seconds(tr['end'])
+        if start_sec <= sim_time < end_sec:
+            return True
+
+    return False
+
+
 def create_temp_sumocfg(
     template_path: str,
     rou_file: str,
@@ -153,6 +205,7 @@ class DaySimulator:
         self.warmup_steps = config.get('warmup_steps', 300)
         self.sim_end = config.get('sim_end', 86400)
         self.base_date = config.get('base_date', '2026-01-01')
+        self.time_ranges = config.get('time_ranges', [])
 
         # 从 rou_file 文件名提取日期
         # 例如: chengdu.rou_2026-01-15.rou.xml -> 2026-01-15
@@ -242,7 +295,11 @@ class DaySimulator:
                         for phase in phases
                     }
 
-                    # b. 检查是否采样
+                    # b. 检查时间段过滤
+                    if not is_in_time_ranges(sim_time, self.time_ranges):
+                        continue
+
+                    # c. 检查是否采样
                     if not sampler.should_sample(sim_time, current_queue_state):
                         continue
 

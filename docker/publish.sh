@@ -168,19 +168,20 @@ load_json_config() {
 
         # 读取关键配置 (使用 // 提供默认值)
         export PARALLEL_WORKERS=$(jq -r '.simulation.parallel_workers // 4' "$config_file")
-        export EXTEND_SECONDS=$(jq -r '.simulation.extend_seconds // 5' "$config_file")
         export WARMUP_STEPS=$(jq -r '.simulation.warmup_steps // 300' "$config_file")
         export DATA_DIR=$(jq -r '.paths.data_dir // "data/training"' "$config_file")
         export SFT_OUTPUT=$(jq -r '.paths.sft_output // "outputs/sft"' "$config_file")
         export GRPO_OUTPUT=$(jq -r '.paths.grpo_output // "outputs/grpo"' "$config_file")
+        # 读取 time_ranges (JSON 数组转换为字符串)
+        export TIME_RANGES=$(jq -c '.simulation.time_ranges // []' "$config_file")
     else
         echo -e "${YELLOW}[WARNING] jq 未安装,使用默认配置${NC}" >&2
         export PARALLEL_WORKERS=4
-        export EXTEND_SECONDS=5
         export WARMUP_STEPS=300
         export DATA_DIR="data/training"
         export SFT_OUTPUT="outputs/sft"
         export GRPO_OUTPUT="outputs/grpo"
+        export TIME_RANGES="[]"
     fi
 }
 
@@ -212,7 +213,8 @@ stage_data_generation() {
         python3 -m src.scripts.generate_training_data \
             --workers "$PARALLEL_WORKERS" \
             --warmup-steps "$WARMUP_STEPS" \
-            --output-dir "outputs/data"
+            --output-dir "outputs/data" \
+            --time-ranges "$TIME_RANGES"
     then
         # 成功
         write_checkpoint "$stage_name" "success"
@@ -335,7 +337,6 @@ main() {
     echo -e "${BLUE}==========================================${NC}"
     echo -e "${BLUE}[项目目录]${NC} ${PROJECT_DIR}"
     echo -e "${BLUE}[并行数]${NC} ${PARALLEL_WORKERS:-auto}"
-    echo -e "${BLUE}[延长秒数]${NC} ${EXTEND_SECONDS:-auto}"
     echo -e "${BLUE}[预热步数]${NC} ${WARMUP_STEPS:-auto}"
     echo -e "${BLUE}[数据目录]${NC} ${DATA_DIR:-default}"
     echo -e "${BLUE}[SFT 输出]${NC} ${SFT_OUTPUT:-default}"

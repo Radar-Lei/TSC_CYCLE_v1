@@ -9,15 +9,28 @@
     "grpo": {
       "max_steps": 100,
       "num_generations": 4,
-      "learning_rate": 1e-6,
+      "learning_rate": 5e-6,
       "gradient_accumulation_steps": 4
     }
   },
   "simulation": {
-    "parallel_workers": 4,
-    "extend_seconds": 5,
+    "parallel_workers": 12,
     "warmup_steps": 300,
-    "cycle_duration": 90
+    "cycle_duration": 90,
+    "time_ranges": [
+      {
+        "start": "07:00",
+        "end": "09:00"
+      },
+      {
+        "start": "11:00",
+        "end": "13:00"
+      },
+      {
+        "start": "17:00",
+        "end": "19:00"
+      }
+    ]
   },
   "rewards": {
     "format_weight": 0.2,

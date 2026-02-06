@@ -14,6 +14,7 @@ import argparse
 import os
 import sys
 import glob
+import json
 from pathlib import Path
 
 # 添加项目根目录到 Python 路径
@@ -119,6 +120,13 @@ def parse_args():
         help='详细输出'
     )
 
+    parser.add_argument(
+        '--time-ranges',
+        type=str,
+        default='[]',
+        help='时间段配置 JSON (e.g., [{"start":"07:00","end":"09:00"}])'
+    )
+
     return parser.parse_args()
 
 
@@ -187,7 +195,8 @@ def main():
         'state_dir': state_dir,
         'warmup_steps': args.warmup_steps,
         'sim_end': args.sim_end,
-        'incremental': args.incremental
+        'incremental': args.incremental,
+        'time_ranges': json.loads(args.time_ranges) if args.time_ranges else []
     }
 
     # 显示配置
@@ -202,6 +211,12 @@ def main():
     print(f"仿真时长: {args.sim_end}s ({args.sim_end/3600:.1f} 小时)")
     print(f"预热步数: {args.warmup_steps}")
     print(f"增量模式: {'是' if args.incremental else '否'}")
+    if config['time_ranges']:
+        print(f"时间段过滤: {len(config['time_ranges'])} 个时段")
+        for tr in config['time_ranges']:
+            print(f"  - {tr['start']} ~ {tr['end']}")
+    else:
+        print(f"时间段过滤: 全天")
     print("=" * 60)
     print()
 

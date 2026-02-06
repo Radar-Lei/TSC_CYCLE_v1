@@ -170,8 +170,32 @@ build_image() {
     fi
 }
 
+# 清理之前的容器
+cleanup_containers() {
+    echo -e "${BLUE}[清理]${NC} 检查并清理之前的容器..."
+
+    # 查找使用相同镜像的容器
+    local containers
+    containers=$(docker ps -aq --filter "ancestor=${IMAGE_NAME}" 2>/dev/null || true)
+
+    if [[ -n "$containers" ]]; then
+        echo -e "${YELLOW}  发现旧容器,正在清理...${NC}"
+        # 停止运行中的容器
+        docker stop $containers 2>/dev/null || true
+        # 删除容器
+        docker rm -f $containers 2>/dev/null || true
+        echo -e "${GREEN}  旧容器已清理${NC}"
+    else
+        echo -e "${GREEN}  无需清理${NC}"
+    fi
+    echo ""
+}
+
 # 运行容器执行训练
 run_container() {
+    # 先清理之前的容器
+    cleanup_containers
+
     echo -e "${BLUE}===========================================${NC}"
     echo -e "${GREEN}启动 Docker 容器执行训练流程${NC}"
     echo -e "${BLUE}===========================================${NC}"
