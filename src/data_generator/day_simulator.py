@@ -64,11 +64,22 @@ def create_temp_sumocfg(
     if gui_settings_elem is not None:
         root.remove(gui_settings_elem)
 
-    # 修改 route-files
+    # 修改 input 元素
     input_elem = root.find('input')
     if input_elem is None:
         input_elem = ET.SubElement(root, 'input')
 
+    # 修改 net-file - 转换为绝对路径
+    net_elem = input_elem.find('net-file')
+    if net_elem is not None:
+        net_file = net_elem.get('value')
+        # 如果是相对路径，基于模板文件目录解析为绝对路径
+        if not os.path.isabs(net_file):
+            template_dir = os.path.dirname(os.path.abspath(template_path))
+            net_file = os.path.join(template_dir, net_file)
+        net_elem.set('value', os.path.abspath(net_file))
+
+    # 修改 route-files
     route_elem = input_elem.find('route-files')
     if route_elem is None:
         route_elem = ET.SubElement(input_elem, 'route-files')
