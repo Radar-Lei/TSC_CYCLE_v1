@@ -205,3 +205,55 @@ class TrafficCollector:
             ['1159176756', '1492574988', '1492574990']
         """
         return list(self._tl_phases.keys())
+
+    def get_initial_queue_by_phase(self, tl_id: str) -> Dict[int, int]:
+        """
+        获取各相位绿灯控制车道的初始排队数。
+
+        这是"周期开始时瞬时排队分配到各相位"的实现。
+        遍历各相位，累加其 green_lanes 上的停止车辆数。
+
+        Args:
+            tl_id: 信号灯 ID
+
+        Returns:
+            {phase_index: queue_count}，获取失败返回空字典
+
+        Example:
+            >>> collector = TrafficCollector(config)
+            >>> queues = collector.get_initial_queue_by_phase('1159176756')
+            >>> print(queues)
+            {0: 15, 1: 8, 2: 12, 3: 5}
+        """
+        if not TRACI_AVAILABLE:
+            return {}
+
+        if tl_id not in self._tl_phases:
+            return {}
+
+        initial_queues = {}
+        for phase in self._tl_phases[tl_id]:
+            phase_index = phase['phase_index']
+            queue_count = self.get_queue_vehicles(tl_id, phase_index)
+            initial_queues[phase_index] = queue_count
+
+        return initial_queues
+
+    def get_current_phase(self, tl_id: str) -> int:
+        """
+        获取信号灯当前相位索引。
+
+        Args:
+            tl_id: 信号灯 ID
+
+        Returns:
+            当前相位索引，获取失败返回 -1
+        """
+        if not TRACI_AVAILABLE:
+            return -1
+
+        try:
+            return traci.trafficlight.getPhase(tl_id)
+        except Exception:
+            return -1
+

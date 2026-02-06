@@ -16,7 +16,7 @@
   "simulation": {
     "parallel_workers": 12,
     "warmup_steps": 300,
-    "cycle_duration": 90,
+    "max_rou_files": 12,
     "time_ranges": [
       {
         "start": "07:00",

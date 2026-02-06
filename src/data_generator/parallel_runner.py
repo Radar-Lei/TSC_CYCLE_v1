@@ -127,6 +127,55 @@ class ParallelRunner:
         os.makedirs(config['output_dir'], exist_ok=True)
         os.makedirs(config['state_dir'], exist_ok=True)
 
+    def _rebuild_from_existing_jsonl(self) -> Dict[str, Any]:
+        """
+        从已存在的 .jsonl 文件重建统计信息
+        
+        Returns:
+            统计结果字典
+        """
+        samples_by_day = {}
+        samples_by_period = {'morning_peak': 0, 'evening_peak': 0, 'off_peak': 0}
+        total_samples = 0
+        
+        # 扫描 output_dir 下的所有 samples_*.jsonl 文件
+        jsonl_files = glob.glob(os.path.join(self.config['output_dir'], 'samples_*.jsonl'))
+        
+        for jsonl_file in jsonl_files:
+            # 从文件名提取日期
+            basename = os.path.basename(jsonl_file)
+            if basename.startswith('samples_') and basename.endswith('.jsonl'):
+                date = basename[8:-6]  # samples_2026-01-01.jsonl -> 2026-01-01
+            else:
+                continue
+            
+            # 统计文件行数和时段分布
+            day_count = 0
+            with open(jsonl_file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    if line.strip():
+                        day_count += 1
+                        try:
+                            sample = json.loads(line)
+                            period = sample.get('metadata', {}).get('time_period', 'off_peak')
+                            if period in samples_by_period:
+                                samples_by_period[period] += 1
+                        except json.JSONDecodeError:
+                            pass
+            
+            samples_by_day[date] = day_count
+            total_samples += day_count
+        
+        return {
+            "total_days": len(jsonl_files),
+            "successful": len(jsonl_files),
+            "failed": 0,
+            "total_samples": total_samples,
+            "samples_by_day": samples_by_day,
+            "samples_by_period": samples_by_period,
+            "errors": []
+        }
+
     def run(self) -> Dict[str, Any]:
         """
         运行并行仿真
@@ -165,15 +214,15 @@ class ParallelRunner:
 
         if not tasks:
             print("No tasks to run (all days already processed)")
-            return {
-                "total_days": 0,
-                "successful": 0,
-                "failed": 0,
-                "total_samples": 0,
-                "samples_by_day": {},
-                "samples_by_period": {},
-                "errors": []
-            }
+            # 从已存在的 jsonl 文件重建统计信息并生成 metadata
+            existing_results = self._rebuild_from_existing_jsonl()
+            if existing_results['total_samples'] > 0:
+                metadata = generate_metadata(existing_results, self.config)
+                metadata_path = os.path.join(self.config['output_dir'], 'metadata.json')
+                with open(metadata_path, 'w', encoding='utf-8') as f:
+                    json.dump(metadata, f, ensure_ascii=False, indent=2)
+                print(f"从已有数据重建 metadata.json: {existing_results['total_samples']} 条样本")
+            return existing_results
 
         # 2. 使用 multiprocessing.Pool 执行
         print(f"Running {len(tasks)} days with {self.num_workers} workers...")
@@ -230,15 +279,15 @@ class ParallelRunner:
 
 
 def run_parallel_simulation(
-    rou_dir: str,
+    rou_files: List[str],
     config: Dict[str, Any],
     num_workers: int = None
 ) -> Dict[str, Any]:
     """
-    便捷函数,扫描目录并运行并行仿真
+    便捷函数,运行并行仿真
 
     Args:
-        rou_dir: 流量文件目录
+        rou_files: 流量文件列表 (List[str]) 或目录路径 (str，向后兼容)
         config: 配置字典
         num_workers: 并行进程数 (默认自动检测)
 
@@ -254,19 +303,20 @@ def run_parallel_simulation(
         ...     'warmup_steps': 300,
         ...     'sim_end': 86400
         ... }
-        >>> results = run_parallel_simulation(
-        ...     'sumo_simulation/environments/chengdu/chengdu_daily',
-        ...     config,
-        ...     num_workers=4
-        ... )
+        >>> rou_files = ['day1.rou.xml', 'day2.rou.xml']
+        >>> results = run_parallel_simulation(rou_files, config, num_workers=4)
         >>> print(results['total_samples'])
         9523
     """
-    # 扫描 rou_dir 下的 *.rou.xml 文件
-    rou_files = glob.glob(os.path.join(rou_dir, '*.rou.xml'))
+    # 向后兼容: 如果传入的是目录路径,则扫描目录
+    if isinstance(rou_files, str):
+        rou_dir = rou_files
+        rou_files = glob.glob(os.path.join(rou_dir, '*.rou.xml'))
+        if not rou_files:
+            raise ValueError(f"No .rou.xml files found in {rou_dir}")
 
     if not rou_files:
-        raise ValueError(f"No .rou.xml files found in {rou_dir}")
+        raise ValueError("No .rou.xml files provided")
 
     # 创建 ParallelRunner 并运行
     runner = ParallelRunner(rou_files, config, num_workers)

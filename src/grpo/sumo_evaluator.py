@@ -158,14 +158,17 @@ class SUMOEvaluator:
 
     def apply_phase_plan(self, tl_id: str, plan: List[Dict]) -> bool:
         """
-        应用模型生成的周期方案
+        验证模型生成的周期方案是否有效
 
         Args:
             tl_id: 信号灯 ID
             plan: 相位配置列表,格式: [{"phase_id": 1, "final": 40}, {"phase_id": 2, "final": 30}]
 
         Returns:
-            是否成功应用
+            是否有效
+
+        Note:
+            实际的相位切换在 run_cycle() 中按顺序执行
         """
         try:
             if not plan:
@@ -180,8 +183,8 @@ class SUMOEvaluator:
             logic = traci.trafficlight.getAllProgramLogics(tl_id, useConnection=self.connection_label)[0]
             num_phases = len(logic.phases)
 
-            # 验证并应用方案
-            for i, phase_config in enumerate(plan):
+            # 验证方案有效性
+            for phase_config in plan:
                 phase_id = phase_config.get('phase_id')
                 duration = phase_config.get('final')
 
@@ -193,34 +196,25 @@ class SUMOEvaluator:
                 if duration is None or duration < 5 or duration > 120:
                     raise ValueError(f"Invalid duration: {duration}")
 
-                # 切换到该相位
-                traci.trafficlight.setPhase(
-                    tl_id,
-                    phase_id,
-                    useConnection=self.connection_label
-                )
-
-                # 设置相位持续时间
-                traci.trafficlight.setPhaseDuration(
-                    tl_id,
-                    duration,
-                    useConnection=self.connection_label
-                )
-
             return True
 
         except Exception as e:
-            raise RuntimeError(f"Failed to apply phase plan: {str(e)}")
+            raise RuntimeError(f"Failed to validate phase plan: {str(e)}")
 
-    def run_cycle(self, tl_id: str) -> EvaluationResult:
+    def run_cycle(self, tl_id: str, plan: List[Dict]) -> EvaluationResult:
         """
-        运行一个周期并收集指标
+        按照模型给出的相位方案执行完整周期并收集指标
 
         Args:
             tl_id: 信号灯 ID
+            plan: 相位配置列表,格式: [{"phase_id": 1, "final": 40}, ...]
 
         Returns:
             评估结果
+
+        Throughput 计算说明:
+            统计在评估周期内离开信号灯控制车道的车辆数 (即成功通过路口的车辆)
+            通过追踪每个时间步车道上的车辆 ID 变化来计算
         """
         try:
             # 获取信号灯控制的车道
@@ -233,52 +227,91 @@ class SUMOEvaluator:
 
             # 初始化累计指标
             total_queue = 0.0
-            total_throughput = 0
             total_waiting = 0.0
             step_count = 0
 
-            # 运行周期
-            for step in range(self.cycle_duration):
-                # 推进仿真
-                traci.simulationStep(useConnection=self.connection_label)
+            # 用于计算精确通过量的变量
+            # 记录初始时刻在控制车道上的所有车辆
+            prev_vehicles_on_lanes: set = set()
+            for lane_id in controlled_lanes:
+                try:
+                    vehicle_ids = traci.lane.getLastStepVehicleIDs(
+                        lane_id,
+                        useConnection=self.connection_label
+                    )
+                    prev_vehicles_on_lanes.update(vehicle_ids)
+                except traci.exceptions.TraCIException:
+                    continue
 
-                # 收集指标
-                step_queue = 0.0
-                step_waiting = 0.0
+            # 统计离开控制车道的车辆 (通过路口的车辆)
+            vehicles_passed: set = set()
 
-                for lane_id in controlled_lanes:
-                    try:
-                        # 排队车辆数
-                        halting = traci.lane.getLastStepHaltingNumber(
-                            lane_id,
-                            useConnection=self.connection_label
-                        )
-                        step_queue += halting
+            # 按相位顺序执行完整周期
+            for phase_config in plan:
+                phase_id = phase_config['phase_id']
+                duration = int(phase_config['final'])
 
-                        # 等待时间
-                        waiting = traci.lane.getWaitingTime(
-                            lane_id,
-                            useConnection=self.connection_label
-                        )
-                        step_waiting += waiting
-
-                    except traci.exceptions.TraCIException:
-                        continue
-
-                # 通过车辆数 (departed vehicles)
-                departed = traci.simulation.getDepartedNumber(
+                # 切换到该相位
+                traci.trafficlight.setPhase(
+                    tl_id,
+                    phase_id,
                     useConnection=self.connection_label
                 )
 
-                # 累加
-                total_queue += step_queue
-                total_throughput += departed
-                total_waiting += step_waiting
-                step_count += 1
+                # 执行该相位的完整时长
+                for _ in range(duration):
+                    # 推进仿真
+                    traci.simulationStep(useConnection=self.connection_label)
+
+                    # 收集指标
+                    step_queue = 0.0
+                    step_waiting = 0.0
+                    current_vehicles_on_lanes: set = set()
+
+                    for lane_id in controlled_lanes:
+                        try:
+                            # 排队车辆数
+                            halting = traci.lane.getLastStepHaltingNumber(
+                                lane_id,
+                                useConnection=self.connection_label
+                            )
+                            step_queue += halting
+
+                            # 等待时间
+                            waiting = traci.lane.getWaitingTime(
+                                lane_id,
+                                useConnection=self.connection_label
+                            )
+                            step_waiting += waiting
+
+                            # 获取当前车道上的车辆 ID
+                            vehicle_ids = traci.lane.getLastStepVehicleIDs(
+                                lane_id,
+                                useConnection=self.connection_label
+                            )
+                            current_vehicles_on_lanes.update(vehicle_ids)
+
+                        except traci.exceptions.TraCIException:
+                            continue
+
+                    # 计算本步离开控制车道的车辆 (在上一步存在但本步不在)
+                    left_vehicles = prev_vehicles_on_lanes - current_vehicles_on_lanes
+                    vehicles_passed.update(left_vehicles)
+
+                    # 更新上一步的车辆集合
+                    prev_vehicles_on_lanes = current_vehicles_on_lanes
+
+                    # 累加
+                    total_queue += step_queue
+                    total_waiting += step_waiting
+                    step_count += 1
 
             # 计算平均值
             avg_queue = total_queue / step_count if step_count > 0 else 0.0
             avg_waiting = total_waiting / step_count if step_count > 0 else 0.0
+
+            # 通过量 = 离开控制车道的车辆数
+            total_throughput = len(vehicles_passed)
 
             return EvaluationResult(
                 queue_length=avg_queue,
@@ -366,8 +399,8 @@ def evaluate_single(args: tuple) -> EvaluationResult:
         # 应用方案
         evaluator.apply_phase_plan(tl_id, plan)
 
-        # 运行评估
-        result = evaluator.run_cycle(tl_id)
+        # 运行评估 (按模型给出的相位方案执行完整周期)
+        result = evaluator.run_cycle(tl_id, plan)
 
         # 取消超时
         signal.alarm(0)

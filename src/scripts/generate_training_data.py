@@ -3,11 +3,11 @@
 训练数据生成 CLI
 
 并行运行 SUMO 仿真,生成包含早/平/晚高峰标签的训练数据。
+时段配置从 config/config.json 读取。
 
 使用示例:
     python -m src.scripts.generate_training_data
     python -m src.scripts.generate_training_data --workers 4 --dry-run
-    python -m src.scripts.generate_training_data --rou-dir path/to/daily --verbose
 """
 
 import argparse
@@ -24,10 +24,16 @@ sys.path.insert(0, str(project_root))
 from src.data_generator.parallel_runner import run_parallel_simulation
 
 
+def load_config(config_path: str) -> dict:
+    """加载 JSON 配置文件"""
+    with open(config_path, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+
 def parse_args():
     """解析命令行参数"""
     parser = argparse.ArgumentParser(
-        description='生成包含时段标签的 GRPO 训练数据',
+        description='生成包含时段标签的训练数据',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:
@@ -39,10 +45,14 @@ def parse_args():
 
   # Dry-run 模式 (仅显示将处理的文件)
   python -m src.scripts.generate_training_data --dry-run
-
-  # 详细输出
-  python -m src.scripts.generate_training_data --verbose
         """
+    )
+
+    parser.add_argument(
+        '--config',
+        type=str,
+        default='config/config.json',
+        help='配置文件路径 (默认: config/config.json)'
     )
 
     parser.add_argument(
@@ -62,8 +72,8 @@ def parse_args():
     parser.add_argument(
         '--output-dir',
         type=str,
-        default='data/training',
-        help='训练数据输出目录 (默认: data/training)'
+        default='outputs/data',
+        help='训练数据输出目录 (默认: outputs/data)'
     )
 
     parser.add_argument(
@@ -77,7 +87,7 @@ def parse_args():
         '--workers',
         type=int,
         default=None,
-        help='并行进程数 (默认: 自动检测 min(cpu_count, 8))'
+        help='并行进程数 (默认: 从 config.json 读取)'
     )
 
     parser.add_argument(
@@ -90,8 +100,8 @@ def parse_args():
     parser.add_argument(
         '--warmup-steps',
         type=int,
-        default=300,
-        help='预热步数 (默认: 300)'
+        default=None,
+        help='预热步数 (默认: 从 config.json 读取)'
     )
 
     parser.add_argument(
@@ -121,10 +131,10 @@ def parse_args():
     )
 
     parser.add_argument(
-        '--time-ranges',
-        type=str,
-        default='[]',
-        help='时间段配置 JSON (e.g., [{"start":"07:00","end":"09:00"}])'
+        '--max-rou-files',
+        type=int,
+        default=None,
+        help='最多处理的 .rou.xml 文件数量 (默认: 从 config.json 读取，null 表示不限制)'
     )
 
     return parser.parse_args()
@@ -133,6 +143,22 @@ def parse_args():
 def main():
     """主函数"""
     args = parse_args()
+
+    # 加载配置文件
+    config_path = os.path.abspath(args.config)
+    if os.path.exists(config_path):
+        json_config = load_config(config_path)
+        sim_config = json_config.get('simulation', {})
+    else:
+        print(f"警告: 配置文件不存在: {config_path}，使用默认配置")
+        json_config = {}
+        sim_config = {}
+
+    # 从配置文件读取参数（命令行参数优先）
+    time_ranges = sim_config.get('time_ranges', [])
+    warmup_steps = args.warmup_steps or sim_config.get('warmup_steps', 300)
+    workers = args.workers or sim_config.get('parallel_workers', None)
+    max_rou_files = args.max_rou_files if args.max_rou_files is not None else sim_config.get('max_rou_files', None)
 
     # 转换为绝对路径
     rou_dir = os.path.abspath(args.rou_dir)
@@ -156,6 +182,25 @@ def main():
         print(f"错误: 在 {rou_dir} 中未找到 .rou.xml 文件")
         sys.exit(1)
 
+    # 应用 max_rou_files 限制
+    total_rou_files = len(rou_files)
+    if max_rou_files is not None and max_rou_files > 0:
+        rou_files = rou_files[:max_rou_files]
+        print(f"注意: 限制处理前 {len(rou_files)} 个文件 (共 {total_rou_files} 个)")
+
+    # 计算仿真时长（基于 time_ranges）
+    if time_ranges:
+        total_sim_hours = 0
+        for tr in time_ranges:
+            start_parts = tr['start'].split(':')
+            end_parts = tr['end'].split(':')
+            start_sec = int(start_parts[0]) * 3600 + int(start_parts[1]) * 60
+            end_sec = int(end_parts[0]) * 3600 + int(end_parts[1]) * 60
+            total_sim_hours += (end_sec - start_sec) / 3600
+        sim_desc = f"{len(time_ranges)} 个时段共 {total_sim_hours:.1f} 小时"
+    else:
+        sim_desc = f"全天 {args.sim_end/3600:.1f} 小时"
+
     # Dry-run 模式
     if args.dry_run:
         print("=" * 60)
@@ -165,19 +210,23 @@ def main():
         print(f"相位配置: {phase_config}")
         print(f"输出目录: {output_dir}")
         print(f"状态快照目录: {state_dir}")
-        print(f"并行进程数: {args.workers or 'auto'}")
-        print(f"仿真结束时间: {args.sim_end}s")
-        print(f"预热步数: {args.warmup_steps}")
+        print(f"并行进程数: {workers or 'auto'}")
+        print(f"仿真范围: {sim_desc}")
+        if time_ranges:
+            for tr in time_ranges:
+                print(f"  - {tr['start']} ~ {tr['end']}")
+        print(f"预热步数: {warmup_steps}")
         print(f"增量模式: {args.incremental}")
         print()
         print(f"找到 {len(rou_files)} 个流量文件:")
-        for i, f in enumerate(rou_files, 1):
+        for i, f in enumerate(rou_files[:10], 1):
             print(f"  {i}. {os.path.basename(f)}")
+        if len(rou_files) > 10:
+            print(f"  ... 共 {len(rou_files)} 个文件")
         print()
-        print("(使用 --no-dry-run 实际运行仿真)")
+        print("(移除 --dry-run 实际运行仿真)")
         return
 
-    # 配置字典
     # 需要 sumocfg 路径
     sumocfg = os.path.join(
         os.path.dirname(rou_dir),
@@ -188,15 +237,16 @@ def main():
         print(f"错误: SUMO 配置文件不存在: {sumocfg}")
         sys.exit(1)
 
+    # 配置字典
     config = {
         'sumocfg': sumocfg,
         'phase_config_path': phase_config,
         'output_dir': output_dir,
         'state_dir': state_dir,
-        'warmup_steps': args.warmup_steps,
+        'warmup_steps': warmup_steps,
         'sim_end': args.sim_end,
         'incremental': args.incremental,
-        'time_ranges': json.loads(args.time_ranges) if args.time_ranges else []
+        'time_ranges': time_ranges
     }
 
     # 显示配置
@@ -207,25 +257,22 @@ def main():
     print(f"相位配置: {phase_config}")
     print(f"输出目录: {output_dir}")
     print(f"状态快照目录: {state_dir}")
-    print(f"并行进程数: {args.workers or 'auto'}")
-    print(f"仿真时长: {args.sim_end}s ({args.sim_end/3600:.1f} 小时)")
-    print(f"预热步数: {args.warmup_steps}")
-    print(f"增量模式: {'是' if args.incremental else '否'}")
-    if config['time_ranges']:
-        print(f"时间段过滤: {len(config['time_ranges'])} 个时段")
-        for tr in config['time_ranges']:
+    print(f"并行进程数: {workers or 'auto'}")
+    print(f"仿真范围: {sim_desc}")
+    if time_ranges:
+        for tr in time_ranges:
             print(f"  - {tr['start']} ~ {tr['end']}")
-    else:
-        print(f"时间段过滤: 全天")
+    print(f"预热步数: {warmup_steps}")
+    print(f"增量模式: {'是' if args.incremental else '否'}")
     print("=" * 60)
     print()
 
     # 运行并行仿真
     try:
         results = run_parallel_simulation(
-            rou_dir,
+            rou_files,
             config,
-            num_workers=args.workers
+            num_workers=workers
         )
 
         # 输出结果
