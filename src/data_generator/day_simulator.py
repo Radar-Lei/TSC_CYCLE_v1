@@ -191,11 +191,13 @@ class DaySimulator:
         # 可选: 只处理指定的交叉口子集 (用于交叉口级别并行)
         self.target_tl_ids = set(config.get('target_tl_ids', []))
 
-        # 从 rou_file 文件名提取日期
-        rou_basename = os.path.basename(self.rou_file)
-        if '_2026-' in rou_basename:
-            date_part = rou_basename.split('_2026-')[1].split('.rou.xml')[0]
-            self.base_date = f'2026-{date_part}'
+        # 仅当 config 中没有提供 base_date 时，才从 rou_file 文件名提取日期
+        # 这样可以支持交叉口并行模式中使用的临时文件名
+        if 'base_date' not in config:
+            rou_basename = os.path.basename(self.rou_file)
+            if '_2026-' in rou_basename:
+                date_part = rou_basename.split('_2026-')[1].split('.rou.xml')[0]
+                self.base_date = f'2026-{date_part}'
 
         # 计算仿真区间
         self.simulation_ranges = get_simulation_ranges(

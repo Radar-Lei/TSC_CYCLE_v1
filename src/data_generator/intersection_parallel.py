@@ -57,20 +57,22 @@ def simulate_intersection_group(args: tuple) -> Dict[str, Any]:
     仿真单个交叉口组的入口函数
     
     Args:
-        args: (task_id, rou_file, config, tl_ids) 元组
+        args: (task_id, rou_file, config, tl_ids, date) 元组
               - task_id: 任务 ID (用于端口分配)
               - rou_file: 流量文件路径 (可以是临时副本)
               - config: 配置字典
               - tl_ids: 该任务负责的交叉口 ID 列表
+              - date: 日期字符串 (避免从临时文件名解析)
               
     Returns:
         仿真结果字典
     """
-    task_id, rou_file, config, tl_ids = args
+    task_id, rou_file, config, tl_ids, date = args
     
-    # 创建修改后的配置，只处理指定的交叉口
+    # 创建修改后的配置，只处理指定的交叉口，并设置日期
     modified_config = config.copy()
     modified_config['target_tl_ids'] = tl_ids
+    modified_config['base_date'] = date  # 直接传递日期，避免从文件名解析
     
     # DaySimulator 已支持 target_tl_ids，直接使用
     simulator = DaySimulator(task_id, rou_file, modified_config)
@@ -193,7 +195,8 @@ class IntersectionParallelRunner:
                         task_id,
                         temp_rou,
                         self.config,
-                        tl_group
+                        tl_group,
+                        date  # 传递日期，避免从临时文件名解析
                     ))
                     task_id += 1
             
