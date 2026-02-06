@@ -188,6 +188,8 @@ class DaySimulator:
         self.sim_end = config.get('sim_end', 86400)
         self.base_date = config.get('base_date', '2026-01-01')
         self.time_ranges = config.get('time_ranges', [])
+        # 可选: 只处理指定的交叉口子集 (用于交叉口级别并行)
+        self.target_tl_ids = set(config.get('target_tl_ids', []))
 
         # 从 rou_file 文件名提取日期
         rou_basename = os.path.basename(self.rou_file)
@@ -248,7 +250,13 @@ class DaySimulator:
             )
 
             # 获取所有信号灯 ID
-            tl_ids = collector.get_all_tl_ids()
+            all_tl_ids = collector.get_all_tl_ids()
+            
+            # 如果指定了 target_tl_ids，只处理子集
+            if self.target_tl_ids:
+                tl_ids = [tl_id for tl_id in all_tl_ids if tl_id in self.target_tl_ids]
+            else:
+                tl_ids = all_tl_ids
 
             # 为每个信号灯创建周期检测器
             cycle_detectors = {tl_id: CycleDetector(tl_id) for tl_id in tl_ids}

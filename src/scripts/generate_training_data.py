@@ -22,6 +22,7 @@ project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from src.data_generator.parallel_runner import run_parallel_simulation
+from src.data_generator.intersection_parallel import IntersectionParallelRunner
 
 
 def load_config(config_path: str) -> dict:
@@ -135,6 +136,20 @@ def parse_args():
         type=int,
         default=None,
         help='最多处理的 .rou.xml 文件数量 (默认: 从 config.json 读取，null 表示不限制)'
+    )
+
+    parser.add_argument(
+        '--intersection-parallel',
+        action='store_true',
+        default=False,
+        help='启用交叉口级别并行模式 (通过复制 .rou.xml 实现真正的交叉口并行)'
+    )
+
+    parser.add_argument(
+        '--intersection-groups',
+        type=int,
+        default=None,
+        help='交叉口并行模式下，将交叉口分成多少组 (默认: 等于 workers 数)'
     )
 
     return parser.parse_args()
@@ -269,11 +284,23 @@ def main():
 
     # 运行并行仿真
     try:
-        results = run_parallel_simulation(
-            rou_files,
-            config,
-            num_workers=workers
-        )
+        if args.intersection_parallel:
+            # 交叉口级别并行模式
+            print(f"使用交叉口级别并行模式")
+            runner = IntersectionParallelRunner(
+                rou_files=rou_files,
+                config=config,
+                num_workers=workers,
+                intersection_groups=args.intersection_groups
+            )
+            results = runner.run()
+        else:
+            # 传统按天并行模式
+            results = run_parallel_simulation(
+                rou_files,
+                config,
+                num_workers=workers
+            )
 
         # 输出结果
         print()

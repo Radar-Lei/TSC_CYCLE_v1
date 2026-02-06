@@ -255,11 +255,12 @@ stage_data_generation() {
     # 写入开始检查点
     write_checkpoint "$stage_name" "running"
 
-    # 执行数据生成 (time_ranges 从 config.json 读取)
+    # 执行数据生成 (交叉口级别并行模式)
     if run_with_logging "$stage_name" \
         python3 -m src.scripts.generate_training_data \
             --workers "$PARALLEL_WORKERS" \
             --warmup-steps "$WARMUP_STEPS" \
+            --intersection-parallel \
             --output-dir "outputs/data"
     then
         # 成功
