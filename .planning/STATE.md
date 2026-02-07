@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 2 of 4 (Data Generation)
-Plan: 2 of 3
-Status: In progress
-Last activity: 2026-02-07 — Completed 02-02-PLAN.md
+Plan: 3 of 3
+Status: Phase complete
+Last activity: 2026-02-07 — Completed 02-03-PLAN.md
 
-Progress: [████░░░░░░] 40%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: 4.0 minutes
-- Total execution time: 0.33 hours
+- Total execution time: 0.40 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 3 | 14 min | 4.7 min |
-| 02 | 2 | 7 min | 3.5 min |
+| 02 | 3 | 11 min | 3.7 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (3 min), 01-03 (6 min), 02-01 (3 min), 02-02 (4 min)
+- Last 5 plans: 01-03 (6 min), 02-01 (3 min), 02-02 (4 min), 02-03 (4 min)
 - Trend: Consistent high velocity (~4 min/plan)
 
 *Updated after each plan completion*
@@ -50,6 +50,7 @@ Recent decisions affecting current work:
 - 统一输出路径到 outputs/（01-03）
 - CoT 空占位策略 — <think>\n\n</think> 不预生成推理文本，让模型自主学习（02-02）
 - 智能饱和度插值 — final 基于 pred_saturation 线性插值 min_green 到 max_green（02-02）
+- 动态首绿相位检测 — CycleDetector 从 phase_config 提取首绿相位 index，支持任意相位序列（02-03）
 
 ### Pending Todos
 
@@ -63,15 +64,18 @@ None yet.
 - ✓ Shell 脚本已简化为 4 个独立脚本
 - ✓ 验证通过（10/10 must-haves）
 
-**Phase 2 concerns:**
+**Phase 2 (complete):**
 - ✓ 数据生成核心流程参数已修复（02-01 完成）
 - ✓ 交叉口级并行执行支持完整（metadata 字段已添加）
 - ✓ CoT 格式 SFT 训练数据转换完成（02-02 完成）
 - ✓ 周期边界全量采样验证通过（02-02 验证）
-- 待完成动态绿相检测（02-03）
+- ✓ 动态绿相检测完成（02-03 完成）
+
+**Phase 3 readiness:**
+- 数据生成流程完整，可开始 SFT/GRPO 训练流水线
 
 ## Session Continuity
 
 Last session: 2026-02-07
-Stopped at: Phase 2, Plan 2 complete
-Resume file: .planning/phases/02-data-generation/02-03-PLAN.md
+Stopped at: Phase 2 complete (all 3 plans)
+Resume file: Phase 3 planning (to be created)

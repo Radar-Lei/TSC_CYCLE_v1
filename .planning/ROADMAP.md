@@ -13,7 +13,7 @@
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Code Cleanup** - 清理冗余代码和配置，简化并行逻辑
-- [ ] **Phase 2: Data Generation** - 修复数据生成流程，实现稳定的交叉口级并行
+- [x] **Phase 2: Data Generation** - 修复数据生成流程，实现稳定的交叉口级并行
 - [ ] **Phase 3: Training Pipeline** - 完善 SFT 和 GRPO 训练流程
 - [ ] **Phase 4: Execution & Validation** - 提供统一执行入口和验证机制
 
@@ -47,9 +47,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — 修复仿真参数、输出路径和场景发现验证
-- [ ] 02-02-PLAN.md — 实现 CoT 格式训练数据转换（二度生成）
-- [ ] 02-03-PLAN.md — 修复 CycleDetector 动态检测首绿相位
+- [x] 02-01-PLAN.md — 修复仿真参数、输出路径和场景发现验证
+- [x] 02-02-PLAN.md — 实现 CoT 格式训练数据转换（二度生成）
+- [x] 02-03-PLAN.md — 修复 CycleDetector 动态检测首绿相位
 
 ### Phase 3: Training Pipeline
 **Goal**: SFT 和 GRPO 训练能够正常执行并产出模型
@@ -86,7 +86,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Code Cleanup | 3/3 | ✓ Complete | 2026-02-07 |
-| 2. Data Generation | 0/3 | In progress | - |
+| 2. Data Generation | 3/3 | ✓ Complete | 2026-02-07 |
 | 3. Training Pipeline | 0/TBD | Not started | - |
 | 4. Execution & Validation | 0/TBD | Not started | - |
 
