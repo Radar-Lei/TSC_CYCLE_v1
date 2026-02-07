@@ -44,11 +44,12 @@ Plans:
   2. 数据生成能够以交叉口为单位成功并行执行
   3. 每个场景运行 3600 秒并检测周期边界
   4. 原始数据和 CoT 格式训练数据都能正确生成为 JSONL
-**Plans**: 2 plans
+**Plans**: 3 plans
 
 Plans:
 - [ ] 02-01-PLAN.md — 修复仿真参数、输出路径和场景发现验证
 - [ ] 02-02-PLAN.md — 实现 CoT 格式训练数据转换（二度生成）
+- [ ] 02-03-PLAN.md — 修复 CycleDetector 动态检测首绿相位
 
 ### Phase 3: Training Pipeline
 **Goal**: SFT 和 GRPO 训练能够正常执行并产出模型
@@ -85,7 +86,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Code Cleanup | 3/3 | ✓ Complete | 2026-02-07 |
-| 2. Data Generation | 0/2 | In progress | - |
+| 2. Data Generation | 0/3 | In progress | - |
 | 3. Training Pipeline | 0/TBD | Not started | - |
 | 4. Execution & Validation | 0/TBD | Not started | - |
 
