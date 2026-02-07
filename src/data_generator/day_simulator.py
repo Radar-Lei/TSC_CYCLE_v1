@@ -10,7 +10,8 @@
 - create_temp_sumocfg: 创建临时 SUMO 配置文件
 
 采样策略:
-- 检测周期边界（phase 从非0切换到0）
+- 检测周期边界（phase 从其他相位切换到第一个绿灯相位）
+- 第一个绿灯相位 index 从 phase_config 动态获取
 - 在周期开始时保存 SUMO 状态
 - 计算预测排队 = 初始排队 + 周期累积 + 波动
 - 计算预测饱和度 = 预测排队 / capacity
@@ -231,7 +232,7 @@ class DaySimulator:
                 tl_ids = all_tl_ids
 
             # 为每个信号灯创建周期检测器
-            cycle_detectors = {tl_id: CycleDetector(tl_id) for tl_id in tl_ids}
+            cycle_detectors = {tl_id: CycleDetector(tl_id, phase_config) for tl_id in tl_ids}
 
             # 5. 启动仿真
             self.simulator.start_simulation()
