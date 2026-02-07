@@ -16,7 +16,8 @@
   "simulation": {
     "parallel_workers": 12,
     "warmup_steps": 300,
-    "max_rou_files": 1
+    "max_rou_files": 1,
+    "sim_duration": 3600
   },
   "rewards": {
     "format_weight": 0.2,

@@ -68,7 +68,7 @@ from src.data_generator.models import PhaseWait, Prediction, TrainingSample
 def create_temp_sumocfg(
     template_path: str,
     rou_file: str,
-    end_time: int = 86400
+    end_time: int = 3600
 ) -> str:
     """
     创建临时 SUMO 配置文件
@@ -76,7 +76,7 @@ def create_temp_sumocfg(
     Args:
         template_path: 模板 sumocfg 文件路径
         rou_file: 流量文件路径 (绝对路径)
-        end_time: 仿真结束时间 (秒), 默认 86400 (24小时)
+        end_time: 仿真结束时间 (秒), 默认 3600 (1小时)
 
     Returns:
         临时配置文件路径
@@ -163,7 +163,7 @@ class DaySimulator:
         self.output_dir = config['output_dir']
         self.state_dir = config['state_dir']
         self.warmup_steps = config.get('warmup_steps', 300)
-        self.sim_end = config.get('sim_end', 86400)
+        self.sim_end = config.get('sim_end', 3600)
         self.base_date = config.get('base_date', '2026-01-01')
         # 可选: 只处理指定的交叉口子集 (用于交叉口级别并行)
         self.target_tl_ids = set(config.get('target_tl_ids', []))
@@ -218,7 +218,7 @@ class DaySimulator:
             predictive_sampler = PredictiveSampler(
                 state_dir=self.state_dir,
                 noise_std_ratio=0.1,
-                compress=True
+                compress=False
             )
 
             # 获取所有信号灯 ID
