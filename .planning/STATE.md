@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 2 of 4 (Data Generation)
-Plan: 1 of 3
+Plan: 2 of 3
 Status: In progress
-Last activity: 2026-02-08 — Completed 02-01-PLAN.md
+Last activity: 2026-02-07 — Completed 02-02-PLAN.md
 
-Progress: [███░░░░░░░] 33%
+Progress: [████░░░░░░] 40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 4.2 minutes
-- Total execution time: 0.28 hours
+- Total plans completed: 5
+- Average duration: 4.0 minutes
+- Total execution time: 0.33 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 3 | 14 min | 4.7 min |
-| 02 | 1 | 3 min | 3.0 min |
+| 02 | 2 | 7 min | 3.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (6 min), 01-02 (3 min), 01-03 (6 min), 02-01 (3 min)
+- Last 5 plans: 01-02 (3 min), 01-03 (6 min), 02-01 (3 min), 02-02 (4 min)
 - Trend: Consistent high velocity (~4 min/plan)
 
 *Updated after each plan completion*
@@ -48,6 +48,8 @@ Recent decisions affecting current work:
 - 扁平任务池模式 — 所有场景×交叉口展开为统一任务列表（01-02）
 - Shell 脚本简化为 4 个独立脚本（01-03）
 - 统一输出路径到 outputs/（01-03）
+- CoT 空占位策略 — <think>\n\n</think> 不预生成推理文本，让模型自主学习（02-02）
+- 智能饱和度插值 — final 基于 pred_saturation 线性插值 min_green 到 max_green（02-02）
 
 ### Pending Todos
 
@@ -64,11 +66,12 @@ None yet.
 **Phase 2 concerns:**
 - ✓ 数据生成核心流程参数已修复（02-01 完成）
 - ✓ 交叉口级并行执行支持完整（metadata 字段已添加）
-- 待完成 CycleDetector 第一个绿相检测（02-02）
+- ✓ CoT 格式 SFT 训练数据转换完成（02-02 完成）
+- ✓ 周期边界全量采样验证通过（02-02 验证）
 - 待完成动态绿相检测（02-03）
 
 ## Session Continuity
 
-Last session: 2026-02-08
-Stopped at: Phase 2, Plan 1 complete
-Resume file: .planning/phases/02-data-generation/02-02-PLAN.md
+Last session: 2026-02-07
+Stopped at: Phase 2, Plan 2 complete
+Resume file: .planning/phases/02-data-generation/02-03-PLAN.md
