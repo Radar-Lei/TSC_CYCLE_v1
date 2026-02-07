@@ -172,6 +172,7 @@ load_json_config() {
         export DATA_DIR=$(jq -r '.paths.data_dir // "data/training"' "$config_file")
         export SFT_OUTPUT=$(jq -r '.paths.sft_output // "outputs/sft"' "$config_file")
         export GRPO_OUTPUT=$(jq -r '.paths.grpo_output // "outputs/grpo"' "$config_file")
+        export ENVIRONMENTS_DIR=$(jq -r '.paths.environments_dir // "sumo_simulation/environments"' "$config_file")
     else
         echo -e "${YELLOW}[WARNING] jq 未安装,使用默认配置${NC}" >&2
         export PARALLEL_WORKERS=4
@@ -179,57 +180,53 @@ load_json_config() {
         export DATA_DIR="data/training"
         export SFT_OUTPUT="outputs/sft"
         export GRPO_OUTPUT="outputs/grpo"
+        export ENVIRONMENTS_DIR="sumo_simulation/environments"
     fi
 }
 
 # 预处理阶段: 生成 phase_config.json
 stage_preprocessing() {
-    local phase_config_file="${PROJECT_DIR}/output/phase_config.json"
     local config_file="${PROJECT_DIR}/config/config.json"
-    
+    local env_dir="${PROJECT_DIR}/${ENVIRONMENTS_DIR:-sumo_simulation/environments}"
+
     echo -e "${BLUE}[预处理]${NC} 检查相位配置文件..."
-    
-    # 如果 phase_config.json 已存在，跳过
-    if [[ -f "$phase_config_file" ]]; then
-        echo -e "${GREEN}✓ 相位配置文件已存在: $phase_config_file${NC}"
-        return 0
-    fi
-    
-    # 从 config.json 读取网络文件路径
-    local net_file
-    if command -v jq &>/dev/null && [[ -f "$config_file" ]]; then
-        net_file=$(jq -r '.paths.net_file // ""' "$config_file")
-    fi
-    
-    # 如果未配置，使用默认路径
-    if [[ -z "$net_file" || "$net_file" == "null" ]]; then
-        net_file="sumo_simulation/environments/chengdu/chengdu.net.xml"
-    fi
-    
-    # 检查网络文件是否存在
-    local net_file_path="${PROJECT_DIR}/${net_file}"
-    if [[ ! -f "$net_file_path" ]]; then
-        echo -e "${RED}[ERROR] 网络文件不存在: $net_file_path${NC}" >&2
+
+    if [[ ! -d "$env_dir" ]]; then
+        echo -e "${RED}[ERROR] 环境目录不存在: $env_dir${NC}" >&2
         return 1
     fi
-    
-    echo -e "${BLUE}[预处理]${NC} 生成相位配置文件..."
-    echo -e "  网络文件: $net_file"
-    echo -e "  输出文件: output/phase_config.json"
-    
-    # 创建输出目录
+
     mkdir -p "${PROJECT_DIR}/output"
-    
-    # 执行相位处理
-    if python3 -m src.scripts.process_phases \
-        -i "$net_file_path" \
-        -o "${PROJECT_DIR}/output/phase_config.json"; then
-        echo -e "${GREEN}✓ 相位配置文件生成成功${NC}"
-        return 0
-    else
-        echo -e "${RED}[ERROR] 相位配置文件生成失败${NC}" >&2
-        return 1
-    fi
+
+    local total=0
+    local skipped=0
+    local generated=0
+
+    for scenario_dir in "$env_dir"/*/; do
+        local name=$(basename "$scenario_dir")
+        local net_file=$(find "$scenario_dir" -name "*.net.xml" -maxdepth 1 | head -1)
+        local phase_config="${PROJECT_DIR}/output/phase_config_${name}.json"
+
+        if [[ -z "$net_file" ]]; then
+            echo -e "${YELLOW}  跳过 $name (未找到 .net.xml)${NC}"
+            continue
+        fi
+
+        ((total++))
+
+        if [[ -f "$phase_config" ]]; then
+            ((skipped++))
+            continue
+        fi
+
+        if python3 -m src.scripts.process_phases -i "$net_file" -o "$phase_config" 2>/dev/null; then
+            ((generated++))
+        else
+            echo -e "${YELLOW}  警告: $name 相位处理失败${NC}"
+        fi
+    done
+
+    echo -e "${GREEN}✓ 相位配置: ${total} 个场景, ${generated} 个新生成, ${skipped} 个已存在${NC}"
 }
 
 # 数据生成阶段
@@ -255,12 +252,12 @@ stage_data_generation() {
     # 写入开始检查点
     write_checkpoint "$stage_name" "running"
 
-    # 执行数据生成 (交叉口级别并行模式)
+    # 执行数据生成 (多场景模式)
     if run_with_logging "$stage_name" \
         python3 -m src.scripts.generate_training_data \
+            --environments-dir "$ENVIRONMENTS_DIR" \
             --workers "$PARALLEL_WORKERS" \
             --warmup-steps "$WARMUP_STEPS" \
-            --intersection-parallel \
             --output-dir "outputs/data"
     then
         # 成功
