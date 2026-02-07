@@ -1,6 +1,6 @@
 # Phase 1: Code Cleanup - Context
 
-**Gathered:** 2026-02-07
+**Gathered:** 2026-02-07 (updated 2026-02-07)
 **Status:** Ready for planning
 
 <domain>
@@ -41,6 +41,12 @@
 - 消除 `output/`（单数）和 `data/` 的分散引用
 - 子目录结构由 Claude 根据代码分析决定
 
+### Shell 脚本清理
+- Docker 中现有的 .sh 脚本大部分删除，最终只保留 4 个：data.sh、sft.sh、grpo.sh、run.sh
+- 每个脚本完全独立可运行，不依赖其他脚本
+- run.sh 串联执行全流程（data → sft → grpo）
+- 其余所有 .sh 脚本全部删除
+
 ### 旧代码处理
 - 全部清除：注释掉的代码、废弃参数（如 `--rou-dir`）、向后兼容函数（如 `run_single_scenario_mode`）
 - 整文件删除废弃模块（time_period.py、DaySimulator 等），不保留占位符
@@ -51,6 +57,7 @@
 - `outputs/` 下的子目录结构设计
 - 配置文件清理后的具体结构
 - 清理过程中发现的其他小问题的处理方式
+- 每个 .sh 脚本的薄厚程度（shell vs Python 分层）
 
 </decisions>
 
