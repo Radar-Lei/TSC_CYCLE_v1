@@ -34,11 +34,11 @@
 
 ### Code Cleanup (代码清理)
 
-- [ ] **CLEAN-01**: 移除时段配置相关的代码和参数
-- [ ] **CLEAN-02**: 清理重复的数据生成逻辑（统一为单层并行）
-- [ ] **CLEAN-03**: 移除不使用的中间文件生成逻辑
-- [ ] **CLEAN-04**: 统一配置文件结构，消除冗余配置项
-- [ ] **CLEAN-05**: 代码中移除注释掉的旧逻辑
+- [x] **CLEAN-01**: 移除时段配置相关的代码和参数
+- [x] **CLEAN-02**: 清理重复的数据生成逻辑（统一为单层并行）
+- [x] **CLEAN-03**: 移除不使用的中间文件生成逻辑
+- [x] **CLEAN-04**: 统一配置文件结构，消除冗余配置项
+- [x] **CLEAN-05**: 代码中移除注释掉的旧逻辑
 
 ### Validation (验证机制)
 
@@ -80,11 +80,11 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLEAN-01 | Phase 1 | Pending |
-| CLEAN-02 | Phase 1 | Pending |
-| CLEAN-03 | Phase 1 | Pending |
-| CLEAN-04 | Phase 1 | Pending |
-| CLEAN-05 | Phase 1 | Pending |
+| CLEAN-01 | Phase 1 | Complete |
+| CLEAN-02 | Phase 1 | Complete |
+| CLEAN-03 | Phase 1 | Complete |
+| CLEAN-04 | Phase 1 | Complete |
+| CLEAN-05 | Phase 1 | Complete |
 | DATA-01 | Phase 2 | Pending |
 | DATA-02 | Phase 2 | Pending |
 | DATA-03 | Phase 2 | Pending |
