@@ -41,7 +41,6 @@ from .trainer import (
 from .data_loader import (
     load_training_data,
     prepare_grpo_dataset,
-    filter_by_time_period,
     get_system_prompt,
 )
 
@@ -72,6 +71,5 @@ __all__ = [
     # Data loader
     "load_training_data",
     "prepare_grpo_dataset",
-    "filter_by_time_period",
     "get_system_prompt",
 ]

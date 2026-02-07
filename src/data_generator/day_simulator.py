@@ -8,7 +8,6 @@
 - DaySimulator: 单天仿真任务类
 - simulate_day: 多进程入口函数
 - create_temp_sumocfg: 创建临时 SUMO 配置文件
-- get_simulation_ranges: 将 time_ranges 转换为秒数区间
 
 采样策略:
 - 检测周期边界（phase 从非0切换到0）
@@ -64,48 +63,6 @@ from src.data_generator.traffic_collector import TrafficCollector, estimate_capa
 from src.data_generator.prompt_builder import PromptBuilder, format_timestamp
 from src.data_generator.noise import apply_time_variation
 from src.data_generator.models import PhaseWait, Prediction, TrainingSample
-from src.data_generator.time_period import identify_time_period
-
-
-def get_simulation_ranges(
-    time_ranges: List[Dict[str, str]],
-    warmup_steps: int = 300,
-    default_end: int = 86400
-) -> List[Tuple[int, int]]:
-    """
-    将 time_ranges 配置转换为仿真区间列表。
-
-    Args:
-        time_ranges: 时间段列表，格式 [{"start": "HH:MM", "end": "HH:MM"}, ...]
-        warmup_steps: 预热步数（会加到每个区间的 start 之前）
-        default_end: 默认结束时间（当 time_ranges 为空时使用）
-
-    Returns:
-        仿真区间列表 [(start_sec, end_sec), ...]
-
-    Example:
-        >>> get_simulation_ranges([{"start": "07:00", "end": "09:00"}], 300, 86400)
-        [(25200, 32400)]
-        >>> get_simulation_ranges([], 300, 86400)
-        [(0, 86400)]
-    """
-    if not time_ranges:
-        # 全天模式
-        return [(0, default_end)]
-
-    ranges = []
-    for tr in time_ranges:
-        start_parts = tr['start'].split(':')
-        end_parts = tr['end'].split(':')
-
-        start_sec = int(start_parts[0]) * 3600 + int(start_parts[1]) * 60
-        end_sec = int(end_parts[0]) * 3600 + int(end_parts[1]) * 60
-
-        ranges.append((start_sec, end_sec))
-
-    # 按开始时间排序
-    ranges.sort(key=lambda x: x[0])
-    return ranges
 
 
 def create_temp_sumocfg(
@@ -180,7 +137,6 @@ class DaySimulator:
     单天仿真任务类
 
     管理一天的 SUMO 仿真,收集训练数据。
-    优化: 只仿真 time_ranges 指定的时段。
     """
 
     def __init__(
@@ -209,7 +165,6 @@ class DaySimulator:
         self.warmup_steps = config.get('warmup_steps', 300)
         self.sim_end = config.get('sim_end', 86400)
         self.base_date = config.get('base_date', '2026-01-01')
-        self.time_ranges = config.get('time_ranges', [])
         # 可选: 只处理指定的交叉口子集 (用于交叉口级别并行)
         self.target_tl_ids = set(config.get('target_tl_ids', []))
 
@@ -220,13 +175,6 @@ class DaySimulator:
             if '_2026-' in rou_basename:
                 date_part = rou_basename.split('_2026-')[1].split('.rou.xml')[0]
                 self.base_date = f'2026-{date_part}'
-
-        # 计算仿真区间
-        self.simulation_ranges = get_simulation_ranges(
-            self.time_ranges,
-            self.warmup_steps,
-            self.sim_end
-        )
 
         # 初始化组件
         self.samples: List[TrainingSample] = []
@@ -239,7 +187,7 @@ class DaySimulator:
 
     def run(self) -> Dict[str, Any]:
         """
-        运行单天仿真 - 只仿真指定时段
+        运行单天仿真
 
         Returns:
             结果字典
@@ -288,120 +236,104 @@ class DaySimulator:
             # 5. 启动仿真
             self.simulator.start_simulation()
 
-            # 6. 遍历每个仿真时段
+            # 6. 预热阶段
             current_step = 0
-            for start_sec, end_sec in self.simulation_ranges:
-                # 计算需要预热到的时间点（区间开始前 warmup_steps 秒）
-                warmup_target = max(0, start_sec - self.warmup_steps)
+            while current_step < self.warmup_steps:
+                if not self.simulator.step():
+                    raise RuntimeError(f"Simulation connection lost at step {current_step}")
+                # 更新周期检测器状态（预热期间不采样）
+                for tl_id in tl_ids:
+                    current_phase = collector.get_current_phase(tl_id)
+                    if current_phase >= 0:
+                        cycle_detectors[tl_id].update(current_phase, float(current_step))
+                current_step += 1
 
-                # 快速推进到预热目标点
-                while current_step < warmup_target:
-                    if not self.simulator.step():
-                        # 仿真连接已断开，提前退出
-                        raise RuntimeError(f"Simulation connection lost at step {current_step}")
-                    current_step += 1
+            # 7. 正式采样阶段 - 周期边界采样
+            while current_step < self.sim_end:
+                if not self.simulator.step():
+                    # 仿真结束或连接断开
+                    break
+                sim_time = float(current_step)
 
-                # 预热阶段（不采样，但逐秒推进以建立交通状态）
-                # 同时初始化周期检测器的状态
-                while current_step < start_sec:
-                    if not self.simulator.step():
-                        raise RuntimeError(f"Simulation connection lost at step {current_step}")
-                    # 更新周期检测器状态（预热期间不采样）
-                    for tl_id in tl_ids:
-                        current_phase = collector.get_current_phase(tl_id)
-                        if current_phase >= 0:
-                            cycle_detectors[tl_id].update(current_phase, float(current_step))
-                    current_step += 1
+                # 对每个信号灯检查周期边界
+                for tl_id in tl_ids:
+                    # a. 获取当前相位
+                    current_phase = collector.get_current_phase(tl_id)
+                    if current_phase < 0:
+                        continue
 
-                # 正式采样阶段 - 周期边界采样
-                while current_step < end_sec:
-                    if not self.simulator.step():
-                        raise RuntimeError(f"Simulation connection lost at step {current_step}")
-                    sim_time = float(current_step)
+                    # b. 检查是否是新周期开始
+                    is_new_cycle = cycle_detectors[tl_id].update(current_phase, sim_time)
+                    if not is_new_cycle:
+                        continue
 
-                    # 对每个信号灯检查周期边界
-                    for tl_id in tl_ids:
-                        # a. 获取当前相位
-                        current_phase = collector.get_current_phase(tl_id)
-                        if current_phase < 0:
+                    # c. 周期开始 - 进行预测采样
+                    result = predictive_sampler.sample_at_cycle_start(
+                        simulator=self.simulator,
+                        tl_id=tl_id,
+                        phase_config=phase_config,
+                        sim_time=sim_time,
+                        base_date=self.base_date
+                    )
+
+                    if result is None:
+                        continue
+
+                    # d. 构建 PhaseWait 列表（使用预测饱和度）
+                    phases = phase_config['traffic_lights'].get(tl_id, [])
+                    phase_waits = []
+                    for phase in phases:
+                        phase_idx = phase['phase_index']
+                        pred = result.predictions.get(phase_idx)
+                        if pred is None:
                             continue
 
-                        # b. 检查是否是新周期开始
-                        is_new_cycle = cycle_detectors[tl_id].update(current_phase, sim_time)
-                        if not is_new_cycle:
-                            continue
-
-                        # c. 周期开始 - 进行预测采样
-                        result = predictive_sampler.sample_at_cycle_start(
-                            simulator=self.simulator,
-                            tl_id=tl_id,
-                            phase_config=phase_config,
-                            sim_time=sim_time,
-                            base_date=self.base_date
+                        # 应用时间波动
+                        min_green, max_green = apply_time_variation(
+                            phase['min_dur'],
+                            phase['max_dur']
                         )
 
-                        if result is None:
-                            continue
+                        phase_waits.append(PhaseWait(
+                            phase_id=phase_idx,
+                            pred_saturation=pred.pred_saturation,
+                            min_green=min_green,
+                            max_green=max_green,
+                            capacity=pred.capacity
+                        ))
 
-                        # d. 构建 PhaseWait 列表（使用预测饱和度）
-                        phases = phase_config['traffic_lights'].get(tl_id, [])
-                        phase_waits = []
-                        for phase in phases:
-                            phase_idx = phase['phase_index']
-                            pred = result.predictions.get(phase_idx)
-                            if pred is None:
-                                continue
+                    if not phase_waits:
+                        continue
 
-                            # 应用时间波动
-                            min_green, max_green = apply_time_variation(
-                                phase['min_dur'],
-                                phase['max_dur']
-                            )
+                    # e. 构建 Prediction 和 prompt
+                    timestamp = format_timestamp(sim_time, self.base_date)
+                    prediction = Prediction(as_of=timestamp, phase_waits=phase_waits)
+                    prompt = prompt_builder.build_prompt(prediction)
 
-                            phase_waits.append(PhaseWait(
-                                phase_id=phase_idx,
-                                pred_saturation=pred.pred_saturation,
-                                min_green=min_green,
-                                max_green=max_green,
-                                capacity=pred.capacity
-                            ))
+                    # f. 创建 TrainingSample
+                    sample = TrainingSample(
+                        prompt=prompt,
+                        prediction=prediction,
+                        state_file=result.state_file,
+                        metadata={
+                            'tl_id': tl_id,
+                            'sim_time': sim_time,
+                            'date': self.base_date,
+                            'cycle_count': cycle_detectors[tl_id].cycle_count
+                        }
+                    )
+                    self.samples.append(sample)
 
-                        if not phase_waits:
-                            continue
+                current_step += 1
 
-                        # e. 构建 Prediction 和 prompt
-                        timestamp = format_timestamp(sim_time, self.base_date)
-                        prediction = Prediction(as_of=timestamp, phase_waits=phase_waits)
-                        prompt = prompt_builder.build_prompt(prediction)
-
-                        # f. 识别时段
-                        time_period = identify_time_period(sim_time)
-
-                        # g. 创建 TrainingSample
-                        sample = TrainingSample(
-                            prompt=prompt,
-                            prediction=prediction,
-                            state_file=result.state_file,
-                            metadata={
-                                'tl_id': tl_id,
-                                'sim_time': sim_time,
-                                'date': self.base_date,
-                                'time_period': time_period.value,
-                                'cycle_count': cycle_detectors[tl_id].cycle_count
-                            }
-                        )
-                        self.samples.append(sample)
-
-                    current_step += 1
-
-            # 7. 关闭仿真
+            # 8. 关闭仿真
             self.simulator.close()
 
-            # 8. 清理临时文件
+            # 9. 清理临时文件
             if self.temp_cfg_path and os.path.exists(self.temp_cfg_path):
                 os.remove(self.temp_cfg_path)
 
-            # 9. 返回结果
+            # 10. 返回结果
             return {
                 "day_index": self.day_index,
                 "date": self.base_date,

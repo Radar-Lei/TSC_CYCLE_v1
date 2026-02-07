@@ -5,7 +5,6 @@
 主要功能:
 - load_training_data: 从 JSONL 文件加载训练样本
 - prepare_grpo_dataset: 转换为 HuggingFace Dataset
-- filter_by_time_period: 按时段过滤样本
 - get_system_prompt: 获取系统提示
 """
 
@@ -84,39 +83,6 @@ def load_training_data(
         samples = samples[:limit]
 
     return samples
-
-
-def filter_by_time_period(
-    samples: List[Dict[str, Any]],
-    periods: List[str]
-) -> List[Dict[str, Any]]:
-    """
-    按时段过滤样本
-
-    Args:
-        samples: 训练样本列表
-        periods: 时段列表,可选值: ["morning_peak", "evening_peak", "off_peak"]
-
-    Returns:
-        过滤后的样本列表
-
-    示例:
-        >>> samples = load_training_data("data/training")
-        >>> morning_samples = filter_by_time_period(samples, ["morning_peak"])
-        >>> # 只保留早高峰时段的样本
-    """
-    if not periods:
-        return samples
-
-    filtered = []
-    for sample in samples:
-        # 从 metadata 中获取 time_period
-        time_period = sample.get('metadata', {}).get('time_period', 'unknown')
-
-        if time_period in periods:
-            filtered.append(sample)
-
-    return filtered
 
 
 def prepare_grpo_dataset(
@@ -200,21 +166,5 @@ if __name__ == "__main__":
     assert "交通信号配时优化" in prompt
     assert "<think>" in prompt
     print("✓ get_system_prompt works")
-
-    # 测试 filter_by_time_period
-    test_samples = [
-        {"metadata": {"time_period": "morning_peak"}},
-        {"metadata": {"time_period": "evening_peak"}},
-        {"metadata": {"time_period": "off_peak"}},
-    ]
-
-    filtered = filter_by_time_period(test_samples, ["morning_peak"])
-    assert len(filtered) == 1
-    assert filtered[0]["metadata"]["time_period"] == "morning_peak"
-    print("✓ filter_by_time_period works")
-
-    filtered_multi = filter_by_time_period(test_samples, ["morning_peak", "evening_peak"])
-    assert len(filtered_multi) == 2
-    print("✓ filter_by_time_period with multiple periods works")
 
     print("✅ data_loader module tests passed!")

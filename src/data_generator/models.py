@@ -74,7 +74,7 @@ class TrainingSample:
         prompt: 完整的训练 prompt 文本
         prediction: 交通预测信息
         state_file: SUMO 仿真状态快照路径 (用于 GRPO reward 计算)
-        metadata: 元数据 (tl_id, sim_time, date, time_period 等)
+        metadata: 元数据 (tl_id, sim_time, date 等)
     """
     prompt: str
     prediction: Prediction
