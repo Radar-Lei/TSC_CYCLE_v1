@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 1 of 4 (Code Cleanup)
-Plan: 1 of 4
+Plan: 3 of 4
 Status: In progress
-Last activity: 2026-02-07 — Completed 01-01-PLAN.md
+Last activity: 2026-02-07 — Completed 01-03-PLAN.md
 
-Progress: [██░░░░░░░░] 10%
+Progress: [███░░░░░░░] 30%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 6 minutes
-- Total execution time: 0.1 hours
+- Total plans completed: 3
+- Average duration: 4.7 minutes
+- Total execution time: 0.23 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01 | 1 | 6 min | 6 min |
+| 01 | 3 | 14 min | 4.7 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (6 min)
-- Trend: First plan completed
+- Last 5 plans: 01-01 (6 min), 01-02 (3 min), 01-03 (6 min)
+- Trend: Consistent velocity (~5 min/plan)
 
 *Updated after each plan completion*
 
@@ -44,6 +44,9 @@ Recent decisions affecting current work:
 
 - 删除时段配置 — 固定 3600s 仿真时长使时段配置（早高峰/晚高峰/平峰）变得不必要（01-01）
 - 删除 schema 验证 — config.json 作为唯一配置源，无需外部验证（01-01）
+- 扁平任务池模式 — 消除嵌套并行的复杂性，所有场景×交叉口展开为统一任务列表（01-02）
+- Shell 脚本简化为 4 个独立脚本 — 删除冗余辅助库，每个阶段脚本完全独立可运行（01-03）
+- 统一输出路径到 outputs/ — 所有输出集中管理，便于清理和备份（01-03）
 
 ### Pending Todos
 
@@ -53,14 +56,15 @@ None yet.
 
 **Phase 1 concerns:**
 - ✓ 时段配置相关代码已全部移除（01-01 完成）
-- 嵌套并行逻辑需要重构为单层结构
-- 需要继续清理其他冗余代码
+- ✓ 嵌套并行逻辑已重构为扁平任务池（01-02 完成）
+- ✓ Shell 脚本已简化为 4 个独立脚本（01-03 完成）
+- 需要继续清理其他冗余代码（01-04）
 
 **Phase 2 concerns:**
-- 数据生成并行执行当前失败，依赖 Phase 1 修复
+- 数据生成并行执行可能需要调试（已有扁平任务池基础）
 
 ## Session Continuity
 
-Last session: 2026-02-07 15:22:56 UTC
-Stopped at: Completed 01-01-PLAN.md (移除时段配置和 schema 验证)
+Last session: 2026-02-07 15:34:42 UTC
+Stopped at: Completed 01-03-PLAN.md (Shell 脚本重构)
 Resume file: None
