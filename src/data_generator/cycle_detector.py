@@ -4,8 +4,9 @@
 检测信号灯周期边界，用于在周期开始时触发采样。
 
 核心逻辑:
-- 当 phase 从非 0 切换到 0 时，视为新周期开始
+- 当 phase 从其他相位切换到第一个绿灯相位时，视为新周期开始
 - 首次调用不触发周期开始（等待完整周期）
+- 第一个绿灯相位 index 从 phase_config 动态获取（不再硬编码为 0）
 """
 
 from typing import Optional, List, Dict, Any
@@ -21,21 +22,24 @@ class CycleDetector:
     """
     信号周期检测器
 
-    检测信号灯周期边界（phase 0 开始），用于触发周期级别的采样。
+    检测信号灯周期边界（第一个绿灯相位开始），用于触发周期级别的采样。
+    第一个绿灯相位 index 从 phase_config 动态获取，支持任意相位序列。
 
     Attributes:
         tl_id: 信号灯 ID
+        first_green_phase: 第一个绿灯相位的 phase_index（从 phase_config 获取）
         last_phase: 上一步的相位索引
         cycle_start_time: 当前周期开始时间
         cycle_count: 已检测到的周期数
     """
 
-    def __init__(self, tl_id: str):
+    def __init__(self, tl_id: str, phase_config: Dict[str, Any]):
         """
         初始化周期检测器。
 
         Args:
             tl_id: 信号灯 ID
+            phase_config: 相位配置字典，包含 traffic_lights 字段
         """
         self.tl_id = tl_id
         self.last_phase: Optional[int] = None
@@ -43,11 +47,27 @@ class CycleDetector:
         self.cycle_count: int = 0
         self._cycle_duration_cache: Optional[float] = None
 
+        # 从 phase_config 动态获取第一个绿灯相位 index
+        import logging
+        logger = logging.getLogger(__name__)
+
+        try:
+            tl_phases = phase_config['traffic_lights'].get(tl_id, [])
+            if tl_phases:
+                self.first_green_phase = tl_phases[0]['phase_index']
+            else:
+                logger.warning(f"CycleDetector: tl_id '{tl_id}' not found in phase_config, using default first_green_phase=0")
+                self.first_green_phase = 0
+        except (KeyError, IndexError, TypeError) as e:
+            logger.warning(f"CycleDetector: failed to get first_green_phase for '{tl_id}': {e}, using default 0")
+            self.first_green_phase = 0
+
     def update(self, current_phase: int, sim_time: float) -> bool:
         """
         更新状态，检测是否是新周期开始。
 
-        当 phase 从非 0 切换到 0 时，视为新周期开始。
+        当 phase 从其他相位切换到第一个绿灯相位时，视为新周期开始。
+        第一个绿灯相位 index 从构造函数传入的 phase_config 动态获取。
 
         Args:
             current_phase: 当前相位索引
@@ -57,23 +77,24 @@ class CycleDetector:
             True 表示是新周期开始，False 表示不是
 
         Example:
-            >>> detector = CycleDetector('tl_1')
-            >>> detector.update(0, 0.0)   # 首次调用
+            >>> # 假设第一个绿灯相位 index 是 2
+            >>> detector = CycleDetector('tl_1', phase_config)
+            >>> detector.update(2, 0.0)   # 首次调用
             False
-            >>> detector.update(1, 30.0)  # phase 0 -> 1
+            >>> detector.update(4, 30.0)  # phase 2 -> 4
             False
-            >>> detector.update(2, 60.0)  # phase 1 -> 2
+            >>> detector.update(5, 60.0)  # phase 4 -> 5
             False
-            >>> detector.update(0, 90.0)  # phase 2 -> 0 (新周期!)
+            >>> detector.update(2, 90.0)  # phase 5 -> 2 (新周期!)
             True
         """
         is_new_cycle = False
 
-        # 检测周期边界: phase 从非 0 切换到 0
+        # 检测周期边界: phase 从其他相位切换到第一个绿灯相位
         if (
             self.last_phase is not None
-            and self.last_phase != 0
-            and current_phase == 0
+            and self.last_phase != self.first_green_phase
+            and current_phase == self.first_green_phase
         ):
             is_new_cycle = True
             self.cycle_start_time = sim_time
@@ -173,6 +194,7 @@ class CycleDetector:
     def __repr__(self) -> str:
         return (
             f"CycleDetector(tl_id='{self.tl_id}', "
+            f"first_green_phase={self.first_green_phase}, "
             f"cycle_count={self.cycle_count}, "
             f"last_phase={self.last_phase})"
         )
