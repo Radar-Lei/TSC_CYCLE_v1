@@ -360,6 +360,11 @@ def run_multi_scenario_mode(
         os.makedirs(scenario_output_dir, exist_ok=True)
         os.makedirs(scenario_state_dir, exist_ok=True)
 
+        # 生成唯一日期: 将场景索引分布到多个月份中
+        day_of_year = idx + 1
+        month = (day_of_year - 1) // 28 + 1  # 每月28天,避免月份边界问题
+        day = (day_of_year - 1) % 28 + 1
+
         # 配置字典
         config = {
             'sumocfg': scenario['sumocfg'],
@@ -370,7 +375,7 @@ def run_multi_scenario_mode(
             'sim_end': args.sim_end,
             'incremental': args.incremental,
             'time_ranges': time_ranges,
-            'base_date': f'2026-01-{idx:02d}'  # 使用日期而非月份(最多31天)
+            'base_date': f'2026-{month:02d}-{day:02d}'  # 分布在多个月份,支持51+场景
         }
 
         # 该场景的 rou_files 列表（只有 1 个）

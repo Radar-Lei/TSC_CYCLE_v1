@@ -130,7 +130,46 @@ def prepare_dataset(data_path: str, tokenizer):
     data = []
     with open(data_path, 'r', encoding='utf-8') as f:
         for line in f:
-            data.append(json.loads(line))
+            sample = json.loads(line)
+
+            # 转换格式: {prompt, prediction, ...} -> {messages: [...]}
+            if "messages" not in sample:
+                # 从 prompt 和 prediction 构造 messages 格式
+
+                # 生成符合格式的响应(SFT阶段学习格式,不追求最优决策)
+                phase_waits = sample['prediction']['phase_waits']
+                response_data = []
+                for pw in phase_waits:
+                    # 启发式: 基于饱和度在min/max之间分配绿灯时间
+                    saturation = pw.get('pred_saturation', 0.5)
+                    min_green = pw['min_green']
+                    max_green = pw['max_green']
+
+                    # 简单线性插值
+                    final = int(min_green + saturation * (max_green - min_green))
+
+                    response_data.append({
+                        "phase_id": pw['phase_id'],
+                        "final": final
+                    })
+
+                # 构造符合prompt要求的响应格式
+                think_text = "根据各相位的预测饱和度分配绿灯时间: " + \
+                    ', '.join([f"相位{r['phase_id']}: {r['final']}秒" for r in response_data])
+
+                response_text = f"""<think>
+{think_text}
+</think>
+{json.dumps(response_data, ensure_ascii=False)}"""
+
+                # 构造对话格式
+                messages = [
+                    {"role": "user", "content": sample["prompt"]},
+                    {"role": "assistant", "content": response_text}
+                ]
+                sample["messages"] = messages
+
+            data.append(sample)
 
     df = pd.DataFrame(data)
 
