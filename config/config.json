@@ -40,7 +40,6 @@
     "data_dir": "data/training",
     "sft_output": "outputs/sft",
     "grpo_output": "outputs/grpo",
-    "net_file": "sumo_simulation/environments/chengdu/chengdu.net.xml",
-    "sumocfg": "sumo_simulation/environments/chengdu/chengdu.sumocfg"
+    "environments_dir": "sumo_simulation/environments"
   }
 }
