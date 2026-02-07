@@ -13,9 +13,32 @@
 """
 
 import os
+import sys
 import tempfile
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
+
+# 设置 SUMO 环境
+if 'SUMO_HOME' not in os.environ:
+    possible_paths = [
+        "/usr/share/sumo",
+        "/usr/local/share/sumo",
+        "/usr/lib/sumo",
+        "/Library/Frameworks/EclipseSUMO.framework/Versions/1.25.0/EclipseSUMO/share/sumo",
+        "/opt/homebrew/opt/sumo/share/sumo",
+        "/usr/local/opt/sumo/share/sumo",
+        "/Users/leida/Cline/sumo/share/sumo",
+        "/Users/leida/Cline/sumo"
+    ]
+    for path in possible_paths:
+        if os.path.exists(path):
+            os.environ['SUMO_HOME'] = path
+            break
+
+if 'SUMO_HOME' in os.environ:
+    tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
+    if tools not in sys.path:
+        sys.path.append(tools)
 
 try:
     import traci

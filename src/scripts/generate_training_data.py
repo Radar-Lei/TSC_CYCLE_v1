@@ -25,7 +25,7 @@ from src.data_generator.parallel_runner import run_parallel_simulation
 from src.data_generator.intersection_parallel import IntersectionParallelRunner
 
 
-def discover_environments(environments_dir: str) -> List[Dict[str, str]]:
+def discover_environments(environments_dir: str) -> list[dict[str, str]]:
     """
     发现 environments 目录下的所有场景
 
@@ -263,7 +263,7 @@ def main():
 def run_multi_scenario_mode(
     environments_dir: str,
     args,
-    time_ranges: List[Dict[str, str]],
+    time_ranges: list[dict[str, str]],
     warmup_steps: int,
     workers: int
 ):
@@ -370,7 +370,7 @@ def run_multi_scenario_mode(
             'sim_end': args.sim_end,
             'incremental': args.incremental,
             'time_ranges': time_ranges,
-            'base_date': scenario_name  # 使用场景名作为日期标识
+            'base_date': f'2026-01-{idx:02d}'  # 使用日期而非月份(最多31天)
         }
 
         # 该场景的 rou_files 列表（只有 1 个）
@@ -412,12 +412,53 @@ def run_multi_scenario_mode(
     print(f"失败: {total_failed}")
     print(f"总样本数: {total_samples:,}")
     print(f"训练数据保存在: {output_base}")
+
+    # 合并所有场景数据到统一训练数据文件
+    if total_successful > 0:
+        print()
+        print("=" * 60)
+        print("合并训练数据")
+        print("=" * 60)
+
+        # 从配置获取训练数据目录
+        config_path = os.path.abspath(args.config)
+        if os.path.exists(config_path):
+            json_config = load_config(config_path)
+            paths_config = json_config.get('paths', {})
+            training_data_dir = paths_config.get('data_dir', 'data/training')
+        else:
+            training_data_dir = 'data/training'
+
+        os.makedirs(training_data_dir, exist_ok=True)
+        train_jsonl_path = os.path.join(training_data_dir, 'train.jsonl')
+
+        # 合并所有场景的 samples_*.jsonl 文件
+        total_lines = 0
+        with open(train_jsonl_path, 'w', encoding='utf-8') as outfile:
+            for scenario in scenarios:
+                scenario_name = scenario['name']
+                scenario_output_dir = os.path.join(output_base, scenario_name)
+
+                # 查找该场景的所有 samples_*.jsonl 文件
+                import glob
+                jsonl_files = glob.glob(os.path.join(scenario_output_dir, 'samples_*.jsonl'))
+
+                for jsonl_file in jsonl_files:
+                    with open(jsonl_file, 'r', encoding='utf-8') as infile:
+                        for line in infile:
+                            if line.strip():
+                                outfile.write(line)
+                                total_lines += 1
+
+        print(f"✓ 合并完成: {total_lines} 条样本")
+        print(f"✓ 训练数据文件: {train_jsonl_path}")
+
     print("=" * 60)
 
 
 def run_single_scenario_mode(
     args,
-    time_ranges: List[Dict[str, str]],
+    time_ranges: list[dict[str, str]],
     warmup_steps: int,
     workers: int,
     max_rou_files: int
