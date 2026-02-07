@@ -108,6 +108,12 @@ Recent decisions affecting current work:
 
 None yet.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 001 | 更换数据生成源为 sumo_simulation/environments 子文件夹 | 2026-02-07 | 8cc9560 | [001-sumo-simulation-environments](.planning/quick/001-sumo-simulation-environments/) |
+
 ### Blockers/Concerns
 
 **部分路口相位不足** (01-02 发现, 01-03 已统计)
@@ -118,7 +124,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-05
-Stopped at: Completed 05-05-PLAN.md (Gap Closure 完成,全部 5 个 Phase 完成)
+Last activity: 2026-02-07 - Completed quick task 001: 更换数据生成源为 sumo_simulation/environments 子文件夹
+Last session: 2026-02-07
+Stopped at: Quick task 001 完成 - 多场景数据生成支持
 Resume file: None
-Next: 执行 ./docker/run.sh 启动一键训练流程
+Next: 执行 ./docker/publish.sh 启动 51 个场景的完整数据生成
