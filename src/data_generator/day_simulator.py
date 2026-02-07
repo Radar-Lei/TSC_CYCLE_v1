@@ -334,13 +334,19 @@ class DaySimulator:
                 os.remove(self.temp_cfg_path)
 
             # 10. 返回结果
+            # 如果是交叉口级别并行，返回 metadata 包含 tl_id
+            metadata = {}
+            if self.target_tl_ids and len(self.target_tl_ids) == 1:
+                metadata['tl_id'] = list(self.target_tl_ids)[0]
+
             return {
                 "day_index": self.day_index,
                 "date": self.base_date,
                 "samples": [s.to_dict() for s in self.samples],
                 "status": "success",
                 "error": None,
-                "sample_count": len(self.samples)
+                "sample_count": len(self.samples),
+                "metadata": metadata
             }
 
         except Exception as e:
