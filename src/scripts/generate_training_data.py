@@ -18,6 +18,8 @@ from pathlib import Path
 from multiprocessing import Pool
 from datetime import datetime
 
+import concurrent.futures
+
 # 添加项目根目录到 Python 路径
 project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(project_root))
@@ -55,11 +57,15 @@ def discover_environments(environments_dir: str) -> list[dict[str, str]]:
 
         # 验证文件完整性
         if not sumocfg_files:
-            print(f"警告: 场景 {entry} 缺少 .sumocfg 文件,跳过")
-            continue
+            print(f"错误: 场景 {entry} 缺少 .sumocfg 文件,跳过")
+            # 缺少 .sumocfg 是严重错误，虽然这里写了跳过，但根据 Task 要求应该报错停止
+            # 但为了不破坏 discover_environments 的签名，我们在外部处理空列表，或者在这里 raise
+            # 原始代码是 continue，Task 要求"立即报错停止"
+            print(f"CRITICAL: 场景 {entry} 缺少 .sumocfg 文件")
+            sys.exit(1)
         if not net_files:
-            print(f"警告: 场景 {entry} 缺少 .net.xml 文件,跳过")
-            continue
+            print(f"错误: 场景 {entry} 缺少 .net.xml 文件")
+            sys.exit(1)
         if not rou_files:
             print(f"警告: 场景 {entry} 缺少 .rou.xml 文件,跳过")
             continue
@@ -124,8 +130,8 @@ def parse_args():
     parser.add_argument(
         '--state-dir',
         type=str,
-        default='data/states',
-        help='状态快照目录 (默认: data/states)'
+        default='outputs/states',
+        help='状态快照目录 (默认: outputs/states)'
     )
 
     parser.add_argument(
@@ -140,6 +146,13 @@ def parse_args():
         type=int,
         default=None,
         help='预热步数 (默认: 从 config.json 读取)'
+    )
+
+    parser.add_argument(
+        '--scenarios',
+        type=str,
+        default=None,
+        help='指定场景列表 (逗号分隔), 如: arterial4x4_1,chengdu'
     )
 
     parser.add_argument(
@@ -208,6 +221,124 @@ def save_samples_to_jsonl(samples: list[dict], output_path: str):
             f.write(json_line + '\n')
 
 
+def convert_to_sft_format(raw_jsonl_path: str, sft_jsonl_path: str):
+    """
+    将原始 JSONL 训练数据转换为 CoT 格式 SFT 训练数据
+
+    Args:
+        raw_jsonl_path: 原始 train.jsonl 路径（包含 prompt, prediction, state_file, metadata）
+        sft_jsonl_path: SFT 训练数据输出路径（chat 格式）
+
+    输出格式:
+        {
+          "messages": [
+            {"role": "system", "content": "你是交通信号配时优化专家。"},
+            {"role": "user", "content": "<JSON 输入块 + 任务描述>"},
+            {"role": "assistant", "content": "<think>\n\n</think>\n[{\"phase_id\": N, \"final\": M}, ...]"}
+          ]
+        }
+
+    assistant content 构建逻辑:
+        1. <think> 部分：使用空占位符 "<think>\n\n</think>"，不生成任何分析文本
+        2. JSON 部分：基于 pred_saturation 计算 final 绿灯时间
+           - 饱和度 > 1.0：偏向 max_green
+           - 饱和度 < 0.5：偏向 min_green
+           - 其他：按饱和度线性插值 min_green 到 max_green
+           - final 必须为整数，且满足 min_green <= final <= max_green
+    """
+    os.makedirs(os.path.dirname(sft_jsonl_path), exist_ok=True)
+
+    success_count = 0
+    total_count = 0
+
+    with open(raw_jsonl_path, 'r', encoding='utf-8') as infile, \
+         open(sft_jsonl_path, 'w', encoding='utf-8') as outfile:
+
+        for line in infile:
+            if not line.strip():
+                continue
+
+            total_count += 1
+
+            try:
+                # 解析原始样本
+                sample = json.loads(line)
+                prompt = sample['prompt']
+                prediction = sample['prediction']
+
+                # 1. 提取 system role (从 prompt 第一行)
+                prompt_lines = prompt.split('\n')
+                system_content = prompt_lines[0]  # "你是交通信号配时优化专家。"
+
+                # 2. 提取 user content (去掉第一行系统角色行)
+                user_content = '\n'.join(prompt_lines[1:])
+
+                # 3. 构建 assistant content
+                # a. think 标签（空占位符）
+                think_part = "<think>\n\n</think>"
+
+                # b. JSON 部分（基于 pred_saturation 计算 final）
+                phase_waits = prediction['phase_waits']
+                final_json = []
+
+                for pw in phase_waits:
+                    phase_id = pw['phase_id']
+                    pred_saturation = pw['pred_saturation']
+                    min_green = pw['min_green']
+                    max_green = pw['max_green']
+
+                    # 基于饱和度计算 final
+                    if pred_saturation > 1.0:
+                        # 饱和度高：偏向 max_green
+                        final = max_green
+                    elif pred_saturation < 0.5:
+                        # 饱和度低：偏向 min_green
+                        final = min_green
+                    else:
+                        # 中等饱和度：线性插值
+                        # final = min_green + (max_green - min_green) * (pred_saturation - 0.5) / 0.5
+                        # 简化为：final = min_green + (max_green - min_green) * pred_saturation
+                        final = min_green + (max_green - min_green) * pred_saturation
+
+                    # 确保 final 为整数，且在范围内
+                    final = int(round(final))
+                    final = max(min_green, min(max_green, final))
+
+                    final_json.append({
+                        "phase_id": phase_id,
+                        "final": final
+                    })
+
+                # 格式化 JSON 输出
+                json_output = json.dumps(final_json, ensure_ascii=False)
+                assistant_content = f"{think_part}\n{json_output}"
+
+                # 4. 构建 SFT 样本
+                sft_sample = {
+                    "messages": [
+                        {"role": "system", "content": system_content},
+                        {"role": "user", "content": user_content},
+                        {"role": "assistant", "content": assistant_content}
+                    ]
+                }
+
+                # 写入 SFT JSONL
+                sft_line = json.dumps(sft_sample, ensure_ascii=False)
+                outfile.write(sft_line + '\n')
+
+                success_count += 1
+
+            except Exception as e:
+                print(f"警告: 转换样本失败: {e}")
+                continue
+
+    return {
+        'total': total_count,
+        'success': success_count,
+        'failed': total_count - success_count
+    }
+
+
 def main():
     """主函数 - 扁平任务池模式"""
     args = parse_args()
@@ -236,6 +367,24 @@ def main():
     if not scenarios:
         print(f"错误: 未找到有效场景")
         sys.exit(1)
+
+    # 过滤场景 (--scenarios)
+    if args.scenarios:
+        target_scenarios = [s.strip() for s in args.scenarios.split(',')]
+        filtered_scenarios = []
+        for s in scenarios:
+            if s['name'] in target_scenarios:
+                filtered_scenarios.append(s)
+
+        # 检查是否有未找到的场景
+        found_names = [s['name'] for s in filtered_scenarios]
+        for target in target_scenarios:
+            if target not in found_names:
+                print(f"错误: 指定的场景 '{target}' 未找到")
+                sys.exit(1)
+
+        scenarios = filtered_scenarios
+        print(f"过滤后场景数: {len(scenarios)}")
 
     print(f"发现 {len(scenarios)} 个场景")
 
@@ -338,7 +487,10 @@ def main():
     print()
 
     # ── 阶段 3: 并行消费任务 (扁平任务池) ──
-    num_workers = workers or min(len(tasks), os.cpu_count() or 4)
+    # 限制 worker 数量不超过配置
+    max_workers_config = sim_config.get('parallel_workers', 12)
+    requested_workers = workers or max_workers_config
+    num_workers = min(requested_workers, max_workers_config)
     num_workers = min(num_workers, len(tasks))
 
     print(f"阶段 3: 启动 {num_workers} 个并行 worker...")
@@ -347,35 +499,67 @@ def main():
     # 按场景收集结果
     results_by_scenario = {}
     failed_count = 0
+    sim_duration = sim_config.get('sim_duration', 3600)
 
-    with Pool(processes=num_workers) as pool:
-        for i, result in enumerate(pool.imap_unordered(_simulate_intersection, tasks), 1):
-            scenario_name = result['scenario_name']
+    # 更新所有任务的 config，注入 sim_end
+    for i in range(len(tasks)):
+        task = list(tasks[i])
+        task[3]['sim_end'] = sim_duration
+        tasks[i] = tuple(task)
 
-            if result['status'] == 'success':
-                # 收集样本
-                if scenario_name not in results_by_scenario:
-                    results_by_scenario[scenario_name] = []
-                results_by_scenario[scenario_name].extend(result['samples'])
+    # 使用 ProcessPoolExecutor 替代 multiprocessing.Pool 以支持更好的错误处理和取消
+    # 使用 ProcessPoolExecutor 替代 multiprocessing.Pool 以支持更好的错误处理和取消
+    with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
+        # 提交所有任务
+        future_to_task = {executor.submit(_simulate_intersection, task): task for task in tasks}
 
-                print(f"  ✓ [{i}/{len(tasks)}] {scenario_name} / {result['metadata']['tl_id']}: "
-                      f"{result['sample_count']} 个样本")
-            else:
-                # Fail-fast: 任一任务失败立即终止
-                failed_count += 1
-                print(f"  ✗ [{i}/{len(tasks)}] {scenario_name} / {result.get('tl_id', 'unknown')}: "
-                      f"{result.get('error', '未知错误')}")
+        try:
+            for i, future in enumerate(concurrent.futures.as_completed(future_to_task), 1):
+                task = future_to_task[future]
+                try:
+                    result = future.result()
+                except Exception as exc:
+                    print(f"任务抛出异常: {exc}")
+                    # 立即取消所有未完成的任务
+                    for f in future_to_task:
+                        f.cancel()
+                    executor.shutdown(wait=False)
+                    sys.exit(1)
 
-                # 终止 Pool 并退出
-                pool.terminate()
-                pool.join()
-                print()
-                print("=" * 60)
-                print("错误: 任务失败 (fail-fast 模式)")
-                print("=" * 60)
-                print(f"失败任务: {scenario_name} / {result.get('tl_id', 'unknown')}")
-                print(f"错误信息: {result.get('error', '未知错误')}")
-                sys.exit(1)
+                scenario_name = result['scenario_name']
+
+                if result['status'] == 'success':
+                    # 收集样本
+                    if scenario_name not in results_by_scenario:
+                        results_by_scenario[scenario_name] = []
+                    results_by_scenario[scenario_name].extend(result['samples'])
+
+                    # 简洁模式日志
+                    print(f"  ✓ [{i}/{len(tasks)}] {scenario_name} / {result['metadata']['tl_id']} 完成 "
+                          f"({result['sample_count']} samples)")
+                else:
+                    # Fail-fast: 任一任务失败立即终止
+                    failed_count += 1
+                    error_msg = result.get('error', '未知错误')
+                    tl_id = result.get('tl_id', 'unknown')
+
+                    print()
+                    print("=" * 60)
+                    print("错误: 任务失败 (fail-fast 模式)")
+                    print("=" * 60)
+                    print(f"失败任务: {scenario_name} / {tl_id}")
+                    print(f"错误信息: {error_msg}")
+
+                    # 立即取消所有未完成的任务
+                    for f in future_to_task:
+                        f.cancel()
+                    executor.shutdown(wait=False)
+                    sys.exit(1)
+
+        except KeyboardInterrupt:
+            print("\n用户中断执行，正在停止所有任务...")
+            executor.shutdown(wait=False)
+            sys.exit(1)
 
     print()
     print("=" * 60)
@@ -430,6 +614,29 @@ def main():
 
     print(f"✓ 合并完成: {total_lines} 条样本")
     print(f"✓ 训练数据文件: {train_jsonl_path}")
+
+    # ── 阶段 6: CoT 格式转换 ──
+    print()
+    print("=" * 60)
+    print("阶段 6: CoT 格式转换")
+    print("=" * 60)
+
+    sft_output_dir = paths_config.get('sft_output', 'outputs/sft')
+    os.makedirs(sft_output_dir, exist_ok=True)
+    sft_train_jsonl_path = os.path.join(sft_output_dir, 'train.jsonl')
+
+    print(f"输入: {train_jsonl_path}")
+    print(f"输出: {sft_train_jsonl_path}")
+    print()
+
+    # 转换为 SFT 格式
+    conversion_stats = convert_to_sft_format(train_jsonl_path, sft_train_jsonl_path)
+
+    print(f"✓ CoT 格式转换完成")
+    print(f"  总条数: {conversion_stats['total']}")
+    print(f"  成功: {conversion_stats['success']}")
+    print(f"  失败: {conversion_stats['failed']}")
+    print(f"✓ SFT 训练数据文件: {sft_train_jsonl_path}")
     print()
     print("=" * 60)
     print("数据生成完成")
