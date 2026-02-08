@@ -37,12 +37,16 @@ def extract_json_from_completion(text: str) -> Optional[List[Dict]]:
         return None
 
 
-def match_format_exactly(completions: List[List[Dict]], **kwargs) -> List[float]:
-    """格式完全匹配奖励
+def graded_format_reward(completions: List[List[Dict]], **kwargs) -> List[float]:
+    """分级格式奖励函数
 
-    检查格式: <think>...</think>[{phase_id, final}...]
-    - 完全匹配: +3.0
-    - 否则: 0.0
+    实现三级评分系统（满分 3.0）:
+    - Level 0: 无输出或完全无关 (0.0)
+    - Level 1: <think>...</think> 标签正确 (+0.5)
+    - Level 2: JSON 可解析 (+1.0, 累计 1.5)
+    - Level 3: 字段完整 (+1.5, 累计 3.0)
+
+    注意：CoT 空占位策略下，<think></think> 空内容也是合法的。
 
     Args:
         completions: List[List[Dict]] - 每个 completion 是 messages 列表
@@ -50,69 +54,7 @@ def match_format_exactly(completions: List[List[Dict]], **kwargs) -> List[float]
         **kwargs: 兼容 TRL GRPOTrainer reward_funcs 签名
 
     Returns:
-        奖励分数列表,与 completions 长度一致
-    """
-    rewards = []
-
-    for completion in completions:
-        # 提取 assistant 消息内容
-        content = ""
-        for msg in completion:
-            if msg.get("role") == "assistant":
-                content = msg.get("content", "")
-                break
-
-        # 检查完整格式
-        has_think = THINK_PATTERN.search(content) is not None
-        think_match = THINK_PATTERN.search(content)
-        has_valid_think = think_match is not None and len(think_match.group(1).strip()) >= 10
-
-        json_array = extract_json_from_completion(content)
-        has_valid_json = json_array is not None and len(json_array) > 0
-
-        # 检查 JSON 结构
-        valid_structure = False
-        if has_valid_json:
-            valid_structure = True
-            for item in json_array:
-                if not isinstance(item, dict):
-                    valid_structure = False
-                    break
-                if "phase_id" not in item or "final" not in item:
-                    valid_structure = False
-                    break
-                if not isinstance(item["phase_id"], int):
-                    valid_structure = False
-                    break
-                if not isinstance(item["final"], (int, float)):
-                    valid_structure = False
-                    break
-
-        # 完全匹配: think 内容充足 + JSON 结构正确
-        if has_valid_think and valid_structure:
-            rewards.append(3.0)
-        else:
-            rewards.append(0.0)
-
-    return rewards
-
-
-def match_format_approximately(completions: List[List[Dict]], **kwargs) -> List[float]:
-    """格式部分匹配奖励
-
-    按符号计分:
-    - </think> 出现 1 次: +0.5, 否则 -1.0
-    - [ 出现 1 次: +0.5, 否则 -1.0
-    - ] 出现 1 次: +0.5, 否则 -1.0
-    - "phase_id" 出现至少 1 次: +0.5, 否则 -1.0
-    - "final" 出现至少 1 次: +0.5, 否则 -1.0
-
-    Args:
-        completions: List[List[Dict]] - 每个 completion 是 messages 列表
-        **kwargs: 兼容 TRL GRPOTrainer reward_funcs 签名
-
-    Returns:
-        奖励分数列表,范围 -5.0 到 +2.5
+        奖励分数列表，范围 [0.0, 3.0]
     """
     rewards = []
 
@@ -126,25 +68,41 @@ def match_format_approximately(completions: List[List[Dict]], **kwargs) -> List[
 
         score = 0.0
 
-        # 检查 </think>
-        think_count = content.count("</think>")
-        score += 0.5 if think_count == 1 else -1.0
+        # Level 1: 检查 <think>...</think> 标签对
+        think_match = THINK_PATTERN.search(content)
+        if think_match is not None:
+            score += 0.5  # 不要求内容非空
 
-        # 检查 [
-        bracket_open_count = content.count("[")
-        score += 0.5 if bracket_open_count == 1 else -1.0
+        # Level 2: 检查 JSON 可解析
+        json_array = extract_json_from_completion(content)
+        if json_array is not None:
+            score += 1.0
 
-        # 检查 ]
-        bracket_close_count = content.count("]")
-        score += 0.5 if bracket_close_count == 1 else -1.0
+            # Level 3: 检查字段完整
+            fields_complete = True
+            if len(json_array) == 0:
+                fields_complete = False
+            else:
+                for item in json_array:
+                    if not isinstance(item, dict):
+                        fields_complete = False
+                        break
+                    if "phase_id" not in item or "final" not in item:
+                        fields_complete = False
+                        break
+                    if not isinstance(item["phase_id"], int):
+                        fields_complete = False
+                        break
+                    if not isinstance(item["final"], (int, float)):
+                        fields_complete = False
+                        break
+                    # 检查 final 值在合理范围
+                    if not (5 <= item["final"] <= 120):
+                        fields_complete = False
+                        break
 
-        # 检查 "phase_id"
-        has_phase_id = '"phase_id"' in content or "'phase_id'" in content
-        score += 0.5 if has_phase_id else -1.0
-
-        # 检查 "final"
-        has_final = '"final"' in content or "'final'" in content
-        score += 0.5 if has_final else -1.0
+            if fields_complete:
+                score += 1.5
 
         rewards.append(score)
 
@@ -231,46 +189,56 @@ if __name__ == "__main__":
     # 自测试
     print("Testing format_reward...")
 
-    # 测试完全匹配
-    print("\n1. Testing match_format_exactly...")
+    # 测试分级评分
+    print("\n1. Testing graded_format_reward...")
+
+    # Level 3 满分
     completions = [[{
         "role": "assistant",
-        "content": "<think>分析交通流量,相位 1 需要更长绿灯时间</think>[{\"phase_id\": 1, \"final\": 40}]"
+        "content": "<think>分析交通流量</think>[{\"phase_id\": 1, \"final\": 40}]"
     }]]
-    scores = match_format_exactly(completions)
+    scores = graded_format_reward(completions)
     assert scores[0] == 3.0, f"Expected 3.0, got {scores[0]}"
-    print(f"  ✓ Perfect format: {scores[0]}")
+    print(f"  ✓ Level 3 (full marks): {scores[0]}")
 
-    # 测试不完整格式
+    # Level 1 只有 think 标签
     completions = [[{
         "role": "assistant",
-        "content": "</think>[{\"phase_id\": 1}]"
+        "content": "<think>test</think>invalid"
     }]]
-    scores = match_format_exactly(completions)
-    assert scores[0] == 0.0, f"Expected 0.0 for incomplete format, got {scores[0]}"
-    print(f"  ✓ Incomplete format: {scores[0]}")
+    scores = graded_format_reward(completions)
+    assert scores[0] == 0.5, f"Expected 0.5, got {scores[0]}"
+    print(f"  ✓ Level 1 (think only): {scores[0]}")
 
-    # 测试部分匹配
-    print("\n2. Testing match_format_approximately...")
+    # Level 2 有 think + 可解析 JSON 但字段不完整
     completions = [[{
         "role": "assistant",
-        "content": "</think>[{\"phase_id\": 1, \"final\": 40}]"
+        "content": "<think>x</think>[{\"foo\": 1}]"
     }]]
-    scores = match_format_approximately(completions)
-    print(f"  ✓ Partial match score: {scores[0]} (expected 2.5)")
-    assert scores[0] == 2.5, f"Expected 2.5, got {scores[0]}"
+    scores = graded_format_reward(completions)
+    assert scores[0] == 1.5, f"Expected 1.5, got {scores[0]}"
+    print(f"  ✓ Level 2 (think + parseable JSON): {scores[0]}")
 
-    # 测试完全缺失
+    # Level 0 无输出
     completions = [[{
         "role": "assistant",
-        "content": "just some random text"
+        "content": "random text"
     }]]
-    scores = match_format_approximately(completions)
-    print(f"  ✓ No match score: {scores[0]} (expected -5.0)")
-    assert scores[0] == -5.0, f"Expected -5.0, got {scores[0]}"
+    scores = graded_format_reward(completions)
+    assert scores[0] == 0.0, f"Expected 0.0, got {scores[0]}"
+    print(f"  ✓ Level 0 (no format): {scores[0]}")
+
+    # 测试空 think 内容（CoT 空占位策略）
+    completions = [[{
+        "role": "assistant",
+        "content": "<think>\n\n</think>[{\"phase_id\": 1, \"final\": 40}]"
+    }]]
+    scores = graded_format_reward(completions)
+    assert scores[0] == 3.0, f"Expected 3.0 for empty think, got {scores[0]}"
+    print(f"  ✓ Empty think (CoT placeholder): {scores[0]}")
 
     # 测试相位有效性
-    print("\n3. Testing check_phase_validity...")
+    print("\n2. Testing check_phase_validity...")
     phase_config = {
         0: {"min_green": 10, "max_green": 60},
         1: {"min_green": 10, "max_green": 60},

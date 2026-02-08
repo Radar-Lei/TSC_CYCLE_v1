@@ -10,8 +10,7 @@
 """
 
 from src.grpo.format_reward import (
-    match_format_exactly,
-    match_format_approximately,
+    graded_format_reward,
     check_phase_validity,
     extract_json_from_completion,
 )
@@ -46,8 +45,7 @@ from .data_loader import (
 
 __all__ = [
     # Format rewards
-    "match_format_exactly",
-    "match_format_approximately",
+    "graded_format_reward",
     "check_phase_validity",
     "extract_json_from_completion",
     # Reward combiners
