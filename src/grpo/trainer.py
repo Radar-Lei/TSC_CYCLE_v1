@@ -109,6 +109,15 @@ def load_base_model(
         random_state=3407,
     )
 
+    # 修复 Unsloth _per_layer_device_index=None 导致 generate 时
+    # move_to_device 报 "Invalid target device: None" 的问题
+    base_model = model.model if hasattr(model, "model") else model
+    inner_model = base_model.model if hasattr(base_model, "model") else base_model
+    if hasattr(inner_model, "layers"):
+        for layer in inner_model.layers:
+            if getattr(layer, "_per_layer_device_index", None) is None:
+                layer._per_layer_device_index = 0
+
     print(f"  ✓ Model {model_name} loaded (bf16, LoRA r={lora_r}, alpha={lora_alpha})")
 
     return model, tokenizer
