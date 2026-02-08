@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 Phase: 3 of 4 (Training Pipeline)
 Plan: 3 of 3
 Status: Phase complete
-Last activity: 2026-02-08 - Completed quick task 1: 用GLM-4.7 API标定SFT数据的thinking部分
+Last activity: 2026-02-08 - Completed quick task 2: 跳过 SFT，直接使用 Qwen3-4B-Thinking-2507 训练 GRPO
 
 Progress: [████████░░] 80%
 
@@ -94,9 +94,10 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 1 | 用GLM-4.7 API标定SFT数据的thinking部分 | 2026-02-08 | 5155dc7 | [1-glm-4-7-api-sft-thinking](./quick/1-glm-4-7-api-sft-thinking/) |
+| 2 | 跳过 SFT，直接使用 Qwen3-4B-Thinking-2507 训练 GRPO | 2026-02-08 | 1d1abc0 | [2-sft-qwen3-4b-thinking-grpo](./quick/2-sft-qwen3-4b-thinking-grpo/) |
 
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Quick task 1 - backfill script committed, full backfill running in background (~64h)
+Stopped at: Quick task 2 - GRPO 训练流程更新完成，支持直接使用 Qwen3-4B-Thinking-2507
 Resume file: .planning/phases/04-inference/04-01-PLAN.md (next phase)
