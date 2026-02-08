@@ -135,18 +135,11 @@ def prepare_grpo_dataset(
 
     for sample in samples:
         # 构建 messages 格式
+        # 保持为 List[Dict] 让 TRL 自行处理 chat template
         messages = [
             {"role": "system", "content": get_system_prompt()},
             {"role": "user", "content": sample["prompt"]}
         ]
-
-        # 应用 chat template 并添加 generation prompt
-        # add_generation_prompt=True 会在末尾添加 <think> 标签
-        formatted_prompt = tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True
-        )
 
         # 提取元数据
         metadata = sample.get("metadata", {})
@@ -154,7 +147,7 @@ def prepare_grpo_dataset(
 
         # 构建 GRPO 数据项
         grpo_item = {
-            "prompt": formatted_prompt,
+            "prompt": messages,  # 保持 messages 格式，让 TRL 处理模板
             "state_file": sample["state_file"],
             "tl_id": tl_id,
             "metadata": metadata,

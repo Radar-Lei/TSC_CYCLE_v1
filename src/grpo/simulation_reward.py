@@ -137,7 +137,7 @@ def parse_plan_from_completion(completion: str) -> Optional[List[Dict]]:
 
 
 def compute_simulation_reward(
-    completions: List[str],
+    completions: List[Any],
     prompts: List[str],
     state_files: List[str],
     tl_ids: List[str],
@@ -147,11 +147,15 @@ def compute_simulation_reward(
     """
     TRL GRPOTrainer 兼容的仿真奖励函数
 
+    支持 conversational 模式：completions 可能是 List[List[Dict]] 或 List[str]。
+
     NaN 跳过策略：当 JSON 解析失败或评估失败时，返回 float('nan')，
     TRL GRPOTrainer 会自动跳过 NaN 值，不参与梯度计算。
 
     Args:
         completions: 模型生成的输出列表
+            - Conversational 模式: List[List[Dict]] (每个元素为 messages)
+            - 非 Conversational 模式: List[str] (每个元素为文本)
         prompts: 对应的输入提示列表 (未使用,但保持签名兼容)
         state_files: 状态快照文件路径列表
         tl_ids: 信号灯 ID 列表
@@ -178,8 +182,22 @@ def compute_simulation_reward(
     base_port = 20000
 
     for i, (completion, state_file, tl_id) in enumerate(zip(completions, state_files, tl_ids)):
+        # 提取文本内容
+        # Conversational 模式: completion 是 List[Dict]
+        # 非 Conversational 模式: completion 是 str
+        if isinstance(completion, list):
+            # Conversational 格式: [{"role": "assistant", "content": "..."}]
+            content = ""
+            for msg in completion:
+                if msg.get("role") == "assistant":
+                    content = msg.get("content", "")
+                    break
+        else:
+            # 非 Conversational 格式: 直接使用字符串
+            content = completion
+
         # 解析方案
-        plan = parse_plan_from_completion(completion)
+        plan = parse_plan_from_completion(content)
 
         # JSON 解析失败,标记为 None (后续返回 NaN)
         if plan is None:
