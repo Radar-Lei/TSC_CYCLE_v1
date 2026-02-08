@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 Phase: 3 of 4 (Training Pipeline)
 Plan: 3 of 3
 Status: Phase complete
-Last activity: 2026-02-08 - Completed quick task 3: 修复 GRPO 奖励函数 completions 参数格式不兼容问题
+Last activity: 2026-02-08 - Completed quick task 4: 修复 GRPO generation_config / check_phase_validity / simulation skip
 
 Progress: [████████░░] 80%
 
@@ -55,7 +55,9 @@ Recent decisions affecting current work:
 - 分级格式奖励 — 统一 graded_format_reward 替代二元精确/近似匹配（03-02）
 - NaN 跳过策略 — 仿真失败返回 NaN 而非固定负奖励，TRL 自动排除梯度计算（03-02）
 - bf16 全精度 LoRA — GRPO 训练使用 bf16（load_in_4bit=False）而非 4-bit 量化（03-03）
-- LoRA 配置显式加载 — 从 adapter_config.json 读取参数并显式传递给 get_peft_model（03-03）
+- temperature 0.9 作为 GRPO 探索温度 — 覆盖 Qwen3 默认 0.6 和原始 1.0（quick-4）
+- phase_config 从 prompt 自动提取 — check_phase_validity 不再需要外部传入 phase_config（quick-4）
+- 仿真前 phase 有效性检查 — 不合法 completion 返回 -1.0 跳过 SUMO（quick-4）
 
 ### Pending Todos
 
@@ -96,9 +98,10 @@ None yet.
 | 1 | 用GLM-4.7 API标定SFT数据的thinking部分 | 2026-02-08 | 5155dc7 | [1-glm-4-7-api-sft-thinking](./quick/1-glm-4-7-api-sft-thinking/) |
 | 2 | 跳过 SFT，直接使用 Qwen3-4B-Thinking-2507 训练 GRPO | 2026-02-08 | 1d1abc0 | [2-sft-qwen3-4b-thinking-grpo](./quick/2-sft-qwen3-4b-thinking-grpo/) |
 | 3 | 修复 GRPO 奖励函数 completions 参数格式不兼容问题 | 2026-02-08 | 0a92a19 | [3-grpo-completions](./quick/3-grpo-completions/) |
+| 4 | 修复 GRPO generation_config / check_phase_validity / simulation skip | 2026-02-08 | 7f69747 | [4-grpo-generation-config-check-phase-valid](./quick/4-grpo-generation-config-check-phase-valid/) |
 
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Quick task 3 - GRPO completions 参数格式修复完成
+Stopped at: Quick task 4 - GRPO generation_config / check_phase_validity / simulation skip 修复完成
 Resume file: .planning/phases/04-inference/04-01-PLAN.md (next phase)
