@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Code Cleanup** - 清理冗余代码和配置，简化并行逻辑
 - [x] **Phase 2: Data Generation** - 修复数据生成流程，实现稳定的交叉口级并行
-- [ ] **Phase 3: Training Pipeline** - 完善 SFT 和 GRPO 训练流程
+- [x] **Phase 3: Training Pipeline** - 完善 SFT 和 GRPO 训练流程
 - [ ] **Phase 4: Execution & Validation** - 提供统一执行入口和验证机制
 
 ## Phase Details
@@ -62,9 +62,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — 修复 SFT 数据加载、模型配置和训练入口
-- [ ] 03-02-PLAN.md — 重构 GRPO 格式奖励为分级评分，修复仿真失败跳过
-- [ ] 03-03-PLAN.md — 修复 GRPO 模型加载和训练入口，连接 SFT→GRPO 路径
+- [x] 03-01-PLAN.md — 修复 SFT 数据加载、模型配置和训练入口
+- [x] 03-02-PLAN.md — 重构 GRPO 格式奖励为分级评分，修复仿真失败跳过
+- [x] 03-03-PLAN.md — 修复 GRPO 模型加载和训练入口，连接 SFT→GRPO 路径
 
 ### Phase 4: Execution & Validation
 **Goal**: 提供统一执行接口和完整流程验证机制
@@ -89,7 +89,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Code Cleanup | 3/3 | ✓ Complete | 2026-02-07 |
 | 2. Data Generation | 3/3 | ✓ Complete | 2026-02-08 |
-| 3. Training Pipeline | 0/3 | In progress | - |
+| 3. Training Pipeline | 3/3 | ✓ Complete | 2026-02-08 |
 | 4. Execution & Validation | 0/TBD | Not started | - |
 
 ---
