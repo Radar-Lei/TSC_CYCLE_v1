@@ -175,10 +175,11 @@ def is_plan_phase_valid(
 
 def compute_simulation_reward(
     completions: List[Any],
-    prompts: List[str],
-    state_files: List[str],
-    tl_ids: List[str],
-    phase_config: Dict[str, Any],
+    *,
+    prompts: List[str] = None,
+    state_file: List[str] = None,
+    tl_id: List[str] = None,
+    phase_config: Dict[str, Any] = None,
     **kwargs
 ) -> List[float]:
     """
@@ -193,9 +194,9 @@ def compute_simulation_reward(
         completions: 模型生成的输出列表
             - Conversational 模式: List[List[Dict]] (每个元素为 messages)
             - 非 Conversational 模式: List[str] (每个元素为文本)
-        prompts: 对应的输入提示列表 (未使用,但保持签名兼容)
-        state_files: 状态快照文件路径列表
-        tl_ids: 信号灯 ID 列表
+        prompts: 对应的输入提示列表 (可选)
+        state_file: 状态快照文件路径列表 (单数名称匹配数据集列名)
+        tl_id: 信号灯 ID 列表 (单数名称匹配数据集列名)
         phase_config: 评估配置字典:
             - net_file: 网络文件路径
             - sumocfg: SUMO 配置文件路径
@@ -219,7 +220,7 @@ def compute_simulation_reward(
     skip_indices = {}  # index -> penalty score (跳过仿真的索引)
     base_port = 20000
 
-    for i, (completion, state_file, tl_id) in enumerate(zip(completions, state_files, tl_ids)):
+    for i, (completion, sf, tid) in enumerate(zip(completions, state_file, tl_id)):
         # 提取文本内容
         # Conversational 模式: completion 是 List[Dict]
         # 非 Conversational 模式: completion 是 str
@@ -254,7 +255,7 @@ def compute_simulation_reward(
         port = base_port + i
 
         # 构建评估参数
-        eval_args = (state_file, tl_id, plan, phase_config, port)
+        eval_args = (sf, tid, plan, phase_config, port)
         evaluations.append(eval_args)
 
     # 并行评估
