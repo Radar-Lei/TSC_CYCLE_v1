@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 Phase: 3 of 4 (Training Pipeline)
 Plan: 3 of 3
 Status: Phase complete
-Last activity: 2026-02-08 - Completed quick task 4: 修复 GRPO generation_config / check_phase_validity / simulation skip
+Last activity: 2026-02-08 - Completed quick task 5: GRPO 所有参数统一到 config.json
 
 Progress: [████████░░] 80%
 
@@ -59,6 +59,8 @@ Recent decisions affecting current work:
 - phase_config 从 prompt 自动提取 — check_phase_validity 不再需要外部传入 phase_config（quick-4）
 - 仿真前 phase 有效性检查 — 不合法 completion 返回 -1.0 跳过 SUMO（quick-4）
 
+- GRPO 所有参数统一到 config.json — train_grpo.py 从 config.json 完整读取所有 GRPO 参数（quick-5）
+
 ### Pending Todos
 
 None yet.
@@ -99,9 +101,10 @@ None yet.
 | 2 | 跳过 SFT，直接使用 Qwen3-4B-Thinking-2507 训练 GRPO | 2026-02-08 | 1d1abc0 | [2-sft-qwen3-4b-thinking-grpo](./quick/2-sft-qwen3-4b-thinking-grpo/) |
 | 3 | 修复 GRPO 奖励函数 completions 参数格式不兼容问题 | 2026-02-08 | 0a92a19 | [3-grpo-completions](./quick/3-grpo-completions/) |
 | 4 | 修复 GRPO generation_config / check_phase_validity / simulation skip | 2026-02-08 | 7f69747 | [4-grpo-generation-config-check-phase-valid](./quick/4-grpo-generation-config-check-phase-valid/) |
+| 5 | GRPO 所有参数统一到 config.json | 2026-02-08 | cb9d28f | [5-grpo-config-json-train-grpo-py](./quick/5-grpo-config-json-train-grpo-py/) |
 
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Quick task 4 - GRPO generation_config / check_phase_validity / simulation skip 修复完成
+Stopped at: Quick task 5 - GRPO 所有参数统一到 config.json 完成
 Resume file: .planning/phases/04-inference/04-01-PLAN.md (next phase)
