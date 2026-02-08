@@ -70,7 +70,7 @@ def load_model_for_sft(config: SFTConfig = None) -> Tuple[Any, Any]:
         max_seq_length=config.max_seq_length,
         load_in_4bit=config.load_in_4bit,
         device_map=None,  # 禁用 auto device_map,使用 Trainer 的设备管理
-        fast_inference=True,
+        fast_inference=False,  # 训练模式,非推理加速模式
         max_lora_rank=config.lora_rank,
         gpu_memory_utilization=config.gpu_memory_utilization,
     )

@@ -31,12 +31,19 @@ class TrainingArgs:
     learning_rate: float = 2e-4
     logging_steps: int = 5
     save_steps: int = 100
-    save_total_limit: int = 2
+    save_total_limit: int = 3  # 保留最近 3 个 checkpoint
     optim: str = "adamw_8bit"
     weight_decay: float = 0.001
     lr_scheduler_type: str = "linear"
     seed: int = 3407
     report_to: str = "none"
+    bf16: bool = True  # bf16 全精度训练
+    logging_dir: str = None  # 将在 __post_init__ 中设置
+
+    def __post_init__(self):
+        """初始化后处理"""
+        if self.logging_dir is None:
+            self.logging_dir = f"{self.output_dir}/logs"
 
 
 class SFTTrainerWrapper:
@@ -45,18 +52,20 @@ class SFTTrainerWrapper:
     封装 TRL SFTTrainer,提供统一的训练接口。
     """
 
-    def __init__(self, model, tokenizer, train_dataset, args: TrainingArgs = None):
+    def __init__(self, model, tokenizer, train_dataset, eval_dataset=None, args: TrainingArgs = None):
         """初始化训练器
 
         Args:
             model: 模型实例 (已配置 LoRA)
             tokenizer: Tokenizer 实例 (已配置 chat template)
             train_dataset: 训练数据集 (HuggingFace Dataset)
+            eval_dataset: 验证数据集 (HuggingFace Dataset, 可选)
             args: 训练参数,默认使用 TrainingArgs()
         """
         self.model = model
         self.tokenizer = tokenizer
         self.train_dataset = train_dataset
+        self.eval_dataset = eval_dataset
         self.args = args or TrainingArgs()
         self._trainer = None
 
@@ -64,30 +73,47 @@ class SFTTrainerWrapper:
         """创建 SFTTrainer 实例"""
         from trl import SFTTrainer, SFTConfig
 
-        sft_config = SFTConfig(
-            output_dir=self.args.output_dir,
-            dataset_text_field="text",
-            per_device_train_batch_size=self.args.per_device_train_batch_size,
-            gradient_accumulation_steps=self.args.gradient_accumulation_steps,
-            warmup_steps=self.args.warmup_steps,
-            max_steps=self.args.max_steps,
-            learning_rate=self.args.learning_rate,
-            logging_steps=self.args.logging_steps,
-            save_steps=self.args.save_steps,
-            save_total_limit=self.args.save_total_limit,
-            optim=self.args.optim,
-            weight_decay=self.args.weight_decay,
-            lr_scheduler_type=self.args.lr_scheduler_type,
-            seed=self.args.seed,
-            report_to=self.args.report_to,
-        )
+        # 构建配置参数
+        config_kwargs = {
+            "output_dir": self.args.output_dir,
+            "dataset_text_field": "text",
+            "per_device_train_batch_size": self.args.per_device_train_batch_size,
+            "gradient_accumulation_steps": self.args.gradient_accumulation_steps,
+            "warmup_steps": self.args.warmup_steps,
+            "max_steps": self.args.max_steps,
+            "learning_rate": self.args.learning_rate,
+            "logging_steps": self.args.logging_steps,
+            "save_steps": self.args.save_steps,
+            "save_total_limit": self.args.save_total_limit,
+            "optim": self.args.optim,
+            "weight_decay": self.args.weight_decay,
+            "lr_scheduler_type": self.args.lr_scheduler_type,
+            "seed": self.args.seed,
+            "report_to": self.args.report_to,
+            "bf16": self.args.bf16,
+            "logging_dir": self.args.logging_dir,
+        }
 
-        self._trainer = SFTTrainer(
-            model=self.model,
-            tokenizer=self.tokenizer,
-            train_dataset=self.train_dataset,
-            args=sft_config,
-        )
+        # 如果有验证集,添加评估策略
+        if self.eval_dataset is not None:
+            config_kwargs["eval_strategy"] = "steps"
+            config_kwargs["eval_steps"] = self.args.save_steps
+
+        sft_config = SFTConfig(**config_kwargs)
+
+        # 构建 trainer 参数
+        trainer_kwargs = {
+            "model": self.model,
+            "tokenizer": self.tokenizer,
+            "train_dataset": self.train_dataset,
+            "args": sft_config,
+        }
+
+        # 如果有验证集,添加到 trainer
+        if self.eval_dataset is not None:
+            trainer_kwargs["eval_dataset"] = self.eval_dataset
+
+        self._trainer = SFTTrainer(**trainer_kwargs)
 
     def train(self):
         """执行训练
@@ -115,6 +141,7 @@ def prepare_dataset(data_path: str, tokenizer):
     """准备训练数据集
 
     从 JSONL 文件加载数据,应用 chat template 转换。
+    数据必须已包含 messages 字段（由 Phase 2 的 CoT 转换生成）。
 
     Args:
         data_path: JSONL 文件路径
@@ -124,7 +151,6 @@ def prepare_dataset(data_path: str, tokenizer):
         HuggingFace Dataset,包含 text 字段
     """
     from datasets import Dataset
-    import pandas as pd
 
     # 读取 JSONL
     data = []
@@ -132,57 +158,43 @@ def prepare_dataset(data_path: str, tokenizer):
         for line in f:
             sample = json.loads(line)
 
-            # 转换格式: {prompt, prediction, ...} -> {messages: [...]}
+            # 验证数据格式
             if "messages" not in sample:
-                # 从 prompt 和 prediction 构造 messages 格式
+                raise ValueError(
+                    f"Data format error: missing 'messages' field. "
+                    f"Expected data from Phase 2 CoT conversion (convert_to_sft_format). "
+                    f"Sample keys: {list(sample.keys())}"
+                )
 
-                # 生成符合格式的响应(SFT阶段学习格式,不追求最优决策)
-                phase_waits = sample['prediction']['phase_waits']
-                response_data = []
-                for pw in phase_waits:
-                    # 启发式: 基于饱和度在min/max之间分配绿灯时间
-                    saturation = pw.get('pred_saturation', 0.5)
-                    min_green = pw['min_green']
-                    max_green = pw['max_green']
+            # 逐条应用 chat template
+            text = tokenizer.apply_chat_template(
+                sample["messages"],
+                tokenize=False
+            )
 
-                    # 简单线性插值
-                    final = int(min_green + saturation * (max_green - min_green))
-
-                    response_data.append({
-                        "phase_id": pw['phase_id'],
-                        "final": final
-                    })
-
-                # 构造符合prompt要求的响应格式
-                think_text = "根据各相位的预测饱和度分配绿灯时间: " + \
-                    ', '.join([f"相位{r['phase_id']}: {r['final']}秒" for r in response_data])
-
-                response_text = f"""<think>
-{think_text}
-</think>
-{json.dumps(response_data, ensure_ascii=False)}"""
-
-                # 构造对话格式
-                messages = [
-                    {"role": "user", "content": sample["prompt"]},
-                    {"role": "assistant", "content": response_text}
-                ]
-                sample["messages"] = messages
-
-            data.append(sample)
-
-    df = pd.DataFrame(data)
-
-    # 应用 chat template
-    df["text"] = tokenizer.apply_chat_template(
-        df["messages"].values.tolist(),
-        tokenize=False
-    )
+            data.append({"text": text})
 
     # 转换为 Dataset
-    dataset = Dataset.from_pandas(df)
+    dataset = Dataset.from_list(data)
 
     return dataset
+
+
+def split_dataset(dataset, val_ratio=0.1, seed=3407):
+    """划分训练集和验证集
+
+    使用固定种子进行 train/val 划分。
+
+    Args:
+        dataset: HuggingFace Dataset
+        val_ratio: 验证集比例,默认 0.1 (90/10 划分)
+        seed: 随机种子,默认 3407
+
+    Returns:
+        (train_dataset, val_dataset): 训练集和验证集元组
+    """
+    split = dataset.train_test_split(test_size=val_ratio, seed=seed)
+    return split["train"], split["test"]
 
 
 def validate_model_output(model, tokenizer, test_input: str) -> Tuple[str, bool]:
