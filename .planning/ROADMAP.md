@@ -59,10 +59,12 @@ Plans:
   1. SFT 训练能够从 JSONL 数据学习并输出符合格式的信号周期
   2. GRPO 训练能够基于 SFT 模型进行强化学习
   3. 训练过程在 GPU 上正常运行并保存 checkpoint
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: TBD (to be planned)
+- [ ] 03-01-PLAN.md — 修复 SFT 数据加载、模型配置和训练入口
+- [ ] 03-02-PLAN.md — 重构 GRPO 格式奖励为分级评分，修复仿真失败跳过
+- [ ] 03-03-PLAN.md — 修复 GRPO 模型加载和训练入口，连接 SFT→GRPO 路径
 
 ### Phase 4: Execution & Validation
 **Goal**: 提供统一执行接口和完整流程验证机制
@@ -87,7 +89,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Code Cleanup | 3/3 | ✓ Complete | 2026-02-07 |
 | 2. Data Generation | 3/3 | ✓ Complete | 2026-02-08 |
-| 3. Training Pipeline | 0/TBD | Not started | - |
+| 3. Training Pipeline | 0/3 | In progress | - |
 | 4. Execution & Validation | 0/TBD | Not started | - |
 
 ---
