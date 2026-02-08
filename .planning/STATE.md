@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 Phase: 3 of 4 (Training Pipeline)
 Plan: 3 of 3
 Status: Phase complete
-Last activity: 2026-02-08 - Completed quick task 2: 跳过 SFT，直接使用 Qwen3-4B-Thinking-2507 训练 GRPO
+Last activity: 2026-02-08 - Completed quick task 3: 修复 GRPO 奖励函数 completions 参数格式不兼容问题
 
 Progress: [████████░░] 80%
 
@@ -95,9 +95,10 @@ None yet.
 |---|-------------|------|--------|-----------|
 | 1 | 用GLM-4.7 API标定SFT数据的thinking部分 | 2026-02-08 | 5155dc7 | [1-glm-4-7-api-sft-thinking](./quick/1-glm-4-7-api-sft-thinking/) |
 | 2 | 跳过 SFT，直接使用 Qwen3-4B-Thinking-2507 训练 GRPO | 2026-02-08 | 1d1abc0 | [2-sft-qwen3-4b-thinking-grpo](./quick/2-sft-qwen3-4b-thinking-grpo/) |
+| 3 | 修复 GRPO 奖励函数 completions 参数格式不兼容问题 | 2026-02-08 | 0a92a19 | [3-grpo-completions](./quick/3-grpo-completions/) |
 
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Quick task 2 - GRPO 训练流程更新完成，支持直接使用 Qwen3-4B-Thinking-2507
+Stopped at: Quick task 3 - GRPO completions 参数格式修复完成
 Resume file: .planning/phases/04-inference/04-01-PLAN.md (next phase)
