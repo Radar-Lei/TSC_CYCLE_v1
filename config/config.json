@@ -1,12 +1,22 @@
 {
   "training": {
     "sft": {
-      "max_steps": 300,
-      "batch_size": 4,
-      "learning_rate": 2e-5,
-      "gradient_accumulation_steps": 4
+      "max_steps": 200,
+      "per_device_train_batch_size": 2,
+      "gradient_accumulation_steps": 1,
+      "warmup_steps": 5,
+      "learning_rate": 2e-4,
+      "lr_scheduler_type": "linear",
+      "optim": "adamw_8bit",
+      "weight_decay": 0.001,
+      "bf16": true,
+      "logging_steps": 5,
+      "save_steps": 100,
+      "save_total_limit": 3,
+      "seed": 3407
     },
     "grpo": {
+      "model_name": "unsloth/Qwen3-4B-Thinking-2507",
       "max_steps": 100,
       "num_generations": 4,
       "learning_rate": 5e-6,
@@ -25,7 +35,8 @@
   },
   "paths": {
     "data_dir": "data/training",
-    "sft_output": "outputs/sft",
+    "sft_data_dir": "outputs/sft",
+    "sft_output": "outputs/sft/model",
     "grpo_output": "outputs/grpo",
     "environments_dir": "sumo_simulation/environments"
   }

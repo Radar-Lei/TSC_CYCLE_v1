@@ -62,8 +62,60 @@ class GRPOConfig:
     seed: int = 3407
 
 
+def load_base_model(
+    model_name: str = "unsloth/Qwen3-4B-Thinking-2507",
+    lora_r: int = 32,
+    lora_alpha: int = 64,
+) -> Tuple[Any, Any]:
+    """
+    加载基础模型 (跳过 SFT)
+
+    直接加载预训练模型 (如 Qwen3-4B-Thinking-2507) 并应用 LoRA。
+    不覆盖 tokenizer 的 chat template,使用模型内置模板。
+
+    Args:
+        model_name: 预训练模型名称
+        lora_r: LoRA rank
+        lora_alpha: LoRA alpha 参数
+
+    Returns:
+        (model, tokenizer): 加载了 LoRA 的模型和 tokenizer
+
+    示例:
+        >>> model, tokenizer = load_base_model("unsloth/Qwen3-4B-Thinking-2507")
+        >>> # 模型已应用 LoRA,可以直接用于 GRPO 训练
+    """
+    from unsloth import FastLanguageModel
+
+    # 加载基础模型
+    model, tokenizer = FastLanguageModel.from_pretrained(
+        model_name=model_name,
+        max_seq_length=2048,
+        load_in_4bit=False,  # bf16 全精度,无量化
+        device_map=None,     # 让 Trainer 管理设备
+        fast_inference=False,  # 训练模式
+        gpu_memory_utilization=0.9,
+    )
+
+    # 应用 LoRA
+    model = FastLanguageModel.get_peft_model(
+        model,
+        r=lora_r,
+        lora_alpha=lora_alpha,
+        target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+        lora_dropout=0.0,
+        bias="none",
+        use_gradient_checkpointing="unsloth",
+        random_state=3407,
+    )
+
+    print(f"  ✓ Model {model_name} loaded (bf16, LoRA r={lora_r}, alpha={lora_alpha})")
+
+    return model, tokenizer
+
+
 def load_sft_model(
-    adapter_path: str = "outputs/sft/final"
+    adapter_path: str = "outputs/sft/model/final"
 ) -> Tuple[Any, Any]:
     """
     加载 SFT 训练后的模型
@@ -77,7 +129,7 @@ def load_sft_model(
         (model, tokenizer): 加载了 LoRA adapter 的模型和 tokenizer
 
     示例:
-        >>> model, tokenizer = load_sft_model("outputs/sft/final")
+        >>> model, tokenizer = load_sft_model("outputs/sft/model/final")
         >>> # 模型已加载 SFT adapter,可以用于 GRPO 训练
     """
     from unsloth import FastLanguageModel
