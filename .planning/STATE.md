@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-07)
 
 **Core value:** 能够一键执行完整的训练流水线（数据生成 → SFT → GRPO），稳定地从 SUMO 仿真数据生成到强化学习微调，输出可用的交通信号控制模型。
-**Current focus:** Phase 2 - Data Generation
+**Current focus:** Phase 3 - Training Pipeline
 
 ## Current Position
 
-Phase: 2 of 4 (Data Generation)
-Plan: 3 of 3
-Status: Phase complete
-Last activity: 2026-02-07 — Completed 02-03-PLAN.md
+Phase: 3 of 4 (Training Pipeline)
+Plan: 1 of 3
+Status: In progress
+Last activity: 2026-02-08 — Completed 03-01-PLAN.md
 
-Progress: [██████░░░░] 60%
+Progress: [███████░░░] 70%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 7
 - Average duration: 4.0 minutes
-- Total execution time: 0.40 hours
+- Total execution time: 0.47 hours
 
 **By Phase:**
 
@@ -29,9 +29,10 @@ Progress: [██████░░░░] 60%
 |-------|-------|-------|----------|
 | 01 | 3 | 14 min | 4.7 min |
 | 02 | 3 | 11 min | 3.7 min |
+| 03 | 1 | 4 min | 4.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-03 (6 min), 02-01 (3 min), 02-02 (4 min), 02-03 (4 min)
+- Last 5 plans: 02-01 (3 min), 02-02 (4 min), 02-03 (4 min), 03-01 (4 min)
 - Trend: Consistent high velocity (~4 min/plan)
 
 *Updated after each plan completion*
@@ -72,10 +73,12 @@ None yet.
 - ✓ 动态绿相检测完成（02-03 完成）
 
 **Phase 3 readiness:**
-- 数据生成流程完整，可开始 SFT/GRPO 训练流水线
+- ✓ SFT 训练流程修复完成（03-01 完成）
+- SFT 数据加载使用 Phase 2 预处理数据（chat 格式，CoT 空占位）
+- 支持 train/val 划分（90/10）、bf16 全精度 LoRA、checkpoint 恢复
 
 ## Session Continuity
 
-Last session: 2026-02-07
-Stopped at: Phase 2 complete (all 3 plans)
-Resume file: Phase 3 planning (to be created)
+Last session: 2026-02-08
+Stopped at: Phase 3 Plan 1 complete
+Resume file: .planning/phases/03-training-pipeline/03-02-PLAN.md
