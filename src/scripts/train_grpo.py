@@ -194,11 +194,42 @@ def apply_config(args):
             default="sumo_simulation/environments/chengdu/chengdu.sumocfg"
         )
 
-    # 训练配置
+    # 训练配置 — 完整读取 config.json 中所有 GRPO 参数
+    grpo = lambda key, default: get_nested(config, "training", "grpo", key, default=default)
+
     if args.max_steps is None:
-        args.max_steps = get_nested(config, "training", "grpo", "max_steps", default=100)
+        args.max_steps = grpo("max_steps", 100)
     if args.num_generations is None:
-        args.num_generations = get_nested(config, "training", "grpo", "num_generations", default=4)
+        args.num_generations = grpo("num_generations", 4)
+
+    # 以下参数仅从 config.json 读取（无命令行覆盖）
+    args.max_epochs = grpo("max_epochs", 1)
+    args.per_device_train_batch_size = grpo("per_device_train_batch_size", 1)
+    args.gradient_accumulation_steps = grpo("gradient_accumulation_steps", 4)
+    args.learning_rate = grpo("learning_rate", 5e-6)
+    args.warmup_ratio = grpo("warmup_ratio", 0.1)
+    args.lr_scheduler_type = grpo("lr_scheduler_type", "linear")
+    args.optim = grpo("optim", "adamw_8bit")
+    args.weight_decay = grpo("weight_decay", 0.001)
+    args.temperature = grpo("temperature", 0.9)
+    args.max_prompt_length = grpo("max_prompt_length", 512)
+    args.max_completion_length = grpo("max_completion_length", 1024)
+    args.save_steps = grpo("save_steps", 50)
+    args.logging_steps = grpo("logging_steps", 1)
+    args.bf16 = grpo("bf16", True)
+    args.save_total_limit = grpo("save_total_limit", 3)
+    args.seed = grpo("seed", 3407)
+
+    # LoRA 和模型参数
+    args.lora_r = grpo("lora_r", 32)
+    args.lora_alpha = grpo("lora_alpha", 64)
+    args.max_seq_length = grpo("max_seq_length", 2048)
+
+    # generation_config 覆盖参数
+    gen = lambda key, default: get_nested(config, "training", "grpo", "generation", key, default=default)
+    args.gen_max_length = gen("max_length", 2048)
+    args.gen_temperature = gen("temperature", 0.9)
+    args.gen_top_p = gen("top_p", 0.95)
 
     # 仿真配置
     if args.cycle_duration is None:
@@ -241,13 +272,26 @@ def main():
     print("=" * 60)
     print()
 
+    # generation_config 参数字典
+    generation_config = {
+        "max_length": args.gen_max_length,
+        "temperature": args.gen_temperature,
+        "top_p": args.gen_top_p,
+    }
+
     # 1. 加载模型
     if args.model_name:
         # 直接加载基础模型（跳过 SFT）
         print(f"[1/6] Loading base model: {args.model_name}...")
         logging.info(f"[1/6] Loading base model: {args.model_name}...")
         try:
-            model, tokenizer = load_base_model(args.model_name)
+            model, tokenizer = load_base_model(
+                args.model_name,
+                lora_r=args.lora_r,
+                lora_alpha=args.lora_alpha,
+                max_seq_length=args.max_seq_length,
+                generation_config=generation_config,
+            )
             print(f"  ✓ Model loaded (skip SFT)")
             logging.info(f"  ✓ Model loaded (skip SFT)")
         except Exception as e:
@@ -266,7 +310,11 @@ def main():
             logging.error(error_msg)
             return 1
         try:
-            model, tokenizer = load_sft_model(args.sft_adapter)
+            model, tokenizer = load_sft_model(
+                args.sft_adapter,
+                max_seq_length=args.max_seq_length,
+                generation_config=generation_config,
+            )
             print(f"  ✓ Model loaded successfully")
             logging.info(f"  ✓ Model loaded successfully")
         except Exception as e:
@@ -344,21 +392,49 @@ def main():
     logging.info(f"[4/6] Creating GRPO trainer...")
     config = GRPOConfig(
         max_steps=args.max_steps,
+        max_epochs=args.max_epochs,
+        per_device_train_batch_size=args.per_device_train_batch_size,
         num_generations=args.num_generations,
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
+        learning_rate=args.learning_rate,
+        warmup_ratio=args.warmup_ratio,
+        lr_scheduler_type=args.lr_scheduler_type,
+        optim=args.optim,
+        weight_decay=args.weight_decay,
+        temperature=args.temperature,
+        max_prompt_length=args.max_prompt_length,
+        max_completion_length=args.max_completion_length,
         output_dir=args.output_dir,
+        save_steps=args.save_steps,
+        logging_steps=args.logging_steps,
+        bf16=args.bf16,
+        save_total_limit=args.save_total_limit,
+        seed=args.seed,
     )
     print(f"  Configuration:")
     print(f"    - max_steps: {config.max_steps}")
     print(f"    - learning_rate: {config.learning_rate}")
+    print(f"    - temperature: {config.temperature}")
     print(f"    - num_generations: {config.num_generations}")
+    print(f"    - per_device_train_batch_size: {config.per_device_train_batch_size}")
     print(f"    - gradient_accumulation_steps: {config.gradient_accumulation_steps}")
+    print(f"    - max_prompt_length: {config.max_prompt_length}")
+    print(f"    - max_completion_length: {config.max_completion_length}")
+    print(f"    - bf16: {config.bf16}")
     print(f"    - output_dir: {config.output_dir}")
+    print(f"    - generation_config: {generation_config}")
     logging.info(f"  Configuration:")
     logging.info(f"    - max_steps: {config.max_steps}")
     logging.info(f"    - learning_rate: {config.learning_rate}")
+    logging.info(f"    - temperature: {config.temperature}")
     logging.info(f"    - num_generations: {config.num_generations}")
+    logging.info(f"    - per_device_train_batch_size: {config.per_device_train_batch_size}")
     logging.info(f"    - gradient_accumulation_steps: {config.gradient_accumulation_steps}")
+    logging.info(f"    - max_prompt_length: {config.max_prompt_length}")
+    logging.info(f"    - max_completion_length: {config.max_completion_length}")
+    logging.info(f"    - bf16: {config.bf16}")
     logging.info(f"    - output_dir: {config.output_dir}")
+    logging.info(f"    - generation_config: {generation_config}")
 
     try:
         trainer = create_grpo_trainer(model, tokenizer, dataset, reward_funcs, config)

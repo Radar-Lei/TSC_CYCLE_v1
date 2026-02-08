@@ -66,6 +66,8 @@ def load_base_model(
     model_name: str = "unsloth/Qwen3-4B-Thinking-2507",
     lora_r: int = 32,
     lora_alpha: int = 64,
+    max_seq_length: int = 2048,
+    generation_config: Dict[str, Any] = None,
 ) -> Tuple[Any, Any]:
     """
     加载基础模型 (跳过 SFT)
@@ -77,6 +79,8 @@ def load_base_model(
         model_name: 预训练模型名称
         lora_r: LoRA rank
         lora_alpha: LoRA alpha 参数
+        max_seq_length: 最大序列长度
+        generation_config: generation_config 覆盖参数 (max_length, temperature, top_p)
 
     Returns:
         (model, tokenizer): 加载了 LoRA 的模型和 tokenizer
@@ -90,14 +94,16 @@ def load_base_model(
     # 加载基础模型
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=model_name,
-        max_seq_length=2048,
+        max_seq_length=max_seq_length,
         load_in_4bit=False,  # bf16 全精度,无量化
     )
 
-    # 覆盖 Qwen3 默认 generation_config (max_length=262144, temperature=0.6)
-    model.generation_config.max_length = 2048  # 匹配 max_seq_length
-    model.generation_config.temperature = 0.9  # GRPO 探索需要较高温度
-    model.generation_config.top_p = 0.95
+    # 覆盖模型默认 generation_config (如 Qwen3 默认 max_length=262144, temperature=0.6)
+    if generation_config is None:
+        generation_config = {"max_length": 2048, "temperature": 0.9, "top_p": 0.95}
+    model.generation_config.max_length = generation_config.get("max_length", 2048)
+    model.generation_config.temperature = generation_config.get("temperature", 0.9)
+    model.generation_config.top_p = generation_config.get("top_p", 0.95)
 
     # 应用 LoRA
     model = FastLanguageModel.get_peft_model(
@@ -117,7 +123,9 @@ def load_base_model(
 
 
 def load_sft_model(
-    adapter_path: str = "outputs/sft/model/final"
+    adapter_path: str = "outputs/sft/model/final",
+    max_seq_length: int = 2048,
+    generation_config: Dict[str, Any] = None,
 ) -> Tuple[Any, Any]:
     """
     加载 SFT 训练后的模型
@@ -126,6 +134,8 @@ def load_sft_model(
 
     Args:
         adapter_path: SFT adapter 路径 (包含 adapter_model.safetensors)
+        max_seq_length: 最大序列长度
+        generation_config: generation_config 覆盖参数 (max_length, temperature, top_p)
 
     Returns:
         (model, tokenizer): 加载了 LoRA adapter 的模型和 tokenizer
@@ -169,14 +179,16 @@ def load_sft_model(
     # 使用 bf16 全精度（无 4-bit 量化）
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=str(adapter_path),
-        max_seq_length=2048,
+        max_seq_length=max_seq_length,
         load_in_4bit=False,  # bf16 全精度，无量化
     )
 
-    # 覆盖 Qwen3 默认 generation_config (max_length=262144, temperature=0.6)
-    model.generation_config.max_length = 2048  # 匹配 max_seq_length
-    model.generation_config.temperature = 0.9  # GRPO 探索需要较高温度
-    model.generation_config.top_p = 0.95
+    # 覆盖模型默认 generation_config
+    if generation_config is None:
+        generation_config = {"max_length": 2048, "temperature": 0.9, "top_p": 0.95}
+    model.generation_config.max_length = generation_config.get("max_length", 2048)
+    model.generation_config.temperature = generation_config.get("temperature", 0.9)
+    model.generation_config.top_p = generation_config.get("top_p", 0.95)
 
     # 重新启用 LoRA 以支持训练
     # Unsloth 在加载时会自动应用 adapter,但需要显式启用训练模式
@@ -221,7 +233,7 @@ def create_sampling_params(
         >>> config = GRPOConfig()
         >>> params = create_sampling_params(tokenizer, config)
         >>> params["temperature"]
-        1.0
+        0.9
     """
     # vLLM SamplingParams
     # 参考 Qwen3_(4B)_GRPO.ipynb cell 20
