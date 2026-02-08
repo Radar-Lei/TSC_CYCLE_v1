@@ -1,7 +1,7 @@
 """GRPO 训练入口脚本
 
 组装完整的 GRPO 训练流程:
-1. 加载 SFT 模型
+1. 加载模型 (基础模型或 SFT 模型)
 2. 加载训练数据
 3. 配置奖励函数
 4. 创建训练器
@@ -9,7 +9,11 @@
 6. 保存模型
 
 使用方法:
-    python -m src.scripts.train_grpo --max-steps 100
+    # 直接使用 Thinking 模型（跳过 SFT）:
+    python -m src.scripts.train_grpo --model-name unsloth/Qwen3-4B-Thinking-2507
+
+    # 或使用 SFT 模型:
+    python -m src.scripts.train_grpo --sft-adapter outputs/sft/model/final
 
 Docker 执行:
     docker run --rm \\
@@ -33,7 +37,7 @@ import logging
 import os
 from pathlib import Path
 
-from src.grpo.trainer import GRPOConfig, load_sft_model, create_grpo_trainer
+from src.grpo.trainer import GRPOConfig, load_sft_model, load_base_model, create_grpo_trainer
 from src.grpo.data_loader import load_training_data, prepare_grpo_dataset
 from src.grpo.format_reward import (
     graded_format_reward,
@@ -77,10 +81,16 @@ def parse_args():
 
     # 模型和数据路径
     parser.add_argument(
+        "--model-name",
+        type=str,
+        default=None,
+        help="基础模型名称，直接加载（跳过 SFT）。默认: unsloth/Qwen3-4B-Thinking-2507"
+    )
+    parser.add_argument(
         "--sft-adapter",
         type=str,
         default=None,
-        help="SFT adapter 路径 (默认: outputs/sft/final)"
+        help="SFT adapter 路径 (默认: outputs/sft/model/final)"
     )
     parser.add_argument(
         "--data-dir",
@@ -164,8 +174,10 @@ def apply_config(args):
     config = load_config(args.config)
 
     # 路径配置
+    if args.model_name is None:
+        args.model_name = get_nested(config, "training", "grpo", "model_name", default=None)
     if args.sft_adapter is None:
-        sft_output = get_nested(config, "paths", "sft_output", default="outputs/sft")
+        sft_output = get_nested(config, "paths", "sft_output", default="outputs/sft/model")
         args.sft_adapter = f"{sft_output}/final"
     if args.data_dir is None:
         args.data_dir = get_nested(config, "paths", "data_dir", default="outputs/training")
@@ -229,28 +241,38 @@ def main():
     print("=" * 60)
     print()
 
-    # 1. 加载 SFT 模型
-    print(f"[1/6] Loading SFT model from {args.sft_adapter}...")
-    logging.info(f"[1/6] Loading SFT model from {args.sft_adapter}...")
-
-    # 检查 SFT adapter 是否存在
-    sft_path = Path(args.sft_adapter)
-    if not sft_path.exists():
-        error_msg = f"SFT adapter not found: {args.sft_adapter}\n" \
-                    f"Please run SFT training first (Phase 3, Plan 01)\n" \
-                    f"Expected path: outputs/sft/final/"
-        print(f"  ✗ {error_msg}")
-        logging.error(error_msg)
-        return 1
-
-    try:
-        model, tokenizer = load_sft_model(args.sft_adapter)
-        print(f"  ✓ Model loaded successfully")
-        logging.info(f"  ✓ Model loaded successfully")
-    except Exception as e:
-        print(f"  ✗ Failed to load model: {e}")
-        logging.error(f"  ✗ Failed to load model: {e}")
-        return 1
+    # 1. 加载模型
+    if args.model_name:
+        # 直接加载基础模型（跳过 SFT）
+        print(f"[1/6] Loading base model: {args.model_name}...")
+        logging.info(f"[1/6] Loading base model: {args.model_name}...")
+        try:
+            model, tokenizer = load_base_model(args.model_name)
+            print(f"  ✓ Model loaded (skip SFT)")
+            logging.info(f"  ✓ Model loaded (skip SFT)")
+        except Exception as e:
+            print(f"  ✗ Failed to load model: {e}")
+            logging.error(f"  ✗ Failed to load model: {e}")
+            return 1
+    else:
+        # 从 SFT adapter 加载（原有路径）
+        print(f"[1/6] Loading SFT model from {args.sft_adapter}...")
+        logging.info(f"[1/6] Loading SFT model from {args.sft_adapter}...")
+        sft_path = Path(args.sft_adapter)
+        if not sft_path.exists():
+            error_msg = (f"SFT adapter not found: {args.sft_adapter}\n"
+                        f"Please run SFT training first, or use --model-name to load a base model directly")
+            print(f"  ✗ {error_msg}")
+            logging.error(error_msg)
+            return 1
+        try:
+            model, tokenizer = load_sft_model(args.sft_adapter)
+            print(f"  ✓ Model loaded successfully")
+            logging.info(f"  ✓ Model loaded successfully")
+        except Exception as e:
+            print(f"  ✗ Failed to load model: {e}")
+            logging.error(f"  ✗ Failed to load model: {e}")
+            return 1
 
     # 2. 加载训练数据
     print(f"\n[2/6] Loading training data from {args.data_dir}...")
