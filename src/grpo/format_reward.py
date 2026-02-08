@@ -37,6 +37,61 @@ def extract_json_from_completion(text: str) -> Optional[List[Dict]]:
         return None
 
 
+def extract_phase_config_from_prompt(prompt) -> Optional[Dict[int, Dict]]:
+    """从 prompt 中提取 phase_config
+
+    从 prompt 的 JSON 内容中解析 phase_waits 字段,构建 phase_config 字典。
+
+    Args:
+        prompt: 单个 prompt,可能是:
+            - List[Dict] (conversational 模式, messages 列表)
+            - str (纯文本模式)
+
+    Returns:
+        Dict[int, Dict] 格式: {phase_id: {"min_green": ..., "max_green": ...}}
+        解析失败返回 None
+    """
+    try:
+        # 提取 user content
+        if isinstance(prompt, list):
+            # Conversational 模式: 找到 role=="user" 的消息
+            user_content = None
+            for msg in prompt:
+                if isinstance(msg, dict) and msg.get("role") == "user":
+                    user_content = msg.get("content", "")
+                    break
+            if user_content is None:
+                return None
+        elif isinstance(prompt, str):
+            user_content = prompt
+        else:
+            return None
+
+        # 解析 JSON
+        data = json.loads(user_content)
+
+        # 提取 phase_waits
+        phase_waits = data.get("phase_waits")
+        if not phase_waits or not isinstance(phase_waits, list):
+            return None
+
+        # 构建 phase_config dict
+        phase_config = {}
+        for pw in phase_waits:
+            phase_id = pw.get("phase_id")
+            if phase_id is None:
+                continue
+            phase_config[phase_id] = {
+                "min_green": pw.get("min_green", 5),
+                "max_green": pw.get("max_green", 120),
+            }
+
+        return phase_config if phase_config else None
+
+    except (json.JSONDecodeError, AttributeError, TypeError):
+        return None
+
+
 def graded_format_reward(completions: List[List[Dict]], **kwargs) -> List[float]:
     """分级格式奖励函数
 
@@ -111,7 +166,6 @@ def graded_format_reward(completions: List[List[Dict]], **kwargs) -> List[float]
 
 def check_phase_validity(
     completions: List[List[Dict]],
-    phase_config: Dict[int, Dict[str, Any]],
     **kwargs
 ) -> List[float]:
     """相位有效性检查
@@ -120,11 +174,12 @@ def check_phase_validity(
     - phase_id 是否存在于 phase_config 中
     - final 是否在 min_green 到 max_green 范围内
 
+    phase_config 自动从 kwargs["prompts"] 中的 JSON 解析提取。
+
     Args:
         completions: List[List[Dict]] - 每个 completion 是 messages 列表
-        phase_config: Dict[int, Dict] - 相位配置
-            例: {0: {"min_green": 10, "max_green": 60}, ...}
         **kwargs: 兼容 TRL GRPOTrainer reward_funcs 签名
+            - prompts: List - prompt 列表,每个 prompt 包含 phase_waits JSON
 
     Returns:
         奖励分数列表:
@@ -133,8 +188,9 @@ def check_phase_validity(
         - 无法解析: 0.0
     """
     rewards = []
+    prompts = kwargs.get("prompts", [])
 
-    for completion in completions:
+    for idx, completion in enumerate(completions):
         # 提取 assistant 消息内容
         content = ""
         for msg in completion:
@@ -145,6 +201,17 @@ def check_phase_validity(
         # 提取 JSON 数组
         json_array = extract_json_from_completion(content)
         if json_array is None:
+            rewards.append(0.0)
+            continue
+
+        # 从 prompt 提取 phase_config
+        if idx < len(prompts):
+            phase_config = extract_phase_config_from_prompt(prompts[idx])
+        else:
+            phase_config = None
+
+        if phase_config is None:
+            # 无法从 prompt 提取 phase_config,无法判断有效性
             rewards.append(0.0)
             continue
 
@@ -239,17 +306,25 @@ if __name__ == "__main__":
 
     # 测试相位有效性
     print("\n2. Testing check_phase_validity...")
-    phase_config = {
-        0: {"min_green": 10, "max_green": 60},
-        1: {"min_green": 10, "max_green": 60},
-    }
+
+    # 构造测试用 prompt (包含 phase_waits JSON)
+    test_prompt = [
+        {"role": "system", "content": "You are a traffic signal controller."},
+        {"role": "user", "content": json.dumps({
+            "as_of": "2025-01-01",
+            "phase_waits": [
+                {"phase_id": 0, "min_green": 10, "max_green": 60, "pred_saturation": 0.5, "capacity": 30},
+                {"phase_id": 1, "min_green": 10, "max_green": 60, "pred_saturation": 0.3, "capacity": 30},
+            ]
+        })}
+    ]
 
     # 有效配置
     completions = [[{
         "role": "assistant",
         "content": "<think>test</think>[{\"phase_id\": 0, \"final\": 30}, {\"phase_id\": 1, \"final\": 40}]"
     }]]
-    scores = check_phase_validity(completions, phase_config)
+    scores = check_phase_validity(completions, prompts=[test_prompt])
     assert scores[0] == 1.0, f"Expected 1.0 for valid config, got {scores[0]}"
     print(f"  ✓ Valid phase config: {scores[0]}")
 
@@ -258,7 +333,7 @@ if __name__ == "__main__":
         "role": "assistant",
         "content": "<think>test</think>[{\"phase_id\": 99, \"final\": 30}]"
     }]]
-    scores = check_phase_validity(completions, phase_config)
+    scores = check_phase_validity(completions, prompts=[test_prompt])
     assert scores[0] == -2.0, f"Expected -2.0 for invalid phase_id, got {scores[0]}"
     print(f"  ✓ Invalid phase_id: {scores[0]}")
 
@@ -267,7 +342,7 @@ if __name__ == "__main__":
         "role": "assistant",
         "content": "<think>test</think>[{\"phase_id\": 0, \"final\": 200}]"
     }]]
-    scores = check_phase_validity(completions, phase_config)
+    scores = check_phase_validity(completions, prompts=[test_prompt])
     assert scores[0] == -2.0, f"Expected -2.0 for out-of-range final, got {scores[0]}"
     print(f"  ✓ Out-of-range final: {scores[0]}")
 
@@ -276,8 +351,29 @@ if __name__ == "__main__":
         "role": "assistant",
         "content": "invalid json"
     }]]
-    scores = check_phase_validity(completions, phase_config)
+    scores = check_phase_validity(completions, prompts=[test_prompt])
     assert scores[0] == 0.0, f"Expected 0.0 for unparseable, got {scores[0]}"
     print(f"  ✓ Unparseable: {scores[0]}")
+
+    # 测试 extract_phase_config_from_prompt
+    print("\n3. Testing extract_phase_config_from_prompt...")
+
+    pc = extract_phase_config_from_prompt(test_prompt)
+    assert pc is not None, "Should extract phase_config from prompt"
+    assert 0 in pc and 1 in pc, f"Should have phase_id 0 and 1, got {pc.keys()}"
+    assert pc[0]["min_green"] == 10
+    assert pc[0]["max_green"] == 60
+    print(f"  ✓ Extract from conversational prompt: {pc}")
+
+    # 纯文本模式
+    text_prompt = json.dumps({"phase_waits": [{"phase_id": 2, "min_green": 15, "max_green": 45}]})
+    pc2 = extract_phase_config_from_prompt(text_prompt)
+    assert pc2 is not None and 2 in pc2
+    print(f"  ✓ Extract from text prompt: {pc2}")
+
+    # 无效 prompt
+    pc3 = extract_phase_config_from_prompt("not json")
+    assert pc3 is None
+    print(f"  ✓ Invalid prompt returns None")
 
     print("\n✅ All format_reward tests passed!")
