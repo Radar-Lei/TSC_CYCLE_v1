@@ -57,11 +57,21 @@ def load_training_data(
     if not data_path.exists():
         raise FileNotFoundError(f"Data directory not found: {data_dir}")
 
-    # 查找所有 samples_*.jsonl 文件
+    # 查找 JSONL 文件：优先 samples_*.jsonl，回退 train.jsonl，再搜子目录
     jsonl_files = sorted(data_path.glob("samples_*.jsonl"))
 
     if not jsonl_files:
-        raise FileNotFoundError(f"No samples_*.jsonl files found in {data_dir}")
+        # 回退：查找 train.jsonl（data.sh 合并后的输出）
+        train_file = data_path / "train.jsonl"
+        if train_file.exists():
+            jsonl_files = [train_file]
+
+    if not jsonl_files:
+        # 再回退：搜索子目录下的 samples_*.jsonl（outputs/data/{scenario}/）
+        jsonl_files = sorted(data_path.glob("*/samples_*.jsonl"))
+
+    if not jsonl_files:
+        raise FileNotFoundError(f"No samples_*.jsonl or train.jsonl found in {data_dir}")
 
     samples = []
 
