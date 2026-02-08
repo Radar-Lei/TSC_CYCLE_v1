@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 Phase: 3 of 4 (Training Pipeline)
 Plan: 3 of 3
 Status: Phase complete
-Last activity: 2026-02-08 — Completed 03-03-PLAN.md
+Last activity: 2026-02-08 - Completed quick task 1: 用GLM-4.7 API标定SFT数据的thinking部分
 
 Progress: [████████░░] 80%
 
@@ -89,8 +89,14 @@ None yet.
 
 **Phase 3 complete** - 训练流水线所有修复完成，可进入 Phase 4（推理/部署）
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | 用GLM-4.7 API标定SFT数据的thinking部分 | 2026-02-08 | 5155dc7 | [1-glm-4-7-api-sft-thinking](./quick/1-glm-4-7-api-sft-thinking/) |
+
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Phase 3 complete (all 3 plans complete)
+Stopped at: Quick task 1 - backfill script committed, full backfill running in background (~64h)
 Resume file: .planning/phases/04-inference/04-01-PLAN.md (next phase)
