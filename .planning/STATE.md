@@ -102,9 +102,10 @@ None yet.
 | 3 | 修复 GRPO 奖励函数 completions 参数格式不兼容问题 | 2026-02-08 | 0a92a19 | [3-grpo-completions](./quick/3-grpo-completions/) |
 | 4 | 修复 GRPO generation_config / check_phase_validity / simulation skip | 2026-02-08 | 7f69747 | [4-grpo-generation-config-check-phase-valid](./quick/4-grpo-generation-config-check-phase-valid/) |
 | 5 | GRPO 所有参数统一到 config.json | 2026-02-08 | cb9d28f | [5-grpo-config-json-train-grpo-py](./quick/5-grpo-config-json-train-grpo-py/) |
+| 6 | 修复 GRPO compute_simulation_reward 参数名匹配数据集列名 | 2026-02-09 | b826032 | [6-grpo-compute-simulation-reward-state-fil](./quick/6-grpo-compute-simulation-reward-state-fil/) |
 
 ## Session Continuity
 
-Last session: 2026-02-08
-Stopped at: Quick task 5 - GRPO 所有参数统一到 config.json 完成
+Last session: 2026-02-09
+Stopped at: Quick task 6 - GRPO compute_simulation_reward 参数名匹配数据集列名完成
 Resume file: .planning/phases/04-inference/04-01-PLAN.md (next phase)
