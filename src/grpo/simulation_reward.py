@@ -147,6 +147,9 @@ def compute_simulation_reward(
     """
     TRL GRPOTrainer 兼容的仿真奖励函数
 
+    NaN 跳过策略：当 JSON 解析失败或评估失败时，返回 float('nan')，
+    TRL GRPOTrainer 会自动跳过 NaN 值，不参与梯度计算。
+
     Args:
         completions: 模型生成的输出列表
         prompts: 对应的输入提示列表 (未使用,但保持签名兼容)
@@ -161,13 +164,14 @@ def compute_simulation_reward(
 
     Returns:
         奖励列表,长度与 completions 相同
+        - JSON 解析失败: float('nan') (跳过)
+        - 评估失败: float('nan') (跳过)
+        - 评估成功: 根据指标计算的奖励分数 [-1, 1]
 
     处理逻辑:
         1. 从每个 completion 中解析周期方案
         2. 并行调用 SUMO 评估器
         3. 计算仿真奖励
-        4. JSON 解析失败: 0.0 (中性)
-        5. 评估失败: -1.0 (负奖励)
     """
     # 构建评估任务列表
     evaluations = []
@@ -177,7 +181,7 @@ def compute_simulation_reward(
         # 解析方案
         plan = parse_plan_from_completion(completion)
 
-        # JSON 解析失败,标记为 None (后续返回 0.0)
+        # JSON 解析失败,标记为 None (后续返回 NaN)
         if plan is None:
             evaluations.append(None)
             continue
@@ -197,11 +201,11 @@ def compute_simulation_reward(
     rewards = []
     for result in results:
         if result is None:
-            # JSON 解析失败
-            rewards.append(0.0)
+            # JSON 解析失败 -> NaN (跳过)
+            rewards.append(float('nan'))
         elif not result.success:
-            # 评估失败
-            rewards.append(-1.0)
+            # 评估失败 (SUMO 崩溃/超时) -> NaN (跳过)
+            rewards.append(float('nan'))
         else:
             # 评估成功,计算奖励
             reward = compute_metric_reward(result)
@@ -212,7 +216,8 @@ def compute_simulation_reward(
 
 def parallel_evaluate(
     evaluations: List[Optional[tuple]],
-    max_workers: int = 4
+    max_workers: int = 4,
+    timeout: int = 120
 ) -> List[Optional[EvaluationResult]]:
     """
     并行评估多个方案
@@ -222,11 +227,17 @@ def parallel_evaluate(
             - None: JSON 解析失败,跳过评估
             - (state_file, tl_id, plan, config, port): 评估参数元组
         max_workers: 并行 worker 数量
+        timeout: 评估超时时间(秒),默认 120
 
     Returns:
         评估结果列表,长度与 evaluations 相同
         - None: JSON 解析失败
         - EvaluationResult: 评估结果 (可能成功或失败)
+
+    统计信息:
+        - 成功数: 评估成功的样本数
+        - 失败数: 评估失败的样本数 (SUMO 崩溃/超时)
+        - 跳过数: JSON 解析失败的样本数
     """
     # 过滤出需要评估的任务
     valid_tasks = []
@@ -248,5 +259,12 @@ def parallel_evaluate(
     results = [None] * len(evaluations)
     for idx, result in zip(task_indices, valid_results):
         results[idx] = result
+
+    # 统计评估结果
+    skipped = sum(1 for r in results if r is None)
+    success = sum(1 for r in results if r is not None and r.success)
+    failed = sum(1 for r in results if r is not None and not r.success)
+
+    print(f"Evaluation stats: {success} success, {failed} failed, {skipped} skipped (total: {len(results)})")
 
     return results

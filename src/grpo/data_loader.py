@@ -30,7 +30,7 @@ def get_system_prompt() -> str:
 
 
 def load_training_data(
-    data_dir: str,
+    data_dir: str = "outputs/training",
     limit: Optional[int] = None
 ) -> List[Dict[str, Any]]:
     """
@@ -38,13 +38,14 @@ def load_training_data(
 
     Args:
         data_dir: 训练数据目录路径,包含 samples_*.jsonl 文件
+                  默认 outputs/training (与 Phase 2 generate_training_data.py 输出一致)
         limit: 限制加载数量 (可选)
 
     Returns:
         训练样本列表,每个样本为字典格式
 
     示例:
-        >>> samples = load_training_data("data/training", limit=100)
+        >>> samples = load_training_data("outputs/training", limit=100)
         >>> len(samples)
         100
         >>> samples[0].keys()
