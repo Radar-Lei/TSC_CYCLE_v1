@@ -53,6 +53,11 @@ class GRPOConfig:
     logging_steps: int = 1
     report_to: str = "none"
 
+    # 训练精度和 checkpoint 管理
+    bf16: bool = True
+    save_total_limit: int = 3
+    logging_dir: str = "{output_dir}/logs"
+
     # 其他
     seed: int = 3407
 
@@ -94,12 +99,24 @@ def load_sft_model(
                 f"Missing required file: {adapter_path / filename}"
             )
 
+    # 读取 adapter 配置
+    import json
+    adapter_config_path = adapter_path / "adapter_config.json"
+    with open(adapter_config_path) as f:
+        adapter_config = json.load(f)
+
+    lora_r = adapter_config.get("r", 16)
+    lora_alpha = adapter_config.get("lora_alpha", 16)
+    target_modules = adapter_config.get("target_modules", ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"])
+
+    print(f"  Loading with LoRA config: r={lora_r}, alpha={lora_alpha}, target_modules={target_modules}")
+
     # 加载模型并应用 LoRA adapter
-    # 注意: GRPO 训练需要使用 4bit 量化以节省 GPU 内存
+    # 使用 bf16 全精度（无 4-bit 量化）
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=str(adapter_path),
         max_seq_length=2048,
-        load_in_4bit=True,  # GRPO 使用 4bit 量化
+        load_in_4bit=False,  # bf16 全精度，无量化
         device_map=None,    # 让 Trainer 管理设备
         fast_inference=False,  # 训练模式
         gpu_memory_utilization=0.9,
@@ -109,11 +126,16 @@ def load_sft_model(
     # Unsloth 在加载时会自动应用 adapter,但需要显式启用训练模式
     model = FastLanguageModel.get_peft_model(
         model,
-        # adapter_config.json 中的配置会自动应用
-        # 这里只需要指定训练相关的参数
+        r=lora_r,
+        lora_alpha=lora_alpha,
+        target_modules=target_modules,
+        lora_dropout=0.0,
+        bias="none",
         use_gradient_checkpointing="unsloth",
         random_state=3407,
     )
+
+    print(f"  ✓ Model loaded successfully (bf16, LoRA r={lora_r}, alpha={lora_alpha})")
 
     return model, tokenizer
 
@@ -197,6 +219,9 @@ def create_grpo_trainer(
     if config is None:
         config = GRPOConfig()
 
+    # 处理 logging_dir 模板
+    logging_dir = config.logging_dir.format(output_dir=config.output_dir) if "{output_dir}" in config.logging_dir else config.logging_dir
+
     # 创建 TRL GRPOConfig
     training_args = TRLGRPOConfig(
         output_dir=config.output_dir,
@@ -218,6 +243,10 @@ def create_grpo_trainer(
         max_prompt_length=config.max_prompt_length,
         max_completion_length=config.max_completion_length,
         temperature=config.temperature,
+        # 精度和 checkpoint 管理
+        bf16=config.bf16,
+        save_total_limit=config.save_total_limit,
+        logging_dir=logging_dir,
     )
 
     # 创建 GRPOTrainer
@@ -243,6 +272,8 @@ if __name__ == "__main__":
     assert config.num_generations == 4
     assert config.gradient_accumulation_steps == 4
     assert config.temperature == 1.0
+    assert config.bf16 == True, 'bf16 should be True'
+    assert config.save_total_limit == 3, 'save_total_limit should be 3'
     print("✓ GRPOConfig defaults correct")
 
     # 验证 create_sampling_params
