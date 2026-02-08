@@ -106,6 +106,8 @@ def call_glm_api(
                     message = result['choices'][0]['message']
                     # GLM-4.7 使用 reasoning_content 字段存储推理内容
                     thinking = message.get('reasoning_content', message.get('content', '')).strip()
+                    # 成功调用后延迟，避免速率限制
+                    time.sleep(0.5)
                     return thinking if thinking else None
                 else:
                     print(f"Warning: Unexpected API response format: {result}")
@@ -115,7 +117,12 @@ def call_glm_api(
             error_body = e.read().decode('utf-8') if e.fp else "No error body"
             print(f"Attempt {attempt + 1}/{max_retries} failed: HTTP {e.code} - {error_body}")
             if attempt < max_retries - 1:
-                time.sleep(2 ** attempt)  # 指数退避
+                # 速率限制错误使用更长的退避时间
+                if e.code == 429:
+                    backoff = 5 * (2 ** attempt)  # 5s, 10s, 20s
+                else:
+                    backoff = 2 ** attempt  # 1s, 2s, 4s
+                time.sleep(backoff)
 
         except urllib.error.URLError as e:
             print(f"Attempt {attempt + 1}/{max_retries} failed: Network error - {e.reason}")
@@ -255,8 +262,8 @@ def main():
     parser.add_argument(
         '--concurrency',
         type=int,
-        default=5,
-        help="Number of concurrent threads (default: 5)"
+        default=2,
+        help="Number of concurrent threads (default: 2, max 3 recommended due to API rate limits)"
     )
     parser.add_argument(
         '--max-samples',
@@ -347,7 +354,7 @@ def main():
                     dry_run=False
                 )
                 futures[future] = idx
-                time.sleep(0.02)  # 速率控制：每个线程启动间隔
+                time.sleep(0.5)  # 速率控制：每个任务提交间隔 500ms
 
             # 处理结果
             for future in as_completed(futures):
@@ -379,7 +386,7 @@ def main():
                               f"Rate: {rate:.1f} samples/sec | "
                               f"ETA: {eta/60:.1f} min")
 
-                time.sleep(0.1)  # 速率控制
+                time.sleep(0.5)  # 速率控制：每次处理结果后延迟
 
     # 最终保存进度
     save_progress(PROGRESS_FILE, completed_indices)
