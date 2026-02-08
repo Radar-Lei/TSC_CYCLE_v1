@@ -15,6 +15,7 @@ from typing import List, Dict, Any, Optional
 from multiprocessing import Pool
 
 from .sumo_evaluator import SUMOEvaluator, EvaluationResult, evaluate_single
+from .format_reward import extract_phase_config_from_prompt
 
 
 # 指标权重 (三个指标等权分配)
@@ -136,6 +137,42 @@ def parse_plan_from_completion(completion: str) -> Optional[List[Dict]]:
         return None
 
 
+def is_plan_phase_valid(
+    plan: List[Dict],
+    phase_config_dict: Dict[int, Dict]
+) -> bool:
+    """检查 plan 中所有相位是否合法
+
+    Args:
+        plan: 解析出的方案列表 [{phase_id, final}, ...]
+        phase_config_dict: 从 prompt 提取的 {phase_id: {min_green, max_green}}
+
+    Returns:
+        True 如果所有相位合法,False 如果任一不合法
+    """
+    for item in plan:
+        phase_id = item.get("phase_id")
+        final = item.get("final")
+
+        # phase_id 不在配置中
+        if phase_id not in phase_config_dict:
+            return False
+
+        # final 不是数值
+        if not isinstance(final, (int, float)):
+            return False
+
+        # final 超出范围
+        phase_info = phase_config_dict[phase_id]
+        min_green = phase_info.get("min_green", 5)
+        max_green = phase_info.get("max_green", 120)
+
+        if not (min_green <= final <= max_green):
+            return False
+
+    return True
+
+
 def compute_simulation_reward(
     completions: List[Any],
     prompts: List[str],
@@ -179,6 +216,7 @@ def compute_simulation_reward(
     """
     # 构建评估任务列表
     evaluations = []
+    skip_indices = {}  # index -> penalty score (跳过仿真的索引)
     base_port = 20000
 
     for i, (completion, state_file, tl_id) in enumerate(zip(completions, state_files, tl_ids)):
@@ -204,6 +242,14 @@ def compute_simulation_reward(
             evaluations.append(None)
             continue
 
+        # 检查 phase 有效性,不合法跳过仿真
+        if i < len(prompts):
+            pc = extract_phase_config_from_prompt(prompts[i])
+            if pc is not None and not is_plan_phase_valid(plan, pc):
+                evaluations.append(None)  # 占位
+                skip_indices[i] = -1.0
+                continue
+
         # 分配端口 (避免冲突)
         port = base_port + i
 
@@ -217,8 +263,11 @@ def compute_simulation_reward(
 
     # 计算奖励
     rewards = []
-    for result in results:
-        if result is None:
+    for i, result in enumerate(results):
+        if i in skip_indices:
+            # phase 不合法,跳过仿真,直接惩罚
+            rewards.append(skip_indices[i])
+        elif result is None:
             # JSON 解析失败 -> NaN (跳过)
             rewards.append(float('nan'))
         elif not result.success:
@@ -228,6 +277,9 @@ def compute_simulation_reward(
             # 评估成功,计算奖励
             reward = compute_metric_reward(result)
             rewards.append(reward)
+
+    if skip_indices:
+        print(f"  Phase validity: {len(skip_indices)} completions skipped simulation (invalid phases)")
 
     return rewards
 
