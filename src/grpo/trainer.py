@@ -43,7 +43,7 @@ class GRPOConfig:
     weight_decay: float = 0.001
 
     # 生成参数
-    temperature: float = 1.0
+    temperature: float = 0.9
     max_prompt_length: int = 512
     max_completion_length: int = 1024
 
@@ -92,10 +92,12 @@ def load_base_model(
         model_name=model_name,
         max_seq_length=2048,
         load_in_4bit=False,  # bf16 全精度,无量化
-        device_map=None,     # 让 Trainer 管理设备
-        fast_inference=False,  # 训练模式
-        gpu_memory_utilization=0.9,
     )
+
+    # 覆盖 Qwen3 默认 generation_config (max_length=262144, temperature=0.6)
+    model.generation_config.max_length = 2048  # 匹配 max_seq_length
+    model.generation_config.temperature = 0.9  # GRPO 探索需要较高温度
+    model.generation_config.top_p = 0.95
 
     # 应用 LoRA
     model = FastLanguageModel.get_peft_model(
@@ -108,15 +110,6 @@ def load_base_model(
         use_gradient_checkpointing="unsloth",
         random_state=3407,
     )
-
-    # 修复 Unsloth _per_layer_device_index=None 导致 generate 时
-    # move_to_device 报 "Invalid target device: None" 的问题
-    base_model = model.model if hasattr(model, "model") else model
-    inner_model = base_model.model if hasattr(base_model, "model") else base_model
-    if hasattr(inner_model, "layers"):
-        for layer in inner_model.layers:
-            if getattr(layer, "_per_layer_device_index", None) is None:
-                layer._per_layer_device_index = 0
 
     print(f"  ✓ Model {model_name} loaded (bf16, LoRA r={lora_r}, alpha={lora_alpha})")
 
@@ -178,10 +171,12 @@ def load_sft_model(
         model_name=str(adapter_path),
         max_seq_length=2048,
         load_in_4bit=False,  # bf16 全精度，无量化
-        device_map=None,    # 让 Trainer 管理设备
-        fast_inference=False,  # 训练模式
-        gpu_memory_utilization=0.9,
     )
+
+    # 覆盖 Qwen3 默认 generation_config (max_length=262144, temperature=0.6)
+    model.generation_config.max_length = 2048  # 匹配 max_seq_length
+    model.generation_config.temperature = 0.9  # GRPO 探索需要较高温度
+    model.generation_config.top_p = 0.95
 
     # 重新启用 LoRA 以支持训练
     # Unsloth 在加载时会自动应用 adapter,但需要显式启用训练模式
@@ -332,7 +327,7 @@ if __name__ == "__main__":
     assert config.learning_rate == 5e-6
     assert config.num_generations == 4
     assert config.gradient_accumulation_steps == 4
-    assert config.temperature == 1.0
+    assert config.temperature == 0.9
     assert config.bf16 == True, 'bf16 should be True'
     assert config.save_total_limit == 3, 'save_total_limit should be 3'
     print("✓ GRPOConfig defaults correct")
@@ -343,7 +338,7 @@ if __name__ == "__main__":
 
     tokenizer = MockTokenizer()
     params = create_sampling_params(tokenizer, config)
-    assert params["temperature"] == 1.0
+    assert params["temperature"] == 0.9
     assert params["max_tokens"] == 1024
     assert params["stop"] == ["</s>"]
     print("✓ create_sampling_params works")
