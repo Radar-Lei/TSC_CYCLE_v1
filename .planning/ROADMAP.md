@@ -18,6 +18,13 @@
 
 **Requirements:** SFT-01, SFT-02, SFT-03, SFT-04, SFT-05, SFTT-01, SFTT-02, SFTT-03, SFTT-04
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — 从 train.jsonl 抽取约 100 条代表性样本
+- [ ] 01-02-PLAN.md — 为每条样本生成 think+solution 内容，构造 SFT 训练数据
+- [ ] 01-03-PLAN.md — 创建 SFT 训练流水线（Docker 脚本 + Python 训练脚本）
+
 **Success Criteria:**
 1. 从 train.jsonl 成功抽取 100 条样本,覆盖不同场景和饱和度分布
 2. 生成的 SFT 数据每条包含中文短思考(50-200 token)和正确格式的 solution
@@ -26,7 +33,7 @@
 5. 训练后模型生成的输出符合 `<think>...<think><solution>...<solution>` 格式
 6. SFT 模型权重成功保存到 outputs/sft/model 目录
 
-**Status:** Not Started
+**Status:** Planning Complete
 
 ---
 
@@ -73,7 +80,7 @@
 
 | Phase | Requirements | Status | Completion |
 |-------|--------------|--------|------------|
-| 1 - SFT 数据与训练 | 9 | Not Started | 0% |
+| 1 - SFT 数据与训练 | 9 | Planning Complete | 0% |
 | 2 - GRPO 数据准备 | 2 | Not Started | 0% |
 | 3 - GRPO 训练 | 7 | Not Started | 0% |
 
@@ -83,9 +90,9 @@
 
 ## Next Steps
 
-Start with Phase 1:
+Execute Phase 1:
 ```
-/gsd:plan-phase 1
+/gsd:execute-phase 01-sft-data-and-training
 ```
 
 ---
