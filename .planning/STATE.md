@@ -1,6 +1,6 @@
 # Project State: TSC-CYCLE
 
-**Last Updated:** 2026-02-09
+**Last Updated:** 2026-02-09T12:24:12Z
 
 ---
 
@@ -17,28 +17,32 @@
 ## Current Position
 
 **Active Phase:** Phase 1 - SFT 数据与训练
-**Active Plan:** 无 (待生成)
-**Current Status:** Not Started
+**Active Plan:** 01-02 (Plan 01 已完成)
+**Current Status:** In Progress
 
 **Progress:**
 ```
-Phase 1: [░░░░░░░░░░] 0/9 requirements
+Phase 1: [█░░░░░░░░░] 1/9 requirements (11%)
 Phase 2: [░░░░░░░░░░] 0/2 requirements
 Phase 3: [░░░░░░░░░░] 0/7 requirements
 
-Overall: [░░░░░░░░░░] 0/18 requirements (0%)
+Overall: [█░░░░░░░░░] 1/18 requirements (6%)
 ```
 
 ---
 
 ## Performance Metrics
 
-**Velocity:** N/A (项目刚启动)
+**Velocity:** 1 plan/session (刚开始)
 
 **Phase History:**
-- Phase 1: Not Started (0%)
+- Phase 1: In Progress (11% - 1/9 完成)
 - Phase 2: Not Started (0%)
 - Phase 3: Not Started (0%)
+
+| Phase | Plan | Duration | Tasks | Files | Completed |
+|-------|------|----------|-------|-------|-----------|
+| 01    | 01   | 259s     | 1     | 2     | 2026-02-09T12:24:12Z |
 
 ---
 
@@ -51,10 +55,14 @@ Overall: [░░░░░░░░░░] 0/18 requirements (0%)
 | 3 阶段结构 | quick 深度,SFT 和 GRPO 流程紧密但独立 | Roadmap | 2026-02-09 |
 | SFT 数据手工构造 | 只需 100 条学格式,AI 根据 prediction 推算 final 值 | Roadmap | 2026-02-09 |
 | GRPO 实时仿真 reward | 方案空间大无法预计算,实时仿真保证准确性 | Roadmap | 2026-02-09 |
+| 分层抽样策略 | 确保覆盖所有 34 个交叉口和不同饱和度区间 | 01-01 | 2026-02-09 |
+| High 饱和度优先 | high 饱和度训练价值高但原始数据中占比少 | 01-01 | 2026-02-09 |
+| 样本饱和度=max(相位饱和度) | 最大值代表该样本最严重的交通压力状况 | 01-01 | 2026-02-09 |
 
 ### Active Todos
 
-- [ ] 执行 `/gsd:plan-phase 1` 生成 Phase 1 详细计划
+- [x] 执行 Plan 01-01: 样本抽取
+- [ ] 继续执行 Phase 1 后续计划
 
 ### Blockers
 
@@ -66,18 +74,21 @@ Overall: [░░░░░░░░░░] 0/18 requirements (0%)
 
 ### Last Session Summary
 
-**What:** 初始化项目路线图
+**What:** 执行 Phase 1 Plan 01 - 样本抽取
 
 **Outcome:**
-- 创建 3 阶段路线图 (SFT 数据与训练 → GRPO 数据准备 → GRPO 训练)
-- 所有 18 个 v1 需求已映射到对应阶段
-- 每阶段定义了 4-7 条可观察的成功标准
+- 创建 src/scripts/sample_selector.py 样本抽取脚本
+- 成功从 1588 条训练数据中抽取 100 条代表性样本
+- 覆盖所有 34 个交叉口、两个场景、不同饱和度区间和相位数
+- 提交 bbdf8be: feat(01-01): implement sample selector script
 
-**Next:** 开始规划 Phase 1
+**Next:** 继续执行 Phase 1 Plan 02
+
+**Stopped At:** Completed 01-01-PLAN.md
 
 ### Context for Next Session
 
-项目处于路线图完成状态,准备进入 Phase 1 执行。Phase 1 包含 9 个需求,涵盖 SFT 数据构造(100 条样本)和 SFT 训练脚本开发。关键约束:所有训练在 Docker 容器中运行,SFT 数据由 AI 直接构造(非程序生成),使用 `<think>...<think><solution>...<solution>` 标签格式。
+Phase 1 进行中(1/9 完成)。Plan 01 已成功抽取 100 条代表性样本并保存到 outputs/sft/sampled_100.jsonl。样本分布:arterial4x4_10(53条) + chengdu(47条),饱和度 high(35) + medium(30) + low(27) + zero(8),相位数 2(40) + 3(57) + 4(3)。下一步需要继续 Phase 1 的后续计划。
 
 ---
 
