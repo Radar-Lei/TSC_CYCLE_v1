@@ -12,3 +12,4 @@ outputs/
 data/
 logs/
 .env
+qwen3_(4b)_grpo.py
