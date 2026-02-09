@@ -11,6 +11,7 @@
 
 import argparse
 import os
+import time
 import sys
 import glob
 import json
@@ -381,9 +382,24 @@ def main():
     # 按场景收集结果
     results_by_scenario = {}
     failed_count = 0
+    total_tasks = len(tasks)
+    start_time = time.time()
 
-    # 使用 ProcessPoolExecutor 替代 multiprocessing.Pool 以支持更好的错误处理和取消
-    # 使用 ProcessPoolExecutor 替代 multiprocessing.Pool 以支持更好的错误处理和取消
+    def _print_progress(completed, total, elapsed):
+        """打印进度条"""
+        pct = completed / total * 100
+        bar_len = 30
+        filled = int(bar_len * completed / total)
+        bar = '█' * filled + '░' * (bar_len - filled)
+        if completed > 0:
+            avg = elapsed / completed
+            eta = avg * (total - completed)
+            eta_str = f"{int(eta)}s"
+        else:
+            eta_str = "--"
+        print(f"  进度: |{bar}| {completed}/{total} ({pct:.0f}%) "
+              f"已用:{int(elapsed)}s 剩余:{eta_str}", flush=True)
+
     with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
         # 提交所有任务
         future_to_task = {executor.submit(_simulate_intersection, task): task for task in tasks}
@@ -402,6 +418,7 @@ def main():
                     sys.exit(1)
 
                 scenario_name = result['scenario_name']
+                elapsed = time.time() - start_time
 
                 if result['status'] == 'success':
                     # 收集样本
@@ -409,9 +426,10 @@ def main():
                         results_by_scenario[scenario_name] = []
                     results_by_scenario[scenario_name].extend(result['samples'])
 
-                    # 简洁模式日志
-                    print(f"  ✓ [{i}/{len(tasks)}] {scenario_name} / {result['metadata']['tl_id']} 完成 "
+                    # 任务完成日志 + 进度
+                    print(f"  ✓ [{i}/{total_tasks}] {scenario_name} / {result['metadata']['tl_id']} 完成 "
                           f"({result['sample_count']} samples)")
+                    _print_progress(i, total_tasks, elapsed)
                 else:
                     # Fail-fast: 任一任务失败立即终止
                     failed_count += 1
