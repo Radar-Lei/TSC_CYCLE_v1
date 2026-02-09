@@ -45,6 +45,11 @@ Plans:
 
 **Requirements:** GRPD-01, GRPD-02
 
+**Plans:** 1 plan
+
+Plans:
+- [ ] 02-01-PLAN.md — 更新 prompt_builder 并创建 GRPO 数据生成脚本
+
 **Success Criteria:**
 1. 从 train.jsonl 成功提取 GRPO 训练集(prompt + state_file)
 2. 每个 prompt 包含 system 角色设定和 user 交通状态说明两部分
@@ -90,12 +95,12 @@ Plans:
 
 ## Next Steps
 
-Plan Phase 2:
+Execute Phase 2:
 ```
-/gsd:plan-phase 2
+/gsd:execute-phase 2
 ```
 
 ---
 
 *Roadmap created: 2026-02-09*
-*Last updated: 2026-02-09*
+*Last updated: 2026-02-10*
