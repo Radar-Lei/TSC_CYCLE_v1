@@ -1,6 +1,6 @@
 # Project State: TSC-CYCLE
 
-**Last Updated:** 2026-02-09T12:36:00Z
+**Last Updated:** 2026-02-09T12:44:44Z
 
 ---
 
@@ -17,16 +17,16 @@
 ## Current Position
 
 **Active Phase:** Phase 1 - SFT 数据与训练
-**Active Plan:** 01-03 (Plan 02 已完成)
+**Active Plan:** 01-04 (Plan 03 已完成)
 **Current Status:** In Progress
 
 **Progress:**
 ```
-Phase 1: [██░░░░░░░░] 2/9 requirements (22%)
+Phase 1: [███░░░░░░░] 3/9 requirements (33%)
 Phase 2: [░░░░░░░░░░] 0/2 requirements
 Phase 3: [░░░░░░░░░░] 0/7 requirements
 
-Overall: [██░░░░░░░░] 2/18 requirements (11%)
+Overall: [██░░░░░░░░] 3/18 requirements (17%)
 ```
 
 ---
@@ -36,7 +36,7 @@ Overall: [██░░░░░░░░] 2/18 requirements (11%)
 **Velocity:** 1 plan/session (稳定进行)
 
 **Phase History:**
-- Phase 1: In Progress (22% - 2/9 完成)
+- Phase 1: In Progress (33% - 3/9 完成)
 - Phase 2: Not Started (0%)
 - Phase 3: Not Started (0%)
 
@@ -44,6 +44,7 @@ Overall: [██░░░░░░░░] 2/18 requirements (11%)
 |-------|------|----------|-------|-------|-----------|
 | 01    | 01   | 259s     | 1     | 2     | 2026-02-09T12:24:12Z |
 | 01    | 02   | 497s     | 2     | 3     | 2026-02-09T12:36:00Z |
+| 01    | 03   | 217s     | 2     | 3     | 2026-02-09T12:44:44Z |
 
 ---
 
@@ -63,11 +64,15 @@ Overall: [██░░░░░░░░] 2/18 requirements (11%)
 | <think><solution> 标签格式 | 使用重复开标签作为关闭标签的格式 | 01-02 | 2026-02-09 |
 | Saturation 线性映射 | solution 值基于 saturation 线性映射到 [min_green, max_green] 范围 | 01-02 | 2026-02-09 |
 | 双重校验机制 | 约束校验 + think 非空校验确保数据质量 | 01-02 | 2026-02-09 |
+| unsloth + LoRA 微调 | 使用 unsloth 对 Qwen3-4B-Base 进行 LoRA 微调提高训练效率 | 01-03 | 2026-02-09 |
+| 合并保存完整模型 | 训练后合并 LoRA 保存 merged_16bit 完整模型便于直接推理 | 01-03 | 2026-02-09 |
+| Docker 脚本统一模式 | SFT 训练脚本遵循 data.sh 模式确保环境一致性 | 01-03 | 2026-02-09 |
 
 ### Active Todos
 
 - [x] 执行 Plan 01-01: 样本抽取
 - [x] 执行 Plan 01-02: SFT 数据组装
+- [x] 执行 Plan 01-03: SFT 训练流水线
 - [ ] 继续执行 Phase 1 后续计划
 
 ### Blockers
@@ -80,23 +85,26 @@ Overall: [██░░░░░░░░] 2/18 requirements (11%)
 
 ### Last Session Summary
 
-**What:** 执行 Phase 1 Plan 02 - SFT 数据组装与 AI 内容生成
+**What:** 执行 Phase 1 Plan 03 - SFT 训练流水线创建
 
 **Outcome:**
-- 创建 src/scripts/generate_sft_data.py 数据组装脚本
-- AI 手工撰写 100 条 think 内容（平均 79 字符，定性分析饱和度）
-- 组装最终 SFT 训练数据 outputs/sft/sft_train.jsonl
-- 所有约束校验通过：0 违反，0 空 think
-- 提交 30409b3: feat(01-02): create SFT data assembly and validation script
-- 提交 a918ed4: feat(01-02): generate SFT training data with AI-written think content
+- 创建 src/sft/train.py SFT 训练脚本（253 行）
+- 实现完整训练流程：配置加载、模型设置、chat template、数据加载、训练、模型保存
+- 使用 unsloth FastLanguageModel + LoRA 微调 Qwen3-4B-Base
+- 自定义 chat template 支持 <think><solution> 标签格式
+- 训练后合并 LoRA 保存 merged_16bit 完整模型
+- 创建 docker/sft_train.sh Docker 执行脚本（55 行）
+- 遵循 data.sh 模式确保环境一致性
+- 提交 44dc096: feat(01-03): create SFT training script
+- 提交 d42925c: feat(01-03): create Docker SFT training shell script
 
-**Next:** 继续执行 Phase 1 Plan 03
+**Next:** 继续执行 Phase 1 Plan 04
 
-**Stopped At:** Completed 01-02-PLAN.md
+**Stopped At:** Completed 01-03-PLAN.md
 
 ### Context for Next Session
 
-Phase 1 进行中(2/9 完成)。Plan 02 已成功生成 100 条包含 AI 手工撰写 think 内容的 SFT 训练数据。数据格式: <think>中文分析<think><solution>[JSON数组]<solution>。所有约束校验通过。下一步需要继续 Phase 1 Plan 03: SFT 模型训练。
+Phase 1 进行中(3/9 完成)。Plan 03 已成功创建 SFT 训练流水线。包含完整的 Python 训练脚本（使用 unsloth + LoRA 微调 Qwen3-4B-Base，支持 <think><solution> 标签格式）和 Docker 执行脚本（遵循 data.sh 模式）。训练后合并 LoRA 保存为 merged_16bit 完整模型到 outputs/sft/model。下一步需要继续 Phase 1 后续计划。
 
 ---
 
