@@ -14,52 +14,18 @@
       "save_steps": 100,
       "save_total_limit": 3,
       "seed": 3407
-    },
-    "grpo": {
-      "model_name": "unsloth/Qwen3-4B-Thinking-2507",
-      "max_steps": 100,
-      "max_epochs": 1,
-      "per_device_train_batch_size": 1,
-      "num_generations": 4,
-      "gradient_accumulation_steps": 4,
-      "learning_rate": 5e-6,
-      "warmup_ratio": 0.1,
-      "lr_scheduler_type": "linear",
-      "optim": "adamw_8bit",
-      "weight_decay": 0.001,
-      "temperature": 0.9,
-      "max_prompt_length": 512,
-      "max_completion_length": 1024,
-      "save_steps": 50,
-      "logging_steps": 1,
-      "bf16": true,
-      "save_total_limit": 3,
-      "seed": 3407,
-      "lora_r": 32,
-      "lora_alpha": 64,
-      "max_seq_length": 2048,
-      "generation": {
-        "max_length": 2048,
-        "temperature": 0.9,
-        "top_p": 0.95
-      }
     }
   },
   "simulation": {
-    "parallel_workers": 12,
+    "parallel_workers": 4,
     "warmup_steps": 300,
     "max_rou_files": 1,
     "sim_duration": 3600
-  },
-  "rewards": {
-    "format_weight": 0.2,
-    "simulation_weight": 0.8
   },
   "paths": {
     "data_dir": "data/training",
     "sft_data_dir": "outputs/sft",
     "sft_output": "outputs/sft/model",
-    "grpo_output": "outputs/grpo",
     "environments_dir": "sumo_simulation/environments"
   }
 }

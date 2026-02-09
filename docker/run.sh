@@ -2,19 +2,19 @@
 set -euo pipefail
 
 ################################################################################
-# 完整训练流程 - 支持 data -> grpo (默认) 或 data -> sft -> grpo (完整)
+# SFT 交通信号优化 - 训练流程
 #
 # 每个阶段独立拉起 Docker 容器执行
 #
 # 流程:
-#   direct: 数据生成 -> GRPO 训练（跳过 SFT，使用 Qwen3-4B-Thinking-2507）
-#   all:    数据生成 -> SFT 训练 -> GRPO 训练（完整流程）
-#   单阶段: data / sft / grpo
+#   all:    数据生成 -> SFT 训练（默认完整流程）
+#   单阶段: data / sft
 #
 # 用法:
-#   ./docker/run.sh                 # 默认流程（direct: data -> grpo）
-#   ./docker/run.sh --stage all     # 完整流程（data -> sft -> grpo）
-#   ./docker/run.sh --stage sft     # 从 SFT 阶段开始
+#   ./docker/run.sh                 # 默认流程（all: data -> sft）
+#   ./docker/run.sh --stage all     # 完整流程（data -> sft）
+#   ./docker/run.sh --stage data    # 仅数据生成
+#   ./docker/run.sh --stage sft     # 仅 SFT 训练
 #
 # 说明:
 #   - 任一阶段失败则立即停止（set -e）
@@ -29,7 +29,7 @@ PROJECT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 cd "${PROJECT_DIR}"
 
 # 解析 --stage 参数
-STAGE="direct"
+STAGE="all"
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --stage)
@@ -38,7 +38,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             echo "[ERROR] 未知参数: $1" >&2
-            echo "用法: ./docker/run.sh [--stage data|sft|grpo|all|direct]" >&2
+            echo "用法: ./docker/run.sh [--stage data|sft|all]" >&2
             exit 1
             ;;
     esac
@@ -46,7 +46,7 @@ done
 
 echo ""
 echo "=========================================="
-echo "GRPO 交通信号优化 - 完整训练流程"
+echo "SFT 交通信号优化 - 训练流程"
 echo "=========================================="
 echo "[项目目录] ${PROJECT_DIR}"
 echo "[执行阶段] ${STAGE}"
@@ -56,21 +56,15 @@ echo ""
 START_TIME=$(date +%s)
 
 # 阶段 1: 数据生成
-if [[ "${STAGE}" == "all" || "${STAGE}" == "direct" || "${STAGE}" == "data" ]]; then
-    echo "[阶段 1/3] 数据生成"
+if [[ "${STAGE}" == "all" || "${STAGE}" == "data" ]]; then
+    echo "[阶段 1/2] 数据生成"
     bash "${SCRIPT_DIR}/data.sh"
 fi
 
-# 阶段 2: SFT 训练 (仅 all 模式)
+# 阶段 2: SFT 训练
 if [[ "${STAGE}" == "all" || "${STAGE}" == "sft" ]]; then
-    echo "[阶段 2/3] SFT 训练"
+    echo "[阶段 2/2] SFT 训练"
     bash "${SCRIPT_DIR}/sft.sh"
-fi
-
-# 阶段 3: GRPO 训练
-if [[ "${STAGE}" == "all" || "${STAGE}" == "direct" || "${STAGE}" == "grpo" ]]; then
-    echo "[阶段 3/3] GRPO 训练"
-    bash "${SCRIPT_DIR}/grpo.sh"
 fi
 
 # 计算总时长
@@ -88,10 +82,7 @@ printf "[总耗时] %02d:%02d:%02d\n" $HOURS $MINUTES $SECONDS
 echo ""
 echo "[输出目录]"
 echo "  数据: outputs/data/"
-if [[ "${STAGE}" == "all" || "${STAGE}" == "sft" ]]; then
-    echo "  SFT:  outputs/sft/model/"
-fi
-echo "  GRPO: outputs/grpo/"
+echo "  SFT:  outputs/sft/model/"
 echo ""
 echo "=========================================="
 echo ""
