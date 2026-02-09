@@ -4,108 +4,113 @@
 
 ## Pattern Overview
 
-**Overall:** 模块化流水线架构 (Modular Pipeline Architecture)
+**Overall:** Pipeline-based AI Training and Simulation (SFT for Traffic Signal Control)
 
 **Key Characteristics:**
-- **Pipeline-driven:** 整个项目围绕交通信号优化（TSC）的训练数据生成和模型训练流水线展开。
-- **Decoupled Components:** 仿真、数据处理和模型训练模块高度解耦，通过标准化的 JSON/JSONL 格式进行数据交换。
-- **Fail-fast Task Pool:** 并行任务处理采用 "Fail-fast" 模式，确保任一子任务失败时能够立即终止并报错。
+- **Modular Pipeline:** Distinct phases for data generation, preprocessing, and model training.
+- **Simulation-Driven Data:** Training data is generated through closed-loop SUMO simulations with counterfactual state reloads.
+- **CoT (Chain of Thought) Learning:** Focuses on teaching the model (Qwen3-4B) to reason through saturation levels before outputting signal timings.
 
 ## Layers
 
-**Scripts/Entry Layer:**
-- Purpose: 提供 CLI 接口，协调各模块执行完整任务。
-- Location: `src/scripts/`
-- Contains: `generate_training_data.py`, `train_sft.py`, `process_phases.py`
-- Depends on: `src/data_generator/`, `src/sft/`, `src/phase_processor/`
-- Used by: Developer via CLI or Docker (`docker/run.sh`)
-
-**Logic/Generator Layer:**
-- Purpose: 执行核心业务逻辑，如 SUMO 仿真控制、数据采样、格式转换。
-- Location: `src/data_generator/`, `src/phase_processor/`
-- Contains: `day_simulator.py`, `traffic_collector.py`, `processor.py`
-- Depends on: `sumo_simulation/`
-- Used by: `src/scripts/`
-
 **Simulation Layer:**
-- Purpose: 封装 SUMO 仿真器，提供底层的交通控制和状态获取接口。
+- Purpose: Provides the realistic traffic environment and TraCI interface.
 - Location: `sumo_simulation/`
-- Contains: `sumo_simulator.py`
-- Depends on: SUMO (external)
+- Contains: SUMO configuration files, net/route files, and `sumo_simulator.py`.
+- Depends on: Eclipse SUMO (external).
 - Used by: `src/data_generator/`
 
-**Training/SFT Layer:**
-- Purpose: 处理大模型（LLM）的 SFT 训练流程。
+**Data Generation Layer:**
+- Purpose: Executes simulation runs to collect raw traffic data and state snapshots.
+- Location: `src/data_generator/`
+- Contains: `day_simulator.py`, `predictive_sampler.py`, `cycle_detector.py`.
+- Depends on: `sumo_simulation/`, `src/phase_processor/`
+- Used by: `src/scripts/generate_training_data.py`
+
+**Processing & Validation Layer:**
+- Purpose: Parses SUMO network files, identifies phases, resolves conflicts, and formats data for training.
+- Location: `src/phase_processor/`, `src/sft/`
+- Contains: `processor.py`, `parser.py`, `chat_template.py`, `format_validator.py`.
+- Depends on: `src/data_generator/`
+- Used by: `src/scripts/`
+
+**Training Layer:**
+- Purpose: Handles model loading, LoRA configuration, and SFT (Supervised Fine-Tuning).
 - Location: `src/sft/`
-- Contains: `trainer.py`, `model_loader.py`
-- Depends on: `unsloth` (external), `outputs/sft/`
+- Contains: `trainer.py`, `model_loader.py`.
+- Depends on: `transformers`, `trl`, `peft`, `unsloth`.
 - Used by: `src/scripts/train_sft.py`
 
 ## Data Flow
 
-**Training Data Generation Flow:**
+**1. Scenario Discovery & Phase Parsing:**
+- `generate_training_data.py` discovers environments.
+- `process_phases.py` parses `.net.xml` to generate `phase_config_<scenario>.json`.
 
-1. `src.scripts.generate_training_data` 扫描 `sumo_simulation/environments/` 发现场景。
-2. 调用 `src.phase_processor` 解析 `.net.xml` 生成 `phase_config.json`。
-3. 创建任务池，每个任务由 `DaySimulator` 调用 `sumo_simulation.sumo_simulator` 运行 SUMO。
-4. 在仿真周期边界调用 `PredictiveSampler` 收集状态并计算预测饱和度。
-5. 保存原始样本到 `outputs/data/`。
-6. 合并并转换为 SFT 格式（CoT 风格），输出到 `outputs/sft/train.jsonl`。
+**2. Simulation & Sampling:**
+- `DaySimulator` runs SUMO.
+- `CycleDetector` identifies the start of a signal cycle.
+- `PredictiveSampler` saves state, pushes simulation forward one cycle to see accumulation, then reloads state.
+- Raw samples are saved to `outputs/data/<scenario>/samples_<date>.jsonl`.
 
-**SFT Training Flow:**
+**3. Dataset Conversion:**
+- Raw samples are merged into `data/training/train.jsonl`.
+- `convert_to_sft_format` (in `generate_training_data.py`) converts raw samples to Chat/CoT format in `outputs/sft/train.jsonl`.
 
-1. `src.scripts.train_sft` 加载 `config/config.json` 中的训练参数。
-2. 通过 `src.sft.model_loader` 加载 Qwen3-4B 模型并注入 LoRA。
-3. `src.sft.trainer` 加载 SFT 格式的 JSONL 数据。
-4. 执行训练并保存 adapter 到 `outputs/sft/model/`。
+**4. Model Training:**
+- `train_sft.py` loads `outputs/sft/train.jsonl`.
+- `SFTTrainerWrapper` executes training and saves the model to `outputs/sft/model/final`.
+
+**State Management:**
+- SUMO state snapshots (`.xml` or `.xml.gz`) are managed by `PredictiveSampler` and stored in `outputs/states/`.
 
 ## Key Abstractions
 
-**DaySimulator:**
-- Purpose: 封装单天仿真的完整生命周期，包括环境准备、采样逻辑和资源清理。
-- Examples: `src/data_generator/day_simulator.py`
-- Pattern: Worker pattern
-
-**PhaseInfo/ProcessingResult:**
-- Purpose: 抽象交通信号灯相位数据及其处理统计。
-- Examples: `src/phase_processor/models.py`
-- Pattern: Data Transfer Object (DTO)
-
 **SUMOSimulator:**
-- Purpose: 对 TraCI 接口的封装，提供一致的仿真控制接口。
+- Purpose: Pythonic wrapper for TraCI and SUMO process management.
 - Examples: `sumo_simulation/sumo_simulator.py`
-- Pattern: Adapter pattern
+- Pattern: Adapter/Wrapper.
+
+**PredictiveSampler:**
+- Purpose: Implements the "simulation-lookahead" logic to calculate future saturation.
+- Examples: `src/data_generator/predictive_sampler.py`
+- Pattern: Strategy.
+
+**SFTTrainerWrapper:**
+- Purpose: Abstracts the complexity of `trl.SFTTrainer` and model loading.
+- Examples: `src/sft/trainer.py`
+- Pattern: Wrapper.
 
 ## Entry Points
 
-**Data Generator CLI:**
+**generate_training_data.py:**
 - Location: `src/scripts/generate_training_data.py`
-- Triggers: User command `python -m src.scripts.generate_training_data`
-- Responsibilities: 全量生成训练数据，包括仿真并行管理和格式转换。
+- Triggers: CLI execution.
+- Responsibilities: End-to-end data generation pipeline (discovery, simulation, merging, CoT conversion).
 
-**SFT Trainer CLI:**
+**train_sft.py:**
 - Location: `src/scripts/train_sft.py`
-- Triggers: User command `python -m src.scripts.train_sft`
-- Responsibilities: 执行 SFT 训练流程。
+- Triggers: CLI execution.
+- Responsibilities: Model training entry point.
 
-**Docker Runner:**
-- Location: `docker/run.sh`
-- Triggers: `docker run`
-- Responsibilities: 在容器环境下协调整个流水线。
+**process_phases.py:**
+- Location: `src/scripts/process_phases.py`
+- Triggers: CLI or imported by generator.
+- Responsibilities: Analyzing network files to define signal phases.
 
 ## Error Handling
 
-**Strategy:** Fail-fast (对于仿真任务池) & Centralized Logging
+**Strategy:** Fail-fast in data generation, logging with retry/skip in training.
 
 **Patterns:**
-- **Task Fail-fast:** 在 `concurrent.futures` 线程池/进程池中，任一任务异常都会导致 `executor.shutdown(wait=False)` 并退出。
-- **Validation Blocks:** 每一阶段都有验证（如场景文件检查），不满足条件立即报错。
+- **Task Failure:** `generate_training_data.py` uses a fail-fast mode where any worker failure terminates the entire process.
+- **TraCI Robustness:** `SUMOSimulator` handles port conflicts and TraCI connection losses with retries and process cleanup (`_kill_sumo_on_port`).
 
 ## Cross-Cutting Concerns
 
-**Logging:** 使用标准 `logging` 库，支持控制台和文件同步输出，配置位于 `src/utils/logging_config.py`。
-**Validation:** 相位有效性验证位于 `src/phase_processor/validator.py`。
-**Configuration:** 全局配置驱动，核心配置在 `config/config.json`。
+**Logging:** Configured in `src/utils/logging_config.py` and locally in scripts; outputs to both console and files in `outputs/`.
+**Validation:** `src/phase_processor/validator.py` ensures signal phases are viable; `src/sft/format_validator.py` checks model output syntax.
+**Configuration:** Centralized in `config/config.json`.
 
 ---
 

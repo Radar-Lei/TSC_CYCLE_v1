@@ -5,98 +5,76 @@
 ## Test Framework
 
 **Runner:**
-- Custom `if __name__ == "__main__":` test blocks within modules.
-- No dedicated test runner like `pytest` or `unittest` configured at the root level.
+- Not explicitly configured (e.g., no `pytest` or `unittest` files found).
 
 **Assertion Library:**
-- Python's built-in `assert` statement.
+- Standard Python `assert` or framework-specific assertions (if added).
 
 **Run Commands:**
 ```bash
-python src/sft/format_validator.py      # Run self-tests for format validator
-python src/sft/trainer.py               # Run self-tests for trainer module
+# Not detected. Suggested for future:
+pytest                 # Run all tests
 ```
 
 ## Test File Organization
 
 **Location:**
-- Co-located within the source files as `if __name__ == "__main__":` blocks.
+- No dedicated `tests/` directory found in the root.
 
 **Naming:**
-- Tests are contained within the relevant implementation file.
+- Not detected.
 
 **Structure:**
-```
-src/
-└── [module].py
-    └── if __name__ == "__main__":
-        # test cases
-```
+- Code is modular, facilitating unit testing of components in `src/phase_processor/` and `src/data_generator/`.
 
 ## Test Structure
 
 **Suite Organization:**
-```python
-if __name__ == "__main__":
-    # 自测试
-    print("Testing format_validator...")
-
-    # 测试正确格式
-    valid_output = '<think>...</think>[{"phase_id": 1, "final": 40}]'
-    is_valid, errors = validate_format(valid_output)
-    assert is_valid, f"Should be valid: {errors}"
-
-    # ... more cases
-```
+- No test suites currently implemented.
 
 **Patterns:**
-- **Setup pattern:** Manual instantiation of test data (e.g., hardcoded JSON strings).
-- **Teardown pattern:** Not explicitly needed for the current functional tests.
-- **Assertion pattern:** `assert condition, message_on_failure`.
+- Examples in docstrings (doctest style) are used for some classes:
+```python
+>>> # 假设第一个绿灯相位 index 是 2
+>>> detector = CycleDetector('tl_1', phase_config)
+>>> detector.update(2, 0.0)   # 首次调用
+False
+>>> detector.update(2, 90.0)  # phase 5 -> 2 (新周期!)
+True
+```
 
 ## Mocking
 
-**Framework:** Not explicitly used in the observed self-tests.
+**Framework:**
+- Not explicitly used, but dependency injection (passing `logger`, `phase_config`) is practiced, which facilitates mocking.
 
 **Patterns:**
-- No formal mocking pattern; tests focus on pure functions (validation) or parameter defaults (TrainingArgs).
-
-**What to Mock:**
-- Not applicable in current state.
-
-**What NOT to Mock:**
-- Not applicable in current state.
+- Checking for dependency availability: `TRACI_AVAILABLE = False` if `traci` cannot be imported, allowing code to run without the simulator.
 
 ## Fixtures and Factories
 
 **Test Data:**
-```python
-# Hardcoded samples in format_validator.py
-valid_output = '<think>观察排队情况,相位 1 饱和度高</think>[{"phase_id": 1, "final": 40}]'
-json_str = '[{"phase_id": 1, "final": 40}, {"phase_id": 2, "final": 30}]'
-```
+- Sample data and results are present in `data/` and `outputs/` directories, which can be used as integration test fixtures.
 
 **Location:**
-- Inline within the test blocks.
+- `data/`: SUMO network files (`.net.xml`), phase configurations (`.json`)
+- `outputs/`: Training logs and generated datasets
 
 ## Coverage
 
-**Requirements:** None enforced.
-
-**View Coverage:**
-- Not configured.
+**Requirements:**
+- None enforced.
 
 ## Test Types
 
 **Unit Tests:**
-- Functional testing of validators in `src/sft/format_validator.py`.
-- Parameter validation in `src/sft/trainer.py`.
+- Modular structure in `src/` allows for testing individual logic components like `conflict.py` or `validator.py`.
 
 **Integration Tests:**
-- The `validate_model_output` function in `src/sft/trainer.py` acts as an integration test for the model and tokenizer.
+- Scripts in `src/scripts/` (e.g., `generate_training_data.py`, `process_phases.py`) serve as entry points for end-to-end processing pipelines.
 
 **E2E Tests:**
-- `src/scripts/train_sft.py` includes a validation step at the end which serves as an E2E smoke test for the trained model.
+- SUMO simulation runs (`day_simulator.py`) act as functional/integration tests for the traffic signal control logic.
 
 ## Common Patterns
 
@@ -104,12 +82,7 @@ json_str = '[{"phase_id": 1, "final": 40}, {"phase_id": 2, "final": 30}]'
 - Not detected.
 
 **Error Testing:**
-```python
-# Testing expected failures
-invalid_output = '[{"phase_id": 1, "final": 40}]'
-is_valid, errors = validate_format(invalid_output)
-assert not is_valid, "Should fail without think"
-```
+- Handled via `try-except` blocks and logging in the main code.
 
 ---
 

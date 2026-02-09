@@ -5,71 +5,80 @@
 ## Tech Debt
 
 **Hardcoded Environment Paths:**
-- Issue: `SUMO_HOME` discovery logic contains multiple hardcoded user-specific paths (e.g., `/Users/leida/...`) and is duplicated across multiple files.
-- Files: `src/data_generator/day_simulator.py`, `src/data_generator/traffic_collector.py`, `src/data_generator/predictive_sampler.py`
-- Impact: Makes the codebase difficult to port to new environments without editing source code.
-- Fix approach: Centralize environment discovery in a utility module or rely strictly on environment variables/configuration.
+- Issue: Multiple files contain hardcoded lists of possible `SUMO_HOME` paths, including user-specific paths like `/Users/leida/Cline/sumo`.
+- Files: `sumo_simulation/sumo_simulator.py`, `src/data_generator/day_simulator.py`, `src/data_generator/traffic_collector.py`, `src/data_generator/predictive_sampler.py`
+- Impact: Makes the codebase less portable and requires manual editing for new environments.
+- Fix approach: Use a central configuration or environment variable exclusively, and provide a setup script to validate the environment.
 
-**Redundant State Management:**
-- Issue: Both `StateManager` and `PredictiveSampler` implement state saving/loading logic with slightly different naming conventions and implementations.
-- Files: `src/data_generator/state_manager.py`, `src/data_generator/predictive_sampler.py`
-- Impact: Maintenance overhead and potential inconsistency in how simulation snapshots are handled.
-- Fix approach: Refactor `PredictiveSampler` to use `StateManager` for all state-related operations.
-
-**Simplistic Capacity Estimation:**
-- Issue: Traffic capacity is estimated using a fixed multiplier (15 vehicles per lane), which ignores lane length, speed limits, and vehicle types.
+**Simplified Capacity Estimation:**
+- Issue: `estimate_capacity` uses a hardcoded multiplier of 15 vehicles per lane without considering lane length or road type.
 - Files: `src/data_generator/traffic_collector.py`
-- Impact: Saturation calculations may be significantly inaccurate for short lanes or high-speed arterials.
-- Fix approach: Use SUMO lane attributes (length, speed) to calculate a more realistic theoretical capacity.
+- Impact: Inaccurate saturation calculations if lane lengths vary significantly across the network.
+- Fix approach: Query lane length from SUMO via TraCI (`traci.lane.getLength`) and use it in the capacity formula.
+
+**Circular Import Workarounds:**
+- Issue: `SUMOSimulator` avoids top-level imports of recorders to prevent circular dependencies.
+- Files: `sumo_simulation/sumo_simulator.py`
+- Impact: Indicators of architectural tight coupling; makes code harder to trace and test.
+- Fix approach: Refactor recorder interfaces to be injected or use an event/observer pattern.
 
 ## Known Bugs
 
-**Incorrect SFT Final Time Calculation:**
-- Symptoms: The "linear interpolation" logic in SFT conversion is simplified in a way that ignores the 0.5 threshold mentioned in comments.
-- Files: `src/scripts/generate_training_data.py` (line 301)
-- Trigger: During Phase 6 of data generation.
-- Workaround: None; the current logic simply applies `min_green + (max_green - min_green) * pred_saturation`.
+**Port Allocation Race Condition:**
+- Issue: `DaySimulator._find_free_port` finds an available port by binding to 0 and closing, but another process could grab that port before SUMO starts.
+- Files: `src/data_generator/day_simulator.py`
+- Impact: Flaky simulation starts in highly parallel environments.
+- Fix approach: Let SUMO choose its own port or implement a retry mechanism with backoff for the TraCI connection.
 
-**Fragile Date Parsing:**
-- Symptoms: `DaySimulator` assumes a specific filename format containing `_2026-` to extract the base date.
-- Files: `src/data_generator/day_simulator.py` (line 177)
-- Trigger: Running simulation with route files that don't follow the 2026 naming convention or when the year changes.
-- Workaround: Pass `base_date` explicitly in the configuration.
+## Security Considerations
+
+**Unchecked Subprocess Execution:**
+- Risk: While not directly exposed to user input, `SUMOSimulator` constructs command lines for SUMO.
+- Files: `sumo_simulation/sumo_simulator.py`
+- Current mitigation: Basic list-based argument construction.
+- Recommendations: Ensure all paths passed to subprocess are sanitized or validated against expected patterns.
 
 ## Performance Bottlenecks
 
-**O(Cycle_Duration) Sampling:**
-- Problem: For every sampling point (start of every cycle for every TL), the sampler runs a full cycle of look-ahead simulation.
-- Files: `src/data_generator/predictive_sampler.py`
-- Cause: `_simulate_cycle_and_collect` calls `traci.simulationStep()` for the duration of the cycle to "predict" accumulation. In a network with 100 TLs and 120s cycles, this is extremely heavy.
-- Improvement path: Use mathematical flow models or historical accumulation data instead of per-sample look-ahead simulation.
+**Disk I/O for State Snapshots:**
+- Problem: `PredictiveSampler` saves and restores simulation states to disk for every cycle prediction.
+- Files: `src/data_generator/predictive_sampler.py`, `src/data_generator/day_simulator.py`
+- Cause: TraCI state management is primarily file-based.
+- Improvement path: Use a fast RAM-disk for temporary state files or explore if in-memory state snapshots (available in newer SUMO versions) can be utilized.
 
-**I/O Intensive State Snapshots:**
-- Problem: Saving and loading XML state files to disk for every cycle start.
-- Files: `src/data_generator/predictive_sampler.py`, `src/data_generator/state_manager.py`
-- Cause: SUMO's `saveState` and `loadState` are slow and produce large files.
-- Improvement path: Enable compression by default or use in-memory state if supported by the TraCI version.
+**Multiprocessing Memory Overhead:**
+- Problem: Running multiple SUMO instances + Python workers in parallel can quickly exhaust system memory.
+- Files: `src/scripts/generate_training_data.py`
+- Cause: Each worker loads the full Python environment and a SUMO process.
+- Improvement path: Monitor memory usage and dynamically adjust worker count, or optimize the state management to reduce overhead.
 
 ## Fragile Areas
 
-**Cycle Detection Logic:**
-- Files: `src/data_generator/cycle_detector.py`
-- Why fragile: Relies on detecting a transition to the first green phase. If the simulation uses actuated controllers where phases might be skipped or the order changes, cycle detection will break.
-- Safe modification: Check for full phase sequence completion or use TraCI's program switching events.
-- Test coverage: Gaps in handling non-standard phase sequences.
+**State Restoration Logic:**
+- Files: `src/data_generator/predictive_sampler.py`
+- Why fragile: The `_simulate_cycle_and_collect` method advances the global simulation clock and then `_restore_state` rolls it back. If any other component depends on a monotonic simulation clock during the sampling phase, it will break.
+- Safe modification: Ensure `PredictiveSampler` operations are atomic and no other threads/components interact with the TraCI connection during the "look-ahead" phase.
 
-**Fail-Fast Multi-processing:**
-- Files: `src/scripts/generate_training_data.py`
-- Why fragile: If a single SUMO instance crashes or a single task fails among thousands, the entire generation process is terminated immediately.
-- Safe modification: Implement a retry mechanism or log failures to a report while allowing other tasks to continue.
+## Scaling Limits
 
-## Test Coverage Gaps
+**State File Accumulation:**
+- Current capacity: Limited by disk space.
+- Limit: Generating 24-hour simulations with per-cycle snapshots for multiple intersections.
+- Scaling path: Implement an explicit cleanup policy for state files once a training sample is successfully generated and verified.
 
-**Error Handling and Logging:**
-- What's not tested: Most modules catch `Exception` and return empty structures (`[]`, `{}`) or `None` with minimal logging.
-- Files: `src/data_generator/cycle_detector.py`, `src/data_generator/traffic_collector.py`, `src/phase_processor/conflict.py`
-- Risk: Critical failures (like TraCI connection loss or malformed configs) are silenced, leading to empty datasets that cause training failures later.
-- Priority: High
+## Dependencies at Risk
+
+**Unsloth Compiled Cache:**
+- Risk: The repository contains a large `unsloth_compiled_cache/` directory with Python files that look generated.
+- Impact: Bloats repository size and might cause version mismatches if the environment changes.
+- Migration plan: Add these to `.gitignore` and ensure they are generated during the setup/install phase.
+
+## Missing Critical Features
+
+**Unit and Integration Tests:**
+- Problem: No automated testing suite (e.g., `pytest`, `unittest`) was detected in the codebase.
+- Blocks: Prevents regression testing and makes refactoring (like fixing tech debt) risky.
+- Priority: High.
 
 ---
 

@@ -5,67 +5,64 @@
 ## Languages
 
 **Primary:**
-- Python 3.x - Core logic for data generation, model training, and simulation control.
+- Python 3.10+ - Used for the entire codebase including data generation, traffic simulation, and model training.
 
 **Secondary:**
-- Bash - Orchestration scripts for Docker and execution pipelines.
+- XML - Used for SUMO configuration files (`.sumocfg`, `.net.xml`, `.rou.xml`) and simulation state snapshots.
+- JSON/JSONL - Used for configuration (`config/config.json`) and training data storage (`outputs/sft/train.jsonl`).
 
 ## Runtime
 
 **Environment:**
-- Python 3.x
-- Docker - Used to encapsulate the environment, including SUMO and NVIDIA GPU support.
+- Python 3.10 (via `.venv`)
+- Ubuntu-based Docker environment (`docker/Dockerfile` base: `unsloth/unsloth:dgxspark-latest`)
 
 **Package Manager:**
-- pip (implicit in Docker/scripts)
-- Lockfile: missing (no `requirements.txt` or `poetry.lock` found in root, but scripts use `pip` or pre-built images).
+- pip - Used for installing dependencies like `traci`, `modelscope`, `scikit-learn`, `unsloth`.
+- Lockfile: missing (dependencies are managed via `Dockerfile` and manual installs).
 
 ## Frameworks
 
 **Core:**
-- Unsloth - Fast LLM fine-tuning (specifically for Qwen3-4B).
-- Hugging Face Transformers - Model architecture and weights management.
-- PyTorch - Deep learning backend.
-- SUMO (Simulation of Urban MObility) - Traffic simulation engine.
+- Unsloth - Used for efficient LLM fine-tuning (LoRA/QLoRA).
+- SUMO (Simulation of Urban MObility) - Traffic simulation engine used for data generation.
 
 **Testing:**
-- Not explicitly detected (no dedicated test suite, though validation logic exists in `src/sft/trainer.py`).
+- Not detected (No standard test framework like pytest/unittest found).
 
 **Build/Dev:**
-- Docker - Environment isolation.
-- TraCI (Traffic Control Interface) - Python API for SUMO.
+- Docker - Used for containerized development and execution environment.
 
 ## Key Dependencies
 
 **Critical:**
-- `unsloth` - Performance-optimized LLM training.
-- `traci` - Real-time interaction with SUMO simulation.
-- `torch` - GPU-accelerated tensor computations.
-- `trl` - Transformer Reinforcement Learning library for SFT and GRPO.
+- `unsloth` - core for model loading and efficient training in `src/sft/model_loader.py`.
+- `traci` - Python interface for SUMO simulation control, used in `src/data_generator/traffic_collector.py` and `src/data_generator/predictive_sampler.py`.
+- `transformers` - underlying library for LLM operations (implied by Unsloth/SFT).
 
 **Infrastructure:**
-- `datasets` - Hugging Face dataset management.
-- `xml.etree.ElementTree` - Parsing SUMO configuration and net files.
+- `modelscope` - used for model downloading/hosting (detected in `docker/Dockerfile`).
+- `scikit-learn` - used for potential data processing (detected in `docker/Dockerfile`).
 
 ## Configuration
 
 **Environment:**
-- Configured via `config/config.json`.
-- Environment variables: `SUMO_HOME`, `HF_HOME`, `MODELSCOPE_CACHE`, `UNSLOTH_USE_MODELSCOPE`.
+- `.env` file - stores API keys (e.g., `ZHIPUAI_API_KEY` for GLM-4.7) and environment paths.
+- `SUMO_HOME` - environment variable required for SUMO tools and `traci`.
 
 **Build:**
-- `docker/Dockerfile`: Environment setup.
-- `config/config.json`: Training and simulation parameters.
+- `config/config.json` - Central configuration for training parameters and file paths.
+- `docker/Dockerfile` - Defines the system-level environment and software stack.
 
 ## Platform Requirements
 
 **Development:**
-- Linux (based on scripts and paths).
-- NVIDIA GPU with CUDA support (required for LLM training).
-- SUMO installation (`SUMO_HOME`).
+- Linux (Ubuntu recommended) with NVIDIA GPU (required for Unsloth/LLM training).
+- SUMO installed and `SUMO_HOME` path configured.
 
 **Production:**
-- Deployment target: GPU-enabled Docker containers.
+- NVIDIA GPU environment with CUDA support (for SFT training).
+- SUMO simulation environment.
 
 ---
 

@@ -4,28 +4,30 @@
 
 ## APIs & External Services
 
-**Model Repositories:**
-- Hugging Face / ModelScope - Source for base models (e.g., `unsloth/Qwen3-4B-Base`).
-  - SDK/Client: `transformers`, `unsloth`
-  - Auth: Handled via environment variables or CLI login (if needed).
+**Large Language Models:**
+- ZhipuAI (GLM-4.7) - Used for backfilling "thinking" process in training data.
+  - SDK/Client: `urllib.request` (Custom implementation in `src/scripts/backfill_thinking.py`)
+  - Auth: `ZHIPUAI_API_KEY` (env var)
 
 ## Data Storage
 
 **Databases:**
-- None (Filesystem-based storage).
+- None (Local file-based storage using JSON/JSONL).
 
 **File Storage:**
-- Local filesystem for JSONL datasets and model checkpoints.
-- Location: `outputs/sft/`, `outputs/data/`, `outputs/states/`.
+- Local filesystem only.
+  - `data/` - Input traffic data and network files.
+  - `outputs/` - Generated training samples and model checkpoints.
+  - `sumo_simulation/` - SUMO environment files.
 
 **Caching:**
-- Model caching via `HF_HOME` and `MODELSCOPE_CACHE`.
-- Unsloth specific cache: `unsloth_compiled_cache/`.
+- `unsloth_compiled_cache/` - Local directory for Unsloth compilation cache.
 
 ## Authentication & Identity
 
 **Auth Provider:**
-- Custom / None (The project is a training pipeline; no user-facing authentication detected).
+- Custom (API Key based for external LLM services).
+  - Implementation: API Key loaded from `.env` and included in HTTP headers in `src/scripts/backfill_thinking.py`.
 
 ## Monitoring & Observability
 
@@ -33,27 +35,26 @@
 - None.
 
 **Logs:**
-- File-based logging: `training.log` in output directories.
-- Console output via Python `logging` module.
+- Local file logging.
+  - Implementation: Custom logging setup in `src/utils/logging_config.py` and `src/scripts/train_sft.py`.
 
 ## CI/CD & Deployment
 
 **Hosting:**
-- Local or Cloud GPU instances (via Docker).
+- Local/Private GPU Server (indicated by local path structures and NVIDIA requirement).
 
 **CI Pipeline:**
-- None (Manual script execution via `docker/*.sh`).
+- None detected.
 
 ## Environment Configuration
 
 **Required env vars:**
-- `SUMO_HOME`: Path to SUMO installation.
-- `HF_HOME`: Hugging Face cache directory.
-- `MODELSCOPE_CACHE`: ModelScope cache directory.
-- `UNSLOTH_USE_MODELSCOPE`: Toggle for using ModelScope instead of Hugging Face.
+- `SUMO_HOME`: Path to the SUMO installation.
+- `ZHIPUAI_API_KEY`: API key for ZhipuAI (GLM-4.7).
+- `PYTHONPATH`: Should include the project root for module imports.
 
 **Secrets location:**
-- Not detected (likely passed as environment variables if needed for private repositories).
+- `.env` file in the project root.
 
 ## Webhooks & Callbacks
 
@@ -61,7 +62,7 @@
 - None.
 
 **Outgoing:**
-- None.
+- Outgoing API calls to `https://open.bigmodel.cn/api/paas/v4/chat/completions` for GLM-4.7 inference.
 
 ---
 

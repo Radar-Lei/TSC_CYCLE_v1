@@ -5,88 +5,84 @@
 ## Naming Patterns
 
 **Files:**
-- Snake case (`snake_case.py`): e.g., `src/sft/model_loader.py`, `src/data_generator/day_simulator.py`.
-- Scripts follow the same pattern: `src/scripts/train_sft.py`.
+- Snake case: `cycle_detector.py`, `process_phases.py`
 
 **Functions:**
-- Snake case: e.g., `setup_logging()`, `prepare_dataset()`, `validate_model_output()`.
+- Snake case: `process_traffic_lights`, `setup_logging`, `get_nested`
 
 **Variables:**
-- Snake case for local variables and arguments: `output_dir`, `train_dataset`, `is_valid`.
-- UPPER_SNAKE_CASE for constants: `SYSTEM_PROMPT` in `src/sft/chat_template.py`, `THINK_PATTERN` in `src/sft/format_validator.py`.
+- Snake case: `tl_id`, `current_phase`, `is_new_cycle`
 
 **Types:**
-- PascalCase for classes and Dataclasses: `TrainingArgs`, `SFTTrainerWrapper` in `src/sft/trainer.py`, `PhaseWait`, `TrainingSample` in `src/data_generator/models.py`.
+- CamelCase for classes: `CycleDetector`, `ProcessingResult`, `PhaseInfo`
+- Type aliases or hints: `Optional[int]`, `Dict[str, List[PhaseInfo]]`
 
 ## Code Style
 
 **Formatting:**
-- PEP 8 compliant style observed.
-- Indentation: 4 spaces.
-- Line length: Generally kept within 80-120 characters.
+- PEP 8 compliant (implied by indentation and naming)
+- Use of 4 spaces for indentation
 
 **Linting:**
-- Not explicitly configured via config files like `.flake8` or `ruff.toml` in the root, but the code shows consistent quality.
+- Not explicitly detected in config files, but code follows consistent PEP 8 patterns.
 
 ## Import Organization
 
 **Order:**
-1. Standard library imports: `import os`, `import sys`, `import json`.
-2. Third-party imports: `import torch`, `from datasets import Dataset`, `from trl import SFTTrainer`.
-3. Local/Internal imports: `from .format_validator import validate_format`.
+1. Standard library: `import json`, `import argparse`, `import logging`
+2. Third-party libraries: `import traci`, `from pathlib import Path`
+3. Local modules: `from .models import PhaseInfo`, `from .parser import parse_net_file`
 
 **Path Aliases:**
-- Use of `sys.path.insert(0, str(project_root))` in data generation scripts to handle absolute imports from the project root.
+- Relative imports within packages: `from .models import ...`
 
 ## Error Handling
 
 **Patterns:**
-- Try-except blocks for risky operations (JSON parsing, SUMO simulation): e.g., `src/sft/format_validator.py` uses `try...except json.JSONDecodeError`.
-- Meaningful error messages in `raise` statements: e.g., `raise ValueError(f"Data format error: missing 'messages' field...")`.
-- Validation functions return tuples `(is_valid, errors_list)` for complex validation logic.
+- `try-except` blocks with specific exception catching: `except (KeyError, IndexError, TypeError) as e`
+- Fallback values with logging: `logger.warning(...)` then setting a default value
+- Availability checks: `try: import traci ... except ImportError: TRACI_AVAILABLE = False`
 
 ## Logging
 
-**Framework:** `logging` (Python standard library).
+**Framework:** `logging` (Standard library)
 
 **Patterns:**
-- Centralized setup in `src/utils/logging_config.py`.
-- Per-script logging configuration in `src/scripts/train_sft.py` using `logging.StreamHandler` and `logging.FileHandler`.
-- Log format: `%(asctime)s - %(name)s - %(levelname)s - %(message)s`.
+- Per-module loggers: `logger = logging.getLogger(__name__)`
+- Centralized setup in scripts: `setup_logging(output_dir)` configuring both `StreamHandler` and `FileHandler`
+- Information levels: `info` for progress, `warning` for missing config or non-critical errors.
 
 ## Comments
 
 **When to Comment:**
-- Module-level docstrings describing the purpose of the file.
-- Complex logic explanations (e.g., SUMO environment setup in `src/data_generator/day_simulator.py`).
-- Step-by-step comments in main execution blocks.
+- Module level docstrings explaining purpose and core logic
+- Class and function docstrings using a structured format
+- Inline comments for complex logic blocks (e.g., `# 1. 解析网络文件`)
 
 **JSDoc/TSDoc:**
-- Google-style or ReST-style docstrings for functions:
-  ```python
-  """Description.
-
-  Args:
-      name: Type - Description
-
-  Returns:
-      Type - Description
-  """
-  ```
+- Python Docstrings (Google/NumPy style variant in Simplified Chinese)
+- Sections: `Attributes`, `Args`, `Returns`, `Example`
 
 ## Function Design
 
-**Size:** Functions are modular and focused on a single responsibility (e.g., `extract_think_content`, `validate_json_structure`).
+**Size:**
+- Modular and focused. Scripts like `train_sft.py` break logic into `load_config`, `setup_logging`, etc.
 
-**Parameters:** Use of type hints for clarity: `def validate_format(output_text: str) -> tuple[bool, list[str]]:`.
+**Parameters:**
+- Use of type hints for all parameters
+- Optional parameters with default values: `logger: Optional[Logger] = None`
 
-**Return Values:** Consistent use of return types, including tuples for multi-value returns.
+**Return Values:**
+- Explicit return type hints
+- Use of `dataclass` for complex return structures: `ProcessingResult`
 
 ## Module Design
 
-**Exports:** Classes and functions intended for use are defined at the top level.
+**Exports:**
+- Controlled via `__init__.py` in packages (`src/data_generator`, `src/phase_processor`)
 
-**Barrel Files:** `__init__.py` files are present in most directories to treat them as packages.
+**Barrel Files:**
+- `__init__.py` files used to organize package exports.
 
 ---
 

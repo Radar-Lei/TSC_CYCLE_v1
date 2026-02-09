@@ -6,100 +6,105 @@
 
 ```
 TSC_CYCLE/
-├── config/             # 配置文件目录
-├── data/               # 训练数据持久化存储
-├── docker/             # Docker 构建与运行脚本
-├── outputs/            # 仿真输出、模型 checkpoints 与临时数据
-├── src/                # 源代码根目录
-│   ├── data_generator/ # SUMO 仿真与样本采集逻辑
-│   ├── phase_processor/# SUMO 网络文件解析与相位处理
-│   ├── scripts/        # CLI 入口脚本
-│   ├── sft/            # SFT 训练相关代码
-│   └── utils/          # 通用工具类 (日志等)
-├── sumo_simulation/    # SUMO 环境与基础模拟器类
-└── unsloth_compiled_cache/ # Unsloth 训练优化缓存
+├── config/             # Configuration files (JSON)
+├── data/               # Persistent data storage
+│   └── training/       # Merged raw training samples
+├── docker/             # Dockerization and shell scripts
+├── model/              # Local model weights and base models
+├── outputs/            # Pipeline outputs (data, models, logs)
+│   ├── data/           # Per-scenario raw samples
+│   ├── sft/            # SFT training data and trained models
+│   └── states/         # SUMO simulation state snapshots
+├── src/                # Primary source code
+│   ├── data_generator/ # Simulation logic and data collection
+│   ├── phase_processor/# SUMO network analysis logic
+│   ├── scripts/        # CLI entry points and orchestration scripts
+│   ├── sft/            # Model training and formatting logic
+│   └── utils/          # Shared utilities (logging, etc.)
+├── sumo_simulation/    # SUMO environment and simulator core
+│   └── environments/   # Individual traffic scenarios (net, rou, sumocfg)
+├── rou_month_generator.py # Helper for generating traffic demand
+└── sample_prompt_result.md# Documentation/Samples
 ```
 
 ## Directory Purposes
 
-**src/scripts/:**
-- Purpose: 存放项目的 CLI 入口，负责各模块的协调。
-- Contains: 数据生成、模型训练、相位处理的启动脚本。
-- Key files: `generate_training_data.py`, `train_sft.py`
-
 **src/data_generator/:**
-- Purpose: 核心仿真逻辑，负责从 SUMO 中提取交通数据。
-- Contains: 仿真 worker、周期检测、预测采样、提示词构建。
-- Key files: `day_simulator.py`, `predictive_sampler.py`, `prompt_builder.py`
+- Purpose: Logic for running simulations and sampling traffic states.
+- Contains: `day_simulator.py`, `predictive_sampler.py`, `cycle_detector.py`.
+- Key files: `predictive_sampler.py` (lookahead logic).
 
 **src/phase_processor/:**
-- Purpose: 解析 SUMO 的 `.net.xml` 文件，提取信号灯和相位信息。
-- Contains: 解析器、相位验证器、冲突处理器。
-- Key files: `processor.py`, `parser.py`, `validator.py`
+- Purpose: Analyzing SUMO `.net.xml` files to extract signal phase information.
+- Contains: `parser.py`, `processor.py`, `conflict.py`.
+- Key files: `processor.py` (orchestrates parsing and validation).
 
-**src/sft/:**
-- Purpose: 大模型微调（SFT）逻辑。
-- Contains: 模型加载（Unsloth LoRA）、训练器封装、数据转换。
-- Key files: `trainer.py`, `model_loader.py`
+**src/scripts/:**
+- Purpose: Top-level scripts for running the pipeline.
+- Key files: `generate_training_data.py`, `train_sft.py`.
 
-**sumo_simulation/:**
-- Purpose: SUMO 相关资源和基础封装。
-- Contains: 各种路口场景环境 (`environments/`) 和基础模拟器类。
-- Key files: `sumo_simulator.py`
+**sumo_simulation/environments/:**
+- Purpose: Source of truth for traffic network and demand.
+- Contains: Subdirectories for each scenario (e.g., `arterial4x4_1/`).
+
+**outputs/sft/:**
+- Purpose: Storage for SFT-specific artifacts.
+- Contains: `train.jsonl` (converted CoT data), `model/` (trained weights).
 
 ## Key File Locations
 
 **Entry Points:**
-- `src/scripts/generate_training_data.py`: 数据生成总入口。
-- `src/scripts/train_sft.py`: SFT 训练总入口。
-- `docker/run.sh`: Docker 容器内的任务协调脚本。
+- `src/scripts/generate_training_data.py`: Primary data generation entry.
+- `src/scripts/train_sft.py`: Model training entry.
 
 **Configuration:**
-- `config/config.json`: 项目全局参数配置（包含路径、仿真参数、训练参数）。
+- `config/config.json`: Main project configuration.
+- `outputs/data/phase_config_<scenario>.json`: Intermediate phase configuration generated from networks.
 
 **Core Logic:**
-- `src/data_generator/day_simulator.py`: 驱动单次仿真的核心逻辑。
-- `src/sft/trainer.py`: 封装的微调训练器。
+- `src/data_generator/predictive_sampler.py`: Implementation of future-state sampling.
+- `src/sft/trainer.py`: Implementation of SFT training loop.
 
 **Testing:**
-- 目前测试主要通过 `src/scripts/` 下的脚本带参数运行（如 `--dry-run`）或在 `trainer.py` 中的验证函数。
+- (Implicit) `src/sft/format_validator.py`: Used to validate model outputs.
 
 ## Naming Conventions
 
 **Files:**
-- [snake_case]: `day_simulator.py`, `train_sft.py`
+- [snake_case.py]: Most python modules.
+- [UPPERCASE.md]: Planning and documentation files.
+- [samples_YYYY-MM-DD.jsonl]: Raw simulation data files.
 
 **Directories:**
-- [snake_case]: `data_generator`, `phase_processor`
-
-**Classes:**
-- [PascalCase]: `DaySimulator`, `SUMOSimulator`, `PredictiveSampler`
+- [snake_case/]: Source directories.
 
 ## Where to Add New Code
 
-**New Feature (Simulation Related):**
+**New Feature (Simulation logic):**
 - Primary code: `src/data_generator/`
-- If it's a new sampling strategy: `src/data_generator/sampler.py` or new file in that dir.
+- Integration: `src/scripts/generate_training_data.py`
 
-**New Feature (Training Related):**
+**New Model Strategy:**
 - Implementation: `src/sft/`
+- Training script: `src/scripts/train_sft.py` (or a new script in `src/scripts/`)
 
-**New CLI Task:**
-- Implementation: `src/scripts/`
+**New Traffic Scenario:**
+- Path: `sumo_simulation/environments/<scenario_name>/`
+- Required files: `.sumocfg`, `.net.xml`, `.rou.xml`.
 
-**New SUMO Environment:**
-- Implementation: `sumo_simulation/environments/[scenario_name]/`
+**Utilities:**
+- Shared helpers: `src/utils/`
 
 ## Special Directories
 
-**outputs/:**
-- Purpose: 存放仿真产生的临时 JSONL 样本、状态快照和模型 checkpoint。
+**outputs/states/:**
+- Purpose: Contains large binary state files from SUMO simulations.
 - Generated: Yes
-- Committed: No (通常在 .gitignore 中)
+- Committed: No (usually gitignored)
 
-**unsloth_compiled_cache/:**
-- Purpose: 存放 Unsloth 编译后的优化 kernel。
-- Generated: Yes
+**model/models/unsloth/:**
+- Purpose: Cache for base model weights from HuggingFace.
+- Generated: No (Downloaded)
 - Committed: No
 
 ---
