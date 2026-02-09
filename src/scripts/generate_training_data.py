@@ -499,13 +499,6 @@ def main():
     # 按场景收集结果
     results_by_scenario = {}
     failed_count = 0
-    sim_duration = sim_config.get('sim_duration', 3600)
-
-    # 更新所有任务的 config，注入 sim_end
-    for i in range(len(tasks)):
-        task = list(tasks[i])
-        task[3]['sim_end'] = sim_duration
-        tasks[i] = tuple(task)
 
     # 使用 ProcessPoolExecutor 替代 multiprocessing.Pool 以支持更好的错误处理和取消
     # 使用 ProcessPoolExecutor 替代 multiprocessing.Pool 以支持更好的错误处理和取消
@@ -621,7 +614,7 @@ def main():
     print("阶段 6: CoT 格式转换")
     print("=" * 60)
 
-    sft_output_dir = paths_config.get('sft_output', 'outputs/sft')
+    sft_output_dir = paths_config.get('sft_data_dir', 'outputs/sft')
     os.makedirs(sft_output_dir, exist_ok=True)
     sft_train_jsonl_path = os.path.join(sft_output_dir, 'train.jsonl')
 

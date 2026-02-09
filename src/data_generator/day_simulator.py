@@ -24,6 +24,7 @@ import xml.etree.ElementTree as ET
 from typing import Dict, Any, List, Optional, Tuple
 from pathlib import Path
 import random
+import socket
 
 # 导入 SUMO 模拟器
 project_root = Path(__file__).resolve().parent.parent.parent
@@ -69,7 +70,7 @@ from src.data_generator.models import PhaseWait, Prediction, TrainingSample
 def create_temp_sumocfg(
     template_path: str,
     rou_file: str,
-    end_time: int = 3600
+    end_time: Optional[int] = None
 ) -> str:
     """
     创建临时 SUMO 配置文件
@@ -77,7 +78,7 @@ def create_temp_sumocfg(
     Args:
         template_path: 模板 sumocfg 文件路径
         rou_file: 流量文件路径 (绝对路径)
-        end_time: 仿真结束时间 (秒), 默认 3600 (1小时)
+        end_time: 仿真结束时间 (秒), None 时保留模板原始值
 
     Returns:
         临时配置文件路径
@@ -113,16 +114,16 @@ def create_temp_sumocfg(
 
     route_elem.set('value', rou_file)
 
-    # 修改 end 时间
+    # 修改 end 时间（仅在显式指定时覆盖，否则保留模板原始值）
     time_elem = root.find('time')
     if time_elem is None:
         time_elem = ET.SubElement(root, 'time')
 
     end_elem = time_elem.find('end')
-    if end_elem is None:
-        end_elem = ET.SubElement(time_elem, 'end')
-
-    end_elem.set('value', str(end_time))
+    if end_time is not None:
+        if end_elem is None:
+            end_elem = ET.SubElement(time_elem, 'end')
+        end_elem.set('value', str(end_time))
 
     # 写入临时文件
     fd, temp_path = tempfile.mkstemp(suffix='.sumocfg', prefix='sumo_temp_')
@@ -164,7 +165,7 @@ class DaySimulator:
         self.output_dir = config['output_dir']
         self.state_dir = config['state_dir']
         self.warmup_steps = config.get('warmup_steps', 300)
-        self.sim_end = config.get('sim_end', 3600)
+        self.sim_end = self._parse_sim_end()
         self.base_date = config.get('base_date', '2026-01-01')
         # 可选: 只处理指定的交叉口子集 (用于交叉口级别并行)
         self.target_tl_ids = set(config.get('target_tl_ids', []))
@@ -182,9 +183,26 @@ class DaySimulator:
         self.simulator: Optional[SUMOSimulator] = None
         self.temp_cfg_path: Optional[str] = None
 
-        # 端口分配 (使用随机端口避免并行冲突)
-        # 每个 worker 使用独立的随机端口，范围 20000-50000
-        self.port = random.randint(20000, 50000)
+        # 端口分配 (使用 OS 分配空闲端口避免并行冲突)
+        self.port = self._find_free_port()
+
+    @staticmethod
+    def _find_free_port() -> int:
+        """让操作系统分配一个确保可用的空闲端口"""
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(('', 0))
+            return s.getsockname()[1]
+
+    def _parse_sim_end(self) -> int:
+        """从 sumocfg 文件解析仿真结束时间，解析失败则回退到 3600"""
+        try:
+            tree = ET.parse(self.sumocfg)
+            end_elem = tree.find('time/end')
+            if end_elem is not None:
+                return int(float(end_elem.get('value', '3600')))
+        except Exception:
+            pass
+        return 3600
 
     def run(self) -> Dict[str, Any]:
         """
@@ -194,11 +212,10 @@ class DaySimulator:
             结果字典
         """
         try:
-            # 1. 创建临时配置文件
+            # 1. 创建临时配置文件（保留 sumocfg 原始仿真时间）
             self.temp_cfg_path = create_temp_sumocfg(
                 self.sumocfg,
-                self.rou_file,
-                end_time=self.sim_end
+                self.rou_file
             )
 
             # 2. 初始化 SUMO 仿真器

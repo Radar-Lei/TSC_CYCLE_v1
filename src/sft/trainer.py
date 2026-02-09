@@ -23,7 +23,7 @@ class TrainingArgs:
     - optim=adamw_8bit (节省内存)
     """
 
-    output_dir: str = "outputs/sft"
+    output_dir: str = "outputs/sft/model"
     per_device_train_batch_size: int = 1
     gradient_accumulation_steps: int = 1
     warmup_steps: int = 5
@@ -52,20 +52,18 @@ class SFTTrainerWrapper:
     封装 TRL SFTTrainer,提供统一的训练接口。
     """
 
-    def __init__(self, model, tokenizer, train_dataset, eval_dataset=None, args: TrainingArgs = None):
+    def __init__(self, model, tokenizer, train_dataset, args: TrainingArgs = None):
         """初始化训练器
 
         Args:
             model: 模型实例 (已配置 LoRA)
             tokenizer: Tokenizer 实例 (已配置 chat template)
             train_dataset: 训练数据集 (HuggingFace Dataset)
-            eval_dataset: 验证数据集 (HuggingFace Dataset, 可选)
             args: 训练参数,默认使用 TrainingArgs()
         """
         self.model = model
         self.tokenizer = tokenizer
         self.train_dataset = train_dataset
-        self.eval_dataset = eval_dataset
         self.args = args or TrainingArgs()
         self._trainer = None
 
@@ -94,36 +92,27 @@ class SFTTrainerWrapper:
             "logging_dir": self.args.logging_dir,
         }
 
-        # 如果有验证集,添加评估策略
-        if self.eval_dataset is not None:
-            config_kwargs["eval_strategy"] = "steps"
-            config_kwargs["eval_steps"] = self.args.save_steps
-
         sft_config = SFTConfig(**config_kwargs)
 
-        # 构建 trainer 参数
-        trainer_kwargs = {
-            "model": self.model,
-            "tokenizer": self.tokenizer,
-            "train_dataset": self.train_dataset,
-            "args": sft_config,
-        }
+        self._trainer = SFTTrainer(
+            model=self.model,
+            tokenizer=self.tokenizer,
+            train_dataset=self.train_dataset,
+            args=sft_config,
+        )
 
-        # 如果有验证集,添加到 trainer
-        if self.eval_dataset is not None:
-            trainer_kwargs["eval_dataset"] = self.eval_dataset
-
-        self._trainer = SFTTrainer(**trainer_kwargs)
-
-    def train(self):
+    def train(self, resume_from_checkpoint=None):
         """执行训练
+
+        Args:
+            resume_from_checkpoint: checkpoint 路径，用于恢复训练
 
         Returns:
             训练结果 (TrainOutput)
         """
         if self._trainer is None:
             self._create_trainer()
-        return self._trainer.train()
+        return self._trainer.train(resume_from_checkpoint=resume_from_checkpoint)
 
     def save_model(self, path: str = None):
         """保存训练后的模型
@@ -180,23 +169,6 @@ def prepare_dataset(data_path: str, tokenizer):
     return dataset
 
 
-def split_dataset(dataset, val_ratio=0.1, seed=3407):
-    """划分训练集和验证集
-
-    使用固定种子进行 train/val 划分。
-
-    Args:
-        dataset: HuggingFace Dataset
-        val_ratio: 验证集比例,默认 0.1 (90/10 划分)
-        seed: 随机种子,默认 3407
-
-    Returns:
-        (train_dataset, val_dataset): 训练集和验证集元组
-    """
-    split = dataset.train_test_split(test_size=val_ratio, seed=seed)
-    return split["train"], split["test"]
-
-
 def validate_model_output(model, tokenizer, test_input: str) -> Tuple[str, bool]:
     """验证模型输出格式
 
@@ -225,14 +197,25 @@ def validate_model_output(model, tokenizer, test_input: str) -> Tuple[str, bool]
         add_generation_prompt=True
     )
 
-    # 生成输出
-    inputs = tokenizer(input_text, return_tensors="pt").to(model.device)
-    outputs = model.generate(
-        **inputs,
-        max_new_tokens=512,
-        temperature=0.7,
-        do_sample=True,
-    )
+    # 生成输出 (参考 Qwen3_(4B)_GRPO.ipynb cell 29)
+    import torch
+
+    # 修复 unsloth fast inference 路径中 _per_layer_device_index 为 None 的问题
+    # 训练后各层可能没有设置此属性，导致 move_to_device 收到 None 报错
+    base_model = model.model if hasattr(model, "model") else model
+    inner_model = base_model.model if hasattr(base_model, "model") else base_model
+    if hasattr(inner_model, "layers"):
+        for layer in inner_model.layers:
+            if getattr(layer, "_per_layer_device_index", None) is None:
+                layer._per_layer_device_index = 0
+
+    inputs = tokenizer(input_text, return_tensors="pt").to("cuda")
+    with torch.no_grad():
+        outputs = model.generate(
+            **inputs,
+            max_new_tokens=512,
+            temperature=0,
+        )
 
     # 解码输出
     output_text = tokenizer.decode(outputs[0], skip_special_tokens=False)

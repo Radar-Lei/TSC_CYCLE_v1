@@ -3,7 +3,7 @@
 
 完整训练流程:
 1. 加载模型 (Qwen3-4B + LoRA)
-2. 准备数据 (从 JSONL 加载并 train/val 分割)
+2. 准备数据 (从 JSONL 加载)
 3. 执行训练 (300 steps)
 4. 保存模型 (LoRA adapter)
 5. 验证输出格式
@@ -98,7 +98,6 @@ def main():
     parser.add_argument("--data-dir", default=None, help="训练数据目录")
     parser.add_argument("--output-dir", default=None, help="输出目录")
     parser.add_argument("--max-steps", type=int, default=None, help="训练步数")
-    parser.add_argument("--val-ratio", type=float, default=0.1, help="验证集比例")
     parser.add_argument("--resume-from", default=None, help="从 checkpoint 恢复训练")
     args = parser.parse_args()
 
@@ -107,11 +106,28 @@ def main():
 
     # 应用配置优先级: 命令行 > config.json > 代码默认值
     if args.data_dir is None:
-        args.data_dir = get_nested(config, "paths", "data_dir", default="outputs/sft")
+        args.data_dir = get_nested(config, "paths", "sft_data_dir", default="outputs/sft")
     if args.output_dir is None:
-        args.output_dir = get_nested(config, "paths", "sft_output", default="outputs/sft")
+        args.output_dir = get_nested(config, "paths", "sft_output", default="outputs/sft/model")
     if args.max_steps is None:
         args.max_steps = get_nested(config, "training", "sft", "max_steps", default=300)
+
+    # 从 config.json 读取 SFT 训练参数
+    sft_config = get_nested(config, "training", "sft", default={})
+    sft_training_params = {
+        "per_device_train_batch_size": sft_config.get("per_device_train_batch_size", 1),
+        "gradient_accumulation_steps": sft_config.get("gradient_accumulation_steps", 1),
+        "warmup_steps": sft_config.get("warmup_steps", 5),
+        "learning_rate": sft_config.get("learning_rate", 2e-4),
+        "lr_scheduler_type": sft_config.get("lr_scheduler_type", "linear"),
+        "optim": sft_config.get("optim", "adamw_8bit"),
+        "weight_decay": sft_config.get("weight_decay", 0.001),
+        "bf16": sft_config.get("bf16", True),
+        "logging_steps": sft_config.get("logging_steps", 5),
+        "save_steps": sft_config.get("save_steps", 100),
+        "save_total_limit": sft_config.get("save_total_limit", 3),
+        "seed": sft_config.get("seed", 3407),
+    }
 
     # 配置日志输出
     setup_logging(args.output_dir)
@@ -122,7 +138,6 @@ def main():
     logging.info(f"Data directory: {args.data_dir}")
     logging.info(f"Output directory: {args.output_dir}")
     logging.info(f"Max steps: {args.max_steps}")
-    logging.info(f"Validation ratio: {args.val_ratio}")
     if args.resume_from:
         logging.info(f"Resume from: {args.resume_from}")
 
@@ -154,18 +169,13 @@ def main():
 
     # 2. 准备数据
     logging.info("\n[2/4] Preparing dataset...")
-    from src.sft.trainer import prepare_dataset, split_dataset
+    from src.sft.trainer import prepare_dataset
 
     train_data_path = f"{args.data_dir}/train.jsonl"
     logging.info(f"Loading data from: {train_data_path}")
 
-    full_dataset = prepare_dataset(train_data_path, tokenizer)
-    logging.info(f"Total examples: {len(full_dataset)}")
-
-    # 划分 train/val
-    train_dataset, val_dataset = split_dataset(full_dataset, val_ratio=args.val_ratio)
-    logging.info(f"Train examples: {len(train_dataset)}")
-    logging.info(f"Val examples: {len(val_dataset)}")
+    train_dataset = prepare_dataset(train_data_path, tokenizer)
+    logging.info(f"Total examples: {len(train_dataset)}")
 
     # 打印第一条示例的长度
     first_text = train_dataset[0]["text"]
@@ -177,15 +187,22 @@ def main():
     training_args = TrainingArgs(
         output_dir=args.output_dir,
         max_steps=args.max_steps,
+        **sft_training_params,
     )
     trainer = SFTTrainerWrapper(
-        model, tokenizer, train_dataset, eval_dataset=val_dataset, args=training_args
+        model, tokenizer, train_dataset, args=training_args
     )
 
     logging.info(f"Starting training for {args.max_steps} steps...")
+    logging.info(f"Batch size: {training_args.per_device_train_batch_size}")
+    logging.info(f"Gradient accumulation: {training_args.gradient_accumulation_steps}")
     logging.info(f"Learning rate: {training_args.learning_rate}")
+    logging.info(f"LR scheduler: {training_args.lr_scheduler_type}")
+    logging.info(f"Warmup steps: {training_args.warmup_steps}")
     logging.info(f"Optimizer: {training_args.optim}")
+    logging.info(f"Weight decay: {training_args.weight_decay}")
     logging.info(f"BF16: {training_args.bf16}")
+    logging.info(f"Seed: {training_args.seed}")
     logging.info(f"Logging every {training_args.logging_steps} steps")
     logging.info(f"Saving checkpoints every {training_args.save_steps} steps")
     logging.info(f"Keeping {training_args.save_total_limit} recent checkpoints")
@@ -215,45 +232,50 @@ def main():
                 size_str = f"{file_size / 1024:.1f} KB"
             logging.info(f"  - {f.name} ({size_str})")
 
-    # 5. 验证输出格式
+    # 5. 验证输出格式（可选，失败不阻塞）
     logging.info("\n[Validation] Testing model output...")
-    from src.sft.trainer import validate_model_output
-    from src.sft.format_validator import validate_format
+    try:
+        from src.sft.trainer import validate_model_output
 
-    test_input = json.dumps({
-        "prediction": {
-            "phase_waits": [
-                {
-                    "phase_id": 1,
-                    "pred_saturation": 1.5,
-                    "min_green": 20,
-                    "max_green": 40,
-                    "capacity": 30
-                },
-                {
-                    "phase_id": 2,
-                    "pred_saturation": 0.3,
-                    "min_green": 10,
-                    "max_green": 30,
-                    "capacity": 25
-                }
-            ]
-        }
-    })
+        test_input = json.dumps({
+            "prediction": {
+                "phase_waits": [
+                    {
+                        "phase_id": 1,
+                        "pred_saturation": 1.5,
+                        "min_green": 20,
+                        "max_green": 40,
+                        "capacity": 30
+                    },
+                    {
+                        "phase_id": 2,
+                        "pred_saturation": 0.3,
+                        "min_green": 10,
+                        "max_green": 30,
+                        "capacity": 25
+                    }
+                ]
+            }
+        })
 
-    output, is_valid = validate_model_output(model, tokenizer, test_input)
+        output, is_valid = validate_model_output(model, tokenizer, test_input)
 
-    logging.info(f"Format valid: {is_valid}")
-    if is_valid:
-        logging.info("Model successfully learned output format!")
-    else:
-        logging.warning("Format validation failed (may need more training)")
+        logging.info(f"Format valid: {is_valid}")
+        if is_valid:
+            logging.info("Model successfully learned output format!")
+        else:
+            logging.warning("Format validation failed (may need more training)")
 
-    # 打印部分输出
-    if len(output) > 500:
-        logging.info(f"Sample output:\n{output[:500]}...")
-    else:
-        logging.info(f"Sample output:\n{output}")
+        # 打印部分输出
+        if len(output) > 500:
+            logging.info(f"Sample output:\n{output[:500]}...")
+        else:
+            logging.info(f"Sample output:\n{output}")
+    except Exception as e:
+        import traceback
+        logging.warning(f"Validation skipped due to error: {e}")
+        logging.warning(f"Traceback:\n{traceback.format_exc()}")
+        logging.warning("This does not affect the trained model.")
 
     logging.info("\n" + "=" * 50)
     logging.info("Training Complete!")

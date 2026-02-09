@@ -2,43 +2,48 @@
 set -euo pipefail
 
 ################################################################################
-# 数据生成脚本 - 从 SUMO 仿真生成训练数据
+# 数据生成脚本 - 从 SUMO 仿真生成训练数据（通过 Docker 容器执行）
 #
 # 输出: outputs/data/*.jsonl
 #       outputs/states/* (仿真状态快照)
 #
 # 用法:
-#   ./docker/data.sh
+#   ./docker/data.sh                                    # 全部场景
+#   ./docker/data.sh --scenarios arterial4x4_1,chengdu  # 指定场景
 ################################################################################
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-# 切换到项目目录
-cd "${PROJECT_DIR}"
-
-# 确保 SUMO_HOME 已设置
-if [[ -z "${SUMO_HOME:-}" ]]; then
-    echo "[ERROR] SUMO_HOME 未设置" >&2
-    exit 1
-fi
+IMAGE_NAME="qwen3-tsc-grpo:latest"
+CONTAINER_WORKDIR="/home/samuel/SCU_TSC"
 
 echo "=========================================="
-echo "数据生成阶段"
+echo "数据生成阶段 (Docker)"
 echo "=========================================="
 echo "[项目目录] ${PROJECT_DIR}"
-echo "[SUMO_HOME] ${SUMO_HOME}"
+echo "[Docker 镜像] ${IMAGE_NAME}"
 echo ""
 
-# 创建输出目录
-mkdir -p outputs/data outputs/states
+# 创建输出目录（宿主机侧）
+mkdir -p "${PROJECT_DIR}/outputs/data" "${PROJECT_DIR}/outputs/states"
 
-# 调用数据生成脚本
+# 通过 Docker 容器执行数据生成
 echo "[开始] 生成训练数据..."
-python3 -m src.scripts.generate_training_data \
-    --config config/config.json \
-    --output-dir outputs/data \
-    --state-dir outputs/states
+docker run --rm \
+    --gpus all \
+    --shm-size=32GB \
+    --user "$(id -u):$(id -g)" \
+    -v "${PROJECT_DIR}:${CONTAINER_WORKDIR}:rw" \
+    -w "${CONTAINER_WORKDIR}" \
+    -e SUMO_HOME=/usr/share/sumo \
+    --entrypoint python3 \
+    "${IMAGE_NAME}" \
+    -m src.scripts.generate_training_data \
+        --config config/config.json \
+        --output-dir outputs/data \
+        --state-dir outputs/states \
+        "$@"
 
 echo ""
 echo "=========================================="
