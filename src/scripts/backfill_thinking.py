@@ -23,9 +23,24 @@ from typing import Optional
 import urllib.request
 import urllib.error
 
+# 自动加载项目根目录的 .env 文件
+def _load_dotenv():
+    """从项目根目录加载 .env 文件到环境变量（不覆盖已有变量）。"""
+    env_path = Path(__file__).resolve().parents[2] / ".env"
+    if env_path.exists():
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, _, value = line.partition("=")
+                    key, value = key.strip(), value.strip()
+                    if key and key not in os.environ:
+                        os.environ[key] = value
+
+_load_dotenv()
+
 # GLM-4.7 API 配置
 API_ENDPOINT = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
-DEFAULT_API_KEY = "d8318666ab424416b427231b9d503f75.NYYiQKROscMtungx"
 MODEL_NAME = "glm-4.7"
 
 # 默认路径
@@ -173,9 +188,16 @@ def main():
     parser.add_argument('--dry-run', action='store_true',
                         help="Process first 3 samples and print results")
     parser.add_argument('--api-key',
-                        default=os.environ.get('GLM_API_KEY', DEFAULT_API_KEY))
+                        default=os.environ.get('GLM_API_KEY'))
 
     args = parser.parse_args()
+
+    if not args.api_key:
+        print("Error: GLM API Key not found. Please either:")
+        print("  1. Set GLM_API_KEY in .env file at project root")
+        print("  2. Set GLM_API_KEY environment variable")
+        print("  3. Pass --api-key argument")
+        return 1
 
     # 读取输入
     input_path = Path(args.input)
