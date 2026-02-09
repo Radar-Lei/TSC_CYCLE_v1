@@ -1,6 +1,6 @@
 # Project State: TSC-CYCLE
 
-**Last Updated:** 2026-02-09T19:54:45Z
+**Last Updated:** 2026-02-10T04:12:47Z
 
 ---
 
@@ -10,23 +10,23 @@
 给定交叉口实时交通状态,大模型输出的信号配时方案能最大化车辆通过量、最小化排队车辆数
 
 **Current Focus:**
-Phase 3: GRPO 训练 - Plan 01 完成，准备 Plan 02
+Phase 3: GRPO 训练 - Plan 02 完成，准备后续计划
 
 ---
 
 ## Current Position
 
 **Active Phase:** Phase 3 - GRPO 训练
-**Active Plan:** 03-02 (Plan 01 完成)
-**Current Status:** Phase 3 In Progress (Plan 01/02 完成)
+**Active Plan:** 03-03 (Plan 02 完成)
+**Current Status:** Phase 3 In Progress (Plan 02/02 完成)
 
 **Progress:**
-[████████░░] 83%
+[██████████] 100%
 Phase 1: [██████████] 9/9 requirements (100%) - Completed
 Phase 2: [██████████] 2/2 requirements (100%) - Completed
-Phase 3: [██░░░░░░░░] 1/7 requirements (14%) - In Progress
+Phase 3: [███░░░░░░░] 2/7 requirements (29%) - In Progress
 
-Overall: [██████░░░░] 12/18 requirements (67%)
+Overall: [███████░░░] 13/18 requirements (72%)
 ```
 
 ---
@@ -38,7 +38,7 @@ Overall: [██████░░░░] 12/18 requirements (67%)
 **Phase History:**
 - Phase 1: Completed (100% - 9/9 完成)
 - Phase 2: Completed (100% - 2/2 完成)
-- Phase 3: In Progress (14% - 1/7 完成)
+- Phase 3: In Progress (29% - 2/7 完成)
 
 | Phase | Plan | Duration | Tasks | Files | Completed |
 |-------|------|----------|-------|-------|-----------|
@@ -47,6 +47,7 @@ Overall: [██████░░░░] 12/18 requirements (67%)
 | 01    | 03   | 217s     | 2     | 3     | 2026-02-09T12:44:44Z |
 | 02    | 01   | 282s     | 2     | 3     | 2026-02-09T16:38:44Z |
 | 03    | 01   | 246s     | 2     | 4     | 2026-02-09T19:54:45Z |
+| 03    | 02   | 402s     | 3     | 3     | 2026-02-10T04:12:47Z |
 
 ---
 
@@ -76,6 +77,10 @@ Overall: [██████░░░░] 12/18 requirements (67%)
 | outputs/sft/model 作为 GRPO base model | 基于 SFT 训练后的模型进行 GRPO 强化学习 | 03-01 | 2026-02-09 |
 | num_generations=4 | GRPO 采样时每个 prompt 生成 4 个候选方案 | 03-01 | 2026-02-09 |
 | Baseline 去重策略 | 按 state_file 去重避免重复计算相同状态 | 03-01 | 2026-02-09 |
+| 渐进式 L2 约束评分 | 部分满足约束给部分分，引导学习过程 | 03-02 | 2026-02-10 |
+| L3 SUMO reward 门控 | 仅当 L1+L2 全满足时运行 SUMO，避免浪费计算 | 03-02 | 2026-02-10 |
+| ProcessPoolExecutor 并行 SUMO | 每批 num_generations 个候选方案并行仿真评估 | 03-02 | 2026-02-10 |
+| SUMO 系统错误终止程序 | 系统级 SUMO 故障表明环境问题非模型问题 | 03-02 | 2026-02-10 |
 
 ### Active Todos
 
@@ -84,7 +89,7 @@ Overall: [██████░░░░] 12/18 requirements (67%)
 - [x] 执行 Plan 01-03: SFT 训练流水线
 - [x] 执行 Plan 02-01: GRPO 数据准备与格式转换
 - [x] 执行 Plan 03-01: GRPO 配置和 baseline 预计算
-- [ ] 执行 Plan 03-02: GRPO 训练脚本实现
+- [x] 执行 Plan 03-02: GRPO 训练脚本实现
 
 ### Blockers
 
@@ -96,23 +101,33 @@ Overall: [██████░░░░] 12/18 requirements (67%)
 
 ### Last Session Summary
 
-**What:** 执行 Phase 3 Plan 01 - GRPO 配置和 baseline 预计算
+**What:** 执行 Phase 3 Plan 02 - GRPO 训练脚本实现
 
 **Outcome:**
-- 在 config.json 添加完整的 training.grpo 配置（模型参数、训练超参数、reward 子配置）
-- 添加 paths.grpo_data_dir、paths.grpo_output、paths.grpo_baseline 路径配置
-- 创建 src/grpo/baseline.py 基线预计算脚本（支持多进程并行处理）
-- 创建 docker/grpo_baseline.sh Docker 入口脚本遵循 data.sh 模式
-- 2 个任务全部完成，每个任务原子提交
-- 验证结果: 所有文件创建成功，语法验证通过
+- 创建 src/grpo/rewards.py (572 LOC): 5 个 reward 函数实现三层评分体系
+  - L1: match_format_exactly + match_format_approximately (格式匹配)
+  - L2: check_constraints (渐进式约束评分)
+  - L3: sumo_simulation_reward (SUMO 仿真 + baseline 归一化)
+  - think_length_reward (思考长度惩罚)
+  - init_rewards() 初始化函数
+- 创建 src/grpo/train.py (326 LOC): GRPO 训练流水线
+  - 加载 SFT 模型 (outputs/sft/model)
+  - 使用 GRPOTrainer + 5 个 reward 函数
+  - fast_inference=False (无 vLLM)
+  - 保存 merged_16bit 到 outputs/grpo/model
+- 创建 docker/grpo_train.sh (87 LOC): Docker 入口脚本
+  - 验证 3 个前置条件 (SFT 模型, GRPO 数据, baseline.json)
+  - 配置与 sft_train.sh 一致
+- 3 个任务全部完成，每个任务原子提交
+- 验证结果: 语法验证通过，导入成功，关键组件确认
 
-**Next:** 执行 Plan 03-02: GRPO 训练脚本实现
+**Next:** Phase 3 后续计划（可能需要 baseline 计算和实际 GRPO 训练执行）
 
-**Stopped At:** Phase 3 Plan 01 完成
+**Stopped At:** Completed 03-02-PLAN.md
 
 ### Context for Next Session
 
-Phase 3 Plan 01 已完成。GRPO 配置已添加到 config.json（包含所有超参数和 reward 权重配置）。Baseline 预计算流水线已创建（src/grpo/baseline.py 和 docker/grpo_baseline.sh）。下一步需要执行 Plan 03-02: 创建 GRPO 训练脚本（使用 baseline.json 进行 reward 归一化，实现 SUMO 仿真 reward 计算）。
+Phase 3 Plan 02 已完成。GRPO 训练基础设施已就绪 (rewards + train + docker)。三层 reward 体系: L1 格式匹配, L2 渐进式约束检查, L3 SUMO 仿真 (仅在 L1+L2 全满足时运行)。GRPO 训练脚本加载 SFT 模型, 使用 GRPOTrainer, 无 vLLM。下一步可能需要: 1) 运行 baseline 预计算 (./docker/grpo_baseline.sh), 2) 执行 GRPO 训练 (./docker/grpo_train.sh), 3) 评估和测试。
 
 ---
 
