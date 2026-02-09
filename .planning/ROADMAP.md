@@ -48,7 +48,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 02-01-PLAN.md — 更新 prompt_builder 并创建 GRPO 数据生成脚本
+- [x] 02-01-PLAN.md — 更新 prompt_builder 并创建 GRPO 数据生成脚本
 
 **Success Criteria:**
 1. 从 train.jsonl 成功提取 GRPO 训练集(prompt + state_file)
@@ -56,7 +56,7 @@ Plans:
 3. prompt 不包含思考过程或答案,仅包含任务描述
 4. 每个样本正确关联到对应的 SUMO state_file 用于 reward 计算
 
-**Status:** Not Started
+**Status:** Complete (2026-02-10) ✓
 
 ---
 
@@ -86,18 +86,18 @@ Plans:
 | Phase | Requirements | Status | Completion |
 |-------|--------------|--------|------------|
 | 1 - SFT 数据与训练 | 9 | Complete ✓ | 100% |
-| 2 - GRPO 数据准备 | 2 | Not Started | 0% |
+| 2 - GRPO 数据准备 | 2 | Complete ✓ | 100% |
 | 3 - GRPO 训练 | 7 | Not Started | 0% |
 
-**Overall:** 9/18 requirements completed (50%)
+**Overall:** 11/18 requirements completed (61%)
 
 ---
 
 ## Next Steps
 
-Execute Phase 2:
+Execute Phase 3:
 ```
-/gsd:execute-phase 2
+/gsd:plan-phase 3
 ```
 
 ---
