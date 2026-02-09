@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 Phase: 3 of 4 (Training Pipeline)
 Plan: 3 of 3
 Status: Phase complete
-Last activity: 2026-02-08 - Completed quick task 5: GRPO 所有参数统一到 config.json
+Last activity: 2026-02-09 - Completed quick task 7: 删除所有 GRPO 相关代码，只保留 SFT 流水线
 
 Progress: [████████░░] 80%
 
@@ -103,9 +103,10 @@ None yet.
 | 4 | 修复 GRPO generation_config / check_phase_validity / simulation skip | 2026-02-08 | 7f69747 | [4-grpo-generation-config-check-phase-valid](./quick/4-grpo-generation-config-check-phase-valid/) |
 | 5 | GRPO 所有参数统一到 config.json | 2026-02-08 | cb9d28f | [5-grpo-config-json-train-grpo-py](./quick/5-grpo-config-json-train-grpo-py/) |
 | 6 | 修复 GRPO compute_simulation_reward 参数名匹配数据集列名 | 2026-02-09 | b826032 | [6-grpo-compute-simulation-reward-state-fil](./quick/6-grpo-compute-simulation-reward-state-fil/) |
+| 7 | 删除所有 GRPO 相关代码，只保留 SFT 流水线 | 2026-02-09 | fc7031e | [7-grpo-sft-data-sh-sft-sh-backfill](./quick/7-grpo-sft-data-sh-sft-sh-backfill/) |
 
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Quick task 6 - GRPO compute_simulation_reward 参数名匹配数据集列名完成
+Stopped at: Quick task 7 - 删除所有 GRPO 代码完成，仅保留 SFT 流水线
 Resume file: .planning/phases/04-inference/04-01-PLAN.md (next phase)
