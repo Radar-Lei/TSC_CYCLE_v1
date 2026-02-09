@@ -21,9 +21,9 @@
 **Plans:** 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — 从 train.jsonl 抽取约 100 条代表性样本
-- [ ] 01-02-PLAN.md — 为每条样本生成 think+solution 内容，构造 SFT 训练数据
-- [ ] 01-03-PLAN.md — 创建 SFT 训练流水线（Docker 脚本 + Python 训练脚本）
+- [x] 01-01-PLAN.md — 从 train.jsonl 抽取约 100 条代表性样本
+- [x] 01-02-PLAN.md — 为每条样本生成 think+solution 内容，构造 SFT 训练数据
+- [x] 01-03-PLAN.md — 创建 SFT 训练流水线（Docker 脚本 + Python 训练脚本）
 
 **Success Criteria:**
 1. 从 train.jsonl 成功抽取 100 条样本,覆盖不同场景和饱和度分布
@@ -33,7 +33,7 @@ Plans:
 5. 训练后模型生成的输出符合 `<think>...<think><solution>...<solution>` 格式
 6. SFT 模型权重成功保存到 outputs/sft/model 目录
 
-**Status:** Planning Complete
+**Status:** Complete (2026-02-09) ✓
 
 ---
 
@@ -80,19 +80,19 @@ Plans:
 
 | Phase | Requirements | Status | Completion |
 |-------|--------------|--------|------------|
-| 1 - SFT 数据与训练 | 9 | Planning Complete | 0% |
+| 1 - SFT 数据与训练 | 9 | Complete ✓ | 100% |
 | 2 - GRPO 数据准备 | 2 | Not Started | 0% |
 | 3 - GRPO 训练 | 7 | Not Started | 0% |
 
-**Overall:** 0/18 requirements completed (0%)
+**Overall:** 9/18 requirements completed (50%)
 
 ---
 
 ## Next Steps
 
-Execute Phase 1:
+Plan Phase 2:
 ```
-/gsd:execute-phase 01-sft-data-and-training
+/gsd:plan-phase 2
 ```
 
 ---
