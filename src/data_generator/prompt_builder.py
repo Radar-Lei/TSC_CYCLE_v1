@@ -15,7 +15,12 @@ from src.data_generator.models import Prediction
 
 
 # 系统 Prompt (角色定义)
-SYSTEM_PROMPT = "你是交通信号配时优化专家。"
+SYSTEM_PROMPT = (
+    "你是交通信号配时优化专家。\n"
+    "请认真分析预测得到的下个周期各个相位的交通状态，给出下个周期的配时方案，并给出你的推理过程。\n"
+    "将推理过程放在 <think> 和 </think> 之间。\n"
+    "然后，将你的最终方案放在 <CyclePlan> 和 </CyclePlan> 之间。"
+)
 
 
 # 任务模板 (从 sample_prompt_result.md 提取)
@@ -121,7 +126,6 @@ class PromptBuilder:
 
         # 构建完整 prompt
         prompt_parts = [
-            self.SYSTEM_PROMPT,
             f"【cycle_predict_input_json】{prediction_json}【/cycle_predict_input_json】",
             self.TASK_TEMPLATE
         ]
