@@ -36,12 +36,9 @@ TASK_TEMPLATE = """
 提示(非硬约束):
 - capacity 仅供参考,最终决策以 pred_saturation 为主。
 
-输出要求(必须严格遵守):
-1) 必须输出思考过程,并用 <think>...</think> 包裹(内容可简短,但必须有)。
-2) 思考过程后必须输出最终 JSON。
-3) JSON 顶层必须是数组(list);数组长度必须等于 prediction.phase_waits 的长度。
-4) 数组元素必须为对象:{"phase_id": <int>, "final": <int>};不允许输出其它字段。
-5) phase_id 必须与 prediction.phase_waits 中对应项一致,且顺序必须与 prediction.phase_waits 完全一致。
+输出格式:
+1) JSON 顶层必须是数组(list);数组长度必须等于 prediction.phase_waits 的长度。
+2) 数组元素必须为对象:{"phase_id": <int>, "final": <int>};不允许输出其它字段。
 """.strip()
 
 

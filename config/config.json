@@ -17,7 +17,7 @@
     }
   },
   "simulation": {
-    "parallel_workers": 4,
+    "parallel_workers": 16,
     "warmup_steps": 300,
     "max_rou_files": 1,
     "sim_duration": 3600
