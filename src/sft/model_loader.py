@@ -41,7 +41,7 @@ class SFTConfig:
     )
 
 
-def load_model_for_sft(config: SFTConfig = None) -> Tuple[Any, Any]:
+def load_model_for_sft(config: SFTConfig = None, config_overrides: dict = None) -> Tuple[Any, Any]:
     """
     加载 Qwen3-4B 模型并配置 LoRA。
 
@@ -50,6 +50,7 @@ def load_model_for_sft(config: SFTConfig = None) -> Tuple[Any, Any]:
 
     Args:
         config: SFT 配置,默认使用 SFTConfig()
+        config_overrides: 从 config.json 读取的模型配置字典,用于覆盖默认值
 
     Returns:
         (model, tokenizer): 配置好 LoRA 的模型和 tokenizer
@@ -62,6 +63,12 @@ def load_model_for_sft(config: SFTConfig = None) -> Tuple[Any, Any]:
 
     if config is None:
         config = SFTConfig()
+
+    # 应用 config.json 中的模型配置覆盖
+    if config_overrides:
+        for key, value in config_overrides.items():
+            if hasattr(config, key):
+                setattr(config, key, value)
 
     # 加载基础模型
     # device_map 必须设为 None,否则与 Trainer 不兼容

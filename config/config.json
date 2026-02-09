@@ -1,8 +1,27 @@
 {
   "training": {
     "sft": {
+      "model": {
+        "model_name": "unsloth/Qwen3-4B-Base",
+        "max_seq_length": 2048,
+        "lora_rank": 32,
+        "lora_alpha": 64,
+        "load_in_4bit": false,
+        "gpu_memory_utilization": 0.9,
+        "target_modules": [
+          "q_proj",
+          "k_proj",
+          "v_proj",
+          "o_proj",
+          "gate_proj",
+          "up_proj",
+          "down_proj"
+        ]
+      },
       "max_steps": 200,
-      "per_device_train_batch_size": 2,
+      "num_train_epochs": 2,
+      "dataset_text_field": "text",
+      "per_device_train_batch_size": 1,
       "gradient_accumulation_steps": 1,
       "warmup_steps": 5,
       "learning_rate": 2e-4,
@@ -13,7 +32,8 @@
       "logging_steps": 5,
       "save_steps": 100,
       "save_total_limit": 3,
-      "seed": 3407
+      "seed": 3407,
+      "report_to": "none"
     }
   },
   "simulation": {

@@ -28,6 +28,7 @@ class TrainingArgs:
     gradient_accumulation_steps: int = 1
     warmup_steps: int = 5
     max_steps: int = 300  # 固定 300 steps
+    num_train_epochs: int = 2  # 训练轮数
     learning_rate: float = 2e-4
     logging_steps: int = 5
     save_steps: int = 100
@@ -36,7 +37,8 @@ class TrainingArgs:
     weight_decay: float = 0.001
     lr_scheduler_type: str = "linear"
     seed: int = 3407
-    report_to: str = "none"
+    report_to: str = "none"  # 不上报到 WandB 等
+    dataset_text_field: str = "text"
     bf16: bool = True  # bf16 全精度训练
     logging_dir: str = None  # 将在 __post_init__ 中设置
 
@@ -74,11 +76,12 @@ class SFTTrainerWrapper:
         # 构建配置参数
         config_kwargs = {
             "output_dir": self.args.output_dir,
-            "dataset_text_field": "text",
+            "dataset_text_field": self.args.dataset_text_field,
             "per_device_train_batch_size": self.args.per_device_train_batch_size,
             "gradient_accumulation_steps": self.args.gradient_accumulation_steps,
             "warmup_steps": self.args.warmup_steps,
             "max_steps": self.args.max_steps,
+            "num_train_epochs": self.args.num_train_epochs,
             "learning_rate": self.args.learning_rate,
             "logging_steps": self.args.logging_steps,
             "save_steps": self.args.save_steps,

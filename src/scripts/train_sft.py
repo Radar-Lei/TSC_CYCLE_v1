@@ -114,6 +114,11 @@ def main():
 
     # 从 config.json 读取 SFT 训练参数
     sft_config = get_nested(config, "training", "sft", default={})
+
+    # 模型/LoRA 配置 (config.json -> training.sft.model)
+    model_config = sft_config.get("model", {})
+
+    # 训练参数
     sft_training_params = {
         "per_device_train_batch_size": sft_config.get("per_device_train_batch_size", 1),
         "gradient_accumulation_steps": sft_config.get("gradient_accumulation_steps", 1),
@@ -127,6 +132,9 @@ def main():
         "save_steps": sft_config.get("save_steps", 100),
         "save_total_limit": sft_config.get("save_total_limit", 3),
         "seed": sft_config.get("seed", 3407),
+        "report_to": sft_config.get("report_to", "none"),
+        "num_train_epochs": sft_config.get("num_train_epochs", 2),
+        "dataset_text_field": sft_config.get("dataset_text_field", "text"),
     }
 
     # 配置日志输出
@@ -160,8 +168,11 @@ def main():
     # 1. 加载模型
     logging.info("\n[1/4] Loading model...")
     from src.sft.model_loader import load_model_for_sft, SFTConfig
-    model, tokenizer = load_model_for_sft()
-    logging.info("Model loaded: Qwen3-4B + LoRA (rank=32, alpha=64)")
+    model, tokenizer = load_model_for_sft(config_overrides=model_config)
+    model_name = model_config.get("model_name", "unsloth/Qwen3-4B-Base")
+    lora_rank = model_config.get("lora_rank", 32)
+    lora_alpha = model_config.get("lora_alpha", 64)
+    logging.info(f"Model loaded: {model_name} + LoRA (rank={lora_rank}, alpha={lora_alpha})")
 
     # 打印可训练参数
     from src.sft.model_loader import print_trainable_params
