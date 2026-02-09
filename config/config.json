@@ -43,7 +43,7 @@
     "sim_duration": 3600
   },
   "paths": {
-    "data_dir": "data/training",
+    "data_dir": "outputs/data",
     "sft_data_dir": "outputs/sft",
     "sft_output": "outputs/sft/model",
     "environments_dir": "sumo_simulation/environments"

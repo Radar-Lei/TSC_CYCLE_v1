@@ -485,7 +485,7 @@ def main():
     print("阶段 5: 合并到 train.jsonl")
     print("=" * 60)
 
-    training_data_dir = paths_config.get('data_dir', 'data/training')
+    training_data_dir = paths_config.get('data_dir', 'outputs/data')
     os.makedirs(training_data_dir, exist_ok=True)
     train_jsonl_path = os.path.join(training_data_dir, 'train.jsonl')
 
