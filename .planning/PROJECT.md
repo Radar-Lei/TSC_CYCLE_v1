@@ -2,7 +2,7 @@
 
 ## What This Is
 
-基于 SUMO 仿真的交通信号配时优化大模型微调流水线。通过 SFT + GRPO 两阶段训练 Qwen3-4B-Base，使其能够根据交叉口当前交通状态（饱和度、排队等），输出下一个信号周期各相位的最优绿灯时长。GRPO 阶段通过实时拉起 SUMO 仿真执行大模型方案来计算 reward。
+基于 SUMO 仿真的交通信号配时优化大模型微调流水线。通过 SFT + GRPO 两阶段训练 Qwen3-4B-Base，使其能够根据交叉口当前交通状态（饱和度、排队等），输出下一个信号周期各相位的最优绿灯时长。SFT 阶段让模型学会输出格式，GRPO 阶段通过实时 SUMO 仿真 reward 优化配时方案质量。
 
 ## Core Value
 
@@ -16,13 +16,15 @@
 - ✓ SUMO 仿真环境搭建（Docker 镜像 qwen3-tsc-grpo:latest） — 已完成
 - ✓ 多场景支持（arterial4x4_10、chengdu 等） — 已完成
 - ✓ 相位配置处理（phase_config 生成） — 已完成
+- ✓ SFT 数据：100 条分层抽样样本 + AI 手写 think 内容 — v1.0
+- ✓ SFT 训练脚本：unsloth + LoRA 微调 Qwen3-4B-Base — v1.0
+- ✓ GRPO 数据准备：1588 条 prompt + state_file — v1.0
+- ✓ GRPO reward 函数：三层体系（格式 + 约束 + SUMO 仿真） — v1.0
+- ✓ GRPO 训练流水线：Docker 容器化完整流程 — v1.0
 
 ### Active
 
-- [ ] SFT 数据：从 train.jsonl 中取 100 条，直接构造带 `<think>...</think><solution>...</solution>` 格式的中文短思考链数据
-- [ ] SFT 训练脚本：Docker 中运行，让 Qwen3-4B-Base 学会输出格式
-- [ ] GRPO 训练脚本：Docker 中运行，reward 通过实时 SUMO 仿真计算（车辆通过量 + 排队车辆数 + 格式正确性 + think 长度惩罚）
-- [ ] GRPO reward 函数：多进程并行调 SUMO（loadState → 执行方案 → 统计指标）
+(待 v1.1 milestone 定义)
 
 ### Out of Scope
 
@@ -33,46 +35,50 @@
 
 ## Context
 
-### 现有代码基础
-- `data.sh`：基础数据生成入口，在 Docker 中运行 `src.scripts.generate_training_data`
-- `sumo_simulation/sumo_simulator.py`：SUMO 仿真器封装，支持 saveState/loadState 反事实仿真
-- `src/data_generator/`：数据生成模块（prompt 构建、采样、状态管理等）
-- `qwen3_(4b)_grpo.py`：参考脚本（数学推理任务的 SFT+GRPO），需适配为交通信号任务
-- `config/config.json`：统一配置文件
+### Current State
 
-### 数据格式
-- **train.jsonl**（1588 条）：每条包含 `prompt`（交通状态+任务说明）、`prediction`（各相位饱和度/min_green/max_green/capacity）、`state_file`（SUMO 状态文件路径）、`metadata`
-- **输出格式**：`[{"phase_id": <int>, "final": <int>}, ...]` JSON 数组
+v1.0 MVP 已交付。代码库约 42,800 LOC Python。
+Tech stack: Python, unsloth, trl (SFTTrainer + GRPOTrainer), SUMO/TraCI, Docker。
+全部代码在 Docker 容器中运行（qwen3-tsc-grpo:latest）。
 
-### 参考脚本标签对比
-- 参考脚本用 `<start_working_out>...<end_working_out><SOLUTION>...</SOLUTION>`
-- 本项目用 `<think>...</think><solution>...</solution>`
+### 代码结构
 
-### Docker 运行模式
-- 所有脚本必须像 data.sh 一样通过宿主机 shell 脚本调用 `docker run` 执行
-- 镜像：`qwen3-tsc-grpo:latest`
-- 容器内工作目录：`/home/samuel/SCU_TSC`
-- 项目目录挂载：宿主机项目根目录 → 容器内 `/home/samuel/SCU_TSC`
-- 环境变量：`SUMO_HOME=/usr/share/sumo`
+- `src/sft/train.py` — SFT 训练脚本（253 LOC）
+- `src/grpo/rewards.py` — 5 个 reward 函数（572 LOC）
+- `src/grpo/train.py` — GRPO 训练流水线（326 LOC）
+- `src/grpo/baseline.py` — Baseline 预计算
+- `src/scripts/` — 数据生成脚本
+- `src/data_generator/` — 数据生成模块
+- `docker/` — Docker 入口脚本（sft_train.sh, grpo_train.sh, grpo_baseline.sh）
+- `config/config.json` — 统一配置文件
 
-## Constraints
+### 已知问题 / 技术债务
 
-- **运行环境**: 所有训练和数据处理必须在 Docker 容器内运行（qwen3-tsc-grpo:latest）
-- **基础模型**: Qwen3-4B-Base（通过 unsloth 加载）
-- **SFT 数据**: 100 条，由 AI 直接从 train.jsonl 构造（非程序生成），中文短思考（50-200 token）
-- **格式标签**: `<think>...</think><solution>...</solution>`
-- **GRPO reward**: 实时 SUMO 仿真，多进程并行计算
-- **reward 指标**: 车辆通过量（越多越好）、排队车辆数（越少越好）、格式正确性、think 长度惩罚
+- 标签格式需要从 `<think>/<solution>` 替换为自定义标签（`<start_working_out>` 等），避免与 Qwen3 tokenizer 的 added tokens 冲突
+- SFT 训练 epochs 应为 2（1 epoch 不够充分）
+- REQUIREMENTS.md 中的 traceability 状态未及时更新（已在归档中修正）
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| 基础模型选 Qwen3-4B-Base | 与参考脚本一致，从 Base 开始训练可完全控制输出格式 | — Pending |
-| SFT 数据手工构造而非程序生成 | 只需 100 条学格式，AI 根据 prediction 推算合理 final 值即可 | — Pending |
-| GRPO 用实时 SUMO 仿真算 reward | 方案空间太大无法预计算，实时仿真虽慢但准确 | — Pending |
-| 多进程并行 reward | GRPO 每个 prompt 生成多个候选，并行计算加速 | — Pending |
-| 所有程序在 Docker 中运行 | 环境一致性，Docker 已包含所有依赖 | — Pending |
+| 基础模型选 Qwen3-4B-Base | 从 Base 开始训练可完全控制输出格式 | ✓ Good |
+| SFT 数据手工构造而非程序生成 | 只需 100 条学格式，AI 推算 final 值 | ✓ Good |
+| GRPO 用实时 SUMO 仿真算 reward | 方案空间太大无法预计算 | ✓ Good |
+| 多进程并行 reward | 每个 prompt 生成多候选，并行计算加速 | ✓ Good |
+| 所有程序在 Docker 中运行 | 环境一致性 | ✓ Good |
+| 分层抽样策略 | 确保覆盖所有交叉口和饱和度区间 | ✓ Good |
+| 三层 reward 体系 (L1/L2/L3) | 格式→约束→仿真渐进评估，L3 门控节省计算 | ✓ Good |
+| Baseline 归一化 | 相对改进评分，避免不同场景间 reward 偏差 | ✓ Good |
+| 渐进式 L2 约束评分 | 部分满足给部分分，引导学习过程 | ✓ Good |
+| 自定义标签替换 think/solution | 避免 Qwen3 tokenizer added tokens 语义冲突 | ⚠️ Revisit — 已发现问题但需在训练执行时验证 |
+
+## Constraints
+
+- **运行环境**: 所有训练和数据处理必须在 Docker 容器内运行（qwen3-tsc-grpo:latest）
+- **基础模型**: Qwen3-4B-Base（通过 unsloth 加载）
+- **格式标签**: `<start_working_out>...<end_working_out><SOLUTION>...</SOLUTION>`（替换后）
+- **GRPO reward**: 实时 SUMO 仿真，多进程并行计算
 
 ---
-*Last updated: 2026-02-09 after initialization*
+*Last updated: 2026-02-10 after v1.0 milestone*
