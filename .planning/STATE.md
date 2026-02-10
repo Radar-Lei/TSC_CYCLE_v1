@@ -9,20 +9,17 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** 给定交叉口实时交通状态,大模型输出的信号配时方案能最大化车辆通过量、最小化排队车辆数
-**Current focus:** v1.0 MVP shipped — Planning next milestone
+**Current focus:** v1.1 Improve Reward & GRPO Data Filter
 
 ---
 
 ## Current Position
 
-**Active Phase:** N/A (v1.0 complete)
-**Active Plan:** N/A
-**Current Status:** v1.0 MVP Shipped
+**Active Phase:** Not started (defining requirements)
+**Active Plan:** —
+**Current Status:** Defining requirements
 
-**Progress:**
-```
-v1.0 MVP: [██████████] 3/3 phases, 6/6 plans, 18/18 requirements (100%) — SHIPPED
-```
+**Last activity:** 2026-02-10 — Milestone v1.1 started
 
 ---
 
@@ -47,6 +44,14 @@ v1.0 MVP: [██████████] 3/3 phases, 6/6 plans, 18/18 requirem
 
 无
 
+### Key Findings from v1.0 Training
+
+- SUMO reward 二值化严重：几乎只有 0 或 5.0，baseline 太弱导致 combined 轻松到 1.0
+- ~20% 训练步 frac_reward_zero_std=1.0（4 个 generation reward 完全一样），GRPO 学不到东西
+- 空交叉口样本（passed=0, queue=0）浪费计算资源
+- 数据量从 1588 → 16788 条（大幅扩充）
+- 保存模型时出现 397 次 retrying（unsloth 已知问题，不影响训练）
+
 ### Quick Tasks Completed
 
 | # | Description | Date | Commit | Directory |
@@ -59,21 +64,22 @@ v1.0 MVP: [██████████] 3/3 phases, 6/6 plans, 18/18 requirem
 
 ### Last Session Summary
 
-**What:** v1.0 Milestone 完成归档
+**What:** v1.1 Milestone 初始化
 
 **Outcome:**
-- v1.0 MVP 全部 3 个 phase、6 个 plan 完成
-- 归档到 .planning/milestones/v1.0-ROADMAP.md 和 v1.0-REQUIREMENTS.md
-- PROJECT.md 完成全面演进审查
-- ROADMAP.md 重组为 milestone 分组视图
+- 分析了 100 步 GRPO 训练日志，发现 reward 二值化、zero-std、空交叉口等关键问题
+- 确定了 v1.1 三大改进方向
 
-**Next:** `/gsd:new-milestone` — 定义下一个 milestone
+**Next:** 完成 requirements 定义和 roadmap
 
-**Stopped At:** v1.0 milestone archived
+**Stopped At:** Defining requirements for v1.1
 
 ### Context for Next Session
 
-v1.0 MVP 已交付并归档。完整的 SFT + GRPO 训练流水线已就绪。已知技术债务：标签格式需要替换（已在代码中完成），SFT epochs 应为 2。下一步通过 `/gsd:new-milestone` 开始 v1.1 milestone 规划。
+v1.1 聚焦三个方向：
+1. Reward 改进 — 去掉 min(1.0) cap + 非线性压缩 + 改进 baseline（饱和度启发式基准）
+2. 数据过滤 — 过滤空交叉口、低区分度样本、场景均衡抽样
+3. Zero-std 问题 — 确保 4 个 generation 能产生差异化 reward
 
 ---
 
