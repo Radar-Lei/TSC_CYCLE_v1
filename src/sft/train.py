@@ -2,7 +2,7 @@
 """
 SFT Training Script for TSC-CYCLE
 
-使用 unsloth 对 Qwen3-4B-Base 进行 LoRA 微调，学习 <think>...<think><solution>...<solution> 输出格式。
+使用 unsloth 对 Qwen3-4B-Base 进行 LoRA 微调，学习 <start_working_out>...<end_working_out><SOLUTION>...</SOLUTION> 输出格式。
 """
 
 import argparse
@@ -14,6 +14,26 @@ import torch
 from datasets import Dataset
 from unsloth import FastLanguageModel
 from trl import SFTTrainer, SFTConfig
+
+
+def ensure_model(config: dict):
+    """确保本地模型存在，不存在则从 modelscope 下载"""
+    model_config = config["training"]["sft"]["model"]
+    model_path = model_config["model_name"]
+    model_id = model_config.get("model_id", "")
+
+    if os.path.isdir(model_path) and os.path.exists(os.path.join(model_path, "config.json")):
+        print(f"[模型] 本地模型已存在: {model_path}")
+        return model_path
+
+    if not model_id:
+        raise RuntimeError(f"本地模型 {model_path} 不存在且未配置 model_id，无法下载")
+
+    print(f"[模型] 本地模型不存在，从 modelscope 下载: {model_id}")
+    from modelscope import snapshot_download
+    snapshot_download(model_id, local_dir=model_path)
+    print(f"[模型] 下载完成: {model_path}")
+    return model_path
 
 
 def load_config(config_path: str) -> dict:
@@ -36,7 +56,7 @@ def setup_model(config: dict):
         model_name=model_config["model_name"],
         max_seq_length=model_config["max_seq_length"],
         load_in_4bit=model_config["load_in_4bit"],
-        fast_inference=True,
+        fast_inference=model_config.get("fast_inference", False),
         max_lora_rank=model_config["lora_rank"],
         gpu_memory_utilization=model_config["gpu_memory_utilization"],
     )
@@ -57,18 +77,23 @@ def setup_chat_template(tokenizer):
     """
     设置自定义 chat template
 
-    参考 qwen3_(4b)_grpo.py 第 41-81 行，但适配项目标签格式：
-    - reasoning_start = "<think>"
-    - reasoning_end = "<think>"  (注意：与 start 相同，这是项目约定)
-    - solution_start = "<solution>"
-    - solution_end = "<solution>"  (同理)
+    参考 qwen3_(4b)_grpo.py 第 41-81 行，适配项目标签格式：
+    - reasoning_start = "<start_working_out>"
+    - reasoning_end = "<end_working_out>"
+    - solution_start = "<SOLUTION>"
+    - solution_end = "</SOLUTION>"
     """
-    reasoning_start = "<think>"
-    reasoning_end = "<think>"  # 项目约定：开标签重复作为关闭标签
-    solution_start = "<solution>"
-    solution_end = "<solution>"  # 同理
+    reasoning_start = "<start_working_out>"
+    reasoning_end = "<end_working_out>"
+    solution_start = "<SOLUTION>"
+    solution_end = "</SOLUTION>"
 
-    system_prompt = "你是交通信号配时优化专家。"
+    system_prompt = (
+        "你是交通信号配时优化专家。\n"
+        "请认真分析问题并给出你的推理过程。\n"
+        "将推理过程放在 <start_working_out> 和 <end_working_out> 之间。\n"
+        "然后，将你的最终方案放在 <SOLUTION> 和 </SOLUTION> 之间。"
+    )
 
     # 创建 chat template（参考 qwen3_(4b)_grpo.py 第 59-81 行）
     chat_template = \
@@ -220,24 +245,27 @@ def main():
     print(f"[配置] 加载配置文件: {args.config}")
     config = load_config(args.config)
 
-    # 2. 设置模型
+    # 2. 确保模型存在（不存在则从 modelscope 下载）
+    ensure_model(config)
+
+    # 3. 设置模型
     print("[模型] 加载 Qwen3-4B-Base 并配置 LoRA")
     model, tokenizer = setup_model(config)
 
-    # 3. 设置 chat template
+    # 4. 设置 chat template
     print("[模板] 设置自定义 chat template")
     tokenizer = setup_chat_template(tokenizer)
 
-    # 4. 加载数据
+    # 5. 加载数据
     sft_data_path = os.path.join(config["paths"]["sft_data_dir"], "sft_train.jsonl")
     max_seq_length = config["training"]["sft"]["model"]["max_seq_length"]
     print(f"[数据] 加载 SFT 数据: {sft_data_path}")
     dataset = load_sft_data(sft_data_path, tokenizer, max_seq_length)
 
-    # 5. 训练
+    # 6. 训练
     model = train_model(model, tokenizer, dataset, config)
 
-    # 6. 保存模型
+    # 7. 保存模型
     output_path = config["paths"]["sft_output"]
     save_model(model, tokenizer, output_path)
 

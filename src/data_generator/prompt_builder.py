@@ -18,8 +18,8 @@ from src.data_generator.models import Prediction
 SYSTEM_PROMPT = (
     "你是交通信号配时优化专家。\n"
     "请认真分析预测得到的下个周期各个相位的交通状态，给出下个周期的配时方案，并给出你的推理过程。\n"
-    "将推理过程放在 <think> 和 </think> 之间。\n"
-    "然后，将你的最终方案放在 <CyclePlan> 和 </CyclePlan> 之间。"
+    "将推理过程放在 <start_working_out> 和 <end_working_out> 之间。\n"
+    "然后，将你的最终方案放在 <SOLUTION> 和 </SOLUTION> 之间。"
 )
 
 

@@ -32,11 +32,11 @@ _sumo_pool = None
 _print_counter = 0
 
 # Regex for format matching
-# Note: add_generation_prompt=True prepends <think>, so model generates content AFTER <think>
-# Actual completion format: "思考内容</think><CyclePlan>...</CyclePlan>"
-# Match pattern: require </think> followed by <CyclePlan>...</CyclePlan> at the end
+# Note: add_generation_prompt=True prepends <start_working_out>, so model generates content AFTER <start_working_out>
+# Actual completion format: "思考内容<end_working_out><SOLUTION>...</SOLUTION>"
+# Match pattern: require <end_working_out> followed by <SOLUTION>...</SOLUTION> at the end
 match_format = re.compile(
-    r"</think>.*?<CyclePlan>(.+?)</CyclePlan>\s*$",
+    r"<end_working_out>.*?<SOLUTION>(.+?)</SOLUTION>\s*$",
     flags=re.DOTALL
 )
 
@@ -70,7 +70,7 @@ def match_format_exactly(completions, **kwargs) -> List[float]:
     r"""L1.1 - Exact format matching.
 
     Checks if response matches the exact pattern:
-        </think>\s*<CyclePlan>content</CyclePlan>\s*$
+        <end_working_out>\s*<SOLUTION>content</SOLUTION>\s*$
 
     Score:
         - Full match: config.format_exact_score (default 3.0)
@@ -88,11 +88,11 @@ def match_format_approximately(completions, **kwargs) -> List[float]:
     """L1.2 - Approximate format matching.
 
     Counts tag occurrences and gives gradual scores:
-        - </think> appears exactly 1 time: +0.5, else -1.0
-        - <CyclePlan> appears exactly 1 time: +0.5, else -1.0
-        - </CyclePlan> appears exactly 1 time: +0.5, else -1.0
+        - <end_working_out> appears exactly 1 time: +0.5, else -1.0
+        - <SOLUTION> appears exactly 1 time: +0.5, else -1.0
+        - </SOLUTION> appears exactly 1 time: +0.5, else -1.0
 
-    Note: <think> is prepended by add_generation_prompt, no need to check.
+    Note: <start_working_out> is prepended by add_generation_prompt, no need to check.
     """
     tag_present = _config["format_approx_scores"]["tag_present"]
     tag_absent = _config["format_approx_scores"]["tag_absent"]
@@ -103,9 +103,9 @@ def match_format_approximately(completions, **kwargs) -> List[float]:
         score = 0.0
 
         # Count each tag
-        score += tag_present if response.count("</think>") == 1 else tag_absent
-        score += tag_present if response.count("<CyclePlan>") == 1 else tag_absent
-        score += tag_present if response.count("</CyclePlan>") == 1 else tag_absent
+        score += tag_present if response.count("<end_working_out>") == 1 else tag_absent
+        score += tag_present if response.count("<SOLUTION>") == 1 else tag_absent
+        score += tag_present if response.count("</SOLUTION>") == 1 else tag_absent
 
         scores.append(score)
     return scores
@@ -527,11 +527,11 @@ def sumo_simulation_reward(prompts, completions, **kwargs) -> List[float]:
 def think_length_reward(completions, **kwargs) -> List[float]:
     """Think length penalty.
 
-    Extracts think content before </think>, estimates token count,
+    Extracts think content before <end_working_out>, estimates token count,
     and penalizes if too short or too long.
 
-    Note: add_generation_prompt=True prepends <think>, so completion contains
-    content AFTER <think> until </think>.
+    Note: add_generation_prompt=True prepends <start_working_out>, so completion contains
+    content AFTER <start_working_out> until <end_working_out>.
 
     Token estimation: character count / 2 (rough approximation for Chinese text)
 
@@ -543,32 +543,34 @@ def think_length_reward(completions, **kwargs) -> List[float]:
     min_tokens = _config["think_min_tokens"]
     max_tokens = _config["think_max_tokens"]
     penalty = _config["think_penalty"]
+    bonus = _config.get("think_bonus", 0.0)
 
     scores = []
 
     for completion in completions:
         response = completion[0]["content"]
 
-        # Find </think> position
-        think_end_pos = response.find("</think>")
+        # Find <end_working_out> position
+        think_end_pos = response.find("<end_working_out>")
         if think_end_pos == -1:
             scores.append(penalty)
             continue
 
-        # Extract think content (everything before </think>)
-        # Since <think> is prepended by add_generation_prompt, completion starts right after <think>
+        # Extract think content (everything before <end_working_out>)
+        # Since <start_working_out> is prepended by add_generation_prompt, completion starts right after <start_working_out>
         think_content = response[:think_end_pos]
 
         # Estimate tokens (char_count / 2)
         think_tokens = len(think_content) / 2
 
-        # Compute penalty
+        # Compute score
         if think_tokens < min_tokens:
             score = penalty * (1 - think_tokens / min_tokens)
         elif think_tokens > max_tokens:
             score = penalty * (think_tokens / max_tokens - 1)
         else:
-            score = 0.0
+            # In range: linear reward from 0 to bonus
+            score = bonus * (think_tokens - min_tokens) / (max_tokens - min_tokens)
 
         scores.append(score)
 

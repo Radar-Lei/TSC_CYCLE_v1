@@ -80,21 +80,21 @@ def setup_chat_template(tokenizer):
     """Set up chat template - IDENTICAL to src/sft/train.py.
 
     Tags:
-        - reasoning_start = "<think>"
-        - reasoning_end = "</think>"
-        - solution_start = "<CyclePlan>"
-        - solution_end = "</CyclePlan>"
+        - reasoning_start = "<start_working_out>"
+        - reasoning_end = "<end_working_out>"
+        - solution_start = "<SOLUTION>"
+        - solution_end = "</SOLUTION>"
     """
-    reasoning_start = "<think>"
-    reasoning_end = "</think>"
-    solution_start = "<CyclePlan>"
-    solution_end = "</CyclePlan>"
+    reasoning_start = "<start_working_out>"
+    reasoning_end = "<end_working_out>"
+    solution_start = "<SOLUTION>"
+    solution_end = "</SOLUTION>"
 
     system_prompt = (
         "你是交通信号配时优化专家。\n"
-        "请认真分析问题并给出你的推理过程。\n"
-        "将推理过程放在 <think> 和 </think> 之间。\n"
-        "然后,将你的最终方案放在 <CyclePlan> 和 </CyclePlan> 之间。"
+        "请认真分析预测得到的下个周期各个相位的交通状态，给出下个周期的配时方案，并给出你的推理过程。\n"
+        "将推理过程放在 <start_working_out> 和 <end_working_out> 之间。\n"
+        "然后,将你的最终方案放在 <SOLUTION> 和 </SOLUTION> 之间。"
     )
 
     # Chat template (identical to sft/train.py)
@@ -195,7 +195,7 @@ def train_model(model, tokenizer, dataset, config: dict, reward_funcs: list, max
         # Core GRPO parameters
         temperature=grpo_config["temperature"],
         num_generations=grpo_config["num_generations"],
-        kl_coef=grpo_config["kl_coef"],
+        beta=grpo_config["kl_coef"],
 
         # Sequence length
         max_prompt_length=max_prompt_length,

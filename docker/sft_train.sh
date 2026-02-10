@@ -31,6 +31,30 @@ echo ""
 mkdir -p "${PROJECT_DIR}/outputs/sft/model"
 mkdir -p "${PROJECT_DIR}/outputs/sft/checkpoints"
 
+# 确保 SFT 训练数据存在
+SFT_DATA="${PROJECT_DIR}/outputs/sft/sft_train.jsonl"
+WORKSPACE="${PROJECT_DIR}/outputs/sft/think_workspace.jsonl"
+SAMPLES="${PROJECT_DIR}/outputs/sft/sampled_100.jsonl"
+
+if [ ! -f "${SFT_DATA}" ]; then
+    echo "[数据] sft_train.jsonl 不存在，正在生成..."
+    if [ ! -f "${WORKSPACE}" ] || [ ! -f "${SAMPLES}" ]; then
+        echo "[错误] 缺少数据源文件:"
+        echo "  - think_workspace.jsonl: $([ -f "${WORKSPACE}" ] && echo '存在' || echo '不存在')"
+        echo "  - sampled_100.jsonl: $([ -f "${SAMPLES}" ] && echo '存在' || echo '不存在')"
+        echo "请先运行 data.sh 生成数据"
+        exit 1
+    fi
+    python3 -m src.scripts.generate_sft_data assemble \
+        --workspace "${WORKSPACE}" \
+        --samples "${SAMPLES}" \
+        --output "${SFT_DATA}"
+    echo "[数据] sft_train.jsonl 生成完成 ($(wc -l < "${SFT_DATA}") 条记录)"
+else
+    echo "[数据] sft_train.jsonl 已存在 ($(wc -l < "${SFT_DATA}") 条记录)，跳过生成"
+fi
+echo ""
+
 # 通过 Docker 容器执行 SFT 训练
 echo "[开始] SFT 训练..."
 docker run --rm \
@@ -40,6 +64,7 @@ docker run --rm \
     -v "${PROJECT_DIR}:${CONTAINER_WORKDIR}:rw" \
     -w "${CONTAINER_WORKDIR}" \
     -e SUMO_HOME=/usr/share/sumo \
+    -e HF_HOME="${CONTAINER_WORKDIR}/.cache/huggingface" \
     --entrypoint python3 \
     "${IMAGE_NAME}" \
     -m src.sft.train \

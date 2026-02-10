@@ -164,12 +164,12 @@ def assemble(workspace_path: str, samples_path: str, output_path: str):
         solution_json = json.dumps(solution, ensure_ascii=False)
 
         # 组装 assistant content
-        assistant_content = f"<think>{think_text}<think><solution>{solution_json}<solution>"
+        assistant_content = f"<start_working_out>{think_text}<end_working_out><SOLUTION>{solution_json}</SOLUTION>"
 
         # 组装 messages
         sft_item = {
             'messages': [
-                {'role': 'system', 'content': '你是交通信号配时优化专家。'},
+                {'role': 'system', 'content': '你是交通信号配时优化专家。\n请认真分析预测得到的下个周期各个相位的交通状态，给出下个周期的配时方案，并给出你的推理过程。\n将推理过程放在 <start_working_out> 和 <end_working_out> 之间。\n然后，将你的最终方案放在 <SOLUTION> 和 </SOLUTION> 之间。'},
                 {'role': 'user', 'content': user_content},
                 {'role': 'assistant', 'content': assistant_content}
             ]

@@ -16,23 +16,23 @@ from src.grpo.rewards import (
     think_length_reward,
 )
 
-# 模拟 completion 格式（模型实际生成的格式，不含 <think> 前缀）
+# 模拟 completion 格式（模型实际生成的格式，不含 <start_working_out> 前缀）
 test_completions = [
     # 格式正确的例子
     [{
-        "content": "我分析了各相位的饱和度情况。phase 0 饱和度 1.2，需要最大绿灯时间。phase 2 饱和度 0.6，可以适当分配。</think><CyclePlan>[{\"phase_id\": 0, \"final\": 119}, {\"phase_id\": 2, \"final\": 67}]</CyclePlan>"
+        "content": "我分析了各相位的饱和度情况。phase 0 饱和度 1.2，需要最大绿灯时间。phase 2 饱和度 0.6，可以适当分配。<end_working_out><SOLUTION>[{\"phase_id\": 0, \"final\": 119}, {\"phase_id\": 2, \"final\": 67}]</SOLUTION>"
     }],
-    # 格式错误：缺少 </think>
+    # 格式错误：缺少 <end_working_out>
     [{
-        "content": "我分析了情况<CyclePlan>[{\"phase_id\": 0, \"final\": 119}]</CyclePlan>"
+        "content": "我分析了情况<SOLUTION>[{\"phase_id\": 0, \"final\": 119}]</SOLUTION>"
     }],
-    # 格式错误：缺少 <CyclePlan>
+    # 格式错误：缺少 <SOLUTION>
     [{
-        "content": "我分析了情况</think>[{\"phase_id\": 0, \"final\": 119}]"
+        "content": "我分析了情况<end_working_out>[{\"phase_id\": 0, \"final\": 119}]"
     }],
     # 格式正确但有换行
     [{
-        "content": "分析：phase 0 高饱和度</think>\n\n<CyclePlan>[{\"phase_id\": 0, \"final\": 100}]</CyclePlan>"
+        "content": "分析：phase 0 高饱和度<end_working_out>\n\n<SOLUTION>[{\"phase_id\": 0, \"final\": 100}]</SOLUTION>"
     }],
 ]
 
@@ -109,7 +109,7 @@ def main():
 
     scores = think_length_reward(test_completions)
     for i, (completion, score) in enumerate(zip(test_completions, scores)):
-        think_content = completion[0]['content'].split("</think>")[0] if "</think>" in completion[0]['content'] else "N/A"
+        think_content = completion[0]['content'].split("<end_working_out>")[0] if "<end_working_out>" in completion[0]['content'] else "N/A"
         print(f"\n测试 {i+1}:")
         print(f"  思考长度: {len(think_content)} 字符")
         print(f"  估计 tokens: {len(think_content) / 2}")
