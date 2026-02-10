@@ -1,6 +1,6 @@
 # Project State: TSC-CYCLE
 
-**Last Updated:** 2026-02-10T04:12:47Z
+**Last Updated:** 2026-02-10T02:21:05Z
 
 ---
 
@@ -94,6 +94,12 @@ Overall: [██████████] 18/18 requirements (100%)
 ### Blockers
 
 无
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | 给 grpo_baseline.sh 添加类似 data.sh 的进度打印功能 | 2026-02-10 | c9ca8de | [1-grpo-baseline-sh-data-sh](./quick/1-grpo-baseline-sh-data-sh/) |
 
 ---
 
