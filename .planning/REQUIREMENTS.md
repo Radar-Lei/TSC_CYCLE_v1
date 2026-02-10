@@ -12,6 +12,7 @@ Requirements for v1.1 milestone. Each maps to roadmap phases.
 - [ ] **RWD-01**: SUMO reward 公式去掉 `min(combined, 1.0)` 的 cap，用非线性压缩函数（如 log/sqrt）替代，使不同质量的方案获得有区分度的分数
 - [ ] **RWD-02**: Baseline 策略从"默认信号周期仿真"改为"饱和度启发式基准"（按各相位 pred_saturation 比例分配绿灯时间，饱和度>1 给 max_green），提高比较基准让 reward 不再轻松到满分
 - [ ] **RWD-03**: 修改 baseline.py 预计算脚本，支持新的饱和度启发式 baseline 策略，重新生成 baseline.json
+- [ ] **RWD-04**: SUMO 仿真 reward 新增延误时间（delay）指标，采集各车辆在交叉口区域的等待时间总和，纳入 reward 计算公式（同时更新 baseline 采集该指标）
 
 ### Data
 
@@ -29,7 +30,7 @@ Requirements for v1.1 milestone. Each maps to roadmap phases.
 ### v2 及以后
 
 - **RWD-F01**: 动态 baseline — 随训练进行更新 baseline（当前模型最佳方案作为新 baseline）
-- **RWD-F02**: 多维度 reward — 加入延误时间、通行效率等更多 SUMO 指标
+- **RWD-F02**: 更多仿真指标 — 通行效率等额外 SUMO 指标
 - **DAT-F01**: 在线数据筛选 — 训练中动态跳过 zero-std 步
 
 ## Out of Scope
@@ -46,20 +47,21 @@ Requirements for v1.1 milestone. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RWD-01 | — | Pending |
-| RWD-02 | — | Pending |
-| RWD-03 | — | Pending |
-| DAT-01 | — | Pending |
-| DAT-02 | — | Pending |
-| INT-01 | — | Pending |
-| INT-02 | — | Pending |
-| INT-03 | — | Pending |
+| RWD-01 | Phase 4 | Pending |
+| RWD-02 | Phase 4 | Pending |
+| RWD-03 | Phase 4 | Pending |
+| RWD-04 | Phase 4 | Pending |
+| DAT-01 | Phase 5 | Pending |
+| DAT-02 | Phase 5 | Pending |
+| INT-01 | Phase 6 | Pending |
+| INT-02 | Phase 6 | Pending |
+| INT-03 | Phase 6 | Pending |
 
 **Coverage:**
-- v1.1 requirements: 8 total
-- Mapped to phases: 0
-- Unmapped: 8 ⚠️
+- v1.1 requirements: 9 total
+- Mapped to phases: 9
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-10*
-*Last updated: 2026-02-10 after initial definition*
+*Last updated: 2026-02-10 after v1.1 roadmap creation*
