@@ -14,6 +14,7 @@ import json
 import os
 import random
 import sys
+import time
 import traci
 from concurrent.futures import ProcessPoolExecutor
 
@@ -144,6 +145,22 @@ def compute_single_baseline(args_tuple):
         }
 
 
+def _print_progress(completed, total, elapsed):
+    """打印进度条"""
+    pct = completed / total * 100
+    bar_len = 30
+    filled = int(bar_len * completed / total)
+    bar = '█' * filled + '░' * (bar_len - filled)
+    if completed > 0:
+        avg = elapsed / completed
+        eta = avg * (total - completed)
+        eta_str = f"{int(eta)}s"
+    else:
+        eta_str = "--"
+    print(f"  进度: |{bar}| {completed}/{total} ({pct:.0f}%) "
+          f"已用:{int(elapsed)}s 剩余:{eta_str}", flush=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Compute SUMO baseline for GRPO reward normalization")
     parser.add_argument("--config", default="config/config.json")
@@ -179,6 +196,7 @@ def main():
     # Run in parallel
     results = {}
     errors = 0
+    start_time = time.time()
     with ProcessPoolExecutor(max_workers=args.workers) as pool:
         for i, result in enumerate(pool.map(compute_single_baseline, tasks)):
             if result["status"] == "ok":
@@ -191,8 +209,8 @@ def main():
                 errors += 1
                 print(f"[Baseline] ERROR on {result['state_file']}: {result.get('error', 'unknown')}")
 
-            if (i + 1) % 50 == 0:
-                print(f"[Baseline] Progress: {i+1}/{len(tasks)} ({errors} errors)")
+            elapsed = time.time() - start_time
+            _print_progress(i + 1, len(tasks), elapsed)
 
     # Save
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
