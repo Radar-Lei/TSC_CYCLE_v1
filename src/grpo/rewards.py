@@ -32,8 +32,11 @@ _sumo_pool = None
 _print_counter = 0
 
 # Regex for format matching
+# Note: add_generation_prompt=True prepends <think>, so model generates content AFTER <think>
+# Actual completion format: "思考内容</think><CyclePlan>...</CyclePlan>"
+# Match pattern: require </think> followed by <CyclePlan>...</CyclePlan> at the end
 match_format = re.compile(
-    r"</think>\s*<CyclePlan>(.+?)</CyclePlan>\s*$",
+    r"</think>.*?<CyclePlan>(.+?)</CyclePlan>\s*$",
     flags=re.DOTALL
 )
 
@@ -524,8 +527,11 @@ def sumo_simulation_reward(prompts, completions, **kwargs) -> List[float]:
 def think_length_reward(completions, **kwargs) -> List[float]:
     """Think length penalty.
 
-    Extracts think content between <think> and </think>, estimates token count,
+    Extracts think content before </think>, estimates token count,
     and penalizes if too short or too long.
+
+    Note: add_generation_prompt=True prepends <think>, so completion contains
+    content AFTER <think> until </think>.
 
     Token estimation: character count / 2 (rough approximation for Chinese text)
 
@@ -549,12 +555,9 @@ def think_length_reward(completions, **kwargs) -> List[float]:
             scores.append(penalty)
             continue
 
-        # Extract think content (assuming <think> was prepended)
-        # We look for the content before </think>
+        # Extract think content (everything before </think>)
+        # Since <think> is prepended by add_generation_prompt, completion starts right after <think>
         think_content = response[:think_end_pos]
-
-        # Remove <think> tag if present
-        think_content = think_content.replace("<think>", "")
 
         # Estimate tokens (char_count / 2)
         think_tokens = len(think_content) / 2
