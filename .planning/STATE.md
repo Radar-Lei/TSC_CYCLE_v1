@@ -16,13 +16,13 @@ See: .planning/PROJECT.md (updated 2026-02-10)
 ## Current Position
 
 **Active Milestone:** v1.1 Improve Reward & GRPO Data Filter
-**Active Phase:** Phase 4 of 6 (Reward Enhancement)
-**Active Plan:** Phase 4 Complete (04-01 + 04-02)
-**Current Status:** Phase 4 executed successfully, ready for verification
+**Active Phase:** Phase 5 of 6 (Data Filtering)
+**Active Plan:** 05-01 (Data Filter Script)
+**Current Status:** Phase 05-01 executed successfully
 
-**Last activity:** 2026-02-11 — Completed Phase 4 (Reward Enhancement)
+**Last activity:** 2026-02-11 — Completed Phase 05-01 (Data Filter Script)
 
-Progress: [██████████████░░░░░░] 67% (4 of 6 phases complete across all milestones)
+Progress: [███████████████░░░░░] 75% (5 of 6 phases complete across all milestones)
 
 ---
 
@@ -40,8 +40,9 @@ Progress: [██████████████░░░░░░] 67% (4 
 | 03    | 02   | 402s     | 3     | 3     | 2026-02-10T04:12:47Z |
 | 04    | 01   | 4895s    | 3     | 4     | 2026-02-11T03:29:48Z |
 | 04    | 02   | 1800s    | 2     | 2     | 2026-02-11T04:00:00Z |
+| 05    | 01   | 331s     | 2     | 3     | 2026-02-11T08:18:40Z |
 
-**Total:** 8 plans, average 787 seconds/plan
+**Total:** 9 plans, average 732 seconds/plan
 
 ## Accumulated Context
 
@@ -68,36 +69,37 @@ Progress: [██████████████░░░░░░] 67% (4 
 
 ### Last Session Summary
 
-**What:** Phase 04 — Reward Enhancement 完整执行
+**What:** Phase 05-01 — Data Filter Script 执行
 
 **Outcome:**
-- Plan 04-01: 改写 SUMO reward 为三维改善率 + log(1+x) 非线性压缩，baseline 改为饱和度启发式，新增 delay 维度
-- Plan 04-02: 扩展 test_rewards.py 加入 SUMO 分布验证，集成到 grpo_train.sh 训练前检查
-- 重新生成 baseline.json（16784 条，包含 total_delay）
-- Reward 权重配置：0.4/0.3/0.3（throughput/queue/delay）
+- 创建过滤脚本 `src/scripts/filter_grpo_data.py`（260 行）
+- 创建 Docker 入口脚本 `docker/filter_data.sh`（135 行）
+- 更新 `config.json` 添加 `data_filter` 配置块
+- 实际过滤结果: 16788 → 13781 条（剔除 17.9% 空/极低流量样本）
 
 **Key Decisions:**
-- Reward weights: throughput=0.4, queue=0.3, delay=0.3 (total=1.0)
-- Baseline strategy: saturation heuristic
-- Negative score floor: -2.5 (sumo_negative_ratio=0.5)
-- Log compression for positive scores
-- Training guard: 50 samples, std >= 0.5, unique >= 30%, non-zero >= 50%
+- 过滤阈值: saturation_sum < 0.1（基于数据分析 14% 样本 total_sat=0, 18% < 0.1）
+- 双输出文件: filtered + rejected（保留原始数据不变）
+- 统计报告: 终端 + 文本文件（样本数、剔除比例、流量分布）
+- Docker 串联: filter_data.sh 自动执行 过滤 → baseline 重算，支持 --skip-baseline
 
-**Next:** Phase 4 verification, then Phase 05 (Data Filtering)
+**Next:** Phase 05 后续计划或 Phase 06
 
-**Stopped At:** Phase 4 execution complete, pending verification
+**Stopped At:** 完成 Phase 05-01
 
 ### Context for Next Session
 
-Phase 4 将改进三个紧密耦合的部分：
-1. SUMO reward 公式（去掉 cap，用非线性压缩）
-2. Baseline 策略（从默认周期改为饱和度启发式）
-3. Baseline 预计算脚本（重新生成 baseline.json）
+Phase 05-01 完成了数据过滤工具链：
+1. 过滤脚本能从 prompt 提取 phase_waits 并计算 saturation_sum
+2. Docker 入口脚本串联 filter → baseline 重算流程
+3. 实际过滤剔除 17.9% 低质量样本（与预期 18% 接近）
 
 核心文件：
-- `src/grpo/rewards.py` — SUMO reward 计算逻辑
-- `src/grpo/baseline.py` — Baseline 预计算脚本
-- `config/config.json` — 配置驱动
+- `src/scripts/filter_grpo_data.py` — 数据过滤脚本
+- `docker/filter_data.sh` — Docker 入口脚本
+- `config/config.json` — 过滤配置（data_filter 块）
+
+下一步：检查 Phase 05 是否有其他计划，或进入 Phase 06
 
 ---
 
