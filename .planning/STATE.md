@@ -1,6 +1,6 @@
 # Project State: TSC-CYCLE
 
-**Last Updated:** 2026-02-10
+**Last Updated:** 2026-02-11
 
 ---
 
@@ -17,10 +17,10 @@ See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Active Milestone:** v1.1 Improve Reward & GRPO Data Filter
 **Active Phase:** Phase 4 of 6 (Reward Enhancement)
-**Active Plan:** Ready to plan
-**Current Status:** Roadmap created, ready to plan Phase 4
+**Active Plan:** 04-01 Complete
+**Current Status:** Phase 4 Plan 01 executed successfully
 
-**Last activity:** 2026-02-10 — v1.1 roadmap created
+**Last activity:** 2026-02-11 — Completed 04-01 (Reward formula + baseline strategy rewrite)
 
 Progress: [████████████░░░░░░░░] 50% (3 of 6 phases complete across all milestones)
 
@@ -38,10 +38,9 @@ Progress: [████████████░░░░░░░░] 50% (3 
 | 02    | 01   | 282s     | 2     | 3     | 2026-02-09T16:38:44Z |
 | 03    | 01   | 246s     | 2     | 4     | 2026-02-09T19:54:45Z |
 | 03    | 02   | 402s     | 3     | 3     | 2026-02-10T04:12:47Z |
+| 04    | 01   | 4895s    | 3     | 4     | 2026-02-11T03:29:48Z |
 
-**Total:** 6 plans, average 317 seconds/plan
-
----
+**Total:** 7 plans, average 812 seconds/plan
 
 ## Accumulated Context
 
@@ -68,18 +67,25 @@ Progress: [████████████░░░░░░░░] 50% (3 
 
 ### Last Session Summary
 
-**What:** v1.1 Roadmap 创建
+**What:** Phase 04 Plan 01 — Reward 公式与 Baseline 策略重写
 
 **Outcome:**
-- 从 v1.1 的 8 个 requirements 中识别出 3 个自然阶段
-- Phase 4: Reward Enhancement (RWD-01/02/03) — 改进公式 + baseline 策略
-- Phase 5: Data Filtering (DAT-01/02) — 过滤空交叉口 + 统计输出
-- Phase 6: Integration (INT-01/02/03) — 配置 + 训练脚本 + Docker 流程集成
-- 100% requirement coverage 验证完成（8/8 mapped）
+- 改写 SUMO reward 为三维改善率（throughput/queue/delay）+ log(1+x) 非线性压缩
+- Baseline 策略从默认周期改为饱和度启发式
+- 新增 delay 指标采集（baseline 和 model 都采集）
+- 重新生成 baseline.json（16784 条，包含 total_delay）
+- Reward 权重配置：0.3/0.4/0.3（throughput/queue/delay）
+- 去掉 reward cap，允许负分（下界 -2.5）
 
-**Next:** `/gsd:plan-phase 4` — 规划 Reward Enhancement 阶段
+**Key Decisions:**
+- Reward weights: throughput=0.3, queue=0.4, delay=0.3 (total=1.0)
+- Baseline strategy: saturation heuristic instead of default cycle
+- Negative score floor: -2.5 (sumo_negative_ratio=0.5)
+- Log compression: log(1+x) for positive scores, linear for negative
 
-**Stopped At:** Roadmap creation complete
+**Next:** Phase 04 后续计划（如果有）或 Phase 05 (Data Filtering)
+
+**Stopped At:** Completed 04-01-PLAN.md
 
 ### Context for Next Session
 
