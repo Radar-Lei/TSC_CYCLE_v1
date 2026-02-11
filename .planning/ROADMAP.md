@@ -46,10 +46,10 @@ Plans:
   1. 数据过滤脚本能从 grpo_train.jsonl 中识别并剔除 baseline passed=0 且 queue=0 的空交叉口样本
   2. 生成过滤后的训练数据集文件（如 grpo_train_filtered.jsonl）
   3. 输出详细的统计报告，包括过滤前后样本数、各场景分布、各过滤原因的样本数量
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 05-01: TBD
+- [ ] 05-01-PLAN.md — 过滤脚本 + config 配置 + Docker 入口脚本（filter → baseline 串联）
 
 #### Phase 6: Integration
 **Goal**: 将新的 reward 和数据过滤逻辑集成到配置、训练脚本和 Docker 流程中，形成完整的端到端流水线
