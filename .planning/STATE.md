@@ -9,20 +9,20 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** 给定交叉口实时交通状态,大模型输出的信号配时方案能最大化车辆通过量、最小化排队车辆数
-**Current focus:** v1.1 Phase 4 - Reward Enhancement
+**Current focus:** v1.1 Phase 5 - Data Filtering (Complete)
 
 ---
 
 ## Current Position
 
 **Active Milestone:** v1.1 Improve Reward & GRPO Data Filter
-**Active Phase:** Phase 5 of 6 (Data Filtering)
-**Active Plan:** 05-01 (Data Filter Script)
-**Current Status:** Phase 05-01 executed successfully
+**Active Phase:** Phase 5 of 6 (Data Filtering) — Complete
+**Active Plan:** All plans complete
+**Current Status:** Phase 5 verified, ready for Phase 6
 
-**Last activity:** 2026-02-11 — Completed Phase 05-01 (Data Filter Script)
+**Last activity:** 2026-02-11 — Completed Phase 5 (Data Filtering)
 
-Progress: [███████████████░░░░░] 75% (5 of 6 phases complete across all milestones)
+Progress: [████████████████░░░░] 83% (5 of 6 phases complete across all milestones)
 
 ---
 

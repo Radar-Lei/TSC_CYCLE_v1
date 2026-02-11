@@ -49,7 +49,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 05-01-PLAN.md — 过滤脚本 + config 配置 + Docker 入口脚本（filter → baseline 串联）
+- [x] 05-01-PLAN.md — 过滤脚本 + config 配置 + Docker 入口脚本（filter → baseline 串联）
 
 #### Phase 6: Integration
 **Goal**: 将新的 reward 和数据过滤逻辑集成到配置、训练脚本和 Docker 流程中，形成完整的端到端流水线
@@ -76,12 +76,12 @@ Phases execute in numeric order: 4 → 5 → 6
 | 2. GRPO 数据准备 | v1.0 | 1/1 | Complete | 2026-02-10 |
 | 3. GRPO 训练 | v1.0 | 2/2 | Complete | 2026-02-10 |
 | 4. Reward Enhancement | v1.1 | 2/2 | Complete | 2026-02-11 |
-| 5. Data Filtering | v1.1 | 0/TBD | Not started | - |
+| 5. Data Filtering | v1.1 | 1/1 | Complete | 2026-02-11 |
 | 6. Integration | v1.1 | 0/TBD | Not started | - |
 
-**Overall:** 6 phases total, 8 plans complete (v1.0 + Phase 4 finished)
+**Overall:** 6 phases total, 9 plans complete (v1.0 + Phase 4-5 finished)
 
 ---
 
 *Roadmap created: 2026-02-09*
-*Last updated: 2026-02-11 after Phase 4 execution complete*
+*Last updated: 2026-02-11 after Phase 5 execution complete*
