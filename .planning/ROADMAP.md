@@ -60,10 +60,11 @@ Plans:
   2. GRPO 训练脚本 train.py 能加载过滤后的数据集，训练流程正常运行
   3. Docker 入口脚本（grpo_baseline.sh + 数据过滤 + grpo_train.sh）能串联执行完整流程：baseline 重新计算 → 数据过滤 → GRPO 训练
   4. 端到端运行测试通过，训练过程中 zero-std 无效步显著减少或消除
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 06-01: TBD
+- [ ] 06-01-PLAN.md — Pipeline 基础设施：config 更新 + 分析脚本 + grpo_pipeline.sh 端到端入口脚本
+- [ ] 06-02-PLAN.md — 端到端验证：用户运行完整流水线并确认改进效果
 
 ## Progress
 
@@ -77,7 +78,7 @@ Phases execute in numeric order: 4 → 5 → 6
 | 3. GRPO 训练 | v1.0 | 2/2 | Complete | 2026-02-10 |
 | 4. Reward Enhancement | v1.1 | 2/2 | Complete | 2026-02-11 |
 | 5. Data Filtering | v1.1 | 1/1 | Complete | 2026-02-11 |
-| 6. Integration | v1.1 | 0/TBD | Not started | - |
+| 6. Integration | v1.1 | 0/2 | Not started | - |
 
 **Overall:** 6 phases total, 9 plans complete (v1.0 + Phase 4-5 finished)
 
