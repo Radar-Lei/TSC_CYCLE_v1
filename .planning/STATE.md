@@ -17,12 +17,12 @@ See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Active Milestone:** v1.1 Improve Reward & GRPO Data Filter
 **Active Phase:** Phase 4 of 6 (Reward Enhancement)
-**Active Plan:** 04-01 Complete
-**Current Status:** Phase 4 Plan 01 executed successfully
+**Active Plan:** Phase 4 Complete (04-01 + 04-02)
+**Current Status:** Phase 4 executed successfully, ready for verification
 
-**Last activity:** 2026-02-11 — Completed 04-01 (Reward formula + baseline strategy rewrite)
+**Last activity:** 2026-02-11 — Completed Phase 4 (Reward Enhancement)
 
-Progress: [████████████░░░░░░░░] 50% (3 of 6 phases complete across all milestones)
+Progress: [██████████████░░░░░░] 67% (4 of 6 phases complete across all milestones)
 
 ---
 
@@ -39,8 +39,9 @@ Progress: [████████████░░░░░░░░] 50% (3 
 | 03    | 01   | 246s     | 2     | 4     | 2026-02-09T19:54:45Z |
 | 03    | 02   | 402s     | 3     | 3     | 2026-02-10T04:12:47Z |
 | 04    | 01   | 4895s    | 3     | 4     | 2026-02-11T03:29:48Z |
+| 04    | 02   | 1800s    | 2     | 2     | 2026-02-11T04:00:00Z |
 
-**Total:** 7 plans, average 812 seconds/plan
+**Total:** 8 plans, average 787 seconds/plan
 
 ## Accumulated Context
 
@@ -67,25 +68,24 @@ Progress: [████████████░░░░░░░░] 50% (3 
 
 ### Last Session Summary
 
-**What:** Phase 04 Plan 01 — Reward 公式与 Baseline 策略重写
+**What:** Phase 04 — Reward Enhancement 完整执行
 
 **Outcome:**
-- 改写 SUMO reward 为三维改善率（throughput/queue/delay）+ log(1+x) 非线性压缩
-- Baseline 策略从默认周期改为饱和度启发式
-- 新增 delay 指标采集（baseline 和 model 都采集）
+- Plan 04-01: 改写 SUMO reward 为三维改善率 + log(1+x) 非线性压缩，baseline 改为饱和度启发式，新增 delay 维度
+- Plan 04-02: 扩展 test_rewards.py 加入 SUMO 分布验证，集成到 grpo_train.sh 训练前检查
 - 重新生成 baseline.json（16784 条，包含 total_delay）
-- Reward 权重配置：0.3/0.4/0.3（throughput/queue/delay）
-- 去掉 reward cap，允许负分（下界 -2.5）
+- Reward 权重配置：0.4/0.3/0.3（throughput/queue/delay）
 
 **Key Decisions:**
-- Reward weights: throughput=0.3, queue=0.4, delay=0.3 (total=1.0)
-- Baseline strategy: saturation heuristic instead of default cycle
+- Reward weights: throughput=0.4, queue=0.3, delay=0.3 (total=1.0)
+- Baseline strategy: saturation heuristic
 - Negative score floor: -2.5 (sumo_negative_ratio=0.5)
-- Log compression: log(1+x) for positive scores, linear for negative
+- Log compression for positive scores
+- Training guard: 50 samples, std >= 0.5, unique >= 30%, non-zero >= 50%
 
-**Next:** Phase 04 后续计划（如果有）或 Phase 05 (Data Filtering)
+**Next:** Phase 4 verification, then Phase 05 (Data Filtering)
 
-**Stopped At:** Completed 04-01-PLAN.md
+**Stopped At:** Phase 4 execution complete, pending verification
 
 ### Context for Next Session
 
