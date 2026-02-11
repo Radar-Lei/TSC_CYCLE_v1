@@ -35,8 +35,8 @@ See: `.planning/milestones/v1.0-ROADMAP.md` for full details.
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — 核心逻辑：config 更新 + baseline 饱和度启发式重写 + reward 公式改善率/log压缩/delay
-- [ ] 04-02-PLAN.md — 验证集成：SUMO reward 分布验证 + grpo_train.sh 训练前检查
+- [x] 04-01-PLAN.md — 核心逻辑：config 更新 + baseline 饱和度启发式重写 + reward 公式改善率/log压缩/delay
+- [x] 04-02-PLAN.md — 验证集成：SUMO reward 分布验证 + grpo_train.sh 训练前检查
 
 #### Phase 5: Data Filtering
 **Goal**: 过滤 GRPO 训练数据中的空交叉口样本，生成清洁的训练数据集并输出统计信息
@@ -75,13 +75,13 @@ Phases execute in numeric order: 4 → 5 → 6
 | 1. SFT 数据与训练 | v1.0 | 3/3 | Complete | 2026-02-09 |
 | 2. GRPO 数据准备 | v1.0 | 1/1 | Complete | 2026-02-10 |
 | 3. GRPO 训练 | v1.0 | 2/2 | Complete | 2026-02-10 |
-| 4. Reward Enhancement | v1.1 | 0/2 | Planning complete | - |
+| 4. Reward Enhancement | v1.1 | 2/2 | Complete | 2026-02-11 |
 | 5. Data Filtering | v1.1 | 0/TBD | Not started | - |
 | 6. Integration | v1.1 | 0/TBD | Not started | - |
 
-**Overall:** 6 phases total, 6 plans complete (v1.0 finished)
+**Overall:** 6 phases total, 8 plans complete (v1.0 + Phase 4 finished)
 
 ---
 
 *Roadmap created: 2026-02-09*
-*Last updated: 2026-02-11 after Phase 4 planning*
+*Last updated: 2026-02-11 after Phase 4 execution complete*
