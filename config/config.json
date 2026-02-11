@@ -89,13 +89,16 @@
         "think_max_tokens": 300,
         "think_penalty": -0.5,
         "think_bonus": 0.5,
-        "sumo_timeout_seconds": 60
+        "sumo_timeout_seconds": 60,
+        "sumo_compression_function": "log1p",
+        "sumo_compression_steepness": 1.0
       },
       "data_filter": {
         "saturation_sum_threshold": 0.1,
         "input": null,
         "output_suffix": "_filtered",
-        "rejected_suffix": "_rejected"
+        "rejected_suffix": "_rejected",
+        "min_samples_threshold": 1000
       }
     }
   },

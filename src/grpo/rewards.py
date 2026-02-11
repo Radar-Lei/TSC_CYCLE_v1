@@ -384,8 +384,9 @@ def sumo_simulation_reward(prompts, completions, **kwargs) -> List[float]:
         raw_score = throughput_weight * t_imp + queue_weight * q_imp + delay_weight * d_imp
 
         If raw_score >= 0:
-            compressed = log(1 + raw_score)
-            score = compressed / log(2) * sumo_max_score
+            # Configurable compression (default: log1p)
+            compressed = log(1 + steepness * raw_score)
+            score = compressed / log(1 + steepness) * sumo_max_score
         Else:
             floor = -sumo_max_score * negative_ratio
             score = max(raw_score * sumo_max_score, floor)
@@ -548,11 +549,17 @@ def sumo_simulation_reward(prompts, completions, **kwargs) -> List[float]:
             raw_score = throughput_weight * t_imp + queue_weight * q_imp + delay_weight * d_imp
 
             # Apply non-linear compression + negative control
+            compression_fn = _config.get("sumo_compression_function", "log1p")
+            steepness = _config.get("sumo_compression_steepness", 1.0)
+
             if raw_score >= 0:
-                # Positive: log(1+x) compression, scaled to sumo_max_score
-                compressed = math.log(1 + raw_score)
-                # log(2) ≈ 0.693, so 100% improvement -> 0.693 -> normalized to ~0.7 * sumo_max_score
-                score = compressed / math.log(2) * sumo_max_score
+                # Positive: configurable compression function
+                if compression_fn == "log1p":
+                    compressed = math.log(1 + steepness * raw_score)
+                    normalizer = math.log(1 + steepness)
+                    score = compressed / normalizer * sumo_max_score
+                else:
+                    raise ValueError(f"Unknown compression function: {compression_fn}")
             else:
                 # Negative: linear mapping with floor
                 floor = -sumo_max_score * negative_ratio
