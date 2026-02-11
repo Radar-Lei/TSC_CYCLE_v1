@@ -56,6 +56,15 @@ def init_rewards(config_path: str, baseline_path: str):
         config = json.load(f)
         _config = config["training"]["grpo"]["reward"]
 
+    # 验证用户必须配置的权重(不预设默认值,由用户配置)
+    required_weights = ["sumo_throughput_weight", "sumo_queue_weight", "sumo_delay_weight"]
+    missing = [w for w in required_weights if _config.get(w) is None]
+    if missing:
+        raise ValueError(
+            f"以下 reward 权重未配置(值为 null),请在 config.json 中设置: {missing}\n"
+            f"这三个权重控制 throughput/queue/delay 在 SUMO reward 中的相对重要性,总和建议为 1.0"
+        )
+
     with open(baseline_path, 'r', encoding='utf-8') as f:
         _baseline = json.load(f)
 
@@ -252,11 +261,11 @@ def _run_sumo_evaluation(state_file: str, sumocfg: str, tl_id: str, plan: List[D
         1. Start SUMO with unique port
         2. Load state file
         3. Execute model's plan: for each phase, setPhase + step for `final` seconds
-        4. Collect metrics: passed_vehicles and queue_vehicles
+        4. Collect metrics: passed_vehicles, queue_vehicles, total_delay
         5. Close SUMO
 
     Returns:
-        {passed_vehicles: int, queue_vehicles: int} or raises exception
+        {passed_vehicles: int, queue_vehicles: int, total_delay: float} or raises exception
     """
     import traci
     import time
@@ -300,7 +309,8 @@ def _run_sumo_evaluation(state_file: str, sumocfg: str, tl_id: str, plan: List[D
             except:
                 continue
 
-        # Execute plan
+        # Execute plan and collect delay
+        total_delay = 0.0
         for phase in plan:
             phase_id = phase["phase_id"]
             duration = phase["final"]
@@ -315,6 +325,15 @@ def _run_sumo_evaluation(state_file: str, sumocfg: str, tl_id: str, plan: List[D
                     raise TimeoutError(f"SUMO simulation timeout ({timeout}s)")
 
                 conn.simulationStep()
+
+                # Collect delay: sum of waiting times for all vehicles on controlled lanes
+                for lane in controlled_lanes:
+                    try:
+                        vehicle_ids = conn.lane.getLastStepVehicleIDs(lane)
+                        for vid in vehicle_ids:
+                            total_delay += conn.vehicle.getWaitingTime(vid)
+                    except:
+                        continue
 
         # Record vehicles after
         vehicles_after = set()
@@ -332,7 +351,8 @@ def _run_sumo_evaluation(state_file: str, sumocfg: str, tl_id: str, plan: List[D
 
         return {
             "passed_vehicles": passed_vehicles,
-            "queue_vehicles": queue_vehicles
+            "queue_vehicles": queue_vehicles,
+            "total_delay": total_delay
         }
 
     except Exception as e:
@@ -352,22 +372,34 @@ def sumo_simulation_reward(prompts, completions, **kwargs) -> List[float]:
         1. Extract phase plan from CyclePlan JSON
         2. Get state_file and tl_id from kwargs
         3. Run SUMO simulation (parallel via ProcessPoolExecutor)
-        4. Normalize against baseline metrics
-        5. Compute combined score
+        4. Compute improvement ratios for three dimensions (throughput/queue/delay)
+        5. Apply log(1+x) compression for positive scores, linear penalty for negative scores
 
     Score formula:
-        throughput_ratio = model_passed / max(baseline_passed, 1)
-        queue_ratio = baseline_queue / max(model_queue, 1)  # lower queue = higher ratio
-        combined = throughput_weight * throughput_ratio + queue_weight * queue_ratio
-        score = min(combined, 1.0) * sumo_max_score
+        For each dimension, compute improvement ratio:
+            throughput_imp = (model_passed - baseline_passed) / baseline_passed
+            queue_imp = (baseline_queue - model_queue) / baseline_queue
+            delay_imp = (baseline_delay - model_delay) / baseline_delay
+
+        raw_score = throughput_weight * t_imp + queue_weight * q_imp + delay_weight * d_imp
+
+        If raw_score >= 0:
+            compressed = log(1 + raw_score)
+            score = compressed / log(2) * sumo_max_score
+        Else:
+            floor = -sumo_max_score * negative_ratio
+            score = max(raw_score * sumo_max_score, floor)
 
     If gate not passed: 0.0
     If SUMO crashes/timeout: raise error (per user decision)
     """
     global _sumo_pool, _print_counter
+    import math
 
     throughput_weight = _config["sumo_throughput_weight"]
     queue_weight = _config["sumo_queue_weight"]
+    delay_weight = _config["sumo_delay_weight"]
+    negative_ratio = _config["sumo_negative_ratio"]
     sumo_max_score = _config["sumo_max_score"]
     timeout = _config["sumo_timeout_seconds"]
 
@@ -478,7 +510,7 @@ def sumo_simulation_reward(prompts, completions, **kwargs) -> List[float]:
             # SUMO system error - terminate program per user decision
             raise RuntimeError(f"SUMO simulation failed: {e}")
 
-        # Compute scores with baseline normalization
+        # Compute scores with improvement ratio + log compression
         for (idx, state_file, _, _, _), result in zip(tasks, results):
             # Get baseline
             baseline = _baseline.get(state_file)
@@ -487,16 +519,44 @@ def sumo_simulation_reward(prompts, completions, **kwargs) -> List[float]:
 
             baseline_passed = baseline["passed_vehicles"]
             baseline_queue = baseline["queue_vehicles"]
+            baseline_delay = baseline.get("total_delay", 0)
 
             model_passed = result["passed_vehicles"]
             model_queue = result["queue_vehicles"]
+            model_delay = result["total_delay"]
 
-            # Normalize
-            throughput_ratio = model_passed / max(baseline_passed, 1)
-            queue_ratio = baseline_queue / max(model_queue, 1)
+            # Compute improvement ratios for three dimensions
+            # Throughput: more is better
+            if baseline_passed > 0:
+                t_imp = (model_passed - baseline_passed) / baseline_passed
+            else:
+                t_imp = 0.0
 
-            combined = throughput_weight * throughput_ratio + queue_weight * queue_ratio
-            score = min(combined, 1.0) * sumo_max_score
+            # Queue: less is better
+            if baseline_queue > 0:
+                q_imp = (baseline_queue - model_queue) / baseline_queue
+            else:
+                q_imp = 0.0
+
+            # Delay: less is better
+            if baseline_delay > 0:
+                d_imp = (baseline_delay - model_delay) / max(baseline_delay, 1)
+            else:
+                d_imp = 0.0
+
+            # Weighted sum
+            raw_score = throughput_weight * t_imp + queue_weight * q_imp + delay_weight * d_imp
+
+            # Apply non-linear compression + negative control
+            if raw_score >= 0:
+                # Positive: log(1+x) compression, scaled to sumo_max_score
+                compressed = math.log(1 + raw_score)
+                # log(2) ≈ 0.693, so 100% improvement -> 0.693 -> normalized to ~0.7 * sumo_max_score
+                score = compressed / math.log(2) * sumo_max_score
+            else:
+                # Negative: linear mapping with floor
+                floor = -sumo_max_score * negative_ratio
+                score = max(raw_score * sumo_max_score, floor)
 
             scores[idx] = score
 
@@ -507,10 +567,12 @@ def sumo_simulation_reward(prompts, completions, **kwargs) -> List[float]:
             print(f"[SUMO Reward] Sample evaluation:")
             first_task = tasks[0]
             first_result = results[0]
+            first_baseline = _baseline.get(first_task[1])
             print(f"  State: {first_task[1]}")
             print(f"  Plan: {first_task[4]}")
-            print(f"  Passed: {first_result['passed_vehicles']} (baseline: {baseline_passed})")
-            print(f"  Queue: {first_result['queue_vehicles']} (baseline: {baseline_queue})")
+            print(f"  Passed: {first_result['passed_vehicles']} (baseline: {first_baseline['passed_vehicles']})")
+            print(f"  Queue: {first_result['queue_vehicles']} (baseline: {first_baseline['queue_vehicles']})")
+            print(f"  Delay: {first_result['total_delay']:.1f} (baseline: {first_baseline.get('total_delay', 0):.1f})")
             print(f"  Score: {scores[first_task[0]]:.3f}")
             print("="*50)
 
