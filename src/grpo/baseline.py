@@ -13,6 +13,7 @@ import argparse
 import json
 import os
 import random
+import re
 import sys
 import time
 import traci
@@ -53,16 +54,17 @@ def compute_single_baseline(args_tuple):
     Process:
     1. Start SUMO with the correct sumocfg (headless, no-gui)
     2. Load the saved state file via traci.simulation.loadState()
-    3. Get the traffic light's program logic to determine cycle length
-       (sum of all phase durations)
+    3. Use saturation heuristic to compute green times for each phase:
+       green = min_green + min(pred_saturation, 1.0) * (max_green - min_green)
     4. Record vehicles before the cycle
-    5. Step through one full cycle using the ORIGINAL timing (do NOT change phases)
-    6. Record vehicles after, compute passed_vehicles and queue_vehicles
-    7. Close SUMO
+    5. Execute the saturation-based plan: setPhase + step for each phase
+    6. Collect delay metric: sum of getWaitingTime for all vehicles on controlled lanes
+    7. Record vehicles after, compute passed_vehicles and queue_vehicles
+    8. Close SUMO
 
-    Returns dict: {state_file, passed_vehicles, queue_vehicles} or error info
+    Returns dict: {state_file, passed_vehicles, queue_vehicles, total_delay, cycle_length} or error info
     """
-    state_file, sumocfg, tl_id, timeout = args_tuple
+    state_file, sumocfg, tl_id, phase_waits, timeout = args_tuple
 
     # Use random port to avoid conflicts
     port = random.randint(10000, 60000)
@@ -92,11 +94,6 @@ def compute_single_baseline(args_tuple):
         # Load saved state
         conn.simulation.loadState(state_file)
 
-        # Get cycle length from TL program
-        programs = conn.trafficlight.getAllProgramLogics(tl_id)
-        phases = programs[0].phases
-        cycle_length = int(sum(p.duration for p in phases))
-
         # Get controlled lanes
         controlled_lanes = list(set(conn.trafficlight.getControlledLanes(tl_id)))
 
@@ -108,9 +105,35 @@ def compute_single_baseline(args_tuple):
             except:
                 continue
 
-        # Run one full cycle with ORIGINAL timing
-        for _ in range(cycle_length):
-            conn.simulationStep()
+        # Compute saturation-based plan
+        total_delay = 0.0
+        cycle_length = 0
+
+        for phase_info in phase_waits:
+            phase_id = phase_info["phase_id"]
+            pred_saturation = phase_info["pred_saturation"]
+            min_green = phase_info["min_green"]
+            max_green = phase_info["max_green"]
+
+            # Saturation heuristic: green = min_green + saturation * (max_green - min_green)
+            green_duration = int(min_green + min(pred_saturation, 1.0) * (max_green - min_green))
+            cycle_length += green_duration
+
+            # Set phase
+            conn.trafficlight.setPhase(tl_id, phase_id)
+
+            # Step for green_duration seconds, collecting delay
+            for _ in range(green_duration):
+                conn.simulationStep()
+
+                # Collect delay: sum of waiting times for all vehicles on controlled lanes
+                for lane in controlled_lanes:
+                    try:
+                        vehicle_ids = conn.lane.getLastStepVehicleIDs(lane)
+                        for vid in vehicle_ids:
+                            total_delay += conn.vehicle.getWaitingTime(vid)
+                    except:
+                        continue
 
         # Record vehicles after
         vehicles_after = set()
@@ -130,6 +153,7 @@ def compute_single_baseline(args_tuple):
             "state_file": state_file,
             "passed_vehicles": passed_vehicles,
             "queue_vehicles": queue_vehicles,
+            "total_delay": total_delay,
             "cycle_length": cycle_length,
             "status": "ok"
         }
@@ -178,6 +202,7 @@ def main():
     output_path = args.output or config["paths"]["grpo_baseline"]
 
     # Load samples -- deduplicate by state_file
+    # Extract phase_waits from each sample's prompt
     seen = set()
     tasks = []
     with open(input_path) as f:
@@ -188,7 +213,16 @@ def main():
                 seen.add(sf)
                 tl_id = extract_tl_id(sample["metadata"])
                 sumocfg = get_sumocfg_for_state(sf)
-                tasks.append((sf, sumocfg, tl_id, args.timeout))
+
+                # Extract phase_waits from prompt (last user message)
+                prompt_content = sample["prompt"][-1]["content"]
+                phase_waits_match = re.search(r'"phase_waits"\s*:\s*(\[.*?\])', prompt_content, re.DOTALL)
+                if not phase_waits_match:
+                    print(f"[Baseline] WARNING: Cannot extract phase_waits from {sf}, skipping")
+                    continue
+
+                phase_waits = json.loads(phase_waits_match.group(1))
+                tasks.append((sf, sumocfg, tl_id, phase_waits, args.timeout))
 
     print(f"[Baseline] Unique state files: {len(tasks)}")
     print(f"[Baseline] Workers: {args.workers}")
@@ -203,6 +237,7 @@ def main():
                 results[result["state_file"]] = {
                     "passed_vehicles": result["passed_vehicles"],
                     "queue_vehicles": result["queue_vehicles"],
+                    "total_delay": result["total_delay"],
                     "cycle_length": result["cycle_length"]
                 }
             else:
