@@ -9,20 +9,20 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** 给定交叉口实时交通状态,大模型输出的信号配时方案能最大化车辆通过量、最小化排队车辆数
-**Current focus:** v1.1 Phase 5 - Data Filtering (Complete)
+**Current focus:** v1.1 Phase 6 - Integration (In Progress)
 
 ---
 
 ## Current Position
 
 **Active Milestone:** v1.1 Improve Reward & GRPO Data Filter
-**Active Phase:** Phase 5 of 6 (Data Filtering) — Complete
-**Active Plan:** All plans complete
-**Current Status:** Phase 5 verified, ready for Phase 6
+**Active Phase:** Phase 6 of 6 (Integration) — In Progress
+**Active Plan:** Plan 01 of 03
+**Current Status:** Phase 6-01 complete (GRPO Pipeline Integration)
 
-**Last activity:** 2026-02-11 — Completed Phase 5 (Data Filtering)
+**Last activity:** 2026-02-11 — Completed Phase 6-01 (GRPO Pipeline Integration)
 
-Progress: [████████████████░░░░] 83% (5 of 6 phases complete across all milestones)
+Progress: [█████████████████░░░] 87% (10 of 12 plans complete across milestone v1.1)
 
 ---
 
@@ -42,7 +42,9 @@ Progress: [████████████████░░░░] 83% (5 
 | 04    | 02   | 1800s    | 2     | 2     | 2026-02-11T04:00:00Z |
 | 05    | 01   | 331s     | 2     | 3     | 2026-02-11T08:18:40Z |
 
-**Total:** 9 plans, average 732 seconds/plan
+| 06    | 01   | 379s     | 2     | 4     | 2026-02-11T18:37:38Z |
+
+**Total:** 10 plans, average 656 seconds/plan
 
 ## Accumulated Context
 
@@ -69,37 +71,39 @@ Progress: [████████████████░░░░] 83% (5 
 
 ### Last Session Summary
 
-**What:** Phase 05-01 — Data Filter Script 执行
+**What:** Phase 06-01 — GRPO Pipeline Integration 执行
 
 **Outcome:**
-- 创建过滤脚本 `src/scripts/filter_grpo_data.py`（260 行）
-- 创建 Docker 入口脚本 `docker/filter_data.sh`（135 行）
-- 更新 `config.json` 添加 `data_filter` 配置块
-- 实际过滤结果: 16788 → 13781 条（剔除 17.9% 空/极低流量样本）
+- 创建端到端流水线脚本 `docker/grpo_pipeline.sh`（385 行，5 步串联）
+- 创建训练分析脚本 `src/scripts/analyze_grpo_training.py`（260 行）
+- 更新 `config.json` 添加压缩函数配置和最少样本数阈值
+- 更新 `src/grpo/rewards.py` 压缩函数可配置化
 
 **Key Decisions:**
-- 过滤阈值: saturation_sum < 0.1（基于数据分析 14% 样本 total_sat=0, 18% < 0.1）
-- 双输出文件: filtered + rejected（保留原始数据不变）
-- 统计报告: 终端 + 文本文件（样本数、剔除比例、流量分布）
-- Docker 串联: filter_data.sh 自动执行 过滤 → baseline 重算，支持 --skip-baseline
+- 压缩函数字符串枚举设计（预留扩展其他函数）
+- 训练前检查在 shell 层实现（汇总所有问题）
+- 过滤后数据覆盖原始路径（带首次备份）
+- 分析脚本独立于 pipeline（可单独调用）
 
-**Next:** Phase 05 后续计划或 Phase 06
+**Next:** Phase 06-02 (UAT) 或 Phase 06-03
 
-**Stopped At:** 完成 Phase 05-01
+**Stopped At:** 完成 06-01-PLAN.md
 
 ### Context for Next Session
 
-Phase 05-01 完成了数据过滤工具链：
-1. 过滤脚本能从 prompt 提取 phase_waits 并计算 saturation_sum
-2. Docker 入口脚本串联 filter → baseline 重算流程
-3. 实际过滤剔除 17.9% 低质量样本（与预期 18% 接近）
+Phase 06-01 完成了 GRPO 端到端流水线集成：
+1. pipeline 脚本串联 5 个步骤（数据生成→过滤→baseline→训练→分析）
+2. 训练前检查（文件、样本数、baseline、reward 配置）
+3. 训练分析工具（zero-std、reward 分布、趋势）
+4. 压缩函数可配置化（从 config 读取，替代硬编码）
 
 核心文件：
-- `src/scripts/filter_grpo_data.py` — 数据过滤脚本
-- `docker/filter_data.sh` — Docker 入口脚本
-- `config/config.json` — 过滤配置（data_filter 块）
+- `docker/grpo_pipeline.sh` — 端到端流水线入口脚本
+- `src/scripts/analyze_grpo_training.py` — 训练分析脚本
+- `config/config.json` — 压缩函数和阈值配置
+- `src/grpo/rewards.py` — 可配置压缩函数
 
-下一步：检查 Phase 05 是否有其他计划，或进入 Phase 06
+下一步：执行 Phase 06 后续计划（UAT 或文档完善）
 
 ---
 
