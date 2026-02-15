@@ -2,15 +2,16 @@
 set -euo pipefail
 
 ################################################################################
-# GGUF 转换脚本 - 在 Docker 容器内将 SFT 模型转换为 GGUF 格式
+# GGUF 转换脚本 - 在 Docker 容器内将模型转换为 GGUF 格式
 #
-# 输入: outputs/sft/model/* (safetensors 格式的完整模型)
-# 输出: outputs/sft/model/model.gguf (GGUF 格式模型)
+# 输入: outputs/{sft,grpo}/model/* (safetensors 格式的完整模型)
+# 输出: {model_dir}/model-{outtype}.gguf (GGUF 格式模型)
 #
 # 用法:
-#   ./docker/convert_gguf.sh                    # 默认 f16 精度
-#   ./docker/convert_gguf.sh --outtype q8_0     # 指定量化类型
-#   ./docker/convert_gguf.sh --outtype f32      # 全精度
+#   ./docker/convert_gguf.sh                         # SFT 模型，f16 精度
+#   ./docker/convert_gguf.sh --model-path outputs/grpo/model  # GRPO 模型
+#   ./docker/convert_gguf.sh --outtype q8_0         # 指定量化类型
+#   ./docker/convert_gguf.sh --outtype f32          # 全精度
 #
 # 支持的 outtype: f32, f16, bf16, q8_0, auto
 # 注意: 使用 chmod +x docker/convert_gguf.sh 设置可执行权限
@@ -20,10 +21,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 IMAGE_NAME="qwen3-tsc-grpo:latest"
+CONTAINER_NAME="convert-gguf"
 CONTAINER_WORKDIR="/home/samuel/SCU_TSC"
 
 # 默认参数
 OUTTYPE="f16"
+MODEL_PATH=""
 
 # 解析命令行参数
 while [[ $# -gt 0 ]]; do
@@ -32,15 +35,46 @@ while [[ $# -gt 0 ]]; do
             OUTTYPE="$2"
             shift 2
             ;;
+        --model-path)
+            MODEL_PATH="$2"
+            shift 2
+            ;;
+        --help|-h)
+            echo "用法: $0 [选项]"
+            echo ""
+            echo "选项:"
+            echo "  --model-path DIR    模型目录路径 (默认: outputs/sft/model)"
+            echo "  --outtype TYPE      输出精度 (f32|f16|bf16|q8_0|auto, 默认: f16)"
+            echo "  --help, -h          显示此帮助信息"
+            echo ""
+            echo "示例:"
+            echo "  $0                                    # SFT 模型，f16 精度"
+            echo "  $0 --model-path outputs/grpo/model    # GRPO 模型"
+            echo "  $0 --outtype q8_0                     # 8-bit 量化"
+            exit 0
+            ;;
         *)
             echo "[错误] 未知参数: $1"
-            echo "用法: $0 [--outtype f32|f16|bf16|q8_0|auto]"
+            echo "用法: $0 [--model-path DIR] [--outtype f32|f16|bf16|q8_0|auto]"
             exit 1
             ;;
     esac
 done
 
-MODEL_DIR="${PROJECT_DIR}/outputs/sft/model"
+# 设置模型目录
+if [ -z "$MODEL_PATH" ]; then
+    MODEL_PATH="outputs/sft/model"
+fi
+
+# 转换为绝对路径
+if [[ "$MODEL_PATH" != /* ]]; then
+    MODEL_DIR="${PROJECT_DIR}/${MODEL_PATH}"
+else
+    MODEL_DIR="$MODEL_PATH"
+fi
+
+# 获取相对路径用于显示
+MODEL_REL_PATH="${MODEL_DIR#${PROJECT_DIR}/}"
 OUTPUT_FILE="${MODEL_DIR}/model-${OUTTYPE}.gguf"
 
 echo "=========================================="
@@ -48,15 +82,23 @@ echo "GGUF 格式转换 (Docker)"
 echo "=========================================="
 echo "[项目目录] ${PROJECT_DIR}"
 echo "[Docker 镜像] ${IMAGE_NAME}"
-echo "[模型目录] outputs/sft/model"
-echo "[输出文件] outputs/sft/model/model-${OUTTYPE}.gguf"
+echo "[模型目录] ${MODEL_REL_PATH}"
+echo "[输出文件] ${MODEL_REL_PATH}/model-${OUTTYPE}.gguf"
 echo "[输出精度] ${OUTTYPE}"
 echo ""
 
+# 清理可能残留的同名容器
+if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+    echo "[清理] 移除已存在的容器: ${CONTAINER_NAME}"
+    docker rm -f "${CONTAINER_NAME}" 2>/dev/null || true
+fi
+
 # 检查模型文件是否存在
 if [ ! -f "${MODEL_DIR}/config.json" ]; then
-    echo "[错误] 模型目录 outputs/sft/model 中未找到 config.json"
-    echo "请先运行 sft_train.sh 完成训练"
+    echo "[错误] 模型目录 ${MODEL_REL_PATH} 中未找到 config.json"
+    echo "请先运行训练脚本:"
+    echo "  - SFT: ./docker/sft_train.sh"
+    echo "  - GRPO: ./docker/merge_checkpoint.sh"
     exit 1
 fi
 
@@ -84,6 +126,7 @@ echo "[步骤 1/3] 在容器内安装 llama-cpp-python (含转换工具)..."
 # 1. 克隆 llama.cpp 并使用其 convert_hf_to_gguf.py 脚本
 # 2. 转换模型为 GGUF 格式
 docker run --rm \
+    --name "${CONTAINER_NAME}" \
     --gpus all \
     --shm-size=32GB \
     --user "$(id -u):$(id -g)" \
@@ -95,8 +138,8 @@ docker run --rm \
     -c "
 set -euo pipefail
 
-MODEL_PATH='${CONTAINER_WORKDIR}/outputs/sft/model'
-OUTPUT_PATH='${CONTAINER_WORKDIR}/outputs/sft/model/model-${OUTTYPE}.gguf'
+MODEL_PATH='${CONTAINER_WORKDIR}/${MODEL_REL_PATH}'
+OUTPUT_PATH='${CONTAINER_WORKDIR}/${MODEL_REL_PATH}/model-${OUTTYPE}.gguf'
 LLAMA_CPP_DIR='/tmp/llama.cpp'
 
 echo '[步骤 2/3] 克隆 llama.cpp 转换工具...'

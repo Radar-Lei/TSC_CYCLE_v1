@@ -20,7 +20,7 @@ See: .planning/PROJECT.md (updated 2026-02-10)
 **Active Plan:** Plan 01 of 03
 **Current Status:** Phase 6-01 complete (GRPO Pipeline Integration)
 
-**Last activity:** 2026-02-11 — Completed Phase 6-01 (GRPO Pipeline Integration)
+**Last activity:** 2026-02-15 — Completed quick task 2: 合并最新GRPO checkpoint到model目录
 
 Progress: [█████████████████░░░] 87% (10 of 12 plans complete across milestone v1.1)
 
@@ -64,6 +64,7 @@ Progress: [█████████████████░░░] 87% (10
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 1 | 给 grpo_baseline.sh 添加类似 data.sh 的进度打印功能 | 2026-02-10 | c9ca8de | [1-grpo-baseline-sh-data-sh](./quick/1-grpo-baseline-sh-data-sh/) |
+| 2 | 合并最新GRPO checkpoint到model目录 | 2026-02-15 | f0b914c | [2-grpo-checkpoint-model](./quick/2-grpo-checkpoint-model/) |
 
 ---
 
