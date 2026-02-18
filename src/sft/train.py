@@ -2,7 +2,7 @@
 """
 SFT Training Script for TSC-CYCLE
 
-使用 unsloth 对 Qwen3-4B-Base 进行 LoRA 微调，学习 <start_working_out>...<end_working_out><SOLUTION>...</SOLUTION> 输出格式。
+使用 unsloth 对 GLM-4.7-Flash-FP8-Dynamic 进行 LoRA 微调，学习 <start_working_out>...<end_working_out><SOLUTION>...</SOLUTION> 输出格式。
 """
 
 import argparse
@@ -17,7 +17,10 @@ from trl import SFTTrainer, SFTConfig
 
 
 def ensure_model(config: dict):
-    """确保本地模型存在，不存在则从 modelscope 下载"""
+    """确保本地模型存在，不存在则从 ModelScope 下载
+
+    支持 GLM-4.7-Flash-FP8-Dynamic 模型下载。
+    """
     model_config = config["training"]["sft"]["model"]
     model_path = model_config["model_name"]
     model_id = model_config.get("model_id", "")
@@ -29,7 +32,7 @@ def ensure_model(config: dict):
     if not model_id:
         raise RuntimeError(f"本地模型 {model_path} 不存在且未配置 model_id，无法下载")
 
-    print(f"[模型] 本地模型不存在，从 modelscope 下载: {model_id}")
+    print(f"[模型] 本地模型不存在，从 ModelScope 下载: {model_id}")
     from modelscope import snapshot_download
     snapshot_download(model_id, local_dir=model_path)
     print(f"[模型] 下载完成: {model_path}")
@@ -45,22 +48,65 @@ def load_config(config_path: str) -> dict:
 
 def setup_model(config: dict):
     """
-    加载 Qwen3-4B-Base 模型并配置 LoRA
+    加载模型并配置 LoRA
 
-    参考 qwen3_(4b)_grpo.py 第 9-33 行
+    支持 GLM-4.7-Flash-FP8-Dynamic 模型。
+    GLM 使用类似 LLaMA 的 attention 架构，target_modules 兼容。
+
+    注意：FP8-Dynamic 是量化格式，如果 Unsloth 不直接支持 FP8，
+    可能需要使用 Hugging Face 原生加载方式或先转换为 BF16。
     """
     model_config = config["training"]["sft"]["model"]
     seed = config["training"]["sft"].get("seed", 3407)
 
-    model, tokenizer = FastLanguageModel.from_pretrained(
-        model_name=model_config["model_name"],
-        max_seq_length=model_config["max_seq_length"],
-        load_in_4bit=model_config["load_in_4bit"],
-        fast_inference=model_config.get("fast_inference", False),
-        max_lora_rank=model_config["lora_rank"],
-        gpu_memory_utilization=model_config["gpu_memory_utilization"],
-    )
+    # 检测是否为 GLM 模型
+    is_glm = "GLM" in model_config["model_name"]
+    if is_glm:
+        print("[模型] 检测到 GLM 模型，使用标准加载方式")
 
+    # 尝试使用 Unsloth 加载（对大多数模型有效）
+    # GLM-4.7-Flash-FP8-Dynamic 的 FP8 格式可能需要特殊处理
+    try:
+        model, tokenizer = FastLanguageModel.from_pretrained(
+            model_name=model_config["model_name"],
+            max_seq_length=model_config["max_seq_length"],
+            load_in_4bit=model_config["load_in_4bit"],
+            fast_inference=model_config.get("fast_inference", False),
+            max_lora_rank=model_config["lora_rank"],
+            gpu_memory_utilization=model_config["gpu_memory_utilization"],
+        )
+    except Exception as e:
+        # 如果 Unsloth 加载失败（如 FP8 不支持），尝试使用 Hugging Face 原生方式
+        print(f"[警告] Unsloth 加载失败: {e}")
+        print("[回退] 尝试使用 Hugging Face 原生加载 + PEFT...")
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+        from peft import get_peft_model, LoraConfig, TaskType
+
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_config["model_name"],
+            trust_remote_code=True
+        )
+        model = AutoModelForCausalLM.from_pretrained(
+            model_config["model_name"],
+            torch_dtype=torch.bfloat16,
+            device_map="auto",
+            trust_remote_code=True
+        )
+
+        # 配置 LoRA
+        lora_config = LoraConfig(
+            task_type=TaskType.CAUSAL_LM,
+            r=model_config["lora_rank"],
+            lora_alpha=model_config["lora_alpha"],
+            target_modules=model_config["target_modules"],
+            lora_dropout=0.05,
+            bias="none",
+        )
+        model = get_peft_model(model, lora_config)
+        print("[回退] Hugging Face 原生加载成功")
+        return model, tokenizer
+
+    # 使用 Unsloth 的 PEFT 配置
     model = FastLanguageModel.get_peft_model(
         model,
         r=model_config["lora_rank"],
@@ -245,11 +291,11 @@ def main():
     print(f"[配置] 加载配置文件: {args.config}")
     config = load_config(args.config)
 
-    # 2. 确保模型存在（不存在则从 modelscope 下载）
+    # 2. 确保模型存在（不存在则从 ModelScope 下载）
     ensure_model(config)
 
     # 3. 设置模型
-    print("[模型] 加载 Qwen3-4B-Base 并配置 LoRA")
+    print("[模型] 加载 GLM-4.7-Flash-FP8-Dynamic 并配置 LoRA")
     model, tokenizer = setup_model(config)
 
     # 4. 设置 chat template
