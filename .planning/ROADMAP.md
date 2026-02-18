@@ -12,7 +12,7 @@
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Benchmark 统计优化** - 实现加权平均统计和 throughput 指标
+- [x] **Phase 1: Benchmark 统计优化** - 实现加权平均统计和 throughput 指标
 
 ## Phase Details
 
@@ -27,7 +27,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 1 plan
 
 Plans:
-- [ ] 01-01-PLAN.md — 实现加权平均统计和 throughput 指标 (TDD)
+- [x] 01-01-PLAN.md — 实现加权平均统计和 throughput 指标 (TDD)
 
 ## Progress
 
@@ -36,4 +36,4 @@ Phases execute in numeric order: 1
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Benchmark 统计优化 | 0/1 | Not started | - |
+| 1. Benchmark 统计优化 | 1/1 | Complete | 2026-02-18 |

@@ -7,9 +7,9 @@
 
 ### Benchmark 统计优化
 
-- [ ] **BENCH-01**: 统计方式改为加权平均（按周期数加权），确保不同模型在相同交叉口的评估结果公平可比较
-- [ ] **BENCH-02**: comparison CSV 输出中添加通过车辆数（throughput）指标
-- [ ] **BENCH-03**: 验证加权平均计算逻辑正确
+- [x] **BENCH-01**: 统计方式改为加权平均（按周期数加权），确保不同模型在相同交叉口的评估结果公平可比较
+- [x] **BENCH-02**: comparison CSV 输出中添加通过车辆数（throughput）指标
+- [x] **BENCH-03**: 验证加权平均计算逻辑正确
 
 ## Out of Scope
 
@@ -22,9 +22,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BENCH-01 | Phase 1 | Pending |
-| BENCH-02 | Phase 1 | Pending |
-| BENCH-03 | Phase 1 | Pending |
+| BENCH-01 | Phase 1 | Complete |
+| BENCH-02 | Phase 1 | Complete |
+| BENCH-03 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 3 total
