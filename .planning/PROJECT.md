@@ -16,11 +16,12 @@
 - ✓ SFT 训练流程 — Qwen3-4B-Base + LoRA 微调
 - ✓ GRPO 训练流程 — 多层奖励函数强化学习
 - ✓ Benchmark 评估框架 — 模型对比评估系统
+- ✓ 加权平均统计 — v1.0 (按周期时长加权)
+- ✓ Throughput 指标 — v1.0 (通过车辆数/秒)
 
 ### Active
 
-- [ ] Benchmark 统计优化 — 加权平均统计 + 通过车辆数指标
-- [ ] 评估系统完善 — 确保评估结果公平可比较
+(None — planning next milestone)
 
 ### Out of Scope
 
@@ -29,6 +30,11 @@
 - 移动端支持 — 桌面优先
 
 ## Context
+
+**当前状态 (v1.0 shipped):**
+- Benchmark 评估系统支持加权平均统计
+- Comparison CSV 包含 throughput 列
+- 21 个单元测试覆盖统计逻辑
 
 **技术栈：**
 - 模型：Qwen3-4B-Base + LoRA (rank 32)
@@ -58,6 +64,9 @@
 | 使用 `<start_working_out>` 替代 ` comienza` | 避免 tokenizer 语义冲突 | ✓ Good |
 | SFT 训练 2 epochs | 1 epoch 不够充分 | ✓ Good |
 | LoRA rank 32 | 平衡效果和资源 | ✓ Good |
+| 加权平均使用 samples length 作为权重 | 周期时长直接影响统计意义 | ✓ Good |
+| Throughput 计算方式：先按周期再加权 | 避免 total/total 的偏差 | ✓ Good |
+| `weighted_summary` 参数可选 | 向后兼容现有调用 | ✓ Good |
 
 ---
-*Last updated: 2026-02-18 after initialization*
+*Last updated: 2026-02-18 after v1.0 milestone*
