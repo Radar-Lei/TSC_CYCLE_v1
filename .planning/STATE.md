@@ -5,15 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-02-18)
 
 **Core value:** 训练能优化交通信号配时的 AI 模型，提升交通效率
-**Current focus:** Planning next milestone
+**Current focus:** v1.1 模型迁移到 GLM-4.7-Flash-FP8-Dynamic
 
 ## Current Position
 
-Milestone: v1.0 shipped (2026-02-18)
-Status: Ready for next milestone
-Last activity: 2026-02-18 — v1.0 archived
+Milestone: v1.1 模型迁移
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-18 — Milestone v1.1 started
 
-Progress: v1.0 complete
+Progress: 0%
 
 ## Performance Metrics
 
@@ -41,5 +43,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-18
-Status: v1.0 milestone completed and archived
-Next: `/gsd:new-milestone` to start planning
+Status: v1.1 milestone started
+Next: Define requirements and create roadmap

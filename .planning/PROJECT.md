@@ -21,7 +21,8 @@
 
 ### Active
 
-(None — planning next milestone)
+- [ ] SFT 训练流程迁移到 GLM-4.7-Flash-FP8-Dynamic
+- [ ] 验证 GLM tokenizer 自定义标签兼容性
 
 ### Out of Scope
 
@@ -68,5 +69,18 @@
 | Throughput 计算方式：先按周期再加权 | 避免 total/total 的偏差 | ✓ Good |
 | `weighted_summary` 参数可选 | 向后兼容现有调用 | ✓ Good |
 
+## Current Milestone: v1.1 模型迁移
+
+**Goal:** 将 SFT 训练流程迁移到 GLM-4.7-Flash-FP8-Dynamic，提升模型质量
+
+**Target features:**
+- SFT 训练流程适配 GLM-4.7-Flash
+- GLM tokenizer 自定义标签兼容性验证
+
+**Out of scope for this milestone:**
+- GRPO 训练流程
+- Benchmark 评估更新
+- Docker 脚本更新
+
 ---
-*Last updated: 2026-02-18 after v1.0 milestone*
+*Last updated: 2026-02-18 after starting v1.1 milestone*
