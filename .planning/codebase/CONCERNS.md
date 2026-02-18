@@ -1,106 +1,193 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-02-09
+**Analysis Date:** 2026-02-18
 
 ## Tech Debt
 
-**Hardcoded Paths in Environment Check:**
-- Issue: Several files contain hardcoded paths for `SUMO_HOME` searching, including user-specific home directory paths.
-- Files: `src/data_generator/day_simulator.py`, `src/data_generator/traffic_collector.py`, `src/data_generator/predictive_sampler.py`
-- Impact: Makes the codebase less portable and tied to specific developer environments.
-- Fix approach: Move path discovery to a central utility or rely exclusively on environment variables and system-standard locations.
+### Bare except Clauses (Error Handling Anti-pattern)
+- **Issue:** 13 instances of bare `except:` clauses that silently swallow all exceptions without logging or specific handling
+- **Files:**
+  - `src/grpo/rewards.py`: Lines 156, 179, 309, 335, 345, 361, 430, 483
+  - `src/grpo/baseline.py`: Lines 105, 135, 145, 163
+  - `src/scripts/analyze_grpo_training.py`: Line 63
+- **Impact:** Makes debugging extremely difficult; silently catches system exceptions like KeyboardInterrupt; hides actual error causes
+- **Fix approach:** Replace `except:` with `except Exception as e:` and log the exception details. For JSON parsing, catch `json.JSONDecodeError` specifically
 
-**Duplicate Logic for Time Variation:**
-- Issue: `apply_time_variation` function is duplicated in two different modules with slightly different implementations (return types and constraints).
-- Files: `src/data_generator/noise.py`, `src/phase_processor/time_config.py`
-- Impact: Inconsistent behavior and higher maintenance cost.
-- Fix approach: Consolidate into a single utility module.
+### Global State in Reward Functions
+- **Issue:** Module-level globals `_config`, `_baseline`, `_sumo_pool`, `_print_counter` in `src/grpo/rewards.py`
+- **Files:** `src/grpo/rewards.py`: Lines 29-32, 53, 397
+- **Impact:** Not thread-safe; makes testing difficult; implicit dependencies; potential race conditions in parallel SUMO execution
+- **Fix approach:** Encapsulate state in a class (e.g., `RewardCalculator`) with explicit initialization; use dependency injection
 
-**Manual Path Manipulation:**
-- Issue: Frequent use of `sys.path.insert(0, ...)` to handle imports instead of using proper package installation or relative imports.
-- Files: `src/scripts/generate_training_data.py`, `src/data_generator/day_simulator.py`, `src/scripts/process_phases.py`, `qwen3_(4b)_grpo.py`
-- Impact: Can lead to import conflicts and makes the codebase harder to use as a library.
-- Fix approach: Use a standard `pyproject.toml` or `setup.py` and install the package in editable mode.
+### Duplicated SUMO_HOME Environment Setup
+- **Issue:** Identical 20+ line SUMO_HOME path discovery code duplicated across multiple files
+- **Files:**
+  - `src/data_generator/day_simulator.py`: Lines 34-53
+  - `src/data_generator/predictive_sampler.py`: Lines 22-41
+  - `src/grpo/rewards.py`: Different approach (line 277-282)
+  - `src/grpo/baseline.py`: Different approach (line 73-78)
+- **Impact:** Code duplication; inconsistent handling; maintenance burden
+- **Fix approach:** Create `src/utils/sumo_config.py` with centralized `get_sumo_binary()` and `ensure_sumo_env()` functions
+
+### Reference File in Git (`qwen3_(4b)_grpo.py`)
+- **Issue:** Root-level `qwen3_(4b)_grpo.py` appears to be a reference implementation from unsloth
+- **Files:** `/home/samuel/TSC_CYCLE/qwen3_(4b)_grpo.py` (23KB, 647 lines)
+- **Impact:** Listed in `.gitignore` but already committed; confuses codebase structure; may cause merge conflicts
+- **Fix approach:** Move to `docs/reference/` or `grpo_reference_only/` (already in gitignore) and remove from git tracking
 
 ## Known Bugs
 
-**None explicitly detected:**
-- No critical runtime bugs were identified during static analysis, but the lack of unit tests makes the codebase fragile to regressions.
+### Zero-std Reward Issue (GRPO Training)
+- **Symptoms:** GRPO reward standard deviation can become zero during training, causing learning to stall
+- **Files:** `src/scripts/analyze_grpo_training.py` (built to detect this)
+- **Trigger:** When all `num_generations` completions receive identical rewards
+- **Workaround:** Analysis tool exists to monitor and detect zero-std conditions
+
+### JSON Parsing Fragility in Prompt Extraction
+- **Symptoms:** `check_constraints` and `sumo_simulation_reward` fail to extract phase_waits from prompts
+- **Files:** `src/grpo/rewards.py`: Lines 170-176, 437-443
+- **Trigger:** Regex pattern `r'"phase_waits"\s*:\s*(\[.*?\])'` may fail on nested JSON or edge cases
+- **Impact:** Valid completions incorrectly scored as -2.0 or 0.0
+- **Fix approach:** Use proper JSON parsing with a known schema; avoid regex for structured data extraction
 
 ## Security Considerations
 
-**Unsafe XML Parsing:**
-- Risk: Usage of `xml.etree.ElementTree` is vulnerable to XML external entity (XXE) attacks if processing untrusted net.xml or rou.xml files.
-- Files: `src/phase_processor/parser.py`, `src/data_generator/day_simulator.py`, `rou_month_generator.py`
-- Current mitigation: None.
-- Recommendations: Use `defusedxml` or ensure input files are strictly controlled and validated.
-
-**Execution of Shell via `os.path.exists` for Path Search:**
-- Risk: While not directly executing shells, the logic searches for `SUMO_HOME` in a list of paths which could be manipulated if the environment is compromised.
-- Files: `src/data_generator/day_simulator.py`
-- Current mitigation: Only checking for directory existence.
-- Recommendations: Rely on a single well-defined environment variable or configuration file.
+### No Critical Security Issues Found
+- **Risk:** Low
+- **Files:** N/A
+- **Current mitigation:** `.env` is in `.gitignore`; no hardcoded credentials detected in source files
+- **Recommendations:**
+  - The `benchmark/llm_client.py` uses `api_key="not-needed"` for LM Studio (safe - local inference)
+  - Continue to keep secrets in `.env` files excluded from git
 
 ## Performance Bottlenecks
 
-**Serial Phase Processing in Loop:**
-- Problem: The phase processor iterates through traffic lights serially, which can be slow for very large network files.
-- Files: `src/phase_processor/processor.py`
-- Cause: Single-threaded loop over `traffic_lights_raw.items()`.
-- Improvement path: Implement multiprocessing for individual traffic light processing.
+### SUMO Simulation Sequential Per Completion
+- **Problem:** Each completion triggers a full SUMO simulation; while parallelized via ProcessPoolExecutor, simulation time dominates
+- **Files:** `src/grpo/rewards.py`: Lines 257-363, 503-509
+- **Cause:** SUMO simulation is inherently slow (requires stepping through time)
+- **Improvement path:**
+  - Current: Max 4 parallel SUMO instances (line 497)
+  - Consider caching baseline results for identical state files
+  - Consider reducing timeout (currently 60s) for faster fail-fast
 
-**State Snapshot Disk I/O:**
-- Problem: Frequent saving of SUMO state snapshots during predictive sampling.
-- Files: `src/data_generator/predictive_sampler.py`, `src/data_generator/state_manager.py`
-- Cause: `traci.simulation.saveState` writes to disk.
-- Improvement path: Ensure `compress=True` is always used or use memory-mapped files if supported by SUMO version.
+### Process Pool Not Reused Across Steps
+- **Problem:** `_sumo_pool` is created once but never shutdown; memory leak potential
+- **Files:** `src/grpo/rewards.py`: Lines 31, 495-498
+- **Cause:** Pool created on first call, never explicitly closed
+- **Improvement path:** Add explicit cleanup function or use context manager pattern
+
+### 90th Percentile Data Filtering
+- **Problem:** All prompts longer than 90th percentile are discarded
+- **Files:** `src/grpo/train.py`: Lines 164-169
+- **Cause:** Reduces memory but loses potentially valuable training data
+- **Improvement path:** Consider dynamic batching or gradient checkpointing instead of hard filtering
 
 ## Fragile Areas
 
-**Cycle Boundary Detection:**
-- Files: `src/data_generator/cycle_detector.py`
-- Why fragile: Relies on detecting the transition to the *first* green phase. If a signal program has complex transitions or skips phases, the detector might miss cycle boundaries.
-- Safe modification: Add more robust state machine logic that accounts for all possible phase transitions defined in the signal program.
-- Test coverage: Zero.
+### Chat Template Duplication
+- **Files:**
+  - `src/sft/train.py`: Lines 76-124
+  - `src/grpo/train.py`: Lines 79-126
+- **Why fragile:** Identical `setup_chat_template()` function in both files; any change must be made twice
+- **Safe modification:** Extract to `src/utils/chat_template.py` and import
+- **Test coverage:** No unit tests for template correctness
 
-**Phase Conflict Resolution (Greedy):**
-- Files: `src/phase_processor/conflict.py`
-- Why fragile: Uses a simple greedy algorithm (keep phase with more lanes) which might not be optimal for complex intersection topologies.
-- Safe modification: Evaluate multiple resolution strategies or use a graph-based maximum independent set approach.
-- Test coverage: Zero.
+### Regex Pattern for Format Matching
+- **Files:** `src/grpo/rewards.py`: Line 38-41
+- **Why fragile:** Complex regex `r"<end_working_out>.*?<SOLUTION>(.+?)</SOLUTION>\s*$"` assumes specific tag ordering
+- **Safe modification:** Use multi-step parsing; validate each tag independently
+- **Test coverage:** Partial - `test_rewards.py` has some test cases but not exhaustive
+
+### Baseline Generation Depends on State File Naming
+- **Files:** `src/grpo/baseline.py`: Lines 24-43, `src/grpo/rewards.py`: Lines 239-254
+- **Why fragile:** `get_sumocfg_for_state()` uses string parsing on file paths; assumes specific directory structure
+- **Safe modification:** Use explicit mapping or configuration for scenario-to-sumocfg mapping
+- **Test coverage:** None
 
 ## Scaling Limits
 
-**Training Data Generation Workers:**
-- Current capacity: Limited by CPU cores and RAM (especially with multiple SUMO instances).
-- Limit: `Pool(workers)` in `generate_training_data.py`. Large networks with high traffic density significantly increase memory usage per worker.
-- Scaling path: Distribute tasks across multiple nodes or optimize SUMO memory footprint (e.g., using `sublane` model sparingly).
+### Parallel Workers (16 max)
+- **Current capacity:** 16 parallel SUMO workers (config.simulation.parallel_workers)
+- **Files:** `config/config.json`: Line 107
+- **Limit:** Memory-bound; each SUMO instance consumes significant RAM
+- **Scaling path:** Consider distributing across multiple machines for large-scale data generation
+
+### GRPO num_generations (4)
+- **Current capacity:** 4 generations per prompt
+- **Files:** `config/config.json`: Line 59
+- **Limit:** GPU memory constrained; higher values require more VRAM
+- **Scaling path:** Use gradient checkpointing or reduce model precision
+
+### Max Sequence Length (2048)
+- **Current capacity:** 2048 tokens max
+- **Files:** `config/config.json`: Lines 7, 43
+- **Limit:** Fixed by model architecture; longer sequences need different model
+- **Scaling path:** Use Qwen3-8B or larger model with longer context window
 
 ## Dependencies at Risk
 
-**Unsloth / FastLanguageModel:**
-- Risk: High dependency on specific versions of `unsloth` and `torch`, which are rapidly evolving.
-- Impact: Breaking changes in these libraries can easily break the training script `qwen3_(4b)_grpo.py`.
-- Migration plan: Pin versions in a requirements file and keep a local mirror of the base models.
+### traci (SUMO Traffic Control Interface)
+- **Risk:** External dependency on SUMO installation; version-sensitive API
+- **Files:** Multiple files import `traci`
+- **Impact:** SUMO version mismatch can break simulation
+- **Migration plan:** Pin SUMO version in documentation; consider Docker for consistent environment
+
+### unsloth
+- **Risk:** Fast-moving library with frequent API changes
+- **Files:** `src/sft/train.py`, `src/grpo/train.py`, `src/scripts/merge_checkpoint.py`
+- **Impact:** Breaking changes may require code updates
+- **Migration plan:** Pin specific version; monitor changelog
+
+### trl (Transformer Reinforcement Learning)
+- **Risk:** GRPOTrainer API is relatively new
+- **Files:** `src/grpo/train.py`: Line 19
+- **Impact:** API changes could break training
+- **Migration plan:** Pin version; abstract trainer interface
 
 ## Missing Critical Features
 
-**Unit and Integration Tests:**
-- Problem: The codebase has virtually no automated tests (no `tests/` directory or `*.test.py` files found).
-- Blocks: Safe refactoring and continuous integration.
+### No Automated Test Suite
+- **Problem:** Only manual test scripts (`test_rewards.py`, `test_inference.py`); no pytest/unittest framework
+- **Files:** `src/grpo/test_rewards.py`, `src/sft/test_inference.py` are standalone scripts, not proper tests
+- **Blocks:** CI/CD integration; regression testing
 
-**Comprehensive Error Recovery in Workers:**
-- Problem: If a worker fails during simulation, it might leave temporary files or orphaned SUMO processes.
-- Blocks: Robust long-running data generation tasks.
+### No Configuration Validation
+- **Problem:** Config loaded without schema validation; typos silently ignored
+- **Files:** All config loading uses plain `json.load()`
+- **Blocks:** Early error detection; configuration debugging
+
+### No Logging Framework
+- **Problem:** Uses `print()` statements throughout; no log levels, file output, or structured logging
+- **Files:** Nearly all Python files
+- **Blocks:** Production debugging; log analysis
 
 ## Test Coverage Gaps
 
-**Entire Codebase:**
-- What's not tested: All modules.
-- Files: `src/**/*.py`
-- Risk: Regressions in core logic (conflict detection, saturation calculation, prompt building) will go unnoticed until manual verification.
-- Priority: High.
+### Reward Functions
+- **What's not tested:** SUMO simulation reward (requires actual SUMO); parallel execution; timeout handling
+- **Files:** `src/grpo/rewards.py`
+- **Risk:** Incorrect reward calculation may silently corrupt training
+- **Priority:** High
+
+### Data Generation Pipeline
+- **What's not tested:** End-to-end data generation; state file creation; noise application
+- **Files:** `src/data_generator/` directory
+- **Risk:** Invalid training data may be silently generated
+- **Priority:** High
+
+### GRPO Training Loop
+- **What's not tested:** Full training run; checkpoint saving/loading; model merging
+- **Files:** `src/grpo/train.py`
+- **Risk:** Training may fail at runtime after hours of computation
+- **Priority:** Medium
+
+### SFT Training Loop
+- **What's not tested:** Full training run; chat template application
+- **Files:** `src/sft/train.py`
+- **Risk:** Training may produce invalid model
+- **Priority:** Medium
 
 ---
 
-*Concerns audit: 2026-02-09*
+*Concerns audit: 2026-02-18*
