@@ -1,67 +1,36 @@
-# Requirements: TSC-CYCLE
+# Requirements: TSC-CYCLE 评估优化
 
-**Defined:** 2026-02-10
-**Core Value:** 给定交叉口实时交通状态，大模型输出的信号配时方案能最大化车辆通过量、最小化排队车辆数
+**Defined:** 2026-02-18
+**Core Value:** 训练能优化交通信号配时的 AI 模型，提升交通效率
 
-## v1.1 Requirements
+## v1 Requirements
 
-Requirements for v1.1 milestone. Each maps to roadmap phases.
+### Benchmark 统计优化
 
-### Reward
-
-- [ ] **RWD-01**: SUMO reward 公式去掉 `min(combined, 1.0)` 的 cap，用非线性压缩函数（如 log/sqrt）替代，使不同质量的方案获得有区分度的分数
-- [ ] **RWD-02**: Baseline 策略从"默认信号周期仿真"改为"饱和度启发式基准"（按各相位 pred_saturation 比例分配绿灯时间，饱和度>1 给 max_green），提高比较基准让 reward 不再轻松到满分
-- [ ] **RWD-03**: 修改 baseline.py 预计算脚本，支持新的饱和度启发式 baseline 策略，重新生成 baseline.json
-- [ ] **RWD-04**: SUMO 仿真 reward 新增延误时间（delay）指标，采集各车辆在交叉口区域的等待时间总和，纳入 reward 计算公式（同时更新 baseline 采集该指标）
-
-### Data
-
-- [ ] **DAT-01**: 新增 GRPO 数据过滤脚本，从 grpo_train.jsonl 中剔除 baseline passed=0 且 queue=0 的空交叉口样本，生成过滤后的训练集
-- [ ] **DAT-02**: 过滤后的数据集统计信息输出（过滤前后样本数、各场景分布、过滤原因统计）
-
-### Integration
-
-- [ ] **INT-01**: config.json 中新增 reward 相关配置项（非线性压缩函数类型和参数），保持配置驱动
-- [ ] **INT-02**: GRPO 训练脚本 train.py 适配新的数据加载逻辑（加载过滤后的数据集）
-- [ ] **INT-03**: Docker 入口脚本适配新流程（baseline 重新计算 + 数据过滤 + 训练）
-
-## Future Requirements
-
-### v2 及以后
-
-- **RWD-F01**: 动态 baseline — 随训练进行更新 baseline（当前模型最佳方案作为新 baseline）
-- **RWD-F02**: 更多仿真指标 — 通行效率等额外 SUMO 指标
-- **DAT-F01**: 在线数据筛选 — 训练中动态跳过 zero-std 步
+- [ ] **BENCH-01**: 统计方式改为加权平均（按周期数加权），确保不同模型在相同交叉口的评估结果公平可比较
+- [ ] **BENCH-02**: comparison CSV 输出中添加通过车辆数（throughput）指标
+- [ ] **BENCH-03**: 验证加权平均计算逻辑正确
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| 场景均衡抽样 | 当前 21 个场景已均衡（788-800 条/场景） |
-| 低区分度样本过滤 | 根源是 reward 二值化，改进 reward 后自然缓解 |
-| 修改 GRPO 数据生成脚本 generate_grpo_data.py | 过滤在下游做，不改数据生成源头 |
-| 修改 SFT 相关代码 | v1.1 只改 GRPO 链路 |
-| num_generations 调整 | 当前 4 已合理，暂不改 |
+| 实时 API 服务 | 当前仅本地评估 |
+| 新场景添加 | 仅修改现有 benchmark 统计逻辑 |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RWD-01 | Phase 4 | Pending |
-| RWD-02 | Phase 4 | Pending |
-| RWD-03 | Phase 4 | Pending |
-| RWD-04 | Phase 4 | Pending |
-| DAT-01 | Phase 5 | Pending |
-| DAT-02 | Phase 5 | Pending |
-| INT-01 | Phase 6 | Pending |
-| INT-02 | Phase 6 | Pending |
-| INT-03 | Phase 6 | Pending |
+| BENCH-01 | Phase 1 | Pending |
+| BENCH-02 | Phase 1 | Pending |
+| BENCH-03 | Phase 1 | Pending |
 
 **Coverage:**
-- v1.1 requirements: 9 total
-- Mapped to phases: 9
+- v1 requirements: 3 total
+- Mapped to phases: 3
 - Unmapped: 0 ✓
 
 ---
-*Requirements defined: 2026-02-10*
-*Last updated: 2026-02-10 after v1.1 roadmap creation*
+*Requirements defined: 2026-02-18*
+*Last updated: 2026-02-18 after initial definition*
