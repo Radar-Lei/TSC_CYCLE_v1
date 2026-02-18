@@ -17,10 +17,10 @@
 
 ### SFT 训练迁移
 
-- [ ] **SFT-01**: 更新模型加载代码适配 GLM-4.7-Flash-FP8-Dynamic
-- [ ] **SFT-02**: 更新训练配置（学习率、batch size 等基础参数）
-- [ ] **SFT-03**: 验证 LoRA 适配 GLM 模型
-- [ ] **SFT-04**: 确保训练数据格式与 GLM 兼容
+- [x] **SFT-01**: 更新模型加载代码适配 GLM-4.7-Flash-FP8-Dynamic
+- [x] **SFT-02**: 更新训练配置（学习率、batch size 等基础参数）
+- [x] **SFT-03**: 验证 LoRA 适配 GLM 模型
+- [x] **SFT-04**: 确保训练数据格式与 GLM 兼容
 - [ ] **SFT-05**: 跑通端到端 SFT 训练流程
 - [ ] **SFT-06**: SFT 模型输出到 `/home/samuel/TSC_CYCLE/outputs/sft/model`
 
@@ -53,10 +53,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TOK-02 | Phase 2 | Deferred to Phase 3 |
 | DATA-01 | Phase 2 | Complete |
 | DATA-02 | Phase 2 | Complete |
-| SFT-01 | Phase 3 | Pending |
-| SFT-02 | Phase 3 | Pending |
-| SFT-03 | Phase 3 | Pending |
-| SFT-04 | Phase 3 | Pending |
+| SFT-01 | Phase 3 | Complete |
+| SFT-02 | Phase 3 | Complete |
+| SFT-03 | Phase 3 | Complete |
+| SFT-04 | Phase 3 | Complete |
 | SFT-05 | Phase 3 | Pending |
 | SFT-06 | Phase 3 | Pending |
 | EXPR-01 | Phase 4 | Pending |

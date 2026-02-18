@@ -94,7 +94,7 @@ Phases execute in numeric order: 2 → 3 → 4
 |-------|-----------|----------------|--------|-----------|
 | 1. Benchmark 统计优化 | v1.0 | 1/1 | Complete | 2026-02-18 |
 | 2. Tokenizer 验证与数据准备 | v1.1 | 2/2 | Complete | 2026-02-18 |
-| 3. SFT 训练迁移 | v1.1 | 0/2 | Not started | - |
+| 3. SFT 训练迁移 | 1/2 | In Progress|  | - |
 | 4. 模型导出与量化 | v1.1 | 0/1 | Not started | - |
 
 ---
