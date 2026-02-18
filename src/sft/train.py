@@ -170,6 +170,42 @@ def setup_chat_template(tokenizer):
     return tokenizer
 
 
+def test_tokenizer_compatibility(tokenizer):
+    """
+    测试 tokenizer 对自定义标签的处理
+
+    确保自定义标签被拆分为多个 sub-token，而不是被视为 added token。
+    如果标签被编码为单个 token，可能会导致语义冲突（类似 Qwen3 的问题）。
+    """
+    test_tags = ["<start_working_out>", "<end_working_out>", "<SOLUTION>", "</SOLUTION>"]
+
+    print("[Tokenizer 兼容性检查]")
+    print(f"  vocab_size: {tokenizer.vocab_size}")
+    print(f"  pad_token: {tokenizer.pad_token}")
+    print(f"  eos_token: {tokenizer.eos_token}")
+
+    warnings = []
+    for tag in test_tags:
+        tokens = tokenizer.encode(tag, add_special_tokens=False)
+        token_count = len(tokens)
+        print(f"  {tag} -> {tokens} ({token_count} tokens)")
+
+        # 期望：每个标签被拆分为多个 token（不在词表中）
+        # 如果是单 token，说明是 added token，需要警告
+        if token_count == 1:
+            warning = f"[警告] {tag} 是单 token ({tokens[0]})，可能是 added token!"
+            print(f"    {warning}")
+            warnings.append(warning)
+
+    if warnings:
+        print("\n[重要] 检测到 added token 冲突，自定义标签可能无法正确学习!")
+        print("  建议：使用不在词表中的标签，确保被拆分为多个 sub-token")
+    else:
+        print("\n[OK] 所有自定义标签都被正确拆分为多个 token")
+
+    return len(warnings) == 0
+
+
 def load_sft_data(data_path: str, tokenizer, max_seq_length: int):
     """
     加载 SFT 训练数据
@@ -301,6 +337,9 @@ def main():
     # 4. 设置 chat template
     print("[模板] 设置自定义 chat template")
     tokenizer = setup_chat_template(tokenizer)
+
+    # 4.5 测试 tokenizer 兼容性
+    test_tokenizer_compatibility(tokenizer)
 
     # 5. 加载数据
     sft_data_path = os.path.join(config["paths"]["sft_data_dir"], "sft_train.jsonl")
