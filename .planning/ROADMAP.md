@@ -49,11 +49,11 @@ Plans:
   2. 验证脚本输出确认 tokenizer 行为符合预期
   3. 增强版训练数据生成完成，思考链长度达到 300-400 token
   4. 新数据覆盖原有 train.jsonl，格式与 GLM 模型兼容
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: 验证 GLM tokenizer 兼容性
-- [ ] 02-02: 生成增强版训练数据
+- [ ] 02-01: 生成增强版 SFT 训练数据 — 扩展思考链至 300-400 token
+- [ ] 02-02: 部署增强版数据 — 备份原数据，部署新数据，生成统计报告
 
 ### Phase 3: SFT 训练迁移
 **Goal**: 完成 GLM-4.7-Flash-FP8-Dynamic 的 SFT 训练流程，产出微调模型
