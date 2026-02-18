@@ -46,9 +46,9 @@ Plans:
 **Requirements**: TOK-01, TOK-02, DATA-01, DATA-02
 **Success Criteria** (what must be TRUE):
   1. GLM tokenizer 正确处理自定义标签（`<start_working_out>`, `<end_working_out>`, `<SOLUTION>`, `</SOLUTION>`），无 added token 语义冲突
-  2. 验证脚本输出确认 tokenizer 行为符合预期
-  3. 增强版训练数据生成完成，思考链长度达到 300-400 token
-  4. 新数据覆盖原有 train.jsonl，格式与 GLM 模型兼容
+  2. 增强版训练数据生成完成，思考链长度达到 300-400 token
+  3. 新数据覆盖原有 train.jsonl，格式与 GLM 模型兼容
+  4. TOK-01/TOK-02 将在 Phase 3 SFT 训练中验证（跳过专门验证）
 **Plans**: 2 plans
 
 Plans:

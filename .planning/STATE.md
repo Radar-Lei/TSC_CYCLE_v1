@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-02-18)
 
 Milestone: v1.1 模型迁移
 Phase: 2 of 4 (Tokenizer 验证与数据准备)
-Plan: 0 of 2 in current phase
-Status: Ready to plan
-Last activity: 2026-02-18 — v1.1 roadmap created
+Plan: 1 of 2 in current phase
+Status: In Progress
+Last activity: 2026-02-18 — Completed 02-01 (增强 SFT 数据生成)
 
-Progress: [----25%---] 25% (1/4 phases complete)
+Progress: [====25%===] 25% (1/4 phases, 1/2 plans in phase)
 
 ## Performance Metrics
 
@@ -49,5 +49,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-18
-Status: v1.1 roadmap created
-Next: `/gsd:plan-phase 2` to plan tokenizer verification
+Status: Completed 02-01 (增强 SFT 数据生成与校验)
+Next: `/gsd:execute-phase 02` to continue with 02-02 (Tokenizer 验证)

@@ -12,8 +12,8 @@
 
 ### SFT 数据增强
 
-- [ ] **DATA-01**: 扩展思考链长度至 300-400 token（当前太短）
-- [ ] **DATA-02**: 基于现有数据生成增强版训练数据，覆盖原数据
+- [x] **DATA-01**: 扩展思考链长度至 300-400 token（当前太短）
+- [x] **DATA-02**: 基于现有数据生成增强版训练数据，覆盖原数据
 
 ### SFT 训练迁移
 
@@ -51,8 +51,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | TOK-01 | Phase 2 | Pending |
 | TOK-02 | Phase 2 | Pending |
-| DATA-01 | Phase 2 | Pending |
-| DATA-02 | Phase 2 | Pending |
+| DATA-01 | Phase 2 | Complete |
+| DATA-02 | Phase 2 | Complete |
 | SFT-01 | Phase 3 | Pending |
 | SFT-02 | Phase 3 | Pending |
 | SFT-03 | Phase 3 | Pending |
