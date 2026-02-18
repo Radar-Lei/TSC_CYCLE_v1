@@ -219,3 +219,205 @@ class TestCalculateWeightedMetrics:
 
         assert summary.total_cycles == 2
         assert summary.total_duration == 180.0
+
+
+class TestBoundaryConditions:
+    """Tests for boundary conditions and edge cases."""
+
+    def test_single_cycle_edge_case(self) -> None:
+        """Single cycle should work correctly."""
+        mock_result = {
+            "queue_vehicles": 15,
+            "total_delay": 200.0,
+            "passed_vehicles": 45,
+            "samples": [5, 10, 15, 20, 25],  # 5 samples = 5 seconds
+        }
+        results = [mock_result]
+
+        summary = calculate_weighted_metrics(results)
+        assert summary.queue_vehicles_avg == 15.0
+        assert summary.total_delay_avg == 200.0
+        assert abs(summary.throughput - 9.0) < 0.001  # 45/5 = 9.0
+        assert summary.total_cycles == 1
+        assert summary.total_duration == 5.0
+
+    def test_all_cycles_same_duration(self) -> None:
+        """When all cycles have same duration, weighted = simple average."""
+        mock_results = [
+            {
+                "queue_vehicles": 10,
+                "total_delay": 100.0,
+                "passed_vehicles": 30,
+                "samples": [0] * 60,  # 60 seconds
+            },
+            {
+                "queue_vehicles": 20,
+                "total_delay": 200.0,
+                "passed_vehicles": 60,
+                "samples": [0] * 60,   # 60 seconds
+            },
+            {
+                "queue_vehicles": 30,
+                "total_delay": 300.0,
+                "passed_vehicles": 90,
+                "samples": [0] * 60,   # 60 seconds
+            },
+        ]
+
+        summary = calculate_weighted_metrics(mock_results)
+
+        # With equal weights, should equal simple average
+        assert abs(summary.queue_vehicles_avg - 20.0) < 0.001  # (10+20+30)/3
+        assert abs(summary.total_delay_avg - 200.0) < 0.001  # (100+200+300)/3
+        # Throughput: (0.5 + 1.0 + 1.5) / 3 = 1.0
+        assert abs(summary.throughput - 1.0) < 0.001
+
+    def test_cycles_with_very_different_durations(self) -> None:
+        """Cycles with very different durations should weight correctly."""
+        mock_results = [
+            {
+                "queue_vehicles": 10,
+                "total_delay": 100.0,
+                "passed_vehicles": 600,
+                "samples": [0] * 600,  # 600 seconds (10 min)
+            },
+            {
+                "queue_vehicles": 100,
+                "total_delay": 1000.0,
+                "passed_vehicles": 5,
+                "samples": [0] * 5,   # 5 seconds
+            },
+        ]
+
+        summary = calculate_weighted_metrics(mock_results)
+
+        # Long cycle dominates: (10*600 + 100*5) / 605 = 10.74
+        expected_queue = (10 * 600 + 100 * 5) / 605
+        assert abs(summary.queue_vehicles_avg - expected_queue) < 0.01
+
+        # Delay: (100*600 + 1000*5) / 605 = 107.44
+        expected_delay = (100 * 600 + 1000 * 5) / 605
+        assert abs(summary.total_delay_avg - expected_delay) < 0.1
+
+        # Throughput: (1.0*600 + 1.0*5) / 605 = 1.0
+        # (600/600=1.0, 5/5=1.0)
+        assert abs(summary.throughput - 1.0) < 0.001
+
+    def test_cycle_with_zero_samples(self) -> None:
+        """Cycle with no samples should be skipped."""
+        mock_results = [
+            {
+                "queue_vehicles": 10,
+                "total_delay": 100.0,
+                "passed_vehicles": 30,
+                "samples": [0] * 60,  # 60 seconds
+            },
+            {
+                "queue_vehicles": 20,
+                "total_delay": 200.0,
+                "passed_vehicles": 40,
+                "samples": [],  # 0 seconds - should be skipped
+            },
+            {
+                "queue_vehicles": 30,
+                "total_delay": 300.0,
+                "passed_vehicles": 60,
+                "samples": [0] * 120,  # 120 seconds
+            },
+        ]
+
+        summary = calculate_weighted_metrics(mock_results)
+
+        # Only first and third cycles counted
+        # Total duration: 60 + 120 = 180
+        # Queue: (10*60 + 30*120) / 180 = 23.33
+        expected_queue = (10 * 60 + 30 * 120) / 180
+        assert abs(summary.queue_vehicles_avg - expected_queue) < 0.01
+
+        # But total_cycles counts all input results
+        assert summary.total_cycles == 3
+        assert summary.total_duration == 180.0
+
+    def test_all_cycles_zero_samples(self) -> None:
+        """All cycles with no samples should return zeros."""
+        mock_results = [
+            {"queue_vehicles": 10, "total_delay": 100.0, "passed_vehicles": 30, "samples": []},
+            {"queue_vehicles": 20, "total_delay": 200.0, "passed_vehicles": 40, "samples": []},
+        ]
+
+        summary = calculate_weighted_metrics(mock_results)
+        assert summary.queue_vehicles_avg == 0.0
+        assert summary.total_delay_avg == 0.0
+        assert summary.throughput == 0.0
+        assert summary.total_cycles == 2
+        assert summary.total_duration == 0.0
+
+
+class TestEndToEndIntegration:
+    """End-to-end integration tests for the weighted statistics pipeline."""
+
+    def test_output_integration(self) -> None:
+        """Test that weighted_summary can be used with write_summary_csv_extended."""
+        from TSC_CYCLE.benchmark.output import write_summary_csv_extended, create_run_dir
+        import tempfile
+        import os
+
+        # Create mock weighted summary
+        weighted_summary = WeightedMetricsSummary(
+            queue_vehicles_avg=15.5,
+            total_delay_avg=150.0,
+            throughput=0.75,
+            total_cycles=10,
+            total_duration=600.0,
+        )
+
+        # Create temporary directory
+        with tempfile.TemporaryDirectory() as tmpdir:
+            run_output = create_run_dir(tmpdir, "test-model", "2026-02-18_12-00-00")
+
+            # Write CSV with weighted summary
+            csv_path = write_summary_csv_extended(
+                run_output=run_output,
+                llm_summary={
+                    "format_success_rate": 0.9,
+                    "constraint_satisfaction_rate": 0.8,
+                    "phase_order_correct_rate": 0.9,
+                    "response_time": {"avg": 1.5, "max": 3.0, "min": 0.5, "std": 0.5},
+                },
+                traffic_summary={
+                    "passed_vehicles": {"avg": 50, "max": 100, "min": 10, "std": 20},
+                    "queue_vehicles": {"avg": 15, "max": 30, "min": 5, "std": 5},
+                    "total_delay": {"avg": 150, "max": 300, "min": 50, "std": 50},
+                },
+                model_name="test-model",
+                scenario="test-scenario",
+                weighted_summary=weighted_summary.to_dict(),
+            )
+
+            # Verify CSV was created and contains throughput
+            assert csv_path.exists()
+            with open(csv_path, "r") as f:
+                content = f.read()
+                assert "throughput" in content
+                assert "0.75" in content
+
+    def test_report_columns_constant(self) -> None:
+        """Test that COMPARISON_COLUMNS in report.py includes throughput.
+
+        Note: We read the file directly to avoid import dependencies in test env.
+        """
+        import re
+
+        # Read report.py and check COMPARISON_COLUMNS definition
+        report_path = __file__.replace("tests/test_weighted_stats.py", "report.py")
+        with open(report_path, "r") as f:
+            content = f.read()
+
+        # Check that throughput is in COMPARISON_COLUMNS
+        assert '"throughput"' in content
+        # Verify it's in the COMPARISON_COLUMNS list
+        columns_match = re.search(r'COMPARISON_COLUMNS\s*=\s*\[(.*?)\]', content, re.DOTALL)
+        assert columns_match is not None
+        columns_content = columns_match.group(1)
+        assert '"throughput"' in columns_content
+
