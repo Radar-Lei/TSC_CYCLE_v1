@@ -3,7 +3,7 @@
     "sft": {
       "model": {
         "model_name": "model/GLM-4.7-Flash-FP8-Dynamic",
-        "model_id": "zai-org/GLM-4.7-Flash-FP8-Dynamic",
+        "model_id": "unsloth/GLM-4.7-Flash-FP8-Dynamic",
         "max_seq_length": 2048,
         "lora_rank": 32,
         "lora_alpha": 64,
