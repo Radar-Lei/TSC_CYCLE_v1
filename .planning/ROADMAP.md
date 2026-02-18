@@ -24,7 +24,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. Benchmark 输出的统计数据使用加权平均（按周期数加权），不同模型在相同交叉口的评估结果可直接对比
   2. Comparison CSV 文件中包含 throughput（通过车辆数）列，反映各模型在每个场景的车辆通行能力
   3. 加权平均计算逻辑经过单元测试验证，确保数学正确性
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [x] 01-01-PLAN.md — 实现加权平均统计和 throughput 指标 (TDD)
@@ -36,4 +36,4 @@ Phases execute in numeric order: 1
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Benchmark 统计优化 | 1/1 | Complete | 2026-02-18 |
+| 1. Benchmark 统计优化 | 1/1 | Complete    | 2026-02-18 |
