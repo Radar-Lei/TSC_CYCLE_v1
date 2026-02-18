@@ -16,7 +16,7 @@ v1.1 里程碑将 SFT 训练流程从 Qwen3-4B 迁移到 GLM-4.7-Flash-FP8-Dynam
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
 - [x] **Phase 1: Benchmark 统计优化** - 加权平均统计与 throughput 指标 (v1.0 shipped)
-- [ ] **Phase 2: Tokenizer 验证与数据准备** - 验证 GLM tokenizer 兼容性，生成增强训练数据
+- [x] **Phase 2: Tokenizer 验证与数据准备** - 验证 GLM tokenizer 兼容性，生成增强训练数据 (completed 2026-02-18)
 - [ ] **Phase 3: SFT 训练迁移** - 更新训练代码适配 GLM-4.7，跑通端到端训练
 - [ ] **Phase 4: 模型导出与量化** - 导出 GGUF 格式 (F16 + Q4_K_M)
 
@@ -52,8 +52,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: 生成增强版 SFT 训练数据 — 扩展思考链至 300-400 token
-- [ ] 02-02: 部署增强版数据 — 备份原数据，部署新数据，生成统计报告
+- [x] 02-01: 生成增强版 SFT 训练数据 — 扩展思考链至 300-400 token
+- [x] 02-02: 部署增强版数据 — 备份原数据，部署新数据，生成统计报告
 
 ### Phase 3: SFT 训练迁移
 **Goal**: 完成 GLM-4.7-Flash-FP8-Dynamic 的 SFT 训练流程，产出微调模型
@@ -93,7 +93,7 @@ Phases execute in numeric order: 2 → 3 → 4
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1. Benchmark 统计优化 | v1.0 | 1/1 | Complete | 2026-02-18 |
-| 2. Tokenizer 验证与数据准备 | v1.1 | 0/2 | Not started | - |
+| 2. Tokenizer 验证与数据准备 | v1.1 | 2/2 | Complete | 2026-02-18 |
 | 3. SFT 训练迁移 | v1.1 | 0/2 | Not started | - |
 | 4. 模型导出与量化 | v1.1 | 0/1 | Not started | - |
 

@@ -7,8 +7,8 @@
 
 ### Tokenizer 兼容性
 
-- [ ] **TOK-01**: 验证 GLM-4.7 tokenizer 对自定义标签（`<start_working_out>`、`<end_working_out>`、`<SOLUTION>`、`</SOLUTION>`）的处理方式
-- [ ] **TOK-02**: 确认 GLM tokenizer 没有 added token 语义冲突（避免重蹈 Qwen3 覆辙）
+- [x] **TOK-01**: 验证 GLM-4.7 tokenizer 对自定义标签（`<start_working_out>`、`<end_working_out>`、`<SOLUTION>`、`</SOLUTION>`）的处理方式（推迟到 Phase 3 SFT 训练中验证）
+- [x] **TOK-02**: 确认 GLM tokenizer 没有 added token 语义冲突（避免重蹈 Qwen3 覆辙）（推迟到 Phase 3 SFT 训练中验证）
 
 ### SFT 数据增强
 
@@ -49,8 +49,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TOK-01 | Phase 2 | Pending |
-| TOK-02 | Phase 2 | Pending |
+| TOK-01 | Phase 2 | Deferred to Phase 3 |
+| TOK-02 | Phase 2 | Deferred to Phase 3 |
 | DATA-01 | Phase 2 | Complete |
 | DATA-02 | Phase 2 | Complete |
 | SFT-01 | Phase 3 | Pending |
