@@ -65,11 +65,11 @@ Plans:
   3. 端到端训练流程跑通，无错误完成训练
   4. 训练产出模型保存到 `/home/samuel/TSC_CYCLE/outputs/sft/model`
   5. 模型能正确推理，输出符合预期的信号配时方案格式
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: 更新模型加载和训练配置
-- [ ] 03-02: 跑通端到端 SFT 训练
+- [ ] 03-01: 更新模型加载和训练配置 — 适配 GLM-4.7-Flash-FP8-Dynamic，验证 tokenizer 兼容性
+- [ ] 03-02: 跑通端到端 SFT 训练 — 执行训练并人工验证推理结果
 
 ### Phase 4: 模型导出与量化
 **Goal**: 将 SFT 训练产出的模型导出为 GGUF 格式，支持 F16 和 Q4_K_M 量化
