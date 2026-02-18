@@ -53,21 +53,21 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TOK-02 | Phase 2 | Pending |
 | DATA-01 | Phase 2 | Pending |
 | DATA-02 | Phase 2 | Pending |
-| SFT-01 | Phase 2 | Pending |
-| SFT-02 | Phase 2 | Pending |
-| SFT-03 | Phase 2 | Pending |
-| SFT-04 | Phase 2 | Pending |
-| SFT-05 | Phase 2 | Pending |
-| SFT-06 | Phase 2 | Pending |
-| EXPR-01 | Phase 2 | Pending |
-| EXPR-02 | Phase 2 | Pending |
-| EXPR-03 | Phase 2 | Pending |
+| SFT-01 | Phase 3 | Pending |
+| SFT-02 | Phase 3 | Pending |
+| SFT-03 | Phase 3 | Pending |
+| SFT-04 | Phase 3 | Pending |
+| SFT-05 | Phase 3 | Pending |
+| SFT-06 | Phase 3 | Pending |
+| EXPR-01 | Phase 4 | Pending |
+| EXPR-02 | Phase 4 | Pending |
+| EXPR-03 | Phase 4 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 13 total
 - Mapped to phases: 13
-- Unmapped: 0 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-18*
-*Last updated: 2026-02-18 after initial definition*
+*Last updated: 2026-02-18 after roadmap creation*

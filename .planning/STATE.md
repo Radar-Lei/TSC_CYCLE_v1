@@ -4,18 +4,18 @@
 
 See: .planning/PROJECT.md (updated 2026-02-18)
 
-**Core value:** 训练能优化交通信号配时的 AI 模型，提升交通效率
-**Current focus:** v1.1 模型迁移到 GLM-4.7-Flash-FP8-Dynamic
+**Core value:** 训练能通过思维链推理优化交通信号配时的 AI 模型，提升交通效率，减少拥堵
+**Current focus:** Phase 2 - Tokenizer 验证与数据准备
 
 ## Current Position
 
 Milestone: v1.1 模型迁移
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-18 — Milestone v1.1 started
+Phase: 2 of 4 (Tokenizer 验证与数据准备)
+Plan: 0 of 2 in current phase
+Status: Ready to plan
+Last activity: 2026-02-18 — v1.1 roadmap created
 
-Progress: 0%
+Progress: [----25%---] 25% (1/4 phases complete)
 
 ## Performance Metrics
 
@@ -32,16 +32,22 @@ Progress: 0%
 
 All decisions logged in PROJECT.md Key Decisions table.
 
+Recent decisions affecting current work:
+- [v1.0]: 使用 samples length 作为加权平均权重
+- [v1.0]: Throughput 计算方式：先按周期再加权
+
 ### Pending Todos
 
 None.
 
 ### Blockers/Concerns
 
-None.
+**Critical from Project Memory:**
+- Qwen3 tokenizer 中 `aises`/` termina` 是 added tokens，不能用于 SFT 自定义标签
+- GLM tokenizer 必须验证无类似问题 (Phase 2 重点)
 
 ## Session Continuity
 
 Last session: 2026-02-18
-Status: v1.1 milestone started
-Next: Define requirements and create roadmap
+Status: v1.1 roadmap created
+Next: `/gsd:plan-phase 2` to plan tokenizer verification
