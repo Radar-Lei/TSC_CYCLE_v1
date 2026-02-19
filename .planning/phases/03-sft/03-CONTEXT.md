@@ -30,7 +30,7 @@
 
 ### 训练数据
 - 使用 Phase 2 已生成的增强训练数据
-- 数据路径：`data/sft/train.jsonl`
+- 数据路径：`outputs/sft/sft_train.jsonl`（由 `config/config.json` 中 `paths.sft_data_dir: "outputs/sft"` 决定，`train.py` 使用 `sft_data_dir + "/sft_train.jsonl"` 构建完整路径）
 - 无需重新生成数据
 
 ### 推理验证方式
