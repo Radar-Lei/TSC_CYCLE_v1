@@ -13,7 +13,7 @@ Milestone: v1.1 模型迁移
 Phase: 3 of 4 (SFT 训练)
 Plan: 1 of 2 in current phase
 Status: In Progress
-Last activity: 2026-02-18 — Completed 03-01 (SFT 训练迁移到 GLM)
+Last activity: 2026-02-19 — 模型切换为 GLM-4.7-Flash (非 FP8-Dynamic)，需重新训练
 
 Progress: [=====50%====] 50% (2/4 phases complete)
 
@@ -40,6 +40,8 @@ Recent decisions affecting current work:
 - [v1.0]: Throughput 计算方式：先按周期再加权
 - [v1.1-03-01]: GLM 使用与 Qwen 相同的 target_modules (LLaMA-style 架构)
 - [v1.1-03-01]: 双重加载策略 - Unsloth 优先，Hugging Face 回退
+- [v1.1-03-02]: 模型切换为 `unsloth/GLM-4.7-Flash`（FP8-Dynamic 有问题）
+- [v1.1-03-02]: LoRA 配置：r=16, alpha=16, dropout=0（参考 Unsloth notebook）
 
 ### Pending Todos
 
@@ -56,6 +58,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-18
+Last session: 2026-02-19
 Status: In Progress - Phase 3 (SFT 训练)
-Current: Completed 03-01, continue with 03-02
+Current: 模型切换为 GLM-4.7-Flash，需更新训练代码并重新训练
