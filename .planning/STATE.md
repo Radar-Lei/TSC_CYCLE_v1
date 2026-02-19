@@ -13,7 +13,7 @@ Milestone: v1.1 模型迁移
 Phase: 3 of 4 (SFT 训练)
 Plan: 1 of 2 in current phase
 Status: In Progress
-Last activity: 2026-02-19 — 模型切换为 GLM-4.7-Flash (非 FP8-Dynamic)，需重新训练
+Last activity: 2026-02-19 - Completed quick task 1: 修改 sft_test.sh 支持 GGUF 模型测试
 
 Progress: [=====50%====] 50% (2/4 phases complete)
 
@@ -55,6 +55,12 @@ None.
 **Critical from Project Memory:**
 - Qwen3 tokenizer 中 `aises`/` termina` 是 added tokens，不能用于 SFT 自定义标签
 - GLM tokenizer 必须验证无类似问题 (Phase 2 重点) - 已在 03-01 添加检测
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | 修改 sft_test.sh 支持 GGUF 模型测试 | 2026-02-19 | 7387a94 | [1-sft-test-sh-gguf](./quick/1-sft-test-sh-gguf/) |
 
 ## Session Continuity
 
