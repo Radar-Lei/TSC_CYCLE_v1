@@ -26,6 +26,12 @@ RUN add-apt-repository ppa:sumo/stable -y && \
 
 RUN pip install traci modelscope scikit-learn --break-system-packages
 
+# Upgrade transformers to 5.x to support glm4_moe_lite model type
+RUN pip install --upgrade transformers==5.2.0 --break-system-packages -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# Install llama-cpp-python with CUDA support for GGUF model inference
+RUN CMAKE_ARGS="-DGGML_CUDA=on" pip install llama-cpp-python --no-cache-dir --break-system-packages
+
 # 创建与宿主机用户匹配的用户（UID和GID通过ARG传递）
 # 默认使用1000:1000，与常见的Linux用户匹配
 ARG USER_ID=1000
