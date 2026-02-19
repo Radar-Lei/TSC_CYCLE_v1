@@ -7,7 +7,7 @@
 
 ## Overview
 
-v1.1 里程碑将 SFT 训练流程从 Qwen3-4B 迁移到 GLM-4.7-Flash-FP8-Dynamic。首先验证 tokenizer 兼容性并生成增强数据，然后完成训练迁移，最后导出 GGUF 模型。
+v1.1 里程碑将 SFT 训练流程从 Qwen3-4B 迁移到 GLM-4.7-Flash (BF16)。首先验证 tokenizer 兼容性并生成增强数据，然后完成训练迁移，最后导出 GGUF 模型。
 
 ## Phases
 
@@ -17,7 +17,7 @@ v1.1 里程碑将 SFT 训练流程从 Qwen3-4B 迁移到 GLM-4.7-Flash-FP8-Dynam
 
 - [x] **Phase 1: Benchmark 统计优化** - 加权平均统计与 throughput 指标 (v1.0 shipped)
 - [x] **Phase 2: Tokenizer 验证与数据准备** - 验证 GLM tokenizer 兼容性，生成增强训练数据 (completed 2026-02-18)
-- [ ] **Phase 3: SFT 训练迁移** - 更新训练代码适配 GLM-4.7，跑通端到端训练
+- [ ] **Phase 3: SFT 训练迁移** - 更新训练代码适配 GLM-4.7-Flash (BF16)，跑通端到端训练
 - [ ] **Phase 4: 模型导出与量化** - 导出 GGUF 格式 (F16 + Q4_K_M)
 
 ## Phase Details
@@ -56,20 +56,20 @@ Plans:
 - [x] 02-02: 部署增强版数据 — 备份原数据，部署新数据，生成统计报告
 
 ### Phase 3: SFT 训练迁移
-**Goal**: 完成 GLM-4.7-Flash-FP8-Dynamic 的 SFT 训练流程，产出微调模型
+**Goal**: 完成 GLM-4.7-Flash (BF16) 的 SFT 训练流程，产出微调模型
 **Depends on**: Phase 2
 **Requirements**: SFT-01, SFT-02, SFT-03, SFT-04, SFT-05, SFT-06
 **Success Criteria** (what must be TRUE):
-  1. 模型加载代码成功加载 GLM-4.7-Flash-FP8-Dynamic
-  2. LoRA 适配器正确应用于 GLM 模型
+  1. 模型加载代码成功加载 unsloth/GLM-4.7-Flash
+  2. LoRA 适配器正确应用于 GLM 模型 (r=16, alpha=16, dropout=0)
   3. 端到端训练流程跑通，无错误完成训练
   4. 训练产出模型保存到 `/home/samuel/TSC_CYCLE/outputs/sft/model`
   5. 模型能正确推理，输出符合预期的信号配时方案格式
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: 更新模型加载和训练配置 — 适配 GLM-4.7-Flash-FP8-Dynamic，验证 tokenizer 兼容性
-- [ ] 03-02: 跑通端到端 SFT 训练 — 执行训练并人工验证推理结果
+- [ ] 03-01: 更新模型和 LoRA 配置 — 切换到 unsloth/GLM-4.7-Flash，配置 r=16/alpha=16/dropout=0
+- [ ] 03-02: 跑通端到端 SFT 训练 — 更新代码引用，执行训练并人工验证推理结果
 
 ### Phase 4: 模型导出与量化
 **Goal**: 将 SFT 训练产出的模型导出为 GGUF 格式，支持 F16 和 Q4_K_M 量化
@@ -94,10 +94,10 @@ Phases execute in numeric order: 2 → 3 → 4
 |-------|-----------|----------------|--------|-----------|
 | 1. Benchmark 统计优化 | v1.0 | 1/1 | Complete | 2026-02-18 |
 | 2. Tokenizer 验证与数据准备 | v1.1 | 2/2 | Complete | 2026-02-18 |
-| 3. SFT 训练迁移 | 1/2 | In Progress|  | - |
+| 3. SFT 训练迁移 | v1.1 | 0/2 | In Progress | - |
 | 4. 模型导出与量化 | v1.1 | 0/1 | Not started | - |
 
 ---
 
 *Roadmap created: 2026-02-18*
-*Last updated: 2026-02-18*
+*Last updated: 2026-02-19*
