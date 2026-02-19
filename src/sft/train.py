@@ -55,6 +55,9 @@ def setup_model(config: dict):
 
     注意：FP8-Dynamic 是量化格式，如果 Unsloth 不直接支持 FP8，
     可能需要使用 Hugging Face 原生加载方式或先转换为 BF16。
+
+    Returns:
+        tuple: (model, tokenizer, is_peft) - is_peft 表示是否使用 Hugging Face PEFT
     """
     model_config = config["training"]["sft"]["model"]
     seed = config["training"]["sft"].get("seed", 3407)
@@ -79,8 +82,18 @@ def setup_model(config: dict):
         # 如果 Unsloth 加载失败（如 FP8 不支持），尝试使用 Hugging Face 原生方式
         print(f"[警告] Unsloth 加载失败: {e}")
         print("[回退] 尝试使用 Hugging Face 原生加载 + PEFT...")
-        from transformers import AutoModelForCausalLM, AutoTokenizer
+        from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
         from peft import get_peft_model, LoraConfig, TaskType
+
+        # 加载配置
+        config = AutoConfig.from_pretrained(
+            model_config["model_name"],
+            trust_remote_code=True
+        )
+        # 尝试删除量化配置
+        if hasattr(config, 'quantization_config'):
+            print("[配置] 检测到 FP8 量化配置，移除以支持训练...")
+            delattr(config, 'quantization_config')
 
         tokenizer = AutoTokenizer.from_pretrained(
             model_config["model_name"],
@@ -88,6 +101,7 @@ def setup_model(config: dict):
         )
         model = AutoModelForCausalLM.from_pretrained(
             model_config["model_name"],
+            config=config,
             torch_dtype=torch.bfloat16,
             device_map="auto",
             trust_remote_code=True
@@ -104,7 +118,7 @@ def setup_model(config: dict):
         )
         model = get_peft_model(model, lora_config)
         print("[回退] Hugging Face 原生加载成功")
-        return model, tokenizer
+        return model, tokenizer, True  # 返回 True 表示使用 Hugging Face PEFT
 
     # 使用 Unsloth 的 PEFT 配置
     model = FastLanguageModel.get_peft_model(
@@ -285,6 +299,7 @@ def train_model(model, tokenizer, dataset, config: dict):
             save_total_limit=sft_config.get("save_total_limit", 3),
             bf16=sft_config.get("bf16", True),
             output_dir="outputs/sft/checkpoints",
+            gradient_checkpointing=False,  # 禁用梯度检查点，避免 FP8 兼容性问题
         ),
     )
 
@@ -295,21 +310,30 @@ def train_model(model, tokenizer, dataset, config: dict):
     return model
 
 
-def save_model(model, tokenizer, output_path: str):
+def save_model(model, tokenizer, output_path: str, is_peft: bool = False):
     """
     合并 LoRA 并保存完整模型
 
     参考 qwen3_(4b)_grpo.py 第 564-566 行
-    使用 save_pretrained_merged 保存 merged_16bit 格式
+    使用 save_pretrained_merged 保存 merged_16bit 格式 (Unsloth)
+    或使用 merge_and_unload + save_pretrained (Hugging Face PEFT)
     """
     os.makedirs(output_path, exist_ok=True)
 
     print(f"[保存模型] 合并 LoRA 并保存到 {output_path}")
-    model.save_pretrained_merged(
-        output_path,
-        tokenizer,
-        save_method="merged_16bit",
-    )
+
+    if is_peft:
+        # Hugging Face PEFT 方式
+        merged_model = model.merge_and_unload()
+        merged_model.save_pretrained(output_path)
+        tokenizer.save_pretrained(output_path)
+    else:
+        # Unsloth 方式
+        model.save_pretrained_merged(
+            output_path,
+            tokenizer,
+            save_method="merged_16bit",
+        )
     print("[保存完成]")
 
 
@@ -332,7 +356,12 @@ def main():
 
     # 3. 设置模型
     print("[模型] 加载 GLM-4.7-Flash-FP8-Dynamic 并配置 LoRA")
-    model, tokenizer = setup_model(config)
+    result = setup_model(config)
+    if len(result) == 3:
+        model, tokenizer, is_peft = result
+    else:
+        model, tokenizer = result
+        is_peft = False
 
     # 4. 设置 chat template
     print("[模板] 设置自定义 chat template")
@@ -352,7 +381,7 @@ def main():
 
     # 7. 保存模型
     output_path = config["paths"]["sft_output"]
-    save_model(model, tokenizer, output_path)
+    save_model(model, tokenizer, output_path, is_peft=is_peft)
 
     print("=" * 50)
     print("[完成] SFT 训练流程完成")
