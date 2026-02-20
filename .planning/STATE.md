@@ -13,7 +13,7 @@ Milestone: v1.1 模型迁移
 Phase: 3 of 4 (SFT 训练)
 Plan: 1 of 2 in current phase
 Status: In Progress
-Last activity: 2026-02-19 - Completed quick task 1: 修改 sft_test.sh 支持 GGUF 模型测试
+Last activity: 2026-02-20 - Completed quick task 2: Qwen3-4B SFT 训练并导出 F16/Q4_K_M GGUF
 
 Progress: [=====50%====] 50% (2/4 phases complete)
 
@@ -42,6 +42,9 @@ Recent decisions affecting current work:
 - [v1.1-03-01]: 双重加载策略 - Unsloth 优先，Hugging Face 回退
 - [v1.1-03-02]: 模型切换为 `unsloth/GLM-4.7-Flash`（FP8-Dynamic 有问题）
 - [v1.1-03-02]: LoRA 配置：r=16, alpha=16, dropout=0（参考 Unsloth notebook）
+- [Phase quick-2-qwen3-4b-sft-qwen3-home-samuel-tsc-cycle]: SFT 基座切换为 model/Qwen3-4B-Base，模型来源标识使用 Qwen/Qwen3-4B-Base。
+- [Phase quick-2-qwen3-4b-sft-qwen3-home-samuel-tsc-cycle]: Qwen3 训练采用 <|im_start|>user 与 <|im_start|>assistant 响应掩码边界以避免全 -100 标签。
+- [Phase quick-2-qwen3-4b-sft-qwen3-home-samuel-tsc-cycle]: SFT 保存阶段输出合并后完整权重，确保 GGUF 导出包含真实张量。
 
 ### Pending Todos
 
@@ -61,9 +64,10 @@ None.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 1 | 修改 sft_test.sh 支持 GGUF 模型测试 | 2026-02-19 | 7387a94 | [1-sft-test-sh-gguf](./quick/1-sft-test-sh-gguf/) |
+| Phase quick-2-qwen3-4b-sft-qwen3-home-samuel-tsc-cycle P2 | 28min | 3 tasks | 3 files |
 
 ## Session Continuity
 
-Last session: 2026-02-19
+Last session: 2026-02-20
 Status: In Progress - Phase 3 (SFT 训练)
-Current: 模型切换为 GLM-4.7-Flash，需更新训练代码并重新训练
+Current: 已完成 quick task 2（Qwen3-4B SFT + 双 GGUF 导出），可继续进行后续验证/集成
