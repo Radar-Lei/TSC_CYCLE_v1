@@ -274,33 +274,28 @@ def train_model(model, tokenizer, dataset, config: dict, is_peft: bool = False):
 
 def save_model(model, tokenizer, output_path: str, config: dict, is_peft: bool = False):
     """
-    保存 LoRA adapter（不是合并后的完整模型）
-
-    这样推理时可以快速加载基础模型 + adapter，而不是加载巨大的 merged 模型。
-    后续导出 GGUF 时可以临时合并。
+    保存合并后的完整模型（用于后续 GGUF 转换）
     """
     os.makedirs(output_path, exist_ok=True)
 
-    print(f"[保存模型] 保存 LoRA adapter 到 {output_path}")
+    print(f"[保存模型] 保存合并后的完整模型到 {output_path}")
 
-    if is_peft:
-        # Hugging Face PEFT 方式 - 只保存 adapter
-        model.save_pretrained(output_path)
-        tokenizer.save_pretrained(output_path)
-    else:
-        # Unsloth 方式 - 只保存 adapter（不合并）
-        model.save_pretrained(output_path)
-        tokenizer.save_pretrained(output_path)
+    merged_model = model
+    if hasattr(model, "merge_and_unload"):
+        print("[保存模型] 检测到 LoRA adapter，正在合并到基座模型...")
+        merged_model = model.merge_and_unload()
 
-    # 为导出脚本补齐基座 config.json（仅在缺失时复制）
-    # convert_gguf.sh 会先检查 model 目录下是否有 config.json
+    merged_model.save_pretrained(output_path)
+    tokenizer.save_pretrained(output_path)
+
+    # 兜底补齐 config.json（极端情况下 save_pretrained 未写出）
     base_model_config = os.path.join(config["training"]["sft"]["model"]["model_name"], "config.json")
     output_model_config = os.path.join(output_path, "config.json")
     if not os.path.exists(output_model_config) and os.path.exists(base_model_config):
         shutil.copy2(base_model_config, output_model_config)
         print(f"[保存模型] 已补充基座 config.json: {output_model_config}")
 
-    print("[保存完成] LoRA adapter 已保存（后续推理/导出时再合并）")
+    print("[保存完成] 完整模型已保存（可直接用于 GGUF 转换）")
 
 
 def main():
