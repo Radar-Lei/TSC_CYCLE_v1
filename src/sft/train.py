@@ -8,6 +8,7 @@ SFT Training Script for TSC-CYCLE
 import argparse
 import json
 import os
+import shutil
 from pathlib import Path
 
 import torch
@@ -74,7 +75,6 @@ def setup_model(config: dict):
             max_lora_rank=model_config["lora_rank"],
             gpu_memory_utilization=model_config["gpu_memory_utilization"],
             trust_remote_code=True,
-            unsloth_force_compile=False,
         )
     except Exception as e:
         # 如果 Unsloth 加载失败，尝试使用 Hugging Face 原生方式
@@ -259,9 +259,9 @@ def train_model(model, tokenizer, dataset, config: dict, is_peft: bool = False):
     from unsloth.chat_templates import train_on_responses_only
     trainer = train_on_responses_only(
         trainer,
-        # GLM chat template会输出 `<|assistant|><start_working_out>`（无换行）
-        instruction_part="<|user|>",
-        response_part="<|assistant|><start_working_out>",
+        # Qwen3 chat template 使用 <|im_start|>user / <|im_start|>assistant 边界
+        instruction_part="<|im_start|>user\n",
+        response_part="<|im_start|>assistant\n",
     )
     print("[训练] 已配置 train_on_responses_only - 仅在 assistant 响应上计算损失")
 
@@ -272,7 +272,7 @@ def train_model(model, tokenizer, dataset, config: dict, is_peft: bool = False):
     return model
 
 
-def save_model(model, tokenizer, output_path: str, is_peft: bool = False):
+def save_model(model, tokenizer, output_path: str, config: dict, is_peft: bool = False):
     """
     保存 LoRA adapter（不是合并后的完整模型）
 
@@ -291,6 +291,15 @@ def save_model(model, tokenizer, output_path: str, is_peft: bool = False):
         # Unsloth 方式 - 只保存 adapter（不合并）
         model.save_pretrained(output_path)
         tokenizer.save_pretrained(output_path)
+
+    # 为导出脚本补齐基座 config.json（仅在缺失时复制）
+    # convert_gguf.sh 会先检查 model 目录下是否有 config.json
+    base_model_config = os.path.join(config["training"]["sft"]["model"]["model_name"], "config.json")
+    output_model_config = os.path.join(output_path, "config.json")
+    if not os.path.exists(output_model_config) and os.path.exists(base_model_config):
+        shutil.copy2(base_model_config, output_model_config)
+        print(f"[保存模型] 已补充基座 config.json: {output_model_config}")
+
     print("[保存完成] LoRA adapter 已保存（后续推理/导出时再合并）")
 
 
@@ -342,7 +351,7 @@ def main():
 
     # 7. 保存模型
     output_path = config["paths"]["sft_output"]
-    save_model(model, tokenizer, output_path, is_peft=is_peft)
+    save_model(model, tokenizer, output_path, config, is_peft=is_peft)
 
     print("=" * 50)
     print("[完成] SFT 训练流程完成")
