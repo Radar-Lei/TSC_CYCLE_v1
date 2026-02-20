@@ -2,7 +2,7 @@
 """
 SFT Training Script for TSC-CYCLE
 
-使用 unsloth 对 GLM-4.7-Flash-FP8-Dynamic 进行 LoRA 微调，学习 <start_working_out>...<end_working_out><SOLUTION>...</SOLUTION> 输出格式。
+使用 unsloth 对 GLM-4.7-Flash 进行 LoRA 微调，学习 <start_working_out>...<end_working_out><SOLUTION>...</SOLUTION> 输出格式。
 """
 
 import argparse
@@ -17,9 +17,9 @@ from trl import SFTTrainer, SFTConfig
 
 
 def ensure_model(config: dict):
-    """确保本地模型存在，不存在则从 ModelScope 下载
+    """确保本地模型存在，不存在则从 Hugging Face 下载
 
-    支持 GLM-4.7-Flash-FP8-Dynamic 模型下载。
+    支持 GLM-4.7-Flash 模型下载。
     """
     model_config = config["training"]["sft"]["model"]
     model_path = model_config["model_name"]
@@ -50,11 +50,8 @@ def setup_model(config: dict):
     """
     加载模型并配置 LoRA
 
-    支持 GLM-4.7-Flash-FP8-Dynamic 模型。
+    支持 GLM-4.7-Flash 模型。
     GLM 使用类似 LLaMA 的 attention 架构，target_modules 兼容。
-
-    注意：FP8-Dynamic 是量化格式，如果 Unsloth 不直接支持 FP8，
-    可能需要使用 Hugging Face 原生加载方式或先转换为 BF16。
 
     Returns:
         tuple: (model, tokenizer, is_peft) - is_peft 表示是否使用 Hugging Face PEFT
@@ -68,7 +65,6 @@ def setup_model(config: dict):
         print("[模型] 检测到 GLM 模型，使用标准加载方式")
 
     # 尝试使用 Unsloth 加载（对大多数模型有效）
-    # GLM-4.7-Flash-FP8-Dynamic 的 FP8 格式可能需要特殊处理
     try:
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name=model_config["model_name"],
@@ -77,23 +73,15 @@ def setup_model(config: dict):
             fast_inference=model_config.get("fast_inference", False),
             max_lora_rank=model_config["lora_rank"],
             gpu_memory_utilization=model_config["gpu_memory_utilization"],
+            trust_remote_code=True,
+            unsloth_force_compile=False,
         )
     except Exception as e:
-        # 如果 Unsloth 加载失败（如 FP8 不支持），尝试使用 Hugging Face 原生方式
+        # 如果 Unsloth 加载失败，尝试使用 Hugging Face 原生方式
         print(f"[警告] Unsloth 加载失败: {e}")
         print("[回退] 尝试使用 Hugging Face 原生加载 + PEFT...")
-        from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
+        from transformers import AutoModelForCausalLM, AutoTokenizer
         from peft import get_peft_model, LoraConfig, TaskType
-
-        # 加载配置
-        config = AutoConfig.from_pretrained(
-            model_config["model_name"],
-            trust_remote_code=True
-        )
-        # 尝试删除量化配置
-        if hasattr(config, 'quantization_config'):
-            print("[配置] 检测到 FP8 量化配置，移除以支持训练...")
-            delattr(config, 'quantization_config')
 
         tokenizer = AutoTokenizer.from_pretrained(
             model_config["model_name"],
@@ -101,7 +89,6 @@ def setup_model(config: dict):
         )
         model = AutoModelForCausalLM.from_pretrained(
             model_config["model_name"],
-            config=config,
             torch_dtype=torch.bfloat16,
             device_map="auto",
             trust_remote_code=True
@@ -113,7 +100,7 @@ def setup_model(config: dict):
             r=model_config["lora_rank"],
             lora_alpha=model_config["lora_alpha"],
             target_modules=model_config["target_modules"],
-            lora_dropout=0.05,
+            lora_dropout=0,
             bias="none",
         )
         model = get_peft_model(model, lora_config)
@@ -126,6 +113,8 @@ def setup_model(config: dict):
         r=model_config["lora_rank"],
         target_modules=model_config["target_modules"],
         lora_alpha=model_config["lora_alpha"],
+        lora_dropout=0,
+        bias="none",
         use_gradient_checkpointing="unsloth",
         random_state=seed,
     )
@@ -133,91 +122,22 @@ def setup_model(config: dict):
     return model, tokenizer
 
 
-def setup_chat_template(tokenizer):
+def patch_thinking_tags(tokenizer):
     """
-    设置自定义 chat template
-
-    参考 qwen3_(4b)_grpo.py 第 41-81 行，适配项目标签格式：
-    - reasoning_start = "<start_working_out>"
-    - reasoning_end = "<end_working_out>"
-    - solution_start = "<SOLUTION>"
-    - solution_end = "</SOLUTION>"
+    最小化修改 GLM 原生 chat template：将 <think></think> 替换为项目自定义标签
+    
+    GLM-4.7-Flash 原生使用 <think></think> 作为思考标签。
+    为了与项目的 <start_working_out>/<end_working_out> 标签一致，
+    只做最小化修改，保留其余 GLM 原生格式（角色标记等）。
     """
-    reasoning_start = "<start_working_out>"
-    reasoning_end = "<end_working_out>"
-    solution_start = "<SOLUTION>"
-    solution_end = "</SOLUTION>"
-
-    system_prompt = (
-        "你是交通信号配时优化专家。\n"
-        "请认真分析问题并给出你的推理过程。\n"
-        "将推理过程放在 <start_working_out> 和 <end_working_out> 之间。\n"
-        "然后，将你的最终方案放在 <SOLUTION> 和 </SOLUTION> 之间。"
-    )
-
-    # 创建 chat template（参考 qwen3_(4b)_grpo.py 第 59-81 行）
-    chat_template = \
-        "{% if messages[0]['role'] == 'system' %}"\
-            "{{ messages[0]['content'] + eos_token }}"\
-            "{% set loop_messages = messages[1:] %}"\
-        "{% else %}"\
-            "{{ '{system_prompt}' + eos_token }}"\
-            "{% set loop_messages = messages %}"\
-        "{% endif %}"\
-        "{% for message in loop_messages %}"\
-            "{% if message['role'] == 'user' %}"\
-                "{{ message['content'] }}"\
-            "{% elif message['role'] == 'assistant' %}"\
-                "{{ message['content'] + eos_token }}"\
-            "{% endif %}"\
-        "{% endfor %}"\
-        "{% if add_generation_prompt %}{{ '{reasoning_start}' }}"\
-        "{% endif %}"
-
-    # 替换占位符为实际值
-    chat_template = chat_template\
-        .replace("'{system_prompt}'", f"'{system_prompt}'")\
-        .replace("'{reasoning_start}'", f"'{reasoning_start}'")
-
-    tokenizer.chat_template = chat_template
-
+    if tokenizer.chat_template:
+        tokenizer.chat_template = (
+            tokenizer.chat_template
+            .replace("<think>", "<start_working_out>")
+            .replace("</think>", "<end_working_out>")
+        )
+        print("[模板] 已将 GLM 原生 <think> 标签替换为 <start_working_out>")
     return tokenizer
-
-
-def test_tokenizer_compatibility(tokenizer):
-    """
-    测试 tokenizer 对自定义标签的处理
-
-    确保自定义标签被拆分为多个 sub-token，而不是被视为 added token。
-    如果标签被编码为单个 token，可能会导致语义冲突（类似 Qwen3 的问题）。
-    """
-    test_tags = ["<start_working_out>", "<end_working_out>", "<SOLUTION>", "</SOLUTION>"]
-
-    print("[Tokenizer 兼容性检查]")
-    print(f"  vocab_size: {tokenizer.vocab_size}")
-    print(f"  pad_token: {tokenizer.pad_token}")
-    print(f"  eos_token: {tokenizer.eos_token}")
-
-    warnings = []
-    for tag in test_tags:
-        tokens = tokenizer.encode(tag, add_special_tokens=False)
-        token_count = len(tokens)
-        print(f"  {tag} -> {tokens} ({token_count} tokens)")
-
-        # 期望：每个标签被拆分为多个 token（不在词表中）
-        # 如果是单 token，说明是 added token，需要警告
-        if token_count == 1:
-            warning = f"[警告] {tag} 是单 token ({tokens[0]})，可能是 added token!"
-            print(f"    {warning}")
-            warnings.append(warning)
-
-    if warnings:
-        print("\n[重要] 检测到 added token 冲突，自定义标签可能无法正确学习!")
-        print("  建议：使用不在词表中的标签，确保被拆分为多个 sub-token")
-    else:
-        print("\n[OK] 所有自定义标签都被正确拆分为多个 token")
-
-    return len(warnings) == 0
 
 
 def load_sft_data(data_path: str, tokenizer, max_seq_length: int):
@@ -270,38 +190,80 @@ def load_sft_data(data_path: str, tokenizer, max_seq_length: int):
     return dataset
 
 
-def train_model(model, tokenizer, dataset, config: dict):
+def train_model(model, tokenizer, dataset, config: dict, is_peft: bool = False):
     """
     训练模型
 
     参考 qwen3_(4b)_grpo.py 第 161-182 行
+
+    Args:
+        is_peft: 如果为 True，使用 Hugging Face 原生 SFTTrainer
     """
     sft_config = config["training"]["sft"]
 
-    trainer = SFTTrainer(
-        model=model,
-        tokenizer=tokenizer,
-        train_dataset=dataset,
-        args=SFTConfig(
-            dataset_text_field=sft_config["dataset_text_field"],
-            per_device_train_batch_size=sft_config["per_device_train_batch_size"],
-            gradient_accumulation_steps=sft_config["gradient_accumulation_steps"],
-            warmup_steps=sft_config["warmup_steps"],
-            num_train_epochs=sft_config["num_train_epochs"],
-            learning_rate=sft_config["learning_rate"],
-            logging_steps=sft_config["logging_steps"],
-            optim=sft_config["optim"],
-            weight_decay=sft_config["weight_decay"],
-            lr_scheduler_type=sft_config["lr_scheduler_type"],
-            seed=sft_config["seed"],
-            report_to=sft_config["report_to"],
-            save_steps=sft_config.get("save_steps", 100),
-            save_total_limit=sft_config.get("save_total_limit", 3),
-            bf16=sft_config.get("bf16", True),
-            output_dir="outputs/sft/checkpoints",
-            gradient_checkpointing=False,  # 禁用梯度检查点，避免 FP8 兼容性问题
-        ),
+    if is_peft:
+        # Hugging Face 原生 SFTTrainer
+        from transformers import TrainingArguments, Trainer
+        trainer = Trainer(
+            model=model,
+            args=TrainingArguments(
+                per_device_train_batch_size=sft_config["per_device_train_batch_size"],
+                gradient_accumulation_steps=sft_config["gradient_accumulation_steps"],
+                warmup_steps=sft_config["warmup_steps"],
+                num_train_epochs=sft_config["num_train_epochs"],
+                learning_rate=sft_config["learning_rate"],
+                logging_steps=sft_config["logging_steps"],
+                optim=sft_config["optim"],
+                weight_decay=sft_config["weight_decay"],
+                lr_scheduler_type=sft_config["lr_scheduler_type"],
+                seed=sft_config["seed"],
+                report_to=sft_config["report_to"],
+                save_steps=sft_config.get("save_steps", 100),
+                save_total_limit=sft_config.get("save_total_limit", 3),
+                bf16=sft_config.get("bf16", True),
+                output_dir="outputs/sft/checkpoints",
+                gradient_checkpointing=False,
+                remove_unused_columns=False,
+            ),
+            train_dataset=dataset,
+        )
+    else:
+        # Unsloth SFTTrainer
+        trainer = SFTTrainer(
+            model=model,
+            tokenizer=tokenizer,
+            train_dataset=dataset,
+            args=SFTConfig(
+                dataset_text_field=sft_config["dataset_text_field"],
+                per_device_train_batch_size=sft_config["per_device_train_batch_size"],
+                gradient_accumulation_steps=sft_config["gradient_accumulation_steps"],
+                warmup_steps=sft_config["warmup_steps"],
+                num_train_epochs=sft_config["num_train_epochs"],
+                learning_rate=sft_config["learning_rate"],
+                logging_steps=sft_config["logging_steps"],
+                optim=sft_config["optim"],
+                weight_decay=sft_config["weight_decay"],
+                lr_scheduler_type=sft_config["lr_scheduler_type"],
+                seed=sft_config["seed"],
+                report_to=sft_config["report_to"],
+                save_steps=sft_config.get("save_steps", 100),
+                save_total_limit=sft_config.get("save_total_limit", 3),
+                bf16=sft_config.get("bf16", True),
+                output_dir="outputs/sft/checkpoints",
+                gradient_checkpointing=False,  # 禁用梯度检查点
+            ),
+        )
+
+    # 只训练 assistant 的响应部分，忽略 user 输入的损失
+    # 参考 glm_flash_a100(80gb).py 行 176-180
+    from unsloth.chat_templates import train_on_responses_only
+    trainer = train_on_responses_only(
+        trainer,
+        # GLM chat template会输出 `<|assistant|><start_working_out>`（无换行）
+        instruction_part="<|user|>",
+        response_part="<|assistant|><start_working_out>",
     )
+    print("[训练] 已配置 train_on_responses_only - 仅在 assistant 响应上计算损失")
 
     print("[开始训练]")
     trainer.train()
@@ -312,29 +274,24 @@ def train_model(model, tokenizer, dataset, config: dict):
 
 def save_model(model, tokenizer, output_path: str, is_peft: bool = False):
     """
-    合并 LoRA 并保存完整模型
+    保存 LoRA adapter（不是合并后的完整模型）
 
-    参考 qwen3_(4b)_grpo.py 第 564-566 行
-    使用 save_pretrained_merged 保存 merged_16bit 格式 (Unsloth)
-    或使用 merge_and_unload + save_pretrained (Hugging Face PEFT)
+    这样推理时可以快速加载基础模型 + adapter，而不是加载巨大的 merged 模型。
+    后续导出 GGUF 时可以临时合并。
     """
     os.makedirs(output_path, exist_ok=True)
 
-    print(f"[保存模型] 合并 LoRA 并保存到 {output_path}")
+    print(f"[保存模型] 保存 LoRA adapter 到 {output_path}")
 
     if is_peft:
-        # Hugging Face PEFT 方式
-        merged_model = model.merge_and_unload()
-        merged_model.save_pretrained(output_path)
+        # Hugging Face PEFT 方式 - 只保存 adapter
+        model.save_pretrained(output_path)
         tokenizer.save_pretrained(output_path)
     else:
-        # Unsloth 方式
-        model.save_pretrained_merged(
-            output_path,
-            tokenizer,
-            save_method="merged_16bit",
-        )
-    print("[保存完成]")
+        # Unsloth 方式 - 只保存 adapter（不合并）
+        model.save_pretrained(output_path)
+        tokenizer.save_pretrained(output_path)
+    print("[保存完成] LoRA adapter 已保存（后续推理/导出时再合并）")
 
 
 def main():
@@ -355,7 +312,7 @@ def main():
     ensure_model(config)
 
     # 3. 设置模型
-    print("[模型] 加载 GLM-4.7-Flash-FP8-Dynamic 并配置 LoRA")
+    print("[模型] 加载 GLM-4.7-Flash 并配置 LoRA")
     result = setup_model(config)
     if len(result) == 3:
         model, tokenizer, is_peft = result
@@ -363,12 +320,9 @@ def main():
         model, tokenizer = result
         is_peft = False
 
-    # 4. 设置 chat template
-    print("[模板] 设置自定义 chat template")
-    tokenizer = setup_chat_template(tokenizer)
-
-    # 4.5 测试 tokenizer 兼容性
-    test_tokenizer_compatibility(tokenizer)
+    # 4. 修改 chat template（将 GLM 原生 <think> 替换为项目标签）
+    print("[模板] 修改 chat template (think -> start_working_out)")
+    tokenizer = patch_thinking_tags(tokenizer)
 
     # 5. 加载数据
     sft_data_path = os.path.join(config["paths"]["sft_data_dir"], "sft_train.jsonl")
@@ -376,8 +330,15 @@ def main():
     print(f"[数据] 加载 SFT 数据: {sft_data_path}")
     dataset = load_sft_data(sft_data_path, tokenizer, max_seq_length)
 
+    # 5.5 验证 chat template 格式（打印一条样本）
+    if len(dataset) > 0:
+        print("\n[验证] Chat template 格式示例（前 500 字符）:")
+        sample_text = dataset[0]["text"]
+        print(sample_text[:500])
+        print("...\n")
+
     # 6. 训练
-    model = train_model(model, tokenizer, dataset, config)
+    model = train_model(model, tokenizer, dataset, config, is_peft=is_peft)
 
     # 7. 保存模型
     output_path = config["paths"]["sft_output"]
