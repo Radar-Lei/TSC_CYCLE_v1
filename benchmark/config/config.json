@@ -1,0 +1,18 @@
+{
+  "simulation": {
+    "cycle_duration": 60,
+    "warmup_seconds": 300,
+    "simulation_seconds": 1800,
+    "step_length": 1.0
+  },
+  "paths": {
+    "environments_dir": "TSC_CYCLE/sumo_simulation/environments",
+    "output_dir": "benchmark/results"
+  },
+  "logging": {
+    "level": "info"
+  },
+  "llm": {
+    "timeout_seconds": 300
+  }
+}

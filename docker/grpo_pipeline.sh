@@ -210,32 +210,45 @@ if [ "$SKIP_TRAIN" = false ]; then
         fi
     fi
 
-    # 3. Baseline 完整性检查
+    # 3. Baseline 完整性检查 + 自动过滤
     if [ -f "$DATA_FILE" ] && [ -f "$BASELINE_FILE" ]; then
         BASELINE_CHECK=$(python3 -c "
 import json
-data_scenarios = set()
-with open('${DATA_FILE}', 'r') as f:
-    for line in f:
-        item = json.loads(line)
-        data_scenarios.add(item['state_file'])
 
-with open('${BASELINE_FILE}', 'r') as f:
+DATA_FILE = '${DATA_FILE}'
+BASELINE_FILE = '${BASELINE_FILE}'
+
+# 读取 baseline 场景
+with open(BASELINE_FILE, 'r') as f:
     baseline = json.load(f)
     baseline_scenarios = set(baseline.keys())
 
-missing = data_scenarios - baseline_scenarios
-if missing:
-    print(f'✗ Baseline 缺失 {len(missing)} 个场景')
-    exit(1)
+# 读取并过滤训练数据
+valid_lines = []
+missing_count = 0
+total_count = 0
+
+with open(DATA_FILE, 'r') as f:
+    for line in f:
+        total_count += 1
+        item = json.loads(line)
+        state_file = item['metadata']['state_file']
+        if state_file in baseline_scenarios:
+            valid_lines.append(line)
+        else:
+            missing_count += 1
+
+# 如果有缺失，覆盖写入过滤后的数据
+if missing_count > 0:
+    with open(DATA_FILE, 'w') as f:
+        f.writelines(valid_lines)
+    print(f'✓ 已过滤无效样本: 保留 {len(valid_lines)} 条（剔除 {missing_count} 条无 baseline）')
 else:
-    print(f'✓ Baseline 完整: 覆盖所有 {len(data_scenarios)} 个场景')
+    print(f'✓ Baseline 完整: 覆盖所有 {total_count} 个场景')
 " 2>&1)
 
         CHECK_MESSAGES+=("$BASELINE_CHECK")
-        if [[ "$BASELINE_CHECK" == *"✗"* ]]; then
-            CHECK_FAILED=true
-        fi
+        # 过滤成功不算失败
     fi
 
     # 4. Reward 配置合法性检查

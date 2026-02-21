@@ -1,16 +1,77 @@
+# === Python ===
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# === Virtual Environment ===
+.venv/
+venv/
+env/
+
+# === Model weights & large files (>5MB) ===
+*.safetensors
+*.gguf
+*.bin
+*.pt
+*.pth
+*.onnx
+model/
+unsloth/
+llama.cpp/
+
+# === Training artifacts ===
+output/
+outputs/
+logs/
+.checkpoints/
+data/
+*.jsonl
+*.log
+unsloth_compiled_cache/
+*.csv
+
+# === NVIDIA / CUDA cache ===
+.nv/
+
+# === IDE & Editor ===
+.cursor/
+.vscode/
+*.swp
+*.swo
+*~
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === Environment & secrets ===
+.env
+.env.*
+
+# === Jupyter Notebooks ===
+*.ipynb
+.ipynb_checkpoints/
+
+# === Testing ===
+.pytest_cache/
+htmlcov/
+.coverage
+
+# === Project-specific ignores ===
 sumo_simulation/
 grpo_reference_only/
 sample_prompt_result.md
-*.ipynb
-*.pyc
-output/
-*.log
-unsloth_compiled_cache/
-model/
-outputs/
-.checkpoints/
-data/
-logs/
-.env
 qwen3_(4b)_grpo.py
-*.jsonl
+glm_flash_a100(80gb).py
+rou_month_generator.py
+.bashrc
+.cache/
+
+# === Benchmark results (regeneratable) ===
+benchmark/results/

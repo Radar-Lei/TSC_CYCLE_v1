@@ -16,6 +16,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 IMAGE_NAME="qwen3-tsc-grpo:latest"
+CONTAINER_NAME="data-gen"
 CONTAINER_WORKDIR="/home/samuel/SCU_TSC"
 
 echo "=========================================="
@@ -25,12 +26,19 @@ echo "[项目目录] ${PROJECT_DIR}"
 echo "[Docker 镜像] ${IMAGE_NAME}"
 echo ""
 
+# 清理可能残留的同名容器
+if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+    echo "[清理] 移除已存在的容器: ${CONTAINER_NAME}"
+    docker rm -f "${CONTAINER_NAME}" 2>/dev/null || true
+fi
+
 # 创建输出目录（宿主机侧）
 mkdir -p "${PROJECT_DIR}/outputs/data" "${PROJECT_DIR}/outputs/states"
 
 # 通过 Docker 容器执行数据生成
 echo "[开始] 生成训练数据..."
 docker run --rm \
+    --name "${CONTAINER_NAME}" \
     --gpus all \
     --shm-size=32GB \
     --user "$(id -u):$(id -g)" \

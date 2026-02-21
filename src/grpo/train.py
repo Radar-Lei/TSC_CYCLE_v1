@@ -211,11 +211,12 @@ def train_model(model, tokenizer, dataset, config: dict, reward_funcs: list, max
         # Training control
         per_device_train_batch_size=grpo_config["per_device_train_batch_size"],
         gradient_accumulation_steps=grpo_config["gradient_accumulation_steps"],
-        max_steps=grpo_config["max_steps"],
+        num_train_epochs=grpo_config["num_train_epochs"],
 
         # Logging and checkpointing
         logging_steps=grpo_config["logging_steps"],
         save_steps=grpo_config["save_steps"],
+        save_total_limit=grpo_config["save_total_limit"],
         report_to=grpo_config["report_to"],
         output_dir="outputs/grpo/checkpoints",
 

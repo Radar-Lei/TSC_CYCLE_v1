@@ -1,0 +1,32 @@
+{
+  "models": [
+    {"name": "zai-org/glm-4.7-flash", "structured_output": true},
+    {"name": "lightgpt-8b-llama3", "structured_output": true},
+    {"name": "openai/gpt-oss-20b", "structured_output": true},
+    {"name": "qwen/qwen3-30b-a3b-2507", "structured_output": true},
+    {"name": "qwen3-4b-thinking-2507", "structured_output": true},
+    {"name": "deepsignal_cycleplan@f16", "structured_output": true},
+    {"name": "deepsignal_cycleplan@q4_k_m", "structured_output": true}
+  ],
+  "scenario": null,
+  "llm_api_base_url": "http://host.docker.internal:1234/v1",
+  "benchmark_config_path": null,
+  "cycle_plan_schema": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "cycle_plan",
+      "strict": true,
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "phase_id": {"type": "integer"},
+            "final": {"type": "integer"}
+          },
+          "required": ["phase_id", "final"]
+        }
+      }
+    }
+  }
+}

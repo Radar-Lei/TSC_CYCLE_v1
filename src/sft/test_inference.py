@@ -2,11 +2,18 @@
 """SFT inference test - randomly sample from train.jsonl and show model output."""
 
 import json
+import os
 import random
 import sys
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+# 优先使用 Unsloth 加载（更快），失败则回退到 HuggingFace
+try:
+    from unsloth import FastLanguageModel
+    USE_UNSLOTH = True
+except ImportError:
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    USE_UNSLOTH = False
 
 # Build special tokens dynamically to avoid tooling issues
 _IM_END = "<" + "|im_end|" + ">"
@@ -50,18 +57,88 @@ def clean_generated_text(text, tokenizer):
 
 def main():
     num_samples = int(sys.argv[1]) if len(sys.argv) > 1 else 3
-    model_path = "outputs/sft/model"
+    adapter_path = "outputs/sft/model"  # LoRA adapter 路径
+    base_model = "unsloth/GLM-4.7-Flash"  # 基础模型路径
     data_path = "outputs/sft/sft_train.jsonl"
 
-    print("[模型] 加载 SFT 模型:", model_path)
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    model = AutoModelForCausalLM.from_pretrained(
-        model_path,
-        torch_dtype=torch.bfloat16,
-        device_map="auto",
-        trust_remote_code=True,
-    )
-    model.eval()
+    print("[模型] 加载 SFT 模型 (基础模型 + LoRA adapter)")
+
+    if USE_UNSLOTH:
+        # Unsloth 加载：先加载基础模型，再加载 LoRA adapter
+        print(f"[加载方式] Unsloth FastLanguageModel")
+        print(f"  基础模型: {base_model}")
+        print(f"  LoRA adapter: {adapter_path}")
+
+        # 检查是否是 LoRA adapter 目录（有 adapter_config.json）
+        is_lora = os.path.exists(os.path.join(adapter_path, "adapter_config.json"))
+
+        if is_lora:
+            # 加载基础模型（4bit 量化加速）
+            model, tokenizer = FastLanguageModel.from_pretrained(
+                model_name=base_model,
+                max_seq_length=2048,
+                load_in_4bit=True,  # 使用 4bit 量化
+                trust_remote_code=True,
+            )
+            # 加载 LoRA adapter
+            from peft import PeftModel
+            model = PeftModel.from_pretrained(model, adapter_path)
+            print("[加载] LoRA adapter 加载成功")
+        else:
+            # 兼容旧的 merged 模型
+            print("[警告] 未检测到 LoRA adapter，尝试加载 merged 模型（较慢）")
+            model, tokenizer = FastLanguageModel.from_pretrained(
+                model_name=adapter_path,
+                max_seq_length=2048,
+                load_in_4bit=True,
+                trust_remote_code=True,
+            )
+
+        # 启用快速推理
+        FastLanguageModel.for_inference(model)
+    else:
+        # HuggingFace 原生加载（回退方案）
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+        print("[加载方式] HuggingFace AutoModelForCausalLM")
+
+        # 检查是否是 LoRA adapter 目录
+        is_lora = os.path.exists(os.path.join(adapter_path, "adapter_config.json"))
+
+        if is_lora:
+            # 加载基础模型
+            print(f"  基础模型: {base_model}")
+            print(f"  LoRA adapter: {adapter_path}")
+            tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
+            model = AutoModelForCausalLM.from_pretrained(
+                base_model,
+                torch_dtype=torch.bfloat16,
+                device_map="auto",
+                trust_remote_code=True,
+            )
+            # 加载 LoRA adapter
+            from peft import PeftModel
+            model = PeftModel.from_pretrained(model, adapter_path)
+            print("[加载] LoRA adapter 加载成功")
+        else:
+            # 兼容旧的 merged 模型
+            print(f"[警告] 未检测到 LoRA adapter，加载 merged 模型（较慢）")
+            tokenizer = AutoTokenizer.from_pretrained(adapter_path, trust_remote_code=True)
+            model = AutoModelForCausalLM.from_pretrained(
+                adapter_path,
+                torch_dtype=torch.bfloat16,
+                device_map="auto",
+                trust_remote_code=True,
+            )
+        model.eval()
+
+    # 调试：检查 tokenizer 和 model 的 eos_token_id
+    print(f"[调试] tokenizer.eos_token: {repr(tokenizer.eos_token)}")
+    print(f"[调试] tokenizer.eos_token_id: {tokenizer.eos_token_id}")
+    print(f"[调试] model.config.eos_token_id: {model.config.eos_token_id}")
+
+    # 使用 model.config 的 eos_token_id（更可靠）
+    eos_token_id = model.config.eos_token_id
+    pad_token_id = model.config.pad_token_id if model.config.pad_token_id is not None else eos_token_id
 
     # Read all samples
     with open(data_path, "r") as f:
@@ -111,6 +188,8 @@ def main():
                 temperature=0.05,
                 top_p=0.95,
                 do_sample=True,
+                eos_token_id=eos_token_id,
+                pad_token_id=pad_token_id,
             )
 
         generated_ids = outputs[0][inputs["input_ids"].shape[1] :]
