@@ -65,7 +65,7 @@ None.
 |---|-------------|------|--------|-----------|
 | 1 | 修改 sft_test.sh 支持 GGUF 模型测试 | 2026-02-19 | 7387a94 | [1-sft-test-sh-gguf](./quick/1-sft-test-sh-gguf/) |
 | 2 | Qwen3-4B SFT 训练并导出 F16/Q4_K_M GGUF | 2026-02-20 | 2adf901 | [2-qwen3-4b-sft-qwen3-home-samuel-tsc-cycle](./quick/2-qwen3-4b-sft-qwen3-home-samuel-tsc-cycle/) |
-| 3 | GGUF LM Studio 符号链接修复 | 2026-02-21 | (无仓库内改动) | [3-gguf-lm-studio](./quick/3-gguf-lm-studio/) |
+| 3 | GGUF LM Studio 符号链接修复 | 2026-02-21 | 015af3c | [3-gguf-lm-studio](./quick/3-gguf-lm-studio/) |
 
 ## Session Continuity
 
