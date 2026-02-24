@@ -1,8 +1,8 @@
 {
   "simulation": {
     "cycle_duration": 60,
-    "warmup_seconds": 300,
-    "simulation_seconds": 1800,
+    "warmup_seconds": 30,
+    "simulation_seconds": 180,
     "step_length": 1.0
   },
   "paths": {

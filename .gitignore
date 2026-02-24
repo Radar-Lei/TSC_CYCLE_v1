@@ -64,7 +64,8 @@ htmlcov/
 .coverage
 
 # === Project-specific ignores ===
-sumo_simulation/
+sumo_simulation/*
+!sumo_simulation/sumo_simulator.py
 grpo_reference_only/
 sample_prompt_result.md
 qwen3_(4b)_grpo.py
