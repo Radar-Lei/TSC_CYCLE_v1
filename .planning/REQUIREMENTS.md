@@ -19,10 +19,10 @@
 
 ### 推理链生成
 
-- [ ] **GEN-01**: 构建 prompt 让 GLM-5 根据交通数据生成 think 链 + solution
-- [ ] **GEN-02**: think 链目标长度约 500 token，prompt 中明确约束
-- [ ] **GEN-03**: solution 格式为 JSON 数组 `[{"phase_id": N, "final": N}, ...]`
-- [ ] **GEN-04**: GLM-5 输出经过约束校验：相位顺序一致 + min_green ≤ final ≤ max_green
+- [x] **GEN-01**: 构建 prompt 让 GLM-5 根据交通数据生成 think 链 + solution
+- [x] **GEN-02**: think 链目标长度约 500 token，prompt 中明确约束
+- [x] **GEN-03**: solution 格式为 JSON 数组 `[{"phase_id": N, "final": N}, ...]`
+- [x] **GEN-04**: GLM-5 输出经过约束校验：相位顺序一致 + min_green ≤ final ≤ max_green
 - [ ] **GEN-05**: 约束违反时丢弃该条重试，单条最多重试 3 次
 - [ ] **GEN-06**: 3 次均失败的样本记录日志并跳过
 
@@ -80,10 +80,10 @@
 | API-04 | Phase 1 | Complete |
 | SAMP-01 | Phase 1 | Complete |
 | SAMP-02 | Phase 1 | Complete |
-| GEN-01 | Phase 2 | Pending |
-| GEN-02 | Phase 2 | Pending |
-| GEN-03 | Phase 2 | Pending |
-| GEN-04 | Phase 2 | Pending |
+| GEN-01 | Phase 2 | Complete |
+| GEN-02 | Phase 2 | Complete |
+| GEN-03 | Phase 2 | Complete |
+| GEN-04 | Phase 2 | Complete |
 | GEN-05 | Phase 2 | Pending |
 | GEN-06 | Phase 2 | Pending |
 | PROG-01 | Phase 2 | Pending |

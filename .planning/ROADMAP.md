@@ -41,10 +41,11 @@ Plans:
   2. 生成的 solution 通过约束校验（相位顺序一致、绿灯时间在合法范围内），违反者自动重试最多 3 次
   3. 程序中断后重启可从断点恢复，不重复调用已成功的条目
   4. 运行时可看到实时进度（完成数/总数、成功率、平均 think 长度）
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 02-01: TBD
+- [x] 02-01-PLAN.md — Prompt 构建器 + 输出解析/约束校验器
+- [ ] 02-02-PLAN.md — 批量生成编排器 + CLI 入口
 
 ### Phase 3: 数据组装、训练验证与模型导出
 **Goal**: 生成结果被组装为可直接训练的 SFT 数据，通过实际训练验证数据质量，并导出三种 GGUF 量化格式供部署使用
@@ -69,5 +70,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. API 客户端与数据采样 | 0/2 | Not started | - |
-| 2. 批量推理链生成 | 0/0 | Not started | - |
+| 2. 批量推理链生成 | 0/2 | Not started | - |
 | 3. 数据组装、训练验证与模型导出 | 0/0 | Not started | - |
