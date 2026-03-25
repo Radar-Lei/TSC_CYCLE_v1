@@ -60,7 +60,7 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — SFT 数据组装 (results.jsonl -> sft_train.jsonl)
+- [x] 03-01-PLAN.md — SFT 数据组装 (results.jsonl -> sft_train.jsonl)
 - [ ] 03-02-PLAN.md — Docker SFT 训练验证 (1 epoch + loss 检查)
 - [ ] 03-03-PLAN.md — GGUF 模型导出 (Q4_K_M + Q8_0 + F16)
 

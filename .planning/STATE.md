@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Phase complete — ready for verification
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-03-25T08:58:59.279Z"
+status: Ready to execute
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-25T09:16:11.394Z"
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 7
+  completed_plans: 5
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** 生成足够多样和深度的 SFT 训练数据，使 Qwen3-4B 学会真正的交通配时推理
-**Current focus:** Phase 02 — batch-generation
+**Current focus:** Phase 03 — assembly-export
 
 ## Current Position
 
-Phase: 02 (batch-generation) — EXECUTING
-Plan: 2 of 2
+Phase: 03 (assembly-export) — EXECUTING
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Plan: 2 of 2
 | Phase 01-api P01 | 3min | 1 tasks | 3 files |
 | Phase 02 P01 | 4min | 2 tasks | 4 files |
 | Phase 02 P02 | 3min | 2 tasks | 3 files |
+| Phase 03 P01 | 6min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,7 @@ Recent decisions affecting current work:
 - [Phase 02]: GLM5_SYSTEM_PROMPT 基于原始 SYSTEM_PROMPT 追加 ~500 token think 链长度引导
 - [Phase 02]: validate_constraints 采用 fail-fast 模式，遇到第一个约束违反立即返回
 - [Phase 02]: ThreadPoolExecutor worker 数与 API 并发一致; 线程安全写入使用 Lock + flush 保证崩溃恢复
+- [Phase 03]: assemble_sft_record 兼容 BatchGenerator 和简化两种输入格式
 
 ### Pending Todos
 
@@ -76,6 +78,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T08:58:59.278Z
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-03-25T09:16:11.392Z
+Stopped at: Completed 03-01-PLAN.md
 Resume file: None

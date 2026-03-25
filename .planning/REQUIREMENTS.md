@@ -34,9 +34,9 @@
 
 ### 数据组装
 
-- [ ] **ASM-01**: 将 GLM-5 生成的结果组装为 SFT 训练格式 (messages: system/user/assistant)
-- [ ] **ASM-02**: assistant 内容格式：`<start_working_out>{think}<end_working_out><SOLUTION>{json}</SOLUTION>`
-- [ ] **ASM-03**: 最终输出 `outputs/sft/sft_train.jsonl`，可直接用于 `src/sft/train.py`
+- [x] **ASM-01**: 将 GLM-5 生成的结果组装为 SFT 训练格式 (messages: system/user/assistant)
+- [x] **ASM-02**: assistant 内容格式：`<start_working_out>{think}<end_working_out><SOLUTION>{json}</SOLUTION>`
+- [x] **ASM-03**: 最终输出 `outputs/sft/sft_train.jsonl`，可直接用于 `src/sft/train.py`
 
 ### 训练验证
 
@@ -89,9 +89,9 @@
 | PROG-01 | Phase 2 | Complete |
 | PROG-02 | Phase 2 | Complete |
 | PROG-03 | Phase 2 | Complete |
-| ASM-01 | Phase 3 | Pending |
-| ASM-02 | Phase 3 | Pending |
-| ASM-03 | Phase 3 | Pending |
+| ASM-01 | Phase 3 | Complete |
+| ASM-02 | Phase 3 | Complete |
+| ASM-03 | Phase 3 | Complete |
 | TRAIN-01 | Phase 3 | Pending |
 | TRAIN-02 | Phase 3 | Pending |
 | EXPORT-01 | Phase 3 | Pending |
