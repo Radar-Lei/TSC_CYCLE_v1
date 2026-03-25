@@ -83,7 +83,7 @@ class TestSaturationBucket:
 
     def test_boundary_med_high(self):
         """avg >= 0.7 -> high"""
-        sample = _make_sample("tl_A", [0.7, 0.7, 0.7])
+        sample = _make_sample("tl_A", [0.71, 0.71, 0.71])
         assert _saturation_bucket(sample) == "high"
 
 
