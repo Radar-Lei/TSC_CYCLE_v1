@@ -1,3 +1,3 @@
-"""GLM-5 API 客户端模块"""
+"""GLM-5 API 客户端与批量生成模块"""
 
-__all__ = ["GLM5Client", "GLM5Response"]
+__all__ = ["GLM5Client", "GLM5Response", "BatchGenerator"]
