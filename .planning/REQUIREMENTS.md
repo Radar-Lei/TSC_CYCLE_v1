@@ -23,14 +23,14 @@
 - [x] **GEN-02**: think 链目标长度约 500 token，prompt 中明确约束
 - [x] **GEN-03**: solution 格式为 JSON 数组 `[{"phase_id": N, "final": N}, ...]`
 - [x] **GEN-04**: GLM-5 输出经过约束校验：相位顺序一致 + min_green ≤ final ≤ max_green
-- [ ] **GEN-05**: 约束违反时丢弃该条重试，单条最多重试 3 次
-- [ ] **GEN-06**: 3 次均失败的样本记录日志并跳过
+- [x] **GEN-05**: 约束违反时丢弃该条重试，单条最多重试 3 次
+- [x] **GEN-06**: 3 次均失败的样本记录日志并跳过
 
 ### 容错与进度
 
-- [ ] **PROG-01**: 支持断点续传——已成功生成的条目不会重复调用 API
-- [ ] **PROG-02**: 实时显示进度（已完成/总数、成功率、平均 think 长度）
-- [ ] **PROG-03**: 中间结果保存到文件，程序中断后可恢复
+- [x] **PROG-01**: 支持断点续传——已成功生成的条目不会重复调用 API
+- [x] **PROG-02**: 实时显示进度（已完成/总数、成功率、平均 think 长度）
+- [x] **PROG-03**: 中间结果保存到文件，程序中断后可恢复
 
 ### 数据组装
 
@@ -84,11 +84,11 @@
 | GEN-02 | Phase 2 | Complete |
 | GEN-03 | Phase 2 | Complete |
 | GEN-04 | Phase 2 | Complete |
-| GEN-05 | Phase 2 | Pending |
-| GEN-06 | Phase 2 | Pending |
-| PROG-01 | Phase 2 | Pending |
-| PROG-02 | Phase 2 | Pending |
-| PROG-03 | Phase 2 | Pending |
+| GEN-05 | Phase 2 | Complete |
+| GEN-06 | Phase 2 | Complete |
+| PROG-01 | Phase 2 | Complete |
+| PROG-02 | Phase 2 | Complete |
+| PROG-03 | Phase 2 | Complete |
 | ASM-01 | Phase 3 | Pending |
 | ASM-02 | Phase 3 | Pending |
 | ASM-03 | Phase 3 | Pending |
