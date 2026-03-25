@@ -57,10 +57,12 @@ Plans:
   2. `src/sft/train.py` 可以直接加载生成的数据文件开始训练（1 epoch），无格式错误（通过 `docker/sft_train.sh` 在 Docker 容器中执行）
   3. 训练 loss 曲线正常收敛，无明显过拟合模式（loss 不会在前几步骤急剧下降后停滞）
   4. 训练后的模型成功导出为 Q4_K_M、Q8_0、F16 三种 GGUF 文件，每个文件可被 llama.cpp 加载
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 03-01: TBD
+- [ ] 03-01-PLAN.md — SFT 数据组装 (results.jsonl -> sft_train.jsonl)
+- [ ] 03-02-PLAN.md — Docker SFT 训练验证 (1 epoch + loss 检查)
+- [ ] 03-03-PLAN.md — GGUF 模型导出 (Q4_K_M + Q8_0 + F16)
 
 ## Progress
 
@@ -71,4 +73,4 @@ Phases execute in numeric order: 1 → 2 → 3
 |-------|----------------|--------|-----------|
 | 1. API 客户端与数据采样 | 0/2 | Not started | - |
 | 2. 批量推理链生成 | 0/2 | Not started | - |
-| 3. 数据组装、训练验证与模型导出 | 0/0 | Not started | - |
+| 3. 数据组装、训练验证与模型导出 | 0/3 | Not started | - |
