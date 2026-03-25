@@ -1,70 +1,120 @@
 # External Integrations
 
-**Analysis Date:** 2026-02-21
+**Analysis Date:** 2026-03-25
 
-## APIs & External Services
+## APIs & Services
 
-**LLM Inference:**
-- OpenAI-compatible API - Used for benchmarking with models served locally (typically via LM Studio).
-  - SDK/Client: `openai` Python package.
-  - Auth: None (configured as `not-needed` in `benchmark/llm_client.py`).
+**LM Studio (OpenAI-compatible API):**
+- Purpose: Local LLM inference for benchmarking fine-tuned models
+- SDK/Client: `openai` Python package, wrapped in `benchmark/llm_client.py` (`LLMClient` class)
+- Default endpoint: `http://localhost:1234/v1`
+- Auth: None required (`api_key="not-needed"`)
+- Configuration: `benchmark/config.py` (`BenchmarkConfig.llm_api_base_url`, `llm_timeout_seconds`, `llm_max_retries`, `llm_retry_base_delay`)
+- Features: Structured output (JSON Schema) with automatic fallback, exponential backoff retry, system+user prompt support
 
-**Model Hub:**
-- Hugging Face - Used via `unsloth` for loading base models (e.g., `Qwen/Qwen3-4B-Base`).
-- ModelScope - Secondary model source mentioned in training scripts.
+**ModelScope:**
+- Purpose: Download base models from Chinese model hub when not available locally
+- SDK/Client: `modelscope.snapshot_download()`
+- Used in: `src/sft/train.py` line 37 (`ensure_model()` function)
+- Triggered: Only when local model path doesn't exist
+- No auth configuration detected (public model downloads)
+
+**Hugging Face Hub:**
+- Purpose: Download training datasets (OpenMathReasoning, DAPO-Math)
+- SDK/Client: `datasets.load_dataset()`
+- Used in: `qwen3_(4b)_grpo.py` (reference script) for pre-training data
+- Datasets: `unsloth/OpenMathReasoning-mini`, `open-r1/DAPO-Math-17k-Processed`
+- Note: These are used in the reference script only; production training uses locally generated data
+
+## Simulation Engine
+
+**SUMO (Simulation of Urban Mobility):**
+- Purpose: Traffic simulation for GRPO reward computation and benchmark evaluation
+- Interface: TraCI (Traffic Control Interface) via `traci` Python package
+- Integration points:
+  - `src/grpo/rewards.py` - GRPO reward function runs SUMO simulations in `ProcessPoolExecutor` workers
+  - `sumo_simulation/sumo_simulator.py` - Full-featured simulator class for data generation
+  - `benchmark/simulation.py` - Benchmark simulation control with cycle-based operation
+- Environment variable: `SUMO_HOME` (default: `/usr/share/sumo`)
+- Scenarios:
+  - `sumo_simulation/environments/arterial4x4_*` - 1400+ arterial grid scenarios with pre-generated route files
+  - `sumo_simulation/environments/chengdu/` - Real-world Chengdu intersection scenario
+- Connection: TCP socket with random port assignment (port range 10000-60000 in reward functions)
+- Timeout: Configurable per `config/config.json` `training.grpo.reward.sumo_timeout_seconds` (default 60s)
 
 ## Data Storage
 
 **Databases:**
-- Local Filesystem only - No external database detected.
-  - Source Data: JSON/JSONL samples in `outputs/data/` and `outputs/grpo/`.
-  - Metrics: CSV and JSON results in `benchmark/results/`.
-  - Checkpoints: Pytorch/SafeTensors in `outputs/sft/` and `outputs/grpo/`.
+- None - All data is file-based (JSON, JSONL)
 
 **File Storage:**
-- Local filesystem only.
+- Local filesystem only
+- Training data: `outputs/data/`, `outputs/sft/`, `outputs/grpo/` (JSONL format)
+- Model checkpoints: `outputs/sft/model/`, `outputs/grpo/model/`
+- GGUF exports: `outputs/sft/merged/`
+- Benchmark results: `benchmark/results/`
+- SUMO state files: `sumo_simulation/environments/`
+- Baseline metrics: `outputs/grpo/baseline.json`
 
 **Caching:**
-- Unsloth Compiled Cache - Stores optimized kernels in `unsloth_compiled_cache/`.
+- None
 
 ## Authentication & Identity
 
 **Auth Provider:**
-- Custom - No external auth providers (Auth0/Firebase) used; the system relies on local API connectivity.
+- Not applicable - This is a local ML training/evaluation pipeline
+- LM Studio API requires no authentication
+- ModelScope uses anonymous/public downloads
 
 ## Monitoring & Observability
 
 **Error Tracking:**
-- loguru - Local structured logging to `run.log`.
+- None - Errors are logged and raised as exceptions
 
 **Logs:**
-- File-based logging in `logs/` and `benchmark/results/*/run.log`.
+- `loguru` for benchmark subsystem (`benchmark/llm_client.py`, `benchmark/simulation.py`, `benchmark/run_benchmark.py`)
+- Python `logging` stdlib for phase processor (`src/utils/logging_config.py` -> `phase_processing.log`)
+- Print statements for training progress in `src/sft/train.py`, `src/grpo/train.py`
+- TRL training metrics logged via trainer (configured with `report_to: "none"` - no external tracking)
 
 ## CI/CD & Deployment
 
 **Hosting:**
-- On-premise/Local - Designed for local execution with GPU acceleration.
+- Local DGX Spark machine
+- Docker container for reproducible training environment
 
 **CI Pipeline:**
-- Docker - `docker/Dockerfile` and associated scripts provide reproducible environments.
+- None detected (no `.github/workflows/`, `.gitlab-ci.yml`, etc.)
 
-## Environment Configuration
-
-**Required env vars:**
-- `SUMO_HOME`: Critical for locating SUMO binaries.
-- `SUMO_GUI`: Optional, for manual visualization.
-
-**Secrets location:**
-- Not applicable - No external secret management detected; `.env` files not found in standard exploration.
+**Deployment Scripts:**
+- `docker/sft_train.sh` - Run SFT training in container
+- `docker/grpo_train.sh` - Run GRPO training in container
+- `docker/grpo_pipeline.sh` - Full GRPO pipeline (baseline + data + filter + train)
+- `docker/convert_gguf.sh` - Export model to GGUF format
+- `docker/deploy_lmstudio.sh` - Deploy GGUF model to LM Studio
+- `docker/data.sh` - Generate training data
+- `docker/run.sh` - General container run script
+- `docker/sft_test.sh`, `docker/sft_test_lmstudio.sh` - Inference testing
 
 ## Webhooks & Callbacks
 
 **Incoming:**
-- None detected.
+- None
 
 **Outgoing:**
-- None detected.
+- None
+
+## Environment Configuration
+
+**Required env vars:**
+- `SUMO_HOME` - SUMO installation path (auto-set in Docker to `/usr/share/sumo`, auto-detected on host)
+
+**Optional env vars:**
+- None detected (no `.env` files, all config via `config/config.json`)
+
+**Key config file:**
+- `config/config.json` - Central configuration for all training parameters, paths, reward weights, and simulation settings
 
 ---
 
-*Integration audit: 2026-02-21*
+*Integration audit: 2026-03-25*
