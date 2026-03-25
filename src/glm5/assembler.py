@@ -4,8 +4,12 @@ GLM-5 结果到 SFT 训练数据的组装脚本
 将 Phase 2 的 GLM-5 生成结果 (outputs/glm5/results.jsonl) 转换为
 SFT 训练数据格式 (outputs/sft/sft_train.jsonl)，使其可直接被 src/sft/train.py 加载。
 
-输入格式 (results.jsonl 每行):
-    {"prompt": "...", "think": "...", "solution": [...], ...}
+输入格式 (results.jsonl 每行, BatchGenerator 输出):
+    {"id": "...", "status": "success", "think_text": "...", "solution": [...],
+     "think_length": 123, "response_time": 1.5, "retries": 0,
+     "sample": {"prompt": "...", "prediction": {...}, ...}}
+
+也兼容简化格式 (直接含 prompt/think/solution 字段)。
 
 输出格式 (sft_train.jsonl 每行):
     {"messages": [{"role": "system", ...}, {"role": "user", ...}, {"role": "assistant", ...}]}
@@ -25,14 +29,32 @@ def assemble_sft_record(record: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """
     将 results.jsonl 单行记录转换为 SFT messages 格式
 
+    支持两种输入格式:
+    - BatchGenerator 格式: {status, think_text, solution, sample: {prompt, ...}}
+    - 简化格式: {prompt, think, solution}
+
+    非 success 状态的记录会被跳过。
+
     Args:
-        record: results.jsonl 中的一行 JSON 对象，包含 prompt, think, solution 字段
+        record: results.jsonl 中的一行 JSON 对象
 
     Returns:
-        messages 格式字典，或 None（当 solution 为空/缺失时）
+        messages 格式字典，或 None（当 solution 为空/缺失/非成功状态时）
     """
-    prompt = record.get("prompt", "")
-    think = record.get("think", "")
+    # 跳过非成功状态 (BatchGenerator 格式)
+    if "status" in record and record["status"] != "success":
+        return None
+
+    # 提取字段，兼容两种格式
+    if "sample" in record:
+        # BatchGenerator 格式
+        prompt = record["sample"].get("prompt", "")
+        think = record.get("think_text", "")
+    else:
+        # 简化格式
+        prompt = record.get("prompt", "")
+        think = record.get("think", "")
+
     solution = record.get("solution")
 
     # 跳过无效记录
@@ -100,7 +122,11 @@ def main():
 
             result = assemble_sft_record(record)
             if result is None:
-                print(f"[组装] 警告: 第 {line_num} 行 solution 为空或缺失，跳过")
+                status = record.get("status", "")
+                if status and status != "success":
+                    print(f"[组装] 跳过第 {line_num} 行: status={status}")
+                else:
+                    print(f"[组装] 警告: 第 {line_num} 行 solution 为空或缺失，跳过")
                 skipped += 1
                 continue
 
