@@ -29,8 +29,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — GLM-5 API 客户端 (并发 + 重试 + max_tokens)
-- [ ] 01-02-PLAN.md — 分层抽样器 (5000 条, 覆盖所有交叉口和饱和度)
+- [x] 01-01-PLAN.md — GLM-5 API 客户端 (并发 + 重试 + max_tokens)
+- [x] 01-02-PLAN.md — 分层抽样器 (5000 条, 覆盖所有交叉口和饱和度)
 
 ### Phase 2: 批量推理链生成
 **Goal**: 用户运行一个命令即可批量生成 5000 条含 think 链和 solution 的数据，过程可中断恢复
@@ -50,9 +50,10 @@ Plans:
 **Goal**: 生成结果被组装为可直接训练的 SFT 数据，通过实际训练验证数据质量，并导出三种 GGUF 量化格式供部署使用
 **Depends on**: Phase 2
 **Requirements**: ASM-01, ASM-02, ASM-03, TRAIN-01, TRAIN-02, EXPORT-01, EXPORT-02, EXPORT-03
+**Environment**: 训练验证和模型导出必须在项目 Unsloth Docker 容器中执行（`docker/Dockerfile`，基于 `unsloth/unsloth:dgxspark-latest`）。使用 `docker/sft_train.sh` 启动训练，容器内已包含 Unsloth、CUDA、SUMO 等全部依赖。
 **Success Criteria** (what must be TRUE):
   1. 输出的 sft_train.jsonl 为标准 messages 格式，assistant 内容使用 `<start_working_out>...<end_working_out><SOLUTION>...</SOLUTION>` 标签
-  2. `src/sft/train.py` 可以直接加载生成的数据文件开始训练（1 epoch），无格式错误
+  2. `src/sft/train.py` 可以直接加载生成的数据文件开始训练（1 epoch），无格式错误（通过 `docker/sft_train.sh` 在 Docker 容器中执行）
   3. 训练 loss 曲线正常收敛，无明显过拟合模式（loss 不会在前几步骤急剧下降后停滞）
   4. 训练后的模型成功导出为 Q4_K_M、Q8_0、F16 三种 GGUF 文件，每个文件可被 llama.cpp 加载
 **Plans**: TBD
