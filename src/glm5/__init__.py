@@ -1,3 +1,3 @@
-"""GLM-5 大规模 SFT 数据生成模块"""
+"""GLM-5 API 客户端模块"""
 
-__all__ = []
+__all__ = ["GLM5Client", "GLM5Response"]
