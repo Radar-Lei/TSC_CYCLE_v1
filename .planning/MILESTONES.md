@@ -1,5 +1,29 @@
 # Milestones
 
+## v1.1 简化版 GRPO 训练 (Shipped: 2026-04-02)
+
+**Delivered:** 交付了与旧版 GRPO 隔离的简化版 reward、数据生成与 Docker 训练入口。
+
+**Phases completed:** 2 phases, 2 plans, 4 tasks
+
+**Key accomplishments:**
+
+- 新增 `src/grpo_simple/rewards.py`，用饱和度比例 reward 取代 SUMO 仿真依赖
+- 新增 `tests/test_grpo_simple_rewards.py`，覆盖命中、偏离、越界与格式错误
+- 新增 `src/scripts/generate_grpo_simple_data.py` 与 `docker/grpo_simple_data.sh`，直接从 `outputs/data/train.jsonl` 生成 16,788 条 GRPO-simple 数据
+- 新增 `src/grpo_simple/train.py` 与 `docker/grpo_simple_train.sh`，把训练入口和输出目录隔离到 `outputs/grpo_simple/`
+
+**Stats:**
+
+- 6 个核心代码/脚本文件新增，1 个配置文件扩展
+- 806 行简化版 GRPO 相关代码与测试
+- 2 phases, 2 plans, 4 tasks
+- 1 天内从里程碑定义到交付
+
+**What's next:** 将简化版 GRPO 接回 benchmark，并评估与完整版 SUMO reward 的差异。
+
+---
+
 ## v1.0 GLM-5 SFT 数据生成 (Shipped: 2026-04-01)
 
 **Phases completed:** 3 phases, 7 plans, 10 tasks

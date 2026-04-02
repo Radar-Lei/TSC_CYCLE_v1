@@ -1,41 +1,44 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: GLM-5 SFT 数据生成
-status: v1.0 milestone archived
-stopped_at: Milestone v1.0 complete
-last_updated: "2026-04-01T06:50:00.000Z"
+milestone: v1.2
+milestone_name: 简化版 GRPO 训练与验证
+status: executing
+stopped_at: Roadmap created for v1.2, ready to plan Phase 6
+last_updated: "2026-04-02T22:55:21.497Z"
+last_activity: 2026-04-02
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
+  total_phases: 2
+  completed_phases: 0
+  total_plans: 2
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-01)
+See: .planning/PROJECT.md (updated 2026-04-02)
 
-**Core value:** 生成足够多样和深度的 SFT 训练数据，使 Qwen3-4B 学会真正的交通配时推理
-**Current focus:** Planning next milestone
+**Core value:** 让模型在严格输出格式和绿灯约束下，稳定学会按输入饱和度分配合理的相位绿灯时间
+**Current focus:** Phase 07 — 自动验证脚本
 
 ## Current Position
 
-Milestone v1.0 archived. Ready for next milestone.
+Phase: 07
+Plan: Not started
+Status: Executing Phase 07
+Last activity: 2026-04-02
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
 **Velocity:**
 
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| Phase 01-api P01 | 3min | 1 tasks | 3 files |
-| Phase 01-api P02 | 3min | 1 tasks | 3 files |
-| Phase 02 P01 | 4min | 2 tasks | 4 files |
-| Phase 02 P02 | 3min | 2 tasks | 3 files |
-| Phase 03 P01 | 6min | 2 tasks | 2 files |
+- Total plans completed: 0 (v1.2)
+- Average duration: —
+- Total execution time: —
 
 ## Accumulated Context
 
@@ -43,16 +46,20 @@ Milestone v1.0 archived. Ready for next milestone.
 
 See PROJECT.md Key Decisions table for full history.
 
+- v1.2: 用独立验证脚本直接加载模型推理，不通过 benchmark API 链路
+- v1.2: 先跑通训练再考虑 reward 扩展
+
 ### Pending Todos
 
-None.
+- 跑通一次真实简化版 GRPO 训练并确认产物目录
+- 编写自动验证脚本检查格式/约束/饱和度比例
 
 ### Blockers/Concerns
 
-None.
+None
 
 ## Session Continuity
 
-Last session: 2026-04-01
-Stopped at: Milestone v1.0 archived
+Last session: 2026-04-02
+Stopped at: Roadmap created for v1.2, ready to plan Phase 6
 Resume file: None
