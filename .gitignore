@@ -15,15 +15,20 @@ venv/
 env/
 
 # === Model weights & large files (>5MB) ===
+# Git cannot ignore by file size, so large local artifacts must stay under
+# ignored paths or match ignored filename patterns.
 *.safetensors
 *.gguf
 *.bin
 *.pt
 *.pth
 *.onnx
+*.ckpt
 model/
 unsloth/
 llama.cpp/
+checkpoints/
+checkpoint-*/
 
 # === Training artifacts ===
 output/
@@ -76,3 +81,5 @@ rou_month_generator.py
 
 # === Benchmark results (regeneratable) ===
 benchmark/results/
+
+.planning/
