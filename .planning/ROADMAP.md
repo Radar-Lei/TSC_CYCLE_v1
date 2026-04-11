@@ -29,7 +29,7 @@
   3. SFT 训练脚本中 BnB 4-bit 量化相关逻辑已移除或跳过，Qwen3-8B 以全精度成功加载到 GPU 上
 **Plans:** 1 plan
 Plans:
-- [ ] 08-01-PLAN.md — 验证并固化 config_8b.json 配置与脚本兼容性
+- [x] 08-01-PLAN.md — 验证并固化 config_8b.json 配置与脚本兼容性
 
 ### Phase 9: 8B 训练与导出
 **Goal**: 开发者完成 Qwen3-8B 的 SFT -> GRPO -> GGUF 完整训练链路，产出可用模型文件
@@ -40,7 +40,10 @@ Plans:
   2. 使用 SFT 产出的 8B 模型完成简化版 GRPO 训练，`outputs/grpo_simple/qwen3-8b/model` 目录包含可加载的完整 GRPO 模型
   3. SFT 模型已导出 GGUF 格式（Q4_K_M、Q8_0、F16），文件存在于 `outputs/sft/qwen3-8b/gguf/` 下
   4. GRPO 模型已导出 GGUF 格式（Q4_K_M、Q8_0、F16），文件存在于 `outputs/grpo_simple/qwen3-8b/gguf/` 下
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 09-01-PLAN.md — SFT 训练 + GGUF 导出（Q4_K_M、Q8_0、F16）
+- [ ] 09-02-PLAN.md — GRPO 训练 + GGUF 导出（Q4_K_M、Q8_0、F16）
 
 ### Phase 10: 4000 条数据自动验证
 **Goal**: 用 validate.py 对 GRPO 产出的 8B 模型跑 4000 条数据验证，确认格式/约束/饱和度通过率达标
@@ -86,7 +89,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 ## Current Status
 
 Active milestone: **v1.3 Qwen3-8B SFT + GRPO 训练**.
-Next up: **Phase 8: 脚本参数化与全精度适配**.
+Next up: **Phase 9: 8B 训练与导出**.
 Coverage: **6/6 v1.3 需求已映射**。
 
 ## Next Candidates
@@ -104,6 +107,6 @@ Coverage: **6/6 v1.3 需求已映射**。
 | 5. 简化版训练入口与验证 | v1.1 | 1/1 | Complete | 2026-04-02 |
 | 6. GRPO 训练执行与产物固化 | v1.2 | — | Complete | 2026-04-07 |
 | 7. 自动验证脚本 | v1.2 | — | Complete | 2026-04-07 |
-| 8. 脚本参数化与全精度适配 | v1.3 | 0/1 | Planning | — |
-| 9. 8B 训练与导出 | v1.3 | 0/0 | Not started | — |
+| 8. 脚本参数化与全精度适配 | v1.3 | 1/1 | Complete | 2026-04-11 |
+| 9. 8B 训练与导出 | v1.3 | 0/2 | Planning | — |
 | 10. 4000 条数据自动验证 | v1.3 | 0/0 | Not started | — |
