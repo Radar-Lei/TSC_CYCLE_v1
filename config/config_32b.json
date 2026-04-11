@@ -1,0 +1,104 @@
+{
+  "training": {
+    "sft": {
+      "model": {
+        "model_name": "unsloth/Qwen3-32B-unsloth-bnb-4bit",
+        "model_id": "unsloth/Qwen3-32B-unsloth-bnb-4bit",
+        "max_seq_length": 2048,
+        "lora_rank": 16,
+        "lora_alpha": 16,
+        "load_in_4bit": true,
+        "fast_inference": false,
+        "gpu_memory_utilization": 0.9,
+        "target_modules": [
+          "q_proj",
+          "k_proj",
+          "v_proj",
+          "o_proj",
+          "gate_proj",
+          "up_proj",
+          "down_proj",
+          "out_proj"
+        ]
+      },
+      "max_steps": -1,
+      "num_train_epochs": 2,
+      "dataset_text_field": "text",
+      "per_device_train_batch_size": 1,
+      "gradient_accumulation_steps": 1,
+      "warmup_steps": 5,
+      "learning_rate": 2e-4,
+      "lr_scheduler_type": "linear",
+      "optim": "adamw_8bit",
+      "weight_decay": 0.001,
+      "bf16": true,
+      "logging_steps": 5,
+      "save_steps": 100,
+      "save_total_limit": 3,
+      "seed": 3407,
+      "report_to": "none"
+    },
+    "grpo_simple": {
+      "model": {
+        "model_name": "outputs/sft/qwen3-32b/model",
+        "max_seq_length": 2048,
+        "lora_rank": 8,
+        "lora_alpha": 16,
+        "load_in_4bit": true,
+        "fast_inference": false,
+        "gpu_memory_utilization": 0.9,
+        "target_modules": [
+          "q_proj",
+          "k_proj",
+          "v_proj",
+          "o_proj",
+          "gate_proj",
+          "up_proj",
+          "down_proj",
+          "out_proj"
+        ]
+      },
+      "num_generations": 4,
+      "max_steps": 1000,
+      "num_train_epochs": 1,
+      "temperature": 1.0,
+      "learning_rate": 5e-6,
+      "weight_decay": 0.001,
+      "warmup_ratio": 0.1,
+      "lr_scheduler_type": "linear",
+      "optim": "adamw_8bit",
+      "per_device_train_batch_size": 1,
+      "gradient_accumulation_steps": 1,
+      "logging_steps": 1,
+      "save_steps": 1000,
+      "save_total_limit": 5,
+      "report_to": "none",
+      "seed": 3407,
+      "bf16": true,
+      "kl_coef": 0.05,
+      "reward": {
+        "format_exact_score": 3.0,
+        "format_approx_scores": {
+          "tag_present": 0.5,
+          "tag_absent": -1.0
+        },
+        "constraint_phase_order_weight": 1.0,
+        "constraint_green_range_weight": 1.0,
+        "saturation_target_score": 3.0,
+        "invalid_completion_score": 0.0,
+        "think_min_tokens": 50,
+        "think_max_tokens": 300,
+        "think_penalty": -0.5,
+        "think_bonus": 0.5
+      }
+    }
+  },
+  "paths": {
+    "data_dir": "outputs/data",
+    "sft_data_dir": "outputs/sft",
+    "sft_output": "outputs/sft/qwen3-32b/model",
+    "grpo_simple_data_dir": "outputs/grpo_simple",
+    "grpo_simple_output": "outputs/grpo_simple/qwen3-32b/model",
+    "grpo_simple_checkpoints": "outputs/grpo_simple/qwen3-32b/checkpoints"
+  }
+}

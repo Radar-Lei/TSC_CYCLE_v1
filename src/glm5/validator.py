@@ -45,12 +45,13 @@ class ParsedOutput:
         }
 
 
-# 预编译正则
+# 预编译正则 — 兼容 <end_working_out> 和 </start_working_out> 两种闭合标签
+_END_TAG = r"(?:<end_working_out>|</start_working_out>)"
 _THINK_PATTERN = re.compile(
-    r"<start_working_out>(.*?)<end_working_out>", re.DOTALL
+    r"<start_working_out>(.*?)" + _END_TAG, re.DOTALL
 )
 _THINK_NO_START_PATTERN = re.compile(
-    r"^(.*?)<end_working_out>", re.DOTALL
+    r"^(.*?)" + _END_TAG, re.DOTALL
 )
 _SOLUTION_PATTERN = re.compile(
     r"<SOLUTION>(.*?)</SOLUTION>", re.DOTALL

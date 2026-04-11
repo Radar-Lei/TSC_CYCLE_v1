@@ -4,14 +4,9 @@ set -euo pipefail
 ################################################################################
 # SFT 训练脚本 - 通过 Docker 容器执行 SFT 训练
 #
-# 输出: outputs/sft/model/* (训练后的完整模型)
-#       outputs/sft/checkpoints/* (训练过程中的检查点)
-#
 # 用法:
-#   ./docker/sft_train.sh                    # 使用默认配置
-#   ./docker/sft_train.sh --config custom.json  # 指定配置文件
-#
-# 注意: 使用 chmod +x docker/sft_train.sh 设置可执行权限
+#   ./docker/sft_train.sh                                # 使用默认配置
+#   ./docker/sft_train.sh --config config/config_32b.json  # 指定配置文件
 ################################################################################
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -34,14 +29,35 @@ if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     docker rm -f "${CONTAINER_NAME}" 2>/dev/null || true
 fi
 
+# 解析 --config 参数
+CONFIG_FILE="config/config.json"
+EXTRA_ARGS=()
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --config)
+            CONFIG_FILE="$2"
+            EXTRA_ARGS+=("--config" "$2")
+            shift 2
+            ;;
+        *)
+            EXTRA_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+# 从配置文件中读取路径
+SFT_OUTPUT=$(python3 -c "import json; c=json.load(open('${PROJECT_DIR}/${CONFIG_FILE}')); print(c['paths'].get('sft_output', 'outputs/sft/model'))")
+SFT_DATA_DIR=$(python3 -c "import json; c=json.load(open('${PROJECT_DIR}/${CONFIG_FILE}')); print(c['paths'].get('sft_data_dir', 'outputs/sft'))")
+
 # 创建输出目录（宿主机侧）
-mkdir -p "${PROJECT_DIR}/outputs/sft/model"
-mkdir -p "${PROJECT_DIR}/outputs/sft/checkpoints"
+mkdir -p "${PROJECT_DIR}/${SFT_OUTPUT}"
+mkdir -p "${PROJECT_DIR}/$(dirname "${SFT_OUTPUT}")/checkpoints"
 
 # 确保 SFT 训练数据存在
-SFT_DATA="${PROJECT_DIR}/outputs/sft/sft_train.jsonl"
-WORKSPACE="${PROJECT_DIR}/outputs/sft/think_workspace.jsonl"
-SAMPLES="${PROJECT_DIR}/outputs/sft/sampled_100.jsonl"
+SFT_DATA="${PROJECT_DIR}/${SFT_DATA_DIR}/sft_train.jsonl"
+WORKSPACE="${PROJECT_DIR}/${SFT_DATA_DIR}/think_workspace.jsonl"
+SAMPLES="${PROJECT_DIR}/${SFT_DATA_DIR}/sampled_100.jsonl"
 
 if [ ! -f "${SFT_DATA}" ]; then
     echo "[数据] sft_train.jsonl 不存在，正在生成..."
@@ -60,6 +76,9 @@ if [ ! -f "${SFT_DATA}" ]; then
 else
     echo "[数据] sft_train.jsonl 已存在 ($(wc -l < "${SFT_DATA}") 条记录)，跳过生成"
 fi
+
+echo "[前置检查] 配置文件: ${CONFIG_FILE}"
+echo "[前置检查] 模型输出: ${SFT_OUTPUT}"
 echo ""
 
 # 通过 Docker 容器执行 SFT 训练
@@ -76,13 +95,11 @@ docker run --rm \
     --entrypoint python3 \
     "${IMAGE_NAME}" \
     -m src.sft.train \
-        --config config/config.json \
-        "$@"
+        --config "${CONFIG_FILE}"
 
 echo ""
 echo "=========================================="
 echo "[完成] SFT 训练完成"
 echo "=========================================="
-echo "[模型输出] outputs/sft/model"
-echo "[检查点目录] outputs/sft/checkpoints"
+echo "[模型输出] ${SFT_OUTPUT}"
 echo ""

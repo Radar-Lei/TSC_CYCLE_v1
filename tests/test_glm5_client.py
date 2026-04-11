@@ -49,7 +49,7 @@ class TestGLM5ClientInit:
         assert client.model == "glm-5"
         assert client.max_tokens == 8192
         assert client.max_retries == 3
-        assert client.max_concurrent == 4
+        assert client.max_concurrent == 2
 
     @patch("src.glm5.client.openai.OpenAI")
     def test_init_with_explicit_key(self, mock_openai_cls):

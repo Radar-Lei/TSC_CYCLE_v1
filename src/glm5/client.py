@@ -91,18 +91,18 @@ class GLM5Client:
         self,
         api_key: Optional[str] = None,
         max_retries: int = 3,
-        retry_base_delay: float = 2.0,
-        timeout: float = 120.0,
-        max_concurrent: int = 4,
+        retry_base_delay: float = 5.0,
+        timeout: float = 300.0,
+        max_concurrent: int = 2,
     ):
         """初始化 GLM-5 客户端
 
         Args:
             api_key: API key，未提供则从 GLM_API_KEY 环境变量读取
             max_retries: 最大重试次数 (默认 3)
-            retry_base_delay: 重试基础延迟秒数 (默认 2.0，指数退避: 2s, 4s, 8s)
-            timeout: API 调用超时秒数 (默认 120.0)
-            max_concurrent: 最大并发请求数 (默认 4)
+            retry_base_delay: 重试基础延迟秒数 (默认 5.0，指数退避: 5s, 10s, 20s)
+            timeout: API 调用超时秒数 (默认 300.0)
+            max_concurrent: 最大并发请求数 (默认 2，避免触发 rate limit)
 
         Raises:
             ValueError: 未提供 api_key 且 GLM_API_KEY 环境变量未设置
@@ -170,10 +170,20 @@ class GLM5Client:
                     success=True,
                 )
 
+            except openai.RateLimitError as e:
+                last_error = str(e)
+                # Rate limit 用更长的退避 (30s, 60s, 120s)
+                if attempt < self.max_retries:
+                    delay = 30 * (2 ** attempt)
+                    print(
+                        f"[GLM5] Rate limit, 等待 {delay}s ({attempt + 1}/{self.max_retries})"
+                    )
+                    time.sleep(delay)
+                continue
+
             except (
                 openai.APITimeoutError,
                 openai.APIConnectionError,
-                openai.RateLimitError,
                 openai.APIError,
             ) as e:
                 last_error = str(e)
@@ -187,7 +197,7 @@ class GLM5Client:
                     f"[GLM5] 未预期错误 {attempt + 1}/{self.max_retries}: {last_error}"
                 )
 
-            # 指数退避: delay = base * 2^attempt (2s, 4s, 8s)
+            # 指数退避: delay = base * 2^attempt (5s, 10s, 20s)
             if attempt < self.max_retries:
                 delay = self.retry_base_delay * (2 ** attempt)
                 time.sleep(delay)

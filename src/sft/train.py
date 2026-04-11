@@ -18,13 +18,20 @@ from trl import SFTTrainer, SFTConfig
 
 
 def ensure_model(config: dict):
-    """确保本地模型存在，不存在则从 Hugging Face 下载
+    """确保模型可用。
 
-    支持 GLM-4.7-Flash 模型下载。
+    支持两种模式：
+    1. 本地模型路径（如 model/Qwen3-4B-Base）
+    2. HuggingFace repo ID（如 unsloth/Qwen3-32B-unsloth-bnb-4bit），由 Unsloth 自动下载
     """
     model_config = config["training"]["sft"]["model"]
     model_path = model_config["model_name"]
     model_id = model_config.get("model_id", "")
+
+    # HuggingFace repo ID 格式（包含 /），Unsloth 会自动处理下载
+    if "/" in model_path:
+        print(f"[模型] 使用 HuggingFace 模型: {model_path}（Unsloth 自动下载）")
+        return model_path
 
     if os.path.isdir(model_path) and os.path.exists(os.path.join(model_path, "config.json")):
         print(f"[模型] 本地模型已存在: {model_path}")
@@ -200,6 +207,8 @@ def train_model(model, tokenizer, dataset, config: dict, is_peft: bool = False):
         is_peft: 如果为 True，使用 Hugging Face 原生 SFTTrainer
     """
     sft_config = config["training"]["sft"]
+    sft_output = config["paths"].get("sft_output", "outputs/sft/model")
+    checkpoints_dir = os.path.join(os.path.dirname(sft_output), "checkpoints")
 
     if is_peft:
         # Hugging Face 原生 SFTTrainer
@@ -221,7 +230,7 @@ def train_model(model, tokenizer, dataset, config: dict, is_peft: bool = False):
                 save_steps=sft_config.get("save_steps", 100),
                 save_total_limit=sft_config.get("save_total_limit", 3),
                 bf16=sft_config.get("bf16", True),
-                output_dir="outputs/sft/checkpoints",
+                output_dir=checkpoints_dir,
                 gradient_checkpointing=False,
                 remove_unused_columns=False,
             ),
@@ -249,8 +258,8 @@ def train_model(model, tokenizer, dataset, config: dict, is_peft: bool = False):
                 save_steps=sft_config.get("save_steps", 100),
                 save_total_limit=sft_config.get("save_total_limit", 3),
                 bf16=sft_config.get("bf16", True),
-                output_dir="outputs/sft/checkpoints",
-                gradient_checkpointing=False,  # 禁用梯度检查点
+                output_dir=checkpoints_dir,
+                gradient_checkpointing=False,
             ),
         )
 
@@ -280,13 +289,22 @@ def save_model(model, tokenizer, output_path: str, config: dict, is_peft: bool =
 
     print(f"[保存模型] 保存合并后的完整模型到 {output_path}")
 
-    merged_model = model
-    if hasattr(model, "merge_and_unload"):
-        print("[保存模型] 检测到 LoRA adapter，正在合并到基座模型...")
-        merged_model = model.merge_and_unload()
-
-    merged_model.save_pretrained(output_path)
-    tokenizer.save_pretrained(output_path)
+    if is_peft:
+        # HF PEFT 路径
+        merged_model = model
+        if hasattr(model, "merge_and_unload"):
+            print("[保存模型] 检测到 LoRA adapter，正在合并到基座模型...")
+            merged_model = model.merge_and_unload()
+        merged_model.save_pretrained(output_path)
+        tokenizer.save_pretrained(output_path)
+    else:
+        # Unsloth 路径：使用 save_pretrained_merged 正确处理 4-bit 量化模型
+        print("[保存模型] 使用 Unsloth save_pretrained_merged 合并 LoRA...")
+        model.save_pretrained_merged(
+            output_path,
+            tokenizer,
+            save_method="merged_16bit",
+        )
 
     # 兜底补齐 config.json（极端情况下 save_pretrained 未写出）
     base_model_config = os.path.join(config["training"]["sft"]["model"]["model_name"], "config.json")
