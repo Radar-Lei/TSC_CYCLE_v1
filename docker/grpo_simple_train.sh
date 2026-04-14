@@ -80,6 +80,7 @@ docker run --rm \
     -w "${CONTAINER_WORKDIR}" \
     -e SUMO_HOME=/usr/share/sumo \
     -e HF_HOME="${CONTAINER_WORKDIR}/.cache/huggingface" \
+    -e ACCELERATE_USE_DISTRIBUTED=no \
     --entrypoint python3 \
     "${IMAGE_NAME}" \
     -m src.grpo_simple.train \
