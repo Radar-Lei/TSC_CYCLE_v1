@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Qwen3-8B SFT + GRPO 训练
-status: complete
-stopped_at: All phases complete — ready for milestone audit/archive
-last_updated: "2026-04-16T00:00:00.000Z"
+status: completed
+stopped_at: v1.3 roadmap created, ready to plan Phase 8
+last_updated: "2026-04-16T14:13:24.927Z"
 last_activity: 2026-04-16
 progress:
   total_phases: 3

@@ -1,5 +1,18 @@
 # Milestones
 
+## v1.3 Qwen3-8B SFT + GRPO 训练 (Shipped: 2026-04-16)
+
+**Phases completed:** 3 phases, 4 plans, 7 tasks
+
+**Key accomplishments:**
+
+- Qwen3-8B 全精度 config 参数化（输出目录隔离，load_in_4bit=false，SFT 2 epochs）
+- Qwen3-8B SFT 微调完成（全精度，2 epochs），产出 4-shard 模型及 F16/Q8_0/Q4_K_M 三种 GGUF 格式
+- 基于 SFT 产出的 Qwen3-8B GRPO 强化学习训练完成，产出完整模型及 F16/Q8_0/Q4_K_M 三种 GGUF 格式
+- Qwen3-8B GRPO 模型 4000 条验证全部通过：格式通过率 100%，约束通过率 98.6%，整体 PASS
+
+---
+
 ## v1.1 简化版 GRPO 训练 (Shipped: 2026-04-02)
 
 **Delivered:** 交付了与旧版 GRPO 隔离的简化版 reward、数据生成与 Docker 训练入口。
