@@ -7,18 +7,18 @@
 
 ### 脚本适配 (ENV)
 
-- [ ] **ENV-01**: 训练脚本支持通过参数指定模型名，输出目录自动按模型名隔离（如 `outputs/sft/qwen3-8b/`、`outputs/grpo_simple/qwen3-8b/`）
-- [ ] **ENV-02**: SFT 训练脚本适配 Qwen3-8B 全精度加载（移除 BnB 量化相关逻辑）
+- [x] **ENV-01**: 训练脚本支持通过参数指定模型名，输出目录自动按模型名隔离（如 `outputs/sft/qwen3-8b/`、`outputs/grpo_simple/qwen3-8b/`）
+- [x] **ENV-02**: SFT 训练脚本适配 Qwen3-8B 全精度加载（移除 BnB 量化相关逻辑）
 
 ### 训练与导出 (TRAIN)
 
-- [ ] **TRAIN-01**: 用现有 SFT 数据对 unsloth/Qwen3-8B 完成 SFT 微调，产出可加载的完整模型
-- [ ] **TRAIN-02**: 用 SFT 产出的 Qwen3-8B 模型完成简化版 GRPO 训练，产出可加载的完整 GRPO 模型
-- [ ] **TRAIN-03**: SFT 和 GRPO 模型分别导出 GGUF 格式（Q4_K_M、Q8_0、F16）
+- [x] **TRAIN-01**: 用现有 SFT 数据对 unsloth/Qwen3-8B 完成 SFT 微调，产出可加载的完整模型
+- [x] **TRAIN-02**: 用 SFT 产出的 Qwen3-8B 模型完成简化版 GRPO 训练，产出可加载的完整 GRPO 模型
+- [x] **TRAIN-03**: SFT 和 GRPO 模型分别导出 GGUF 格式（Q4_K_M、Q8_0、F16）
 
 ### 验证 (VAL)
 
-- [ ] **VAL-01**: 用 validate.py 对 GRPO 产出的 8B 模型跑 4000 条数据自动验证（格式/约束/饱和度通过率）
+- [x] **VAL-01**: 用 validate.py 对 GRPO 产出的 8B 模型跑 4000 条数据自动验证（格式/约束/饱和度通过率）
 
 ## Future Requirements
 
@@ -48,12 +48,12 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ENV-01 | Phase 8 | Pending |
-| ENV-02 | Phase 8 | Pending |
-| TRAIN-01 | Phase 9 | Pending |
-| TRAIN-02 | Phase 9 | Pending |
-| TRAIN-03 | Phase 9 | Pending |
-| VAL-01 | Phase 10 | Pending |
+| ENV-01 | Phase 8 | ✅ Satisfied (2026-04-11) |
+| ENV-02 | Phase 8 | ✅ Satisfied (2026-04-11) |
+| TRAIN-01 | Phase 9 | ✅ Satisfied (2026-04-11) |
+| TRAIN-02 | Phase 9 | ✅ Satisfied (2026-04-12) |
+| TRAIN-03 | Phase 9 | ✅ Satisfied (2026-04-12) |
+| VAL-01 | Phase 10 | ✅ Satisfied (2026-04-14) |
 
 **Coverage:**
 - v1.3 requirements: 6 total
