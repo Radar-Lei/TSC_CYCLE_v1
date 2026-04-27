@@ -1,0 +1,47 @@
+【cycle_predict_input_json】{
+  "prediction": {
+    "as_of": "2026-01-02 00:05:50",
+    "phase_waits": [
+      {
+        "phase_id": 0,
+        "pred_saturation": 1.0038,
+        "min_green": 34,
+        "max_green": 89,
+        "capacity": 30
+      },
+      {
+        "phase_id": 6,
+        "pred_saturation": 0.0,
+        "min_green": 5,
+        "max_green": 101,
+        "capacity": 30
+      },
+      {
+        "phase_id": 8,
+        "pred_saturation": 0.0,
+        "min_green": 22,
+        "max_green": 77,
+        "capacity": 30
+      }
+    ]
+  }
+}【/cycle_predict_input_json】
+任务(必须完成):
+主要基于 prediction.phase_waits 的 pred_saturation(已计算),在满足硬约束前提下输出下一周期各相位最终绿灯时间 final(单位:秒)。
+
+字段说明(仅说明含义):
+- prediction.phase_waits[*].min_green / max_green:秒。
+- prediction.phase_waits[*].pred_saturation:预测饱和度(pred_wait / capacity)。
+- prediction.phase_waits[*].capacity:相位容量(车辆容纳数)。
+
+硬约束(必须满足):
+1) 相位顺序固定:严格按 prediction.phase_waits 的顺序输出;不可跳相、不可重排。
+2) 每相位约束:final 必须满足 prediction.phase_waits[*].min_green ≤ final ≤ prediction.phase_waits[*].max_green。
+3) final 必须为整数秒。
+
+提示(非硬约束):
+- capacity 仅供参考,最终决策以 pred_saturation 为主。
+
+输出格式:
+1) JSON 顶层必须是数组(list);数组长度必须等于 prediction.phase_waits 的长度。
+2) 数组元素必须为对象:{"phase_id": <int>, "final": <int>};不允许输出其它字段。

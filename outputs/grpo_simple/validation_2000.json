@@ -1,0 +1,87 @@
+{
+  "total_samples": 2000,
+  "format_pass_rate": 1.0,
+  "format_details": {
+    "pass": 2000,
+    "fail": 0
+  },
+  "constraint_pass_rate": 0.977,
+  "constraint_details": {
+    "pass": 1954,
+    "fail": 46,
+    "phase_order_pass": 2000,
+    "all_integer_pass": 1998,
+    "all_in_range_pass": 1956
+  },
+  "saturation_match_rate": 0.9648,
+  "saturation_deviation": {
+    "mean": 0.1053,
+    "median": 0.0,
+    "max": 187.1818
+  },
+  "saturation_samples_evaluated": 3056,
+  "violation_count": 48,
+  "violation_examples": [
+    {
+      "phase_id": 12,
+      "min_green": 35,
+      "max_green": 56,
+      "final": 32
+    },
+    {
+      "phase_id": 5,
+      "min_green": 51,
+      "max_green": 69,
+      "final": 42
+    },
+    {
+      "phase_id": 1,
+      "min_green": 58,
+      "max_green": 85,
+      "final": 52
+    },
+    {
+      "phase_id": 10,
+      "min_green": 5,
+      "max_green": 36,
+      "final": 37
+    },
+    {
+      "phase_id": 3,
+      "min_green": 48,
+      "max_green": 67,
+      "final": 46
+    },
+    {
+      "phase_id": 0,
+      "min_green": 56,
+      "max_green": 70,
+      "final": 50
+    },
+    {
+      "phase_id": 1,
+      "min_green": 33,
+      "max_green": 77,
+      "final": 84
+    },
+    {
+      "phase_id": 5,
+      "min_green": 50,
+      "max_green": 89,
+      "final": 40
+    },
+    {
+      "phase_id": 2,
+      "min_green": 60,
+      "max_green": 105,
+      "final": 54
+    },
+    {
+      "phase_id": 0,
+      "min_green": 7,
+      "max_green": 38,
+      "final": 3061
+    }
+  ],
+  "overall": "PASS"
+}

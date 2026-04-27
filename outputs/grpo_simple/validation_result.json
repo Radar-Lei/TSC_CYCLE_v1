@@ -1,0 +1,24 @@
+{
+  "total_samples": 50,
+  "format_pass_rate": 1.0,
+  "format_details": {
+    "pass": 50,
+    "fail": 0
+  },
+  "constraint_pass_rate": 1.0,
+  "constraint_details": {
+    "pass": 50,
+    "fail": 0,
+    "phase_order_pass": 50,
+    "all_integer_pass": 50,
+    "all_in_range_pass": 50
+  },
+  "saturation_match_rate": 0.9867,
+  "saturation_deviation": {
+    "mean": 0.01,
+    "median": 0.0,
+    "max": 0.2174
+  },
+  "saturation_samples_evaluated": 50,
+  "overall": "PASS"
+}

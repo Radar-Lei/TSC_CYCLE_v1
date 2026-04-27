@@ -32,13 +32,39 @@ checkpoint-*/
 
 # === Training artifacts ===
 output/
-outputs/
 logs/
 .checkpoints/
-data/
-*.jsonl
-*.log
 unsloth_compiled_cache/
+
+# === Large model outputs (>200MB, cannot sync) ===
+outputs/**/*.safetensors
+outputs/**/*.gguf
+outputs/**/*.bin
+outputs/**/*.pt
+outputs/**/*.pth
+outputs/**/*.ckpt
+outputs/**/model/
+outputs/**/gguf/
+outputs/**/checkpoints/
+outputs/**/checkpoint-*/
+outputs/sft/qwen3-*/
+outputs/grpo_simple/qwen3-*/
+outputs/glm5/
+outputs/grpo/
+outputs/states/
+outputs/sft/model_fp16/
+
+# === Allow key reproducibility files in outputs/ ===
+!outputs/sft/*.jsonl
+!outputs/grpo_simple/grpo_train.jsonl
+!outputs/grpo_simple/grpo_train_original.jsonl
+!outputs/grpo_simple/augmented.jsonl
+!outputs/data/
+!outputs/data/**/*.jsonl
+!outputs/data/**/*.json
+
+# === Data files ===
+*.log
 *.csv
 
 # === NVIDIA / CUDA cache ===

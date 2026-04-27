@@ -1,0 +1,523 @@
+{
+  "metadata": {
+    "total_tl": 16,
+    "valid_tl": 16,
+    "skipped_tl": 0,
+    "total_phases": 48,
+    "source_file": "chengdu.net.xml"
+  },
+  "traffic_lights": {
+    "nt1": [
+      {
+        "phase_index": 0,
+        "state": "GGgsrrGGgsrr",
+        "green_lanes": [
+          "np1_nt1_0",
+          "nt5_nt1_0"
+        ],
+        "min_dur": 29.685051104989178,
+        "max_dur": 97.46318025532864
+      },
+      {
+        "phase_index": 8,
+        "state": "srrsrrsrrGGG",
+        "green_lanes": [
+          "np16_nt1_0",
+          "np16_nt1_1"
+        ],
+        "min_dur": 17.53763779328255,
+        "max_dur": 89.88251008702917
+      },
+      {
+        "phase_index": 4,
+        "state": "srrGGrsrrGGr",
+        "green_lanes": [
+          "np16_nt1_0",
+          "nt2_nt1_0"
+        ],
+        "min_dur": 25.20157323086275,
+        "max_dur": 109.7609404433293
+      }
+    ],
+    "nt11": [
+      {
+        "phase_index": 0,
+        "state": "GGgsrrGGgsrr",
+        "green_lanes": [
+          "nt15_nt11_0",
+          "nt7_nt11_0"
+        ],
+        "min_dur": 27.802284569864895,
+        "max_dur": 85.0249974996962
+      },
+      {
+        "phase_index": 2,
+        "state": "srrsrGsrrsrG",
+        "green_lanes": [
+          "nt10_nt11_1",
+          "nt12_nt11_1"
+        ],
+        "min_dur": 22.030049006134178,
+        "max_dur": 79.85727318644844
+      },
+      {
+        "phase_index": 4,
+        "state": "srrGGrsrrGGr",
+        "green_lanes": [
+          "nt10_nt11_0",
+          "nt12_nt11_0"
+        ],
+        "min_dur": 8.21535906846611,
+        "max_dur": 68.4222943120088
+      }
+    ],
+    "nt12": [
+      {
+        "phase_index": 0,
+        "state": "GGgsrrGGgsrr",
+        "green_lanes": [
+          "nt16_nt12_0",
+          "nt8_nt12_0"
+        ],
+        "min_dur": 15.953715137064426,
+        "max_dur": 108.52227433308263
+      },
+      {
+        "phase_index": 2,
+        "state": "srrsrGsrrsrG",
+        "green_lanes": [
+          "np7_nt12_1",
+          "nt11_nt12_1"
+        ],
+        "min_dur": 13.390431056756576,
+        "max_dur": 109.90882936901374
+      },
+      {
+        "phase_index": 4,
+        "state": "srrGGrsrrGGr",
+        "green_lanes": [
+          "np7_nt12_0",
+          "nt11_nt12_0"
+        ],
+        "min_dur": 26.823115158015515,
+        "max_dur": 89.58101012513706
+      }
+    ],
+    "nt13": [
+      {
+        "phase_index": 0,
+        "state": "GGgsrrGGgsrr",
+        "green_lanes": [
+          "np12_nt13_0",
+          "nt9_nt13_0"
+        ],
+        "min_dur": 8.658698232947131,
+        "max_dur": 61.4620467664014
+      },
+      {
+        "phase_index": 6,
+        "state": "srrGGGsrrsrr",
+        "green_lanes": [
+          "nt14_nt13_0",
+          "nt14_nt13_1"
+        ],
+        "min_dur": 29.609864135465937,
+        "max_dur": 68.36101373536097
+      },
+      {
+        "phase_index": 4,
+        "state": "srrGGrsrrGGr",
+        "green_lanes": [
+          "np13_nt13_0",
+          "nt14_nt13_0"
+        ],
+        "min_dur": 23.423967456717357,
+        "max_dur": 70.02361853149671
+      }
+    ],
+    "nt14": [
+      {
+        "phase_index": 0,
+        "state": "GGgsrrGGgsrr",
+        "green_lanes": [
+          "np11_nt14_0",
+          "nt10_nt14_0"
+        ],
+        "min_dur": 15.84849217670642,
+        "max_dur": 105.83564906796155
+      },
+      {
+        "phase_index": 2,
+        "state": "srrsrGsrrsrG",
+        "green_lanes": [
+          "nt13_nt14_1",
+          "nt15_nt14_1"
+        ],
+        "min_dur": 24.71589966043586,
+        "max_dur": 101.5061050850916
+      },
+      {
+        "phase_index": 4,
+        "state": "srrGGrsrrGGr",
+        "green_lanes": [
+          "nt13_nt14_0",
+          "nt15_nt14_0"
+        ],
+        "min_dur": 13.669418419910796,
+        "max_dur": 64.12850369783135
+      }
+    ],
+    "nt16": [
+      {
+        "phase_index": 0,
+        "state": "GGgsrrGGgsrr",
+        "green_lanes": [
+          "np9_nt16_0",
+          "nt12_nt16_0"
+        ],
+        "min_dur": 25.885048852637215,
+        "max_dur": 75.28048565488737
+      },
+      {
+        "phase_index": 2,
+        "state": "srrsrGsrrsrG",
+        "green_lanes": [
+          "np8_nt16_1",
+          "nt15_nt16_1"
+        ],
+        "min_dur": 27.665066489034682,
+        "max_dur": 84.63841693555493
+      },
+      {
+        "phase_index": 4,
+        "state": "srrGGrsrrGGr",
+        "green_lanes": [
+          "np8_nt16_0",
+          "nt15_nt16_0"
+        ],
+        "min_dur": 26.549117195053196,
+        "max_dur": 89.86226292553972
+      }
+    ],
+    "nt5": [
+      {
+        "phase_index": 0,
+        "state": "GGgsrrGGgsrr",
+        "green_lanes": [
+          "nt1_nt5_0",
+          "nt9_nt5_0"
+        ],
+        "min_dur": 8.672226154311184,
+        "max_dur": 88.84277914626597
+      },
+      {
+        "phase_index": 6,
+        "state": "srrGGGsrrsrr",
+        "green_lanes": [
+          "nt6_nt5_0",
+          "nt6_nt5_1"
+        ],
+        "min_dur": 26.608484686825427,
+        "max_dur": 77.47053790298361
+      },
+      {
+        "phase_index": 8,
+        "state": "srrsrrsrrGGG",
+        "green_lanes": [
+          "np15_nt5_0",
+          "np15_nt5_1"
+        ],
+        "min_dur": 13.710678113642917,
+        "max_dur": 83.87023295037125
+      }
+    ],
+    "nt10": [
+      {
+        "phase_index": 0,
+        "state": "GGgsrrGGgsrr",
+        "green_lanes": [
+          "nt14_nt10_0",
+          "nt6_nt10_0"
+        ],
+        "min_dur": 19.413252756018856,
+        "max_dur": 62.17518781580816
+      },
+      {
+        "phase_index": 6,
+        "state": "srrGGGsrrsrr",
+        "green_lanes": [
+          "nt11_nt10_0",
+          "nt11_nt10_1"
+        ],
+        "min_dur": 8.921743054238103,
+        "max_dur": 91.24645749274418
+      },
+      {
+        "phase_index": 4,
+        "state": "srrGGrsrrGGr",
+        "green_lanes": [
+          "nt11_nt10_0",
+          "nt9_nt10_0"
+        ],
+        "min_dur": 7.837728261042674,
+        "max_dur": 86.93206096131263
+      }
+    ],
+    "nt15": [
+      {
+        "phase_index": 0,
+        "state": "GGgsrrGGgsrr",
+        "green_lanes": [
+          "np10_nt15_0",
+          "nt11_nt15_0"
+        ],
+        "min_dur": 20.260795110905207,
+        "max_dur": 62.1678344177857
+      },
+      {
+        "phase_index": 6,
+        "state": "srrGGGsrrsrr",
+        "green_lanes": [
+          "nt16_nt15_0",
+          "nt16_nt15_1"
+        ],
+        "min_dur": 6.196577857485517,
+        "max_dur": 108.44979504440118
+      },
+      {
+        "phase_index": 4,
+        "state": "srrGGrsrrGGr",
+        "green_lanes": [
+          "nt14_nt15_0",
+          "nt16_nt15_0"
+        ],
+        "min_dur": 20.265042897201855,
+        "max_dur": 114.11062936236243
+      }
+    ],
+    "nt2": [
+      {
+        "phase_index": 0,
+        "state": "GGgsrrGGgsrr",
+        "green_lanes": [
+          "np2_nt2_0",
+          "nt6_nt2_0"
+        ],
+        "min_dur": 16.563056302159847,
+        "max_dur": 84.07538876899953
+      },
+      {
+        "phase_index": 8,
+        "state": "srrsrrsrrGGG",
+        "green_lanes": [
+          "nt1_nt2_0",
+          "nt1_nt2_1"
+        ],
+        "min_dur": 20.43717424333415,
+        "max_dur": 110.30910771275936
+      },
+      {
+        "phase_index": 4,
+        "state": "srrGGrsrrGGr",
+        "green_lanes": [
+          "nt1_nt2_0",
+          "nt3_nt2_0"
+        ],
+        "min_dur": 29.84661286784936,
+        "max_dur": 103.6535754359961
+      }
+    ],
+    "nt3": [
+      {
+        "phase_index": 0,
+        "state": "GGgsrrGGgsrr",
+        "green_lanes": [
+          "np3_nt3_0",
+          "nt7_nt3_0"
+        ],
+        "min_dur": 6.144879762456949,
+        "max_dur": 66.10301403486574
+      },
+      {
+        "phase_index": 6,
+        "state": "srrGGGsrrsrr",
+        "green_lanes": [
+          "nt4_nt3_0",
+          "nt4_nt3_1"
+        ],
+        "min_dur": 14.77116978868634,
+        "max_dur": 94.62203212606559
+      },
+      {
+        "phase_index": 8,
+        "state": "srrsrrsrrGGG",
+        "green_lanes": [
+          "nt2_nt3_0",
+          "nt2_nt3_1"
+        ],
+        "min_dur": 13.483939375932406,
+        "max_dur": 102.7196423605529
+      }
+    ],
+    "nt4": [
+      {
+        "phase_index": 0,
+        "state": "GGgsrrGGgsrr",
+        "green_lanes": [
+          "np4_nt4_0",
+          "nt8_nt4_0"
+        ],
+        "min_dur": 28.124827471932438,
+        "max_dur": 88.08305401231033
+      },
+      {
+        "phase_index": 6,
+        "state": "srrGGGsrrsrr",
+        "green_lanes": [
+          "np5_nt4_0",
+          "np5_nt4_1"
+        ],
+        "min_dur": 20.249522964403802,
+        "max_dur": 100.37705969814522
+      },
+      {
+        "phase_index": 4,
+        "state": "srrGGrsrrGGr",
+        "green_lanes": [
+          "np5_nt4_0",
+          "nt3_nt4_0"
+        ],
+        "min_dur": 16.8595089375342,
+        "max_dur": 81.88420100662358
+      }
+    ],
+    "nt6": [
+      {
+        "phase_index": 0,
+        "state": "GGgsrrGGgsrr",
+        "green_lanes": [
+          "nt10_nt6_0",
+          "nt2_nt6_0"
+        ],
+        "min_dur": 23.83197516868919,
+        "max_dur": 69.57179757961543
+      },
+      {
+        "phase_index": 6,
+        "state": "srrGGGsrrsrr",
+        "green_lanes": [
+          "nt7_nt6_0",
+          "nt7_nt6_1"
+        ],
+        "min_dur": 14.233303322054208,
+        "max_dur": 79.38689512982059
+      },
+      {
+        "phase_index": 4,
+        "state": "srrGGrsrrGGr",
+        "green_lanes": [
+          "nt5_nt6_0",
+          "nt7_nt6_0"
+        ],
+        "min_dur": 13.336260417733099,
+        "max_dur": 102.5433248124149
+      }
+    ],
+    "nt7": [
+      {
+        "phase_index": 0,
+        "state": "GGgsrrGGgsrr",
+        "green_lanes": [
+          "nt11_nt7_0",
+          "nt3_nt7_0"
+        ],
+        "min_dur": 10.943840193706464,
+        "max_dur": 86.48098156246138
+      },
+      {
+        "phase_index": 8,
+        "state": "srrsrrsrrGGG",
+        "green_lanes": [
+          "nt6_nt7_0",
+          "nt6_nt7_1"
+        ],
+        "min_dur": 10.245188298956101,
+        "max_dur": 93.40183703757086
+      },
+      {
+        "phase_index": 4,
+        "state": "srrGGrsrrGGr",
+        "green_lanes": [
+          "nt6_nt7_0",
+          "nt8_nt7_0"
+        ],
+        "min_dur": 5.335583019556005,
+        "max_dur": 70.01537927136562
+      }
+    ],
+    "nt8": [
+      {
+        "phase_index": 0,
+        "state": "GGgsrrGGgsrr",
+        "green_lanes": [
+          "nt12_nt8_0",
+          "nt4_nt8_0"
+        ],
+        "min_dur": 19.318350522179376,
+        "max_dur": 95.08674204869062
+      },
+      {
+        "phase_index": 6,
+        "state": "srrGGGsrrsrr",
+        "green_lanes": [
+          "np6_nt8_0",
+          "np6_nt8_1"
+        ],
+        "min_dur": 15.169299334941314,
+        "max_dur": 114.97137755517102
+      },
+      {
+        "phase_index": 8,
+        "state": "srrsrrsrrGGG",
+        "green_lanes": [
+          "nt7_nt8_0",
+          "nt7_nt8_1"
+        ],
+        "min_dur": 21.09531288152615,
+        "max_dur": 90.30671288355185
+      }
+    ],
+    "nt9": [
+      {
+        "phase_index": 0,
+        "state": "GGgsrrGGgsrr",
+        "green_lanes": [
+          "nt13_nt9_0",
+          "nt5_nt9_0"
+        ],
+        "min_dur": 14.872815238134471,
+        "max_dur": 85.65158123392143
+      },
+      {
+        "phase_index": 6,
+        "state": "srrGGGsrrsrr",
+        "green_lanes": [
+          "nt10_nt9_0",
+          "nt10_nt9_1"
+        ],
+        "min_dur": 7.141255537976761,
+        "max_dur": 112.95264033861372
+      },
+      {
+        "phase_index": 4,
+        "state": "srrGGrsrrGGr",
+        "green_lanes": [
+          "np14_nt9_0",
+          "nt10_nt9_0"
+        ],
+        "min_dur": 11.655594781913502,
+        "max_dur": 90.44711142868468
+      }
+    ]
+  }
+}
