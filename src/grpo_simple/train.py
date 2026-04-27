@@ -243,6 +243,27 @@ def main():
 
     print("[Rewards] 初始化简化版 reward")
     init_rewards(args.config)
+    reward_cfg = config["training"]["grpo_simple"]["reward"]
+    print(
+        "[Rewards] saturation_target_score={score}, near_miss_penalty={near}, "
+        "exact_hit_bonus={exact}, off_by_one_bonus={off1}, clip_bonus={clip_b}, clip_penalty={clip_p}".format(
+            score=reward_cfg["saturation_target_score"],
+            near=reward_cfg.get("saturation_near_miss_penalty", 0.0),
+            exact=reward_cfg.get("saturation_exact_hit_bonus", 0.0),
+            off1=reward_cfg.get("saturation_off_by_one_bonus", 0.0),
+            clip_b=reward_cfg.get("clip_sensitive_bonus", 0.0),
+            clip_p=reward_cfg.get("clip_sensitive_penalty", 0.0),
+        )
+    )
+    print(
+        "[训练配置] epochs={epochs}, max_steps={steps}, lr={lr}, num_generations={gens}, kl_coef={kl}".format(
+            epochs=config["training"]["grpo_simple"]["num_train_epochs"],
+            steps=config["training"]["grpo_simple"].get("max_steps", -1),
+            lr=config["training"]["grpo_simple"]["learning_rate"],
+            gens=config["training"]["grpo_simple"]["num_generations"],
+            kl=config["training"]["grpo_simple"]["kl_coef"],
+        )
+    )
 
     data_dir = config["paths"].get("grpo_simple_data_dir", "outputs/grpo_simple")
     data_path = os.path.join(data_dir, "grpo_train.jsonl")

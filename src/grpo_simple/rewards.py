@@ -167,6 +167,42 @@ def check_constraints(prompts, completions, **kwargs) -> List[float]:
     return scores
 
 
+def _phase_saturation_score(expected: Dict[str, Any], actual: Dict[str, Any], config: Dict[str, Any]) -> float:
+    min_green = int(expected["min_green"])
+    max_green = int(expected["max_green"])
+    final = int(actual["final"])
+    target = calculate_target_green(expected)
+    range_width = max(max_green - min_green, 1)
+    deviation = abs(final - target) / range_width
+
+    if deviation <= 0.05:
+        base = 1.0
+    elif deviation <= 0.1:
+        base = 0.8
+    elif deviation <= 0.2:
+        base = max(0.0, 0.3 - (deviation - 0.1) * 3.0)
+    else:
+        base = 0.0
+
+    score = base
+    near_miss_penalty = config.get("saturation_near_miss_penalty", 0.0)
+    if 0.1 < deviation <= 0.2:
+        score -= near_miss_penalty * ((0.2 - deviation) / 0.1)
+
+    if final == target:
+        score += config.get("saturation_exact_hit_bonus", 0.0)
+    elif abs(final - target) == 1:
+        score += config.get("saturation_off_by_one_bonus", 0.0)
+
+    if target in (min_green, max_green):
+        if final == target:
+            score += config.get("clip_sensitive_bonus", 0.0)
+        elif deviation > 0.1:
+            score -= config.get("clip_sensitive_penalty", 0.0)
+
+    return max(score, 0.0)
+
+
 def saturation_proportional_reward(prompts, completions, **kwargs) -> List[float]:
     """根据 completion 与目标绿灯时长的接近程度打分。"""
     config = _ensure_config()
@@ -182,7 +218,7 @@ def saturation_proportional_reward(prompts, completions, **kwargs) -> List[float
             continue
 
         valid = True
-        closeness_scores = []
+        phase_scores = []
 
         for expected, actual in zip(phase_waits, solution):
             if not isinstance(actual, dict):
@@ -203,16 +239,13 @@ def saturation_proportional_reward(prompts, completions, **kwargs) -> List[float
                 valid = False
                 break
 
-            target = calculate_target_green(expected)
-            range_width = max(max_green - min_green, 1)
-            closeness = max(0.0, 1.0 - abs(final - target) / range_width)
-            closeness_scores.append(closeness)
+            phase_scores.append(_phase_saturation_score(expected, actual, config))
 
-        if not valid or not closeness_scores:
+        if not valid or not phase_scores:
             scores.append(invalid_score)
             continue
 
-        scores.append(sum(closeness_scores) / len(closeness_scores) * max_score)
+        scores.append(sum(phase_scores) / len(phase_scores) * max_score)
 
     return scores
 

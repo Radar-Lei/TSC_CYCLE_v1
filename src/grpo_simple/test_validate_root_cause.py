@@ -37,11 +37,14 @@ REQUIRED_DETAIL_FIELDS = {
     "pred_saturation",
     "min_green",
     "max_green",
+    "raw_target",
     "target_green",
     "final",
     "normalized_deviation",
+    "match_threshold_hit",
     "is_match",
     "is_clip_sensitive",
+    "constraint_status",
     "failure_bucket",
 }
 
@@ -196,10 +199,68 @@ def test_failure_buckets_do_not_count_constraint_failures_as_saturation_mismatch
     assert buckets["saturation_mismatch"] == 1
     assert result["root_cause"]["saturation_evaluable"] == 1
 
-    detail_buckets = {detail["sample_id"]: detail["failure_bucket"] for detail in result["root_cause"]["details_preview"]}
-    assert detail_buckets["sample-format-fail"] == "format_failure"
-    assert detail_buckets["sample-constraint-fail"] == "constraint_failure"
-    assert detail_buckets["sample-saturation-mismatch"] == "saturation_mismatch"
+    detail_buckets = {
+        (detail["sample_id"], detail["phase_id"]): detail["failure_bucket"]
+        for detail in result["root_cause"]["details_preview"]
+    }
+    assert detail_buckets[("sample-format-fail", 0)] == "format_failure"
+    assert detail_buckets[("sample-constraint-fail", 1)] == "constraint_failure"
+    assert detail_buckets[("sample-saturation-mismatch", 2)] == "saturation_mismatch"
+    assert detail_buckets[("sample-saturation-mismatch", 3)] == "saturation_match"
+
+
+def test_details_are_recorded_per_phase_not_single_representative_row(
+    patched_validation, fake_config
+):
+    result = validate.run_validation(fake_config, num_samples=3, seed=21)
+
+    details = result["root_cause"]["details_preview"]
+    sample_phase_counts = {}
+    for detail in details:
+        sample_phase_counts.setdefault(detail["sample_id"], 0)
+        sample_phase_counts[detail["sample_id"]] += 1
+
+    assert sample_phase_counts["sample-format-fail"] == 1
+    assert sample_phase_counts["sample-constraint-fail"] == 1
+    assert sample_phase_counts["sample-saturation-mismatch"] == 2
+
+    mismatch_detail = next(
+        detail
+        for detail in details
+        if detail["sample_id"] == "sample-saturation-mismatch" and detail["phase_id"] == 2
+    )
+    match_detail = next(
+        detail
+        for detail in details
+        if detail["sample_id"] == "sample-saturation-mismatch" and detail["phase_id"] == 3
+    )
+
+    assert mismatch_detail["raw_target"] == 38
+    assert mismatch_detail["target_green"] == 38
+    assert mismatch_detail["match_threshold_hit"] is False
+    assert mismatch_detail["constraint_status"] == "constraint_pass"
+    assert mismatch_detail["failure_bucket"] == "saturation_mismatch"
+
+    assert match_detail["raw_target"] == 40
+    assert match_detail["target_green"] == 40
+    assert match_detail["match_threshold_hit"] is True
+    assert match_detail["constraint_status"] == "constraint_pass"
+    assert match_detail["failure_bucket"] == "saturation_match"
+
+    failure_examples = result["root_cause"]["failure_examples"]
+    assert failure_examples["large_deviation"][0]["sample_id"] == "sample-saturation-mismatch"
+    assert failure_examples["clip_sensitive"][0]["phase_id"] == 3
+
+
+def test_validate_exposes_near_threshold_and_clip_sensitive_stats(
+    patched_validation, fake_config
+):
+    result = validate.run_validation(fake_config, num_samples=3, seed=33)
+
+    stats = result["root_cause"]["analysis_summary"]
+    assert stats["near_threshold_phase_count"] == 0
+    assert stats["clip_sensitive_phase_count"] == 2
+    assert stats["clip_sensitive_match_count"] == 1
 
 
 @pytest.mark.parametrize("sample_size", [50, 2000, 4000])
