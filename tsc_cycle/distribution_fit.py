@@ -90,7 +90,8 @@ def fit(log_path: Path) -> dict[str, Any]:
             "p50": _quantile(values, 0.50),
             "p75": _quantile(values, 0.75),
             "p95": _quantile(values, 0.95),
-            "values_sample": sorted(set(values))[:50],  # bounded sample for sampling
+            "values_sample": sorted(set(values))[:50],  # legacy bounded-unique sample (kept for inspection)
+            "values_all": values,  # full empirical sample, frequency-preserving — use for weighted random
         }
 
     out: dict[str, Any] = {
