@@ -13,3 +13,4 @@ data/tokenized/
 *.gguf
 wandb/
 reality.log
+.env

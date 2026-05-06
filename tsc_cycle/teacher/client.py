@@ -1,19 +1,19 @@
-"""GPT-5.5 high teacher client.
+"""GPT-5.5 high teacher client — Responses API.
 
-Adapted from EvoProgTSC's `evoprog/llm/client.py`:
-  - Uses `client.chat.completions.create` with `reasoning_effort="high"` (kept for
-    compat with that codebase; OpenAI SDK ≥1.50 also accepts the field on Chat
-    Completions).
-  - Structured-output via JSON Schema strict mode for the teacher's output.
-  - On `BadRequestError` from structured-output, falls back to plain Chat with
-    explicit format instructions in the prompt.
-  - Exponential backoff on `APITimeoutError` / `APIConnectionError` / `APIError`.
-  - `RateLimitError` honored with `Retry-After` header (defaults to 60s) and
-    NOT counted against the per-request retry budget.
+Adapted to the codex proxy at http://148.135.118.86:8080:
+  - `wire_api = "responses"` — use `client.responses.create(...)` not chat.completions
+  - reasoning passed as `reasoning={"effort": "high"}`
+  - response payload: `r.output[0].content[0].text`
+  - usage: `r.usage.output_tokens_details.reasoning_tokens` (TCH-02 gate)
+
+Behavior preserved from prior version:
+  - exponential backoff on transient errors
+  - RateLimit honored with Retry-After (does not consume retry budget)
+  - content-addressed cache via prompt_hash, atomic rename
+  - `require_reasoning_tokens_min` (default 100) drops responses where the model
+    silently downcasted to low-effort
 
 Cache: every successful response is written to `raw_responses/{prompt_hash}.json`
-via atomic rename. The labeling pipeline (in `tsc_cycle.teacher.labeler`) is
-the one that does concurrency / sample iteration; this module is a thin client.
 """
 
 from __future__ import annotations
@@ -36,30 +36,6 @@ from openai import (
 
 from tsc_cycle.hashing import prompt_hash, sha256_hex
 
-# JSON Schema for the teacher's structured output. The teacher's response wraps
-# this in <SOLUTION>...</SOLUTION>; structured mode lets us short-circuit the
-# tag detection in the cleanest case (reduces parse-failure rate).
-SOLUTION_SCHEMA = {
-    "name": "tsc_cycle_solution",
-    "strict": True,
-    "schema": {
-        "type": "object",
-        "additionalProperties": False,
-        "required": ["reasoning", "solution"],
-        "properties": {
-            "reasoning": {
-                "type": "string",
-                "description": "Step-by-step thinking content",
-            },
-            "solution": {
-                "type": "object",
-                "description": "Mapping phase_id (string) -> integer green seconds. Keys must be the digit-string phase IDs from the input.",
-                "additionalProperties": {"type": "integer"},
-            },
-        },
-    },
-}
-
 
 @dataclass
 class TeacherResult:
@@ -71,6 +47,7 @@ class TeacherResult:
     error: str = ""
     attempt_count: int = 0
     elapsed_s: float = 0.0
+    response_id: str = ""
 
     def to_dict(self) -> dict:
         return {
@@ -82,6 +59,7 @@ class TeacherResult:
             "error": self.error,
             "attempt_count": self.attempt_count,
             "elapsed_s": self.elapsed_s,
+            "response_id": self.response_id,
         }
 
 
@@ -93,18 +71,18 @@ class TeacherClient:
     max_retries: int = 3
     base_backoff: float = 2.0
     cache_dir: Path = field(default_factory=lambda: Path("raw_responses"))
-    use_structured: bool = True
     api_key: str | None = None
     base_url: str | None = None
     require_reasoning_tokens_min: int = 100  # TCH-02
 
     def __post_init__(self) -> None:
         kwargs: dict[str, Any] = {}
-        if self.api_key:
-            kwargs["api_key"] = self.api_key
-        if self.base_url:
-            kwargs["base_url"] = self.base_url
-        self._client = OpenAI(**kwargs)
+        kwargs["api_key"] = self.api_key or os.environ.get("OPENAI_API_KEY")
+        if not kwargs["api_key"]:
+            raise RuntimeError("OPENAI_API_KEY not set")
+        kwargs["base_url"] = self.base_url or os.environ.get("OPENAI_BASE_URL")
+        kwargs["timeout"] = self.timeout
+        self._client = OpenAI(**{k: v for k, v in kwargs.items() if v is not None})
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
     # ----- cache helpers -----
@@ -128,58 +106,42 @@ class TeacherClient:
         tmp.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
         os.replace(tmp, p)
 
-    # ----- API call -----
+    # ----- API call (Responses API) -----
 
-    def _call_structured(self, prompt: str) -> tuple[dict, dict]:
-        """Returns (parsed_solution_dict, raw_response_dict)."""
-        msgs = [{"role": "user", "content": prompt}]
-        kwargs: dict[str, Any] = {
-            "model": self.model,
-            "messages": msgs,
-            "timeout": self.timeout,
-            "response_format": {"type": "json_schema", "json_schema": SOLUTION_SCHEMA},
-        }
-        if self.reasoning_effort:
-            kwargs["reasoning_effort"] = self.reasoning_effort
-        resp = self._client.chat.completions.create(**kwargs)
-        choice = resp.choices[0].message.content or "{}"
-        parsed = json.loads(choice)
+    def _call_responses(self, prompt: str) -> tuple[str, dict, dict]:
+        """Return (output_text, raw_dict, usage_dict)."""
+        resp = self._client.responses.create(
+            model=self.model,
+            input=prompt,
+            reasoning={"effort": self.reasoning_effort},
+        )
         raw = resp.model_dump()
-        return parsed, raw
-
-    def _call_plain(self, prompt: str) -> tuple[dict, dict]:
-        """Fallback when structured output is rejected. Parse <SOLUTION>...</SOLUTION>."""
-        msgs = [{"role": "user", "content": prompt}]
-        kwargs: dict[str, Any] = {
-            "model": self.model,
-            "messages": msgs,
-            "timeout": self.timeout,
-        }
-        if self.reasoning_effort:
-            kwargs["reasoning_effort"] = self.reasoning_effort
-        resp = self._client.chat.completions.create(**kwargs)
-        text = resp.choices[0].message.content or ""
-        # Use prompt_builder's parser
-        from tsc_cycle.prompt_builder import parse_assistant_output
-        reasoning, solution = parse_assistant_output(text)
-        if solution is None:
-            raise ValueError("plain-mode: no SOLUTION block found in response")
-        parsed = {"reasoning": reasoning, "solution": solution, "_raw_text": text}
-        raw = resp.model_dump()
-        return parsed, raw
+        # Extract assistant message text
+        text = ""
+        for o in resp.output:
+            if getattr(o, "type", None) == "message":
+                for c in (getattr(o, "content", None) or []):
+                    if getattr(c, "type", None) == "output_text":
+                        text += c.text or ""
+        usage = raw.get("usage") or {}
+        return text, raw, usage
 
     def call(self, prompt: str, force: bool = False) -> TeacherResult:
         """One teacher call with retry + cache. Validation is the caller's job."""
         if not force:
             cached = self._load_cache(prompt)
             if cached:
+                p = cached["parsed"]
                 return TeacherResult(
                     success=True,
-                    reasoning=cached["parsed"]["reasoning"],
-                    solution=cached["parsed"]["solution"],
+                    reasoning=p["reasoning"],
+                    solution=p["solution"],
                     raw=cached["raw"],
                     usage=cached["raw"].get("usage"),
+                    response_id=cached["raw"].get("id", ""),
                 )
+
+        from tsc_cycle.prompt_builder import parse_assistant_output  # local import to avoid cycles
 
         start = time.time()
         last_err = ""
@@ -187,42 +149,41 @@ class TeacherClient:
         for attempt in range(self.max_retries):
             attempts = attempt + 1
             try:
-                if self.use_structured:
-                    try:
-                        parsed, raw = self._call_structured(prompt)
-                    except BadRequestError as e:
-                        last_err = f"structured-rejected:{e!s}"
-                        parsed, raw = self._call_plain(prompt)
-                else:
-                    parsed, raw = self._call_plain(prompt)
+                text, raw, usage = self._call_responses(prompt)
 
-                usage = raw.get("usage") or {}
-                # TCH-02: assert reasoning_tokens > threshold
+                # TCH-02: reasoning_tokens gate
                 rsn_toks = (
-                    usage.get("completion_tokens_details", {}).get("reasoning_tokens", 0)
-                    if isinstance(usage.get("completion_tokens_details"), dict)
-                    else usage.get("reasoning_tokens", 0)
+                    (usage.get("output_tokens_details") or {}).get("reasoning_tokens")
+                    if isinstance(usage.get("output_tokens_details"), dict)
+                    else 0
                 )
                 if rsn_toks is not None and rsn_toks < self.require_reasoning_tokens_min:
                     return TeacherResult(
                         success=False,
-                        error=f"reasoning_tokens={rsn_toks} below {self.require_reasoning_tokens_min} (silent-downcast)",
+                        error=f"reasoning_tokens={rsn_toks} < {self.require_reasoning_tokens_min} (silent-downcast)",
                         raw=raw,
                         usage=usage,
                         attempt_count=attempts,
                         elapsed_s=time.time() - start,
+                        response_id=raw.get("id", ""),
                     )
 
+                reasoning, solution = parse_assistant_output(text)
+                if solution is None:
+                    raise ValueError(f"no parseable SOLUTION block in response (text head: {text[:200]!r})")
+
+                parsed = {"reasoning": reasoning, "solution": {str(k): int(v) for k, v in solution.items()}}
                 payload = {"parsed": parsed, "raw": raw}
                 self._store_cache(prompt, payload)
                 return TeacherResult(
                     success=True,
                     reasoning=parsed["reasoning"],
-                    solution={str(k): int(v) for k, v in parsed["solution"].items()},
+                    solution=parsed["solution"],
                     raw=raw,
                     usage=usage,
                     attempt_count=attempts,
                     elapsed_s=time.time() - start,
+                    response_id=raw.get("id", ""),
                 )
 
             except RateLimitError as e:
@@ -236,10 +197,9 @@ class TeacherClient:
                         pass
                 last_err = f"ratelimit:{e!s}"
                 time.sleep(min(wait, 120.0))
-                # do not increment effective retry count for ratelimits
-                attempts -= 1
+                attempts -= 1  # do not count
                 continue
-            except (APITimeoutError, APIConnectionError, APIError) as e:
+            except (APITimeoutError, APIConnectionError, APIError, BadRequestError) as e:
                 last_err = f"{type(e).__name__}:{e!s}"
                 if attempt + 1 < self.max_retries:
                     time.sleep(self.base_backoff * (2**attempt))

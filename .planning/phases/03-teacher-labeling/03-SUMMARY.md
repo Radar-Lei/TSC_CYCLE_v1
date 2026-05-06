@@ -1,16 +1,25 @@
-# Phase 3 SUMMARY — Teacher Labeling (script-ready)
+# Phase 3 SUMMARY — Teacher Labeling
 
-**Status:** Script ready; awaiting `OPENAI_API_KEY` to execute.
+**Status:** Running in background.
 
-## Implementation
-- `tsc_cycle/teacher/client.py` — GPT-5.5 high client (structured + plain fallback, indexponential retry, RateLimit honoring Retry-After, content-addressed cache, reasoning_tokens > 100 gate per TCH-02)
-- `tsc_cycle/teacher/labeler.py` — concurrent (≤10 worker), resume-safe (reads existing labeled+rejected sample_ids), validates each via `constraint_lint`, writes labeled.jsonl / rejected.jsonl / cost.json / reject_stats.json
-- `scripts/teacher_smoke.py` — 5-prompt warmup with 3000-sample budget extrapolation
+## Endpoint
+- Provider: OpenAI Responses API via codex proxy `http://148.135.118.86:8080/v1`
+- Model: `gpt-5.5`
+- Reasoning: `effort="high"`
+- Auth: `OPENAI_API_KEY` from `.codex/auth.json`
 
-## Run
-```bash
-export OPENAI_API_KEY=sk-...
-source scripts/dgx_spark/env.sh
-PYTHONPATH=. python -m tsc_cycle.teacher.labeler --limit 50  # smoke first
-PYTHONPATH=. python -m tsc_cycle.teacher.labeler              # full
-```
+## Smoke (50 samples)
+- 50/50 success (0 reject)
+- avg reasoning_tokens=665 (≥100 gate ✓)
+- elapsed 1.9 min @ 10 workers
+- ~$0.45 input/output combined
+
+## Full run config
+- workers=10, model=gpt-5.5, effort=high
+- cache: `raw_responses/{prompt_hash}.json` (atomic rename, resume-safe)
+- gate: drop responses with reasoning_tokens<100 (TCH-02 silent-downcast detection)
+
+## Files
+- `tsc_cycle/teacher/client.py` — Responses API client (rewritten from chat.completions)
+- `tsc_cycle/teacher/labeler.py` — concurrent + resume-safe + reject_stats
+- `.env` — `OPENAI_API_KEY` + `OPENAI_BASE_URL` (gitignored)

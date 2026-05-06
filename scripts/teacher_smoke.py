@@ -88,9 +88,9 @@ def main() -> int:
             if cl.ok:
                 valid += 1
         u = res.usage or {}
-        rsn_toks = ((u.get("completion_tokens_details") or {}).get("reasoning_tokens") or 0)
-        ctok = u.get("completion_tokens", 0)
-        ptok = u.get("prompt_tokens", 0)
+        rsn_toks = ((u.get("output_tokens_details") or {}).get("reasoning_tokens") or 0)
+        ctok = u.get("output_tokens", 0)
+        ptok = u.get("input_tokens", 0)
         total_rsn_tokens += rsn_toks or 0
         total_completion_tokens += ctok or 0
         total_input_tokens += ptok or 0

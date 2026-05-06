@@ -131,9 +131,9 @@ def main() -> int:
                 r = fut.result()
                 rec = r["record"]
                 u = (rec["result"].get("usage") or {})
-                total_input_tokens += u.get("prompt_tokens", 0) or 0
-                total_completion_tokens += u.get("completion_tokens", 0) or 0
-                rsn = ((u.get("completion_tokens_details") or {}).get("reasoning_tokens") or 0)
+                total_input_tokens += u.get("input_tokens", 0) or 0
+                total_completion_tokens += u.get("output_tokens", 0) or 0
+                rsn = ((u.get("output_tokens_details") or {}).get("reasoning_tokens") or 0)
                 total_reasoning_tokens += rsn
                 if r["ok"]:
                     with lab_lock:
