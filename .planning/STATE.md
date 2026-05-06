@@ -1,64 +1,31 @@
-# State: TSC-CYCLE
+# TSC-CYCLE State
 
-**Last updated:** 2026-05-07
+**Last Activity:** 2026-05-07
+**Current Milestone:** v1.0
+**Status:** Pipeline scaffolded; Phases 1-2 executed; Phases 3-6 scripted, awaiting OPENAI_API_KEY
 
-## Project Reference
+## Phase Status
 
-**Core Value:** 学生模型在 OOD 输入上仍满足全部硬约束（min_green ≤ final ≤ max_green、整数秒、相位顺序、覆盖全相位），且数值决策接近 GPT-5.5 high 教师 — 不过拟合 reality.log。
+| Phase | Status | Notes |
+|---|---|---|
+| 1. Environment + Foundations | ✓ executed | venv + foundation modules + dist_prior + 24/24 tests |
+| 2. Synthetic Data Generation | ✓ executed | 2700 + 300 inputs, KS report passes |
+| 3. Teacher Labeling | ⏸ blocked | Script ready: `tsc_cycle/teacher/labeler.py`. Needs `OPENAI_API_KEY` |
+| 4. Dataset + QLoRA SFT | ⏸ blocked on P3 | Script ready: `tsc_cycle/student/{dataset.py,train.py}` |
+| 5. Merge + GGUF Export | ⏸ blocked on P4 | Script ready: `tsc_cycle/student/export_gguf.py` |
+| 6. Evaluation Suite | ⏸ blocked on P5 | Script ready: `tsc_cycle/eval/run_eval.py` |
 
-**Current Focus:** Roadmap initialized; Phase 1 (Environment + Foundations) ready to plan.
+## Resume
 
-## Current Position
+```bash
+export OPENAI_API_KEY=sk-...
+bash scripts/run_pipeline.sh
+```
 
-- **Milestone:** v1 distillation
-- **Phase:** Phase 1 — Environment + Foundations (not started)
-- **Plan:** N/A (planning not yet started)
-- **Status:** Roadmap drafted, awaiting `/gsd-plan-phase 1`
-- **Progress:** 0/6 phases complete `[░░░░░░]`
+The driver `scripts/run_pipeline.sh` is idempotent — each phase only runs if its outputs are missing.
 
-## Performance Metrics
+## Outputs
 
-| Metric | Value |
-|--------|-------|
-| Phases complete | 0 / 6 |
-| v1 requirements mapped | 47 / 47 |
-| v1 requirements completed | 0 / 47 |
-
-## Accumulated Context
-
-### Key Decisions (locked)
-
-- 学生基座 = Qwen/Qwen3-4B-Thinking-2507（不切 Qwen3.5/3.6）
-- 自定义思考标签 `<start_working_out>` / `</end_working_out>` / `<SOLUTION>` / `</SOLUTION>`，绕开 `apply_chat_template`，绝不 `add_tokens()` 自定义标签
-- 教师固定 GPT-5.5 high，reasoning_effort 不降档，`usage.reasoning_tokens > 100` 校验
-- 训练栈：`/home/samuel/dgx-spark-setup/.venv` + TRL+PEFT+bitsandbytes==0.48.0 原生栈（**不**用 Unsloth）
-- 训练全程在 `run_safe.sh 100G --`（systemd-run MemoryMax=100G MemorySwapMax=0）内
-- merge 必须 bf16 reload base（非 4-bit），导出走本机 EvoProgTSC/llama.cpp `convert_hf_to_gguf.py` + `llama-quantize`
-- 教师约束违反样本丢弃不重试（避免 prompt 漂移）
-- 80/10/10 split：train / 同分布 val / OOD val（OOD 单列）
-- **明确不参考** waybarrios/dgx-spark-finetune-llm
-
-### Open Todos
-
-- [ ] Plan Phase 1
-- [ ] Phase 1 entry: 调用 `/dgx-spark-training` skill 把 venv 克隆到 `/home/samuel/TSC_CYCLE/.venv`
-
-### Blockers
-
-(None)
-
-### Research Flags Carried Forward
-
-- Phase 4: Thinking-2507 unlearn 原生 `<think>` 所需 epoch 数无对照；首 epoch 末 5-prompt smoke 决定是否升 3 epochs / alpha=192
-- Phase 5: Qwen3-Thinking + 自定义标签 + bf16 GGUF parity 无公开 benchmark；20-prompt parity 必跑
-- Phase 6: q4_K_M 长 thinking 退化率独有未知；MAE>3s 触发 imatrix 重量化预案
-- 全程: OpenAI 账户 tier RPM/TPM 实际限额未知，`max_workers=5` 起步
-
-## Session Continuity
-
-**Last session:** Roadmap creation — derived 6 phases from 47 v1 requirements (ENV/FND/DGEN/TCH/DSET/TRN/EXP/EVL), validated 100% coverage, established Phase 1 as hard fail-fast gate.
-
-**Next action:** `/gsd-plan-phase 1` — decompose Phase 1 (Environment + Foundations) into executable plans.
-
----
-*State initialized: 2026-05-07*
+- Final GGUF: `runs/<TS>/gguf/model.q4_K_M.gguf`
+- Eval report: `runs/<TS>/eval/report.md`
+- Decision: `runs/<TS>/eval/decision.md`
