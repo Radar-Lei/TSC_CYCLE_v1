@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+runs/
+gen_cache/
+raw_responses/
+data/labeled.jsonl
+data/rejected.jsonl
+data/inputs.jsonl
+data/ood_inputs.jsonl
+data/tokenized/
+*.gguf
+wandb/
+reality.log

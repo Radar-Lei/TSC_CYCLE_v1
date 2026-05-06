@@ -1,0 +1,39 @@
+[project]
+name = "tsc-cycle"
+version = "0.1.0"
+description = "TSC-CYCLE 思考型 4B 学生模型蒸馏（Qwen3-4B-Thinking-2507 SFT from GPT-5.5 high）"
+requires-python = ">=3.12,<3.13"
+
+# 增量包：torch / vllm / accelerate 复用 dgx-spark-setup .venv
+dependencies = [
+  "transformers>=4.56.2,<5.0",
+  "trl>=0.22.2,<0.27",
+  "peft>=0.15.1",
+  "bitsandbytes==0.48.0",
+  "datasets>=3.1.0",
+  "pyarrow>=15.0.0",
+  "openai>=1.50.0",
+  "pydantic>=2.5.0",
+  "jsonschema>=4.20.0",
+  "tenacity>=8.2.0",
+  "rich>=13.7.0",
+  "wandb>=0.18.1",
+  "scipy>=1.13.0",
+  "numpy>=1.26.0",
+  "tqdm>=4.66.0",
+  "safetensors>=0.4.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0", "pytest-xdist>=3.5.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["tsc_cycle"]
