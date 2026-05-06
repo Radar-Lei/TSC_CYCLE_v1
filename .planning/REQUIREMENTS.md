@@ -121,20 +121,60 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ENV-01 ~ ENV-05 | Phase 1 | Pending |
-| FND-01 ~ FND-06 | Phase 1 | Pending |
-| DGEN-01 ~ DGEN-05 | Phase 2 | Pending |
-| TCH-01 ~ TCH-06 | Phase 3 | Pending |
-| DSET-01 ~ DSET-05 | Phase 4 | Pending |
-| TRN-01 ~ TRN-08 | Phase 4 | Pending |
-| EXP-01 ~ EXP-05 | Phase 5 | Pending |
-| EVL-01 ~ EVL-08 | Phase 6 | Pending |
+| ENV-01 | Phase 1 | Pending |
+| ENV-02 | Phase 1 | Pending |
+| ENV-03 | Phase 1 | Pending |
+| ENV-04 | Phase 1 | Pending |
+| ENV-05 | Phase 1 | Pending |
+| FND-01 | Phase 1 | Pending |
+| FND-02 | Phase 1 | Pending |
+| FND-03 | Phase 1 | Pending |
+| FND-04 | Phase 1 | Pending |
+| FND-05 | Phase 1 | Pending |
+| FND-06 | Phase 1 | Pending |
+| DGEN-01 | Phase 2 | Pending |
+| DGEN-02 | Phase 2 | Pending |
+| DGEN-03 | Phase 2 | Pending |
+| DGEN-04 | Phase 2 | Pending |
+| DGEN-05 | Phase 2 | Pending |
+| TCH-01 | Phase 3 | Pending |
+| TCH-02 | Phase 3 | Pending |
+| TCH-03 | Phase 3 | Pending |
+| TCH-04 | Phase 3 | Pending |
+| TCH-05 | Phase 3 | Pending |
+| TCH-06 | Phase 3 | Pending |
+| DSET-01 | Phase 4 | Pending |
+| DSET-02 | Phase 4 | Pending |
+| DSET-03 | Phase 4 | Pending |
+| DSET-04 | Phase 4 | Pending |
+| DSET-05 | Phase 4 | Pending |
+| TRN-01 | Phase 4 | Pending |
+| TRN-02 | Phase 4 | Pending |
+| TRN-03 | Phase 4 | Pending |
+| TRN-04 | Phase 4 | Pending |
+| TRN-05 | Phase 4 | Pending |
+| TRN-06 | Phase 4 | Pending |
+| TRN-07 | Phase 4 | Pending |
+| TRN-08 | Phase 4 | Pending |
+| EXP-01 | Phase 5 | Pending |
+| EXP-02 | Phase 5 | Pending |
+| EXP-03 | Phase 5 | Pending |
+| EXP-04 | Phase 5 | Pending |
+| EXP-05 | Phase 5 | Pending |
+| EVL-01 | Phase 6 | Pending |
+| EVL-02 | Phase 6 | Pending |
+| EVL-03 | Phase 6 | Pending |
+| EVL-04 | Phase 6 | Pending |
+| EVL-05 | Phase 6 | Pending |
+| EVL-06 | Phase 6 | Pending |
+| EVL-07 | Phase 6 | Pending |
+| EVL-08 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 47 total
-- Mapped to phases: 47 (initial mapping; roadmapper will refine)
+- Mapped to phases: 47 ✓
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-07*
-*Last updated: 2026-05-07 after initial definition*
+*Last updated: 2026-05-07 after roadmap creation (per-REQ-ID traceability finalized)*
