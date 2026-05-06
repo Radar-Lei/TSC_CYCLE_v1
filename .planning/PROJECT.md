@@ -64,7 +64,8 @@ prompt/输出协议见 `reality.log`。
 - DGX Spark：GB10 aarch64、CUDA 13，禁用 flash-attn CUDA 12 wheels，必走 SDPA/Triton 路径
 - 已有可复用的虚拟环境：`/home/samuel/dgx-spark-setup/.venv`（来自 `/dgx-spark-training` skill）
 - 量化部署：llama.cpp `convert_hf_to_gguf.py` → `llama-quantize`（EvoProgTSC 仓库已 build cuda 版）
-- 参考实现：`https://github.com/waybarrios/dgx-spark-finetune-llm`（RESEARCH 阶段细化）
+- 参考实现：`/home/samuel/dgx-spark-setup` 本地仓库 + `/dgx-spark-training` skill（权威源；上游 https://github.com/natolambert/dgx-spark-setup）
+- **明确不参考** waybarrios/dgx-spark-finetune-llm
 
 ## Constraints
 
@@ -85,7 +86,7 @@ prompt/输出协议见 `reality.log`。
 | 教师固定 GPT-5.5 high，reasoning_effort=high | 蒸馏只在最强教师上才有最大收益 | — Pending |
 | 不采用 reality.log 标签，重新让教师标注 | 旧 lmstudio 输出有偏；教师为准 | ✓ Good |
 | 输入分布扩展合成（防过拟合） | reality.log 分布窄，OOD 泛化是 Core Value | ✓ Good |
-| QLoRA r=64 + merge → GGUF | DGX Spark 6h 内最稳路径；waybarrios 仓库主推 | — Pending |
+| QLoRA r=64 + merge → GGUF | DGX Spark 6h 内最稳路径；以 `/home/samuel/dgx-spark-setup` + `/dgx-spark-training` 为准（natolambert 上游），不参考 waybarrios | — Pending |
 | 训练 / val / OOD val = 80/10/10 | OOD val 单列以验证泛化，避免随机划分掩盖过拟合 | — Pending |
 | 首轮规模 3000 样本，并发 ≤10 | API 速率友好；先打通闭环再扩量 | — Pending |
 | GGUF 同时导出 fp16 与 q4_K_M | 部署灵活；q4_K_M 需单独评测以防量化崩塌 | — Pending |
