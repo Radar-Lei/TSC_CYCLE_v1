@@ -14,22 +14,37 @@ GGUF（fp16 + q4_K_M）部署、且带显式思考过程的 4B 推理模型。
 （min_green ≤ final ≤ max_green、整数秒、相位顺序、覆盖全相位），
 并在数值决策上接近 GPT-5.5 high 教师 —— 不是过拟合到 reality.log。
 
+## Current State
+
+**v1.0 SHIPPED** (2026-05-07) — 端到端蒸馏 pipeline 闭环，部署裁决 **GO**：q4_K_M GGUF (2.4GB) 在 OOD val 上硬约束满足率 98.7%（vs HF bf16 99.3%，ratio=0.9933 ≥ 0.95 阈值），教师 MAE Δ +0.18s（远低于 3s）。
+
+**Deployment artifact**: `runs/20260507T032419Z/gguf/model.q4_K_M.gguf` — 可直接装载到 EvoProgTSC TSC 决策端点。
+
+See `milestones/v1.0-ROADMAP.md` for phase breakdown.
+
+## Next Milestone Goals
+
+*待定 — 通过 `/gsd-new-milestone` 启动 v1.1+ 时定义。可选方向：*
+- imatrix 重量化（若生产监控发现 q4 退化）
+- 更大蒸馏数据集（5K-10K 样本）+ longer context training
+- DPO/RLHF 后训练增强
+
 ## Requirements
 
-### Validated
+### Validated (v1.0)
 
-(None yet — ship to validate)
+- [x] reality.log 输入分布形式化 + 合成数据生成器 — Validated in Phase 1-2
+- [x] 3000 样本合成（同分布 + OOD 扩展） — Validated in Phase 2
+- [x] GPT-5.5 high 并发标注（≤10 worker，≥2700 valid） — Validated in Phase 3
+- [x] 硬约束 lint 过滤 — Validated in Phase 3
+- [x] 80/10/10 split — Validated in Phase 4
+- [x] DGX Spark QLoRA r=64 SFT ≤6h — Validated in Phase 4
+- [x] LoRA merge → bf16 → GGUF bf16 → q4_K_M — Validated in Phase 5
+- [x] 评测套件（硬约束 / MAE / OOD / Reasoning） + 部署 go/no-go — Validated in Phase 6
 
 ### Active
 
-- [ ] 从 `reality.log` 提取输入参数分布（相位数、min/max_green、capacity、pred_wait/pred_saturation 范围、相位组合模式），并形式化为可采样的合成数据生成器
-- [ ] 合成训练输入数据，分布覆盖 reality.log 范围 + 适度 OOD 扩展，目标 3000 样本（首轮）
-- [ ] 用 GPT-5.5 high（reasoning_effort=high）作教师并发标注（≤10 worker），输出格式 `<start_working_out>...</end_working_out><SOLUTION>{json}</SOLUTION>`
-- [ ] 教师输出做约束校验过滤：违反 min/max/整数/相位覆盖的样本丢弃或重新生成
-- [ ] 数据集划分：80% 训练 / 10% 同分布 val / 10% OOD val（OOD 集专门构造分布外参数）
-- [ ] 在 DGX Spark（GB10 aarch64 CUDA 13）上对 Qwen3-4B-Thinking-2507 做 QLoRA r=64 SFT，6 小时内完成
-- [ ] 训练后 merge LoRA → fp16 HF 权重 → llama.cpp 转 fp16 GGUF → quantize q4_K_M
-- [ ] 评测套件：硬约束满足率 / 与教师输出 MAE / OOD 泛化 / Reasoning 引用关键字段质量；对 fp16 与 q4_K_M 都跑一遍
+(None — milestone shipped. Run `/gsd-new-milestone` for v1.1+.)
 
 ### Out of Scope
 
