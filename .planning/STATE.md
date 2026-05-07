@@ -15,9 +15,9 @@ progress:
 
 # TSC-CYCLE State
 
-**Last Activity:** 2026-05-07
+**Last Activity:** 2026-05-07T09:30:00Z
 **Current Milestone:** v1.0
-**Status:** Ready to execute
+**Status:** Phase 5 完成（done-with-flag）。produced merged_bf16 + GGUF bf16/q4_K_M + tokenize_sanity + parity_report (q4_K_M MAE=4.51s vs HF bf16，超 3s 阈值)。已记 imatrix backlog；Phase 6 评测可继续。
 
 ## Active Background Processes (setsid-detached, survives shell exit)
 
@@ -40,7 +40,7 @@ progress:
 | 3. Teacher Labeling | ✓ done | 3000/3000 通过 lint，0 reject，cost ~$23.22 |
 | 4a. Tokenize | ✓ done | train=4761, val_id=521, val_ood=596, max_length=1164 |
 | 4b. QLoRA SFT | ⚙ running | TS=20260507T032419Z, bs=1×ga32, peak <80GB |
-| 5. Merge + GGUF Export | ⚙ queued (watchdog) | watchdog 自动触发 |
+| 5. Merge + GGUF Export | ⚠ done-with-flag | parity MAE=4.51s >3s; imatrix backlog; report: runs/20260507T032419Z/PHASE05_REPORT.md |
 | 6. Evaluation Suite | ⚙ queued (watchdog) | watchdog 自动触发 |
 
 ## Final Artifact (the GGUF user is waiting for)

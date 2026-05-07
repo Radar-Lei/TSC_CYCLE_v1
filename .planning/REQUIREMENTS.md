@@ -60,11 +60,11 @@
 
 ### Export（EXP）— Merge 与 GGUF 量化
 
-- [ ] **EXP-01**: merge 前 reload base model bf16 全精度（**不是** 4-bit），合并 LoRA 后 `save_pretrained` 到 `runs/{ts}/merged_bf16/`
-- [ ] **EXP-02**: 用本机 `EvoProgTSC/llama.cpp/convert_hf_to_gguf.py` 转 bf16 GGUF（`Qwen3ForCausalLM` 已注册 line 4551）；产出 `runs/{ts}/gguf/model.bf16.gguf`
-- [ ] **EXP-03**: 用本机 `EvoProgTSC/llama.cpp/build/bin/llama-quantize` 量化为 Q4_K_M（preset 15）；产出 `runs/{ts}/gguf/model.q4_K_M.gguf`
-- [ ] **EXP-04**: GGUF tokenize sanity：自定义标签 sub-token 与 HF tokenizer 一致
-- [ ] **EXP-05**: 20 prompt greedy parity 测试（HF bf16 vs GGUF bf16 vs GGUF q4_K_M），同 seed=42；q4_K_M MAE>3s 触发 imatrix 重量化预案
+- [x] **EXP-01**: merge 前 reload base model bf16 全精度（**不是** 4-bit），合并 LoRA 后 `save_pretrained` 到 `runs/{ts}/merged_bf16/`
+- [x] **EXP-02**: 用本机 `EvoProgTSC/llama.cpp/convert_hf_to_gguf.py` 转 bf16 GGUF（`Qwen3ForCausalLM` 已注册 line 4551）；产出 `runs/{ts}/gguf/model.bf16.gguf`
+- [x] **EXP-03**: 用本机 `EvoProgTSC/llama.cpp/build/bin/llama-quantize` 量化为 Q4_K_M（preset 15）；产出 `runs/{ts}/gguf/model.q4_K_M.gguf`
+- [x] **EXP-04**: GGUF tokenize sanity：自定义标签 sub-token 与 HF tokenizer 一致
+- [x] **EXP-05**: 20 prompt greedy parity 测试（HF bf16 vs GGUF bf16 vs GGUF q4_K_M），同 seed=42；q4_K_M MAE>3s 触发 imatrix 重量化预案 ⚠ MAE=4.51s, imatrix backlog
 
 ### Evaluation（EVL）— 评测套件
 
@@ -156,11 +156,11 @@
 | TRN-06 | Phase 4 | Pending |
 | TRN-07 | Phase 4 | Pending |
 | TRN-08 | Phase 4 | Pending |
-| EXP-01 | Phase 5 | Pending |
-| EXP-02 | Phase 5 | Pending |
-| EXP-03 | Phase 5 | Pending |
-| EXP-04 | Phase 5 | Pending |
-| EXP-05 | Phase 5 | Pending |
+| EXP-01 | Phase 5 | Done |
+| EXP-02 | Phase 5 | Done |
+| EXP-03 | Phase 5 | Done |
+| EXP-04 | Phase 5 | Done |
+| EXP-05 | Phase 5 | Done (FLAG: imatrix backlog) |
 | EVL-01 | Phase 6 | Pending |
 | EVL-02 | Phase 6 | Pending |
 | EVL-03 | Phase 6 | Pending |
