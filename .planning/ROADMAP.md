@@ -92,8 +92,8 @@
   3. `runs/{ts}/eval/report.md` 输出 4 指标 × 3 variant × 2 split 矩阵 + p99 + 失败案例 top-20 + 量化退化结论
   4. 部署 go/no-go gate 写入 `runs/{ts}/eval/decision.md`：q4_K_M 在 OOD val 硬约束满足率 ≥ HF bf16 的 95% → go；否则启用 imatrix 重量化或回退 fp16 部署
 **Plans**: 6 plans
-- [ ] 06-01-PLAN.md — EVL 数据集选取（300 id + 300 ood, seed=42） (EVL-01)
-- [ ] 06-02-PLAN.md — hf_bf16 generation runner (EVL-01, EVL-02)
+- [x] 06-01-PLAN.md — EVL 数据集选取（300 id + 300 ood, seed=42） (EVL-01)
+- [x] 06-02-PLAN.md — hf_bf16 generation runner (EVL-01, EVL-02)
 - [ ] 06-03-PLAN.md — gguf_bf16 generation runner via llama-server (EVL-01, EVL-02)
 - [ ] 06-04-PLAN.md — gguf_q4_k_m generation runner (EVL-01, EVL-02)
 - [ ] 06-05-PLAN.md — 4 指标计算 + per_sample.jsonl + report.md (EVL-03..07)

@@ -68,7 +68,7 @@
 
 ### Evaluation（EVL）— 评测套件
 
-- [ ] **EVL-01**: 三 backend runner（HF bf16 / GGUF fp16 / GGUF q4_K_M），共用 prompt_builder + 同 seed greedy；生成结果写 `gen_cache/{variant}/{sample_id}.json`
+- [x] **EVL-01**: 三 backend runner（HF bf16 / GGUF fp16 / GGUF q4_K_M），共用 prompt_builder + 同 seed greedy；生成结果写 `gen_cache/{variant}/{sample_id}.json`
 - [ ] **EVL-02**: 在 same-dist val 与 OOD val 上跑（共 600 prompt × 3 variant = 1800 generations）
 - [ ] **EVL-03**: 指标 1 — 硬约束满足率（`constraint_lint` 直接复用），按 phase_count 分桶；trivial 样本（min==max）单独排除后再报
 - [ ] **EVL-04**: 指标 2 — 与教师 final 的 MAE / 完全一致率（hold-out 的教师标签）
@@ -161,7 +161,7 @@
 | EXP-03 | Phase 5 | Done |
 | EXP-04 | Phase 5 | Done |
 | EXP-05 | Phase 5 | Done (FLAG: imatrix backlog) |
-| EVL-01 | Phase 6 | Pending |
+| EVL-01 | Phase 6 | Complete |
 | EVL-02 | Phase 6 | Pending |
 | EVL-03 | Phase 6 | Pending |
 | EVL-04 | Phase 6 | Pending |
