@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-05-07T13:37:17.539Z"
+last_updated: "2026-05-07T15:00:00.000Z"
 last_activity: 2026-05-07
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 6
   total_plans: 10
-  completed_plans: 14
+  completed_plans: 20
   percent: 100
 ---
 
@@ -41,7 +41,7 @@ progress:
 | 4a. Tokenize | ✓ done | train=4761, val_id=521, val_ood=596, max_length=1164 |
 | 4b. QLoRA SFT | ⚙ running | TS=20260507T032419Z, bs=1×ga32, peak <80GB |
 | 5. Merge + GGUF Export | ⚠ done-with-flag | parity MAE=4.51s >3s; imatrix backlog; report: runs/20260507T032419Z/PHASE05_REPORT.md |
-| 6. Evaluation Suite | ⚙ queued (watchdog) | watchdog 自动触发 |
+| 6. Evaluation Suite | ✓ done | decision=GO; q4_K_M ood lint ratio=0.9933 (98.7%/99.3%); per_sample.jsonl + report.md + decision.md 落盘 |
 
 ## Final Artifact (the GGUF user is waiting for)
 

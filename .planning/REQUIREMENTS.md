@@ -161,14 +161,14 @@
 | EXP-03 | Phase 5 | Done |
 | EXP-04 | Phase 5 | Done |
 | EXP-05 | Phase 5 | Done (FLAG: imatrix backlog) |
-| EVL-01 | Phase 6 | Complete |
-| EVL-02 | Phase 6 | Complete |
-| EVL-03 | Phase 6 | Pending |
-| EVL-04 | Phase 6 | Pending |
-| EVL-05 | Phase 6 | Pending |
-| EVL-06 | Phase 6 | Pending |
-| EVL-07 | Phase 6 | Pending |
-| EVL-08 | Phase 6 | Pending |
+| EVL-01 | Phase 6 | Done |
+| EVL-02 | Phase 6 | Done |
+| EVL-03 | Phase 6 | Done |
+| EVL-04 | Phase 6 | Done |
+| EVL-05 | Phase 6 | Done |
+| EVL-06 | Phase 6 | Done |
+| EVL-07 | Phase 6 | Done |
+| EVL-08 | Phase 6 | Done |
 
 **Coverage:**
 - v1 requirements: 47 total
