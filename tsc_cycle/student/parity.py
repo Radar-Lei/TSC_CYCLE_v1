@@ -62,9 +62,11 @@ def main() -> int:
     ap.add_argument("--bf16-out", default="runs/20260507T032419Z/gguf/parity_gguf_bf16.json")
     ap.add_argument("--q4-out", default="runs/20260507T032419Z/gguf/parity_gguf_q4.json")
     ap.add_argument("--report", default="runs/20260507T032419Z/gguf/parity_report.json")
-    # See parity_gguf.py for rationale: EvoProgTSC build is CPU-only; this
-    # build is the CUDA-linked variant (-ngl 99 actually GPU-offloads).
-    ap.add_argument("--llama-cli", default="/home/samuel/llama.cpp/build/bin/llama-cli")
+    # See parity_gguf.py for rationale: switched from llama-cli (per-prompt
+    # subprocess.run with ~5 min cold-start each) to llama-server (one model
+    # load, then HTTP POST per prompt). The EvoProgTSC build is CPU-only;
+    # /home/samuel/llama.cpp/build/bin is the CUDA-linked variant.
+    ap.add_argument("--llama-server", default="/home/samuel/llama.cpp/build/bin/llama-server")
     ap.add_argument("--n-predict", type=int, default=384)
     ap.add_argument("--timeout-sec", type=int, default=600)
     args = ap.parse_args()
@@ -80,7 +82,7 @@ def main() -> int:
     # --- Pre-flight: required artifacts exist.
     for label, p in [("merged_hf", args.merged_hf), ("gguf_bf16", args.gguf_bf16),
                      ("gguf_q4", args.gguf_q4), ("prompts", args.prompts),
-                     ("llama_cli", args.llama_cli)]:
+                     ("llama_server", args.llama_server)]:
         if not Path(p).exists():
             print(f"[PARITY] FAIL: missing {label}: {p}", file=sys.stderr)
             return 2
@@ -106,7 +108,7 @@ def main() -> int:
         "--backend-label", "gguf_bf16",
         "--prompts", args.prompts,
         "--out", args.bf16_out,
-        "--llama-cli", args.llama_cli,
+        "--llama-server", args.llama_server,
         "--n-predict", str(args.n_predict),
         "--timeout-sec", str(args.timeout_sec),
     ], stage="parity_gguf_bf16")
@@ -120,7 +122,7 @@ def main() -> int:
         "--backend-label", "gguf_q4_K_M",
         "--prompts", args.prompts,
         "--out", args.q4_out,
-        "--llama-cli", args.llama_cli,
+        "--llama-server", args.llama_server,
         "--n-predict", str(args.n_predict),
         "--timeout-sec", str(args.timeout_sec),
     ], stage="parity_gguf_q4")
