@@ -70,12 +70,12 @@
 
 - [x] **EVL-01**: 三 backend runner（HF bf16 / GGUF fp16 / GGUF q4_K_M），共用 prompt_builder + 同 seed greedy；生成结果写 `gen_cache/{variant}/{sample_id}.json`
 - [x] **EVL-02**: 在 same-dist val 与 OOD val 上跑（共 600 prompt × 3 variant = 1800 generations）
-- [ ] **EVL-03**: 指标 1 — 硬约束满足率（`constraint_lint` 直接复用），按 phase_count 分桶；trivial 样本（min==max）单独排除后再报
-- [ ] **EVL-04**: 指标 2 — 与教师 final 的 MAE / 完全一致率（hold-out 的教师标签）
-- [ ] **EVL-05**: 指标 3 — OOD 泛化 gap（同分布 val vs OOD val 上的指标 1/2 差距）；按 OOD 维度（相位数 / 范围 / 饱和度）分桶
-- [ ] **EVL-06**: 指标 4 — Reasoning 引用质量（自动检测思考内容中是否出现 `pred_saturation` / `min_green` / `max_green` / `pred_wait` 等关键字段名 + 数值；规则式打分，不依赖另一个 LLM）
-- [ ] **EVL-07**: `report.md` 输出 4 指标 × 3 variant × 2 split 矩阵 + p99 + 失败案例 top-20 + 量化退化结论
-- [ ] **EVL-08**: 部署 go/no-go gate：q4_K_M 在 OOD val 硬约束满足率 ≥ HF bf16 的 95%；否则启用 imatrix 重量化或回退 fp16 部署
+- [x] **EVL-03**: 指标 1 — 硬约束满足率（`constraint_lint` 直接复用），按 phase_count 分桶；trivial 样本（min==max）单独排除后再报
+- [x] **EVL-04**: 指标 2 — 与教师 final 的 MAE / 完全一致率（hold-out 的教师标签）
+- [x] **EVL-05**: 指标 3 — OOD 泛化 gap（同分布 val vs OOD val 上的指标 1/2 差距）；按 OOD 维度（相位数 / 范围 / 饱和度）分桶
+- [x] **EVL-06**: 指标 4 — Reasoning 引用质量（自动检测思考内容中是否出现 `pred_saturation` / `min_green` / `max_green` / `pred_wait` 等关键字段名 + 数值；规则式打分，不依赖另一个 LLM）
+- [x] **EVL-07**: `report.md` 输出 4 指标 × 3 variant × 2 split 矩阵 + p99 + 失败案例 top-20 + 量化退化结论
+- [x] **EVL-08**: 部署 go/no-go gate：q4_K_M 在 OOD val 硬约束满足率 ≥ HF bf16 的 95%；否则启用 imatrix 重量化或回退 fp16 部署
 
 ## v2 Requirements
 

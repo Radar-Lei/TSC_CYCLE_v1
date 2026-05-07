@@ -16,7 +16,7 @@
 - [x] **Phase 3: Teacher Labeling** — GPT-5.5 high 并发标注 ≥2700 有效样本、内容寻址缓存断点续跑、reject<20%、reasoning_tokens 真实校验
 - [x] **Phase 4: Dataset Build + QLoRA SFT** — 80/10/10 split + arrow tokenize + Qwen3-4B-Thinking-2507 QLoRA r=64 训练 ≤6h，自定义标签 emission ≥80%
 - [x] **Phase 5: Merge + GGUF Export** — bf16 reload merge、HF→GGUF bf16、quantize Q4_K_M、20-prompt parity（q4_K_M MAE ≤3s） (completed 2026-05-07)
-- [ ] **Phase 6: Evaluation Suite** — 三 backend × 四指标 × 两 split 矩阵评测，输出 report.md + 部署 go/no-go 决策
+- [x] **Phase 6: Evaluation Suite** — 三 backend × 四指标 × 两 split 矩阵评测，输出 report.md + 部署 go/no-go 决策 (completed 2026-05-07)
 
 ## Phase Details
 
@@ -96,8 +96,8 @@
 - [x] 06-02-PLAN.md — hf_bf16 generation runner (EVL-01, EVL-02)
 - [x] 06-03-PLAN.md — gguf_bf16 generation runner via llama-server (EVL-01, EVL-02)
 - [x] 06-04-PLAN.md — gguf_q4_k_m generation runner (EVL-01, EVL-02)
-- [ ] 06-05-PLAN.md — 4 指标计算 + per_sample.jsonl + report.md (EVL-03..07)
-- [ ] 06-06-PLAN.md — 部署 go/no-go decision gate + STATE/REQUIREMENTS 闭环 (EVL-07, EVL-08)
+- [x] 06-05-PLAN.md — 4 指标计算 + per_sample.jsonl + report.md (EVL-03..07)
+- [x] 06-06-PLAN.md — 部署 go/no-go decision gate + STATE/REQUIREMENTS 闭环 (EVL-07, EVL-08)
 
 ## Progress
 
@@ -108,7 +108,7 @@
 | 3. Teacher Labeling | 0/0 | Complete | 2026-05-07 |
 | 4. Dataset Build + QLoRA SFT | 0/0 | Complete | 2026-05-07 |
 | 5. Merge + GGUF Export | 5/4 | Complete    | 2026-05-07 |
-| 6. Evaluation Suite | 0/0 | Not started | - |
+| 6. Evaluation Suite | 7/6 | Complete    | 2026-05-07 |
 
 ## Phase Ordering Rationale
 
