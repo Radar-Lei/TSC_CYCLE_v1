@@ -106,6 +106,12 @@ class SmokeCallback(TrainerCallback):
         with open(Path(args.output_dir) / "smoke.jsonl", "a", encoding="utf-8") as f:
             f.write(json.dumps({"epoch": state.epoch, **result}) + "\n")
         print(f"[SMOKE] epoch {state.epoch}: closing_ok={result['closing_ok']}/5 native_leak={result['native_leak']}/5")
+
+        # Versioned snapshot per epoch (NOT final adapter — watchdog waits for `adapter/`)
+        snap_dir = Path(args.output_dir) / f"adapter_epoch{int(round(state.epoch))}"
+        model.save_pretrained(snap_dir)
+        self.tokenizer.save_pretrained(snap_dir)
+        print(f"[SMOKE] saved snapshot: {snap_dir}")
         return control
 
 
@@ -193,9 +199,9 @@ def main() -> int:
         gradient_checkpointing=True,
         gradient_checkpointing_kwargs={"use_reentrant": False},
         logging_steps=args.logging_steps,
-        save_strategy=args.save_strategy,
-        save_total_limit=2,
-        eval_strategy="epoch",
+        save_strategy="no",
+        save_total_limit=1,
+        eval_strategy="no",
         report_to=["wandb"] if os.environ.get("WANDB_API_KEY") else ["none"],
         dataloader_num_workers=1,
         remove_unused_columns=False,

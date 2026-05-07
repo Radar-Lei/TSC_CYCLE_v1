@@ -1,19 +1,19 @@
 # TSC-CYCLE State
 
-**Last Activity:** 2026-05-07 10:04
+**Last Activity:** 2026-05-07 11:24
 **Current Milestone:** v1.0
-**Status:** P4b 重启（bs=1, grad_accum=32，effective batch 32 不变；显著降低 per-step 内存）。Watchdog 监听 adapter，就绪后自动跑 P5 export → P6 eval。
+**Status:** P4b 第三次重启。前一次（TS=20260507T020310Z）epoch 1 smoke 通过（5/5, native_leak=0），但 epoch 末尾 Trainer eval+save 内存峰值杀进程。已禁用 eval_strategy 与 trainer save_strategy，改由 SmokeCallback 在 epoch 末写 `adapter_epochN/` 快照，最终 adapter 由 main() 末尾保存到 `adapter/`。
 
 ## Active Background Processes (setsid-detached, survives shell exit)
 
-- Train (P4b SFT): PID **2934829** — `python -m tsc_cycle.student.train --batch-size 1 --grad-accum 32`
-  - Output dir: `runs/20260507T020310Z/train`
-  - Log: `runs/20260507T020310Z_train.log`
+- Train (P4b SFT): PID **3041752** — `python -m tsc_cycle.student.train --batch-size 1 --grad-accum 32`
+  - Output dir: `runs/20260507T032419Z/train`
+  - Log: `runs/20260507T032419Z_train.log`
   - 154 optimizer steps × 2 epoch（micro-batch=1, ga=32）
   - Save strategy: epoch（adapter 在 epoch 末写出）
-- Watchdog (P5 export + P6 eval): PID **2935791** — `bash scripts/run_export_eval_watchdog.sh`
-  - Log: `runs/20260507T020310Z_watchdog.log`
-  - Polls every 60s for `runs/20260507T020310Z/train/adapter/adapter_model.safetensors`
+- Watchdog (P5 export + P6 eval): PID **3041884** — `bash scripts/run_export_eval_watchdog.sh`
+  - Log: `runs/20260507T032419Z_watchdog.log`
+  - Polls every 60s for `runs/20260507T032419Z/train/adapter/adapter_model.safetensors`
   - Auto-runs export_gguf → parity → run_eval after adapter ready
 
 ## Phase Status
@@ -24,13 +24,13 @@
 | 2. Synthetic Data Generation | ✓ done | 2700 + 300 inputs, KS report passes |
 | 3. Teacher Labeling | ✓ done | 3000/3000 通过 lint，0 reject，cost ~$23.22 |
 | 4a. Tokenize | ✓ done | train=4761, val_id=521, val_ood=596, max_length=1164 |
-| 4b. QLoRA SFT | ⚙ running | TS=20260507T020310Z, bs=1×ga32, peak <80GB |
+| 4b. QLoRA SFT | ⚙ running | TS=20260507T032419Z, bs=1×ga32, peak <80GB |
 | 5. Merge + GGUF Export | ⚙ queued (watchdog) | watchdog 自动触发 |
 | 6. Evaluation Suite | ⚙ queued (watchdog) | watchdog 自动触发 |
 
 ## Final Artifact (the GGUF user is waiting for)
 
-**Path:** `runs/20260507T020310Z/gguf/model.q4_K_M.gguf`
+**Path:** `runs/20260507T032419Z/gguf/model.q4_K_M.gguf`
 
 ## Why bs=1 grad_accum=32
 
@@ -42,16 +42,16 @@
 ## Monitor Progress
 
 ```bash
-tail -f runs/20260507T020310Z_train.log
-tail -f runs/20260507T020310Z_watchdog.log
+tail -f runs/20260507T032419Z_train.log
+tail -f runs/20260507T032419Z_watchdog.log
 ps -p 2934829 -o pid,etime,cmd
-ls -lh runs/20260507T020310Z/gguf/model.q4_K_M.gguf
+ls -lh runs/20260507T032419Z/gguf/model.q4_K_M.gguf
 ```
 
 ## Recover from crash
 
 ```bash
-TS=20260507T020310Z bash scripts/run_pipeline_bg.sh
+TS=20260507T032419Z bash scripts/run_pipeline_bg.sh
 ```
 
 ## Time Budget
