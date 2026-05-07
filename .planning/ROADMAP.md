@@ -15,7 +15,7 @@
 - [x] **Phase 2: Synthetic Data Generation** — 形式化 OOD spec、采样 ~2700 同分布 + ~300 OOD 输入、KS test 通过
 - [x] **Phase 3: Teacher Labeling** — GPT-5.5 high 并发标注 ≥2700 有效样本、内容寻址缓存断点续跑、reject<20%、reasoning_tokens 真实校验
 - [x] **Phase 4: Dataset Build + QLoRA SFT** — 80/10/10 split + arrow tokenize + Qwen3-4B-Thinking-2507 QLoRA r=64 训练 ≤6h，自定义标签 emission ≥80%
-- [ ] **Phase 5: Merge + GGUF Export** — bf16 reload merge、HF→GGUF bf16、quantize Q4_K_M、20-prompt parity（q4_K_M MAE ≤3s）
+- [x] **Phase 5: Merge + GGUF Export** — bf16 reload merge、HF→GGUF bf16、quantize Q4_K_M、20-prompt parity（q4_K_M MAE ≤3s） (completed 2026-05-07)
 - [ ] **Phase 6: Evaluation Suite** — 三 backend × 四指标 × 两 split 矩阵评测，输出 report.md + 部署 go/no-go 决策
 
 ## Phase Details
@@ -101,7 +101,7 @@
 | 2. Synthetic Data Generation | 0/0 | Complete | 2026-05-07 |
 | 3. Teacher Labeling | 0/0 | Complete | 2026-05-07 |
 | 4. Dataset Build + QLoRA SFT | 0/0 | Complete | 2026-05-07 |
-| 5. Merge + GGUF Export | 3/4 | In Progress|  |
+| 5. Merge + GGUF Export | 4/4 | Complete   | 2026-05-07 |
 | 6. Evaluation Suite | 0/0 | Not started | - |
 
 ## Phase Ordering Rationale
