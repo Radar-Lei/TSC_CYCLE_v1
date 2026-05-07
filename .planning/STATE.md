@@ -1,73 +1,64 @@
 # TSC-CYCLE State
 
-**Last Activity:** 2026-05-07
+**Last Activity:** 2026-05-07 10:04
 **Current Milestone:** v1.0
-**Status:** 全自动 pipeline 后台运行中（PID 2743735，nohup 不依赖会话）
+**Status:** P4b 重启（bs=1, grad_accum=32，effective batch 32 不变；显著降低 per-step 内存）。Watchdog 监听 adapter，就绪后自动跑 P5 export → P6 eval。
+
+## Active Background Processes (setsid-detached, survives shell exit)
+
+- Train (P4b SFT): PID **2934829** — `python -m tsc_cycle.student.train --batch-size 1 --grad-accum 32`
+  - Output dir: `runs/20260507T020310Z/train`
+  - Log: `runs/20260507T020310Z_train.log`
+  - 154 optimizer steps × 2 epoch（micro-batch=1, ga=32）
+  - Save strategy: epoch（adapter 在 epoch 末写出）
+- Watchdog (P5 export + P6 eval): PID **2935791** — `bash scripts/run_export_eval_watchdog.sh`
+  - Log: `runs/20260507T020310Z_watchdog.log`
+  - Polls every 60s for `runs/20260507T020310Z/train/adapter/adapter_model.safetensors`
+  - Auto-runs export_gguf → parity → run_eval after adapter ready
 
 ## Phase Status
 
 | Phase | Status | Notes |
 |---|---|---|
-| 1. Environment + Foundations | ✓ executed | venv + foundations + 24/24 tests + tokenizer check + dist_prior |
-| 2. Synthetic Data Generation | ✓ executed | 2700 + 300 inputs, KS report passes |
-| 3. Teacher Labeling | ⚙ running | GPT-5.5 high via codex proxy http://148.135.118.86:8080. 50-sample 烟雾 100% pass。全量后台跑中（rate ~30/min） |
-| 4. Dataset + QLoRA SFT | ⚙ queued | 自动接力 P3 完成后 |
-| 5. Merge + GGUF Export | ⚙ queued | 自动接力 P4 完成后 |
-| 6. Evaluation Suite | ⚙ queued | 自动接力 P5 完成后 |
+| 1. Environment + Foundations | ✓ done | venv + foundations + 24/24 tests + tokenizer check + dist_prior |
+| 2. Synthetic Data Generation | ✓ done | 2700 + 300 inputs, KS report passes |
+| 3. Teacher Labeling | ✓ done | 3000/3000 通过 lint，0 reject，cost ~$23.22 |
+| 4a. Tokenize | ✓ done | train=4761, val_id=521, val_ood=596, max_length=1164 |
+| 4b. QLoRA SFT | ⚙ running | TS=20260507T020310Z, bs=1×ga32, peak <80GB |
+| 5. Merge + GGUF Export | ⚙ queued (watchdog) | watchdog 自动触发 |
+| 6. Evaluation Suite | ⚙ queued (watchdog) | watchdog 自动触发 |
 
-## Background Process
+## Final Artifact (the GGUF user is waiting for)
 
-```
-PID:    2743735
-Driver: scripts/run_pipeline_bg.sh
-Log:    runs/20260506T212001Z_pipeline.log
-TS:     20260506T212001Z
-```
+**Path:** `runs/20260507T020310Z/gguf/model.q4_K_M.gguf`
+
+## Why bs=1 grad_accum=32
+
+之前 bs=4 训练在 step 1 后崩。降到 bs=1 + ga=32：
+- effective batch 仍为 32（梯度同质量）
+- per-step activation 内存 ~4× 降低
+- 整体峰值估计 50–60 GB（远低于 80GB 上限）
 
 ## Monitor Progress
 
 ```bash
-# Live log
-tail -f runs/20260506T212001Z_pipeline.log
-
-# Sample counts
-wc -l data/labeled.jsonl data/rejected.jsonl
-
-# PID alive?
-ps -p 2743735 -o pid,etime,cmd
-
-# When done, the final artifact:
-ls -lh runs/20260506T212001Z/gguf/model.q4_K_M.gguf
+tail -f runs/20260507T020310Z_train.log
+tail -f runs/20260507T020310Z_watchdog.log
+ps -p 2934829 -o pid,etime,cmd
+ls -lh runs/20260507T020310Z/gguf/model.q4_K_M.gguf
 ```
-
-## Final Artifact (the GGUF user is waiting for)
-
-**Path:** `runs/20260506T212001Z/gguf/model.q4_K_M.gguf`
-
-Other artifacts at the same TS:
-- `runs/20260506T212001Z/gguf/model.bf16.gguf` — fp16 fallback
-- `runs/20260506T212001Z/eval/report.md` — 3 backend × 4 metric × 2 split matrix
-- `runs/20260506T212001Z/eval/decision.md` — go/no-go gate
 
 ## Recover from crash
 
-The pipeline driver `scripts/run_pipeline_bg.sh` is idempotent. Each phase
-checks for its outputs before running. To resume after any crash:
-
 ```bash
-TS=20260506T212001Z bash scripts/run_pipeline_bg.sh
+TS=20260507T020310Z bash scripts/run_pipeline_bg.sh
 ```
-
-(Or pick a new TS to start a fresh run.)
 
 ## Time Budget
 
-| Phase | Est. wallclock | Actual rate |
-|---|---|---|
-| 3 (label) | ~80 min | 30 samples/min @ 10 worker, $0.45/50 samples |
-| 4a (tokenize) | ~5 min | – |
-| 4b (SFT) | ~6 h | 4B QLoRA r=64, ~2700 samples × 2 epoch |
-| 5 (merge+gguf) | ~15 min | – |
-| 6 (eval) | ~30 min | – |
-| **Total** | **~7-8 hours from now** | |
-
+| Phase | Est. wallclock |
+|---|---|
+| 4b (SFT, bs=1×ga32) | ~3-4 h |
+| 5 (merge+gguf) | ~15 min |
+| 6 (eval) | ~30 min |
+| **Total ETA** | **~4-5 hours from launch** |
