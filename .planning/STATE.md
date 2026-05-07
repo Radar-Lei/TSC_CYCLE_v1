@@ -1,8 +1,23 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: executing
+last_updated: "2026-05-07T09:19:26.094Z"
+last_activity: 2026-05-07
+progress:
+  total_phases: 6
+  completed_phases: 0
+  total_plans: 4
+  completed_plans: 6
+  percent: 100
+---
+
 # TSC-CYCLE State
 
-**Last Activity:** 2026-05-07 11:24
+**Last Activity:** 2026-05-07
 **Current Milestone:** v1.0
-**Status:** P4b 第三次重启。前一次（TS=20260507T020310Z）epoch 1 smoke 通过（5/5, native_leak=0），但 epoch 末尾 Trainer eval+save 内存峰值杀进程。已禁用 eval_strategy 与 trainer save_strategy，改由 SmokeCallback 在 epoch 末写 `adapter_epochN/` 快照，最终 adapter 由 main() 末尾保存到 `adapter/`。
+**Status:** Ready to execute
 
 ## Active Background Processes (setsid-detached, survives shell exit)
 
@@ -35,6 +50,7 @@
 ## Why bs=1 grad_accum=32
 
 之前 bs=4 训练在 step 1 后崩。降到 bs=1 + ga=32：
+
 - effective batch 仍为 32（梯度同质量）
 - per-step activation 内存 ~4× 降低
 - 整体峰值估计 50–60 GB（远低于 80GB 上限）

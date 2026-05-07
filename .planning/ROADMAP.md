@@ -11,10 +11,10 @@
 
 ## Phases
 
-- [ ] **Phase 1: Environment + Foundations** — 克隆 dgx-spark venv、verify 全绿、prompt_builder/constraint_lint/tokenizer_check/hashing 模块就绪、dist_prior 落盘、5-prompt 教师 smoke 通
-- [ ] **Phase 2: Synthetic Data Generation** — 形式化 OOD spec、采样 ~2700 同分布 + ~300 OOD 输入、KS test 通过
-- [ ] **Phase 3: Teacher Labeling** — GPT-5.5 high 并发标注 ≥2700 有效样本、内容寻址缓存断点续跑、reject<20%、reasoning_tokens 真实校验
-- [ ] **Phase 4: Dataset Build + QLoRA SFT** — 80/10/10 split + arrow tokenize + Qwen3-4B-Thinking-2507 QLoRA r=64 训练 ≤6h，自定义标签 emission ≥80%
+- [x] **Phase 1: Environment + Foundations** — 克隆 dgx-spark venv、verify 全绿、prompt_builder/constraint_lint/tokenizer_check/hashing 模块就绪、dist_prior 落盘、5-prompt 教师 smoke 通
+- [x] **Phase 2: Synthetic Data Generation** — 形式化 OOD spec、采样 ~2700 同分布 + ~300 OOD 输入、KS test 通过
+- [x] **Phase 3: Teacher Labeling** — GPT-5.5 high 并发标注 ≥2700 有效样本、内容寻址缓存断点续跑、reject<20%、reasoning_tokens 真实校验
+- [x] **Phase 4: Dataset Build + QLoRA SFT** — 80/10/10 split + arrow tokenize + Qwen3-4B-Thinking-2507 QLoRA r=64 训练 ≤6h，自定义标签 emission ≥80%
 - [ ] **Phase 5: Merge + GGUF Export** — bf16 reload merge、HF→GGUF bf16、quantize Q4_K_M、20-prompt parity（q4_K_M MAE ≤3s）
 - [ ] **Phase 6: Evaluation Suite** — 三 backend × 四指标 × 两 split 矩阵评测，输出 report.md + 部署 go/no-go 决策
 
@@ -76,7 +76,11 @@
   2. `runs/{ts}/gguf/model.bf16.gguf`（本机 EvoProgTSC/llama.cpp `convert_hf_to_gguf.py`，`Qwen3ForCausalLM` 已注册）+ `runs/{ts}/gguf/model.q4_K_M.gguf`（`llama-quantize` preset 15）写出
   3. GGUF tokenize sanity：`llama-tokenize` 对四个自定义标签输出与 HF tokenizer 一致的多 sub-token 序列
   4. 20-prompt greedy（seed=42, temperature=0.0）parity 测试：HF bf16 vs GGUF bf16 vs GGUF q4_K_M，q4_K_M 对 HF bf16 SOLUTION 数值 MAE ≤ 3s（>3s 触发 imatrix 重量化预案）
-**Plans**: TBD
+**Plans**: 4 plans
+- [ ] 05-01-PLAN.md — GGUF tokenize sanity check (EXP-04)
+- [ ] 05-02-PLAN.md — Deterministic 20-prompt parity selector (EXP-05 input)
+- [ ] 05-03-PLAN.md — Three-precision parity runner with GPU offload (EXP-01/02/03/05)
+- [ ] 05-04-PLAN.md — Phase 5 report rollup + STATE/ROADMAP closure (EXP-01..05)
 
 ### Phase 6: Evaluation Suite
 **Goal**: 三 backend（HF bf16 / GGUF bf16 / GGUF q4_K_M）× 四指标（硬约束满足率 / 教师 MAE / OOD gap / Reasoning 关键字）× 两 split（同分布 val / OOD val）矩阵评测，给出部署 go/no-go 决策
@@ -93,10 +97,10 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Environment + Foundations | 0/0 | Not started | - |
-| 2. Synthetic Data Generation | 0/0 | Not started | - |
-| 3. Teacher Labeling | 0/0 | Not started | - |
-| 4. Dataset Build + QLoRA SFT | 0/0 | Not started | - |
+| 1. Environment + Foundations | 0/0 | Complete | 2026-05-07 |
+| 2. Synthetic Data Generation | 0/0 | Complete | 2026-05-07 |
+| 3. Teacher Labeling | 0/0 | Complete | 2026-05-07 |
+| 4. Dataset Build + QLoRA SFT | 0/0 | Complete | 2026-05-07 |
 | 5. Merge + GGUF Export | 0/0 | Not started | - |
 | 6. Evaluation Suite | 0/0 | Not started | - |
 
