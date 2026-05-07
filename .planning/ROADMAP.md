@@ -101,7 +101,7 @@
 | 2. Synthetic Data Generation | 0/0 | Complete | 2026-05-07 |
 | 3. Teacher Labeling | 0/0 | Complete | 2026-05-07 |
 | 4. Dataset Build + QLoRA SFT | 0/0 | Complete | 2026-05-07 |
-| 5. Merge + GGUF Export | 4/4 | Complete   | 2026-05-07 |
+| 5. Merge + GGUF Export | 5/4 | Complete    | 2026-05-07 |
 | 6. Evaluation Suite | 0/0 | Not started | - |
 
 ## Phase Ordering Rationale
