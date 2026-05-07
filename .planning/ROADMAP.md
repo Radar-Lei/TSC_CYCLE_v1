@@ -77,10 +77,10 @@
   3. GGUF tokenize sanity：`llama-tokenize` 对四个自定义标签输出与 HF tokenizer 一致的多 sub-token 序列
   4. 20-prompt greedy（seed=42, temperature=0.0）parity 测试：HF bf16 vs GGUF bf16 vs GGUF q4_K_M，q4_K_M 对 HF bf16 SOLUTION 数值 MAE ≤ 3s（>3s 触发 imatrix 重量化预案）
 **Plans**: 4 plans
-- [ ] 05-01-PLAN.md — GGUF tokenize sanity check (EXP-04)
-- [ ] 05-02-PLAN.md — Deterministic 20-prompt parity selector (EXP-05 input)
-- [ ] 05-03-PLAN.md — Three-precision parity runner with GPU offload (EXP-01/02/03/05)
-- [ ] 05-04-PLAN.md — Phase 5 report rollup + STATE/ROADMAP closure (EXP-01..05)
+- [x] 05-01-PLAN.md — GGUF tokenize sanity check (EXP-04)
+- [x] 05-02-PLAN.md — Deterministic 20-prompt parity selector (EXP-05 input)
+- [x] 05-03-PLAN.md — Three-precision parity runner with GPU offload (EXP-01/02/03/05)
+- [x] 05-04-PLAN.md — Phase 5 report rollup + STATE/ROADMAP closure (EXP-01..05)
 
 ### Phase 6: Evaluation Suite
 **Goal**: 三 backend（HF bf16 / GGUF bf16 / GGUF q4_K_M）× 四指标（硬约束满足率 / 教师 MAE / OOD gap / Reasoning 关键字）× 两 split（同分布 val / OOD val）矩阵评测，给出部署 go/no-go 决策
@@ -101,7 +101,7 @@
 | 2. Synthetic Data Generation | 0/0 | Complete | 2026-05-07 |
 | 3. Teacher Labeling | 0/0 | Complete | 2026-05-07 |
 | 4. Dataset Build + QLoRA SFT | 0/0 | Complete | 2026-05-07 |
-| 5. Merge + GGUF Export | 0/0 | Not started | - |
+| 5. Merge + GGUF Export | 3/4 | In Progress|  |
 | 6. Evaluation Suite | 0/0 | Not started | - |
 
 ## Phase Ordering Rationale
