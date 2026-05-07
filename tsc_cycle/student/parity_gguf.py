@@ -83,7 +83,12 @@ def main() -> int:
                     help='e.g. "gguf_bf16" or "gguf_q4_K_M"')
     ap.add_argument("--prompts", default="runs/20260507T032419Z/gguf/parity_prompts.jsonl")
     ap.add_argument("--out", required=True)
-    ap.add_argument("--llama-cli", default="/home/samuel/projects/EvoProgTSC/llama.cpp/llama-cli")
+    # NOTE: EvoProgTSC/llama.cpp/llama-cli is CPU-only (no libcuda/libcublas
+    # linkage), which makes 4B bf16 inference take ~8 min/prompt. The
+    # /home/samuel/llama.cpp/build/bin build links libggml-cuda.so + cuBLAS
+    # and detects GB10 (122GB VRAM); use it as default so -ngl 99 actually
+    # offloads to GPU.
+    ap.add_argument("--llama-cli", default="/home/samuel/llama.cpp/build/bin/llama-cli")
     ap.add_argument("--n-predict", type=int, default=384)
     ap.add_argument("--timeout-sec", type=int, default=600)
     ap.add_argument("--ngl", type=int, default=99, help="GPU layers to offload (default 99 = all)")
