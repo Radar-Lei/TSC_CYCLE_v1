@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: 9B 基座切换
 status: executing
-last_updated: "2026-05-08T10:28:10.144Z"
+last_updated: "2026-05-08T10:41:11.134Z"
 last_activity: 2026-05-08
 progress:
   total_phases: 6
@@ -17,16 +17,19 @@ progress:
 
 **Last Activity:** 2026-05-08
 **Current Milestone:** v3.0 9B 基座切换
-**Status:** Ready to execute
+**Status:** Executing Phase 01
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-05-08)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近 GPT-5.5 high 教师 — 不过拟合到 reality.log。
-**Current focus:** Phase 1 — 环境 + Tokenizer + 显存 + llama.cpp 四合一硬门禁
+**Current focus:** Phase 01 — tokenizer-llama-cpp
 
 ## Current Position
+
+Phase: 01 (tokenizer-llama-cpp) — EXECUTING
+Plan: 1 of 6
 
 - Phase: 1 (not started)
 - Plan: — (run `/gsd-plan-phase 1` next)
