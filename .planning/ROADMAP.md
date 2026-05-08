@@ -53,7 +53,7 @@ Plans:
 **Plans:** 5 plans
 Plans:
 **Wave 0**
-- [ ] 02-01-PLAN.md — Wave 0 RED tests for DATAGEN-01..07 invariants
+- [x] 02-01-PLAN.md — Wave 0 RED tests for DATAGEN-01..07 invariants
 
 **Wave 1** *(blocked on Wave 0 completion)*
 - [ ] 02-02-PLAN.md — Three-source isolated Phase 2 input reservoir generator

@@ -29,13 +29,13 @@
 
 ### DATAGEN — 数据扩量到 10K（GPT-5.5 high 教师只标新增 7K）
 
-- [ ] **DATAGEN-01**: 合成输入生成器扩展分布到三类：(a) 同分布密集填充 (b) OOD / 边界（min_green<15s, max_green>120s, 极端饱和度等）(c) v1.0 高 MAE / lint reject targeted 案例
-- [ ] **DATAGEN-02**: 生成 ≥7K 新输入（去重后），与 v1.0 现有 3K 不重叠
-- [ ] **DATAGEN-03**: GPT-5.5 high + reasoning_effort="high"，并发 ≤10 worker，指数退避，复用 `EvoProgTSC/client.py` 既有重试/降级逻辑
-- [ ] **DATAGEN-04**: 教师输出过硬约束 lint（min_green ≤ final ≤ max_green、整数秒、相位顺序、覆盖全相位）；lint 失败样本丢弃不重生成
-- [ ] **DATAGEN-05**: 进度持久化 JSONL append；支持断点续跑（不重复调用 GPT-5.5）
-- [ ] **DATAGEN-06**: v3.0 训练集 = v1.0 valid `labeled.jsonl` (read-only) ∪ 新增 lint pass samples，目标 ≥9000 valid samples
-- [ ] **DATAGEN-07**: v1.0 `data/labeled.jsonl` 内容字节级不变（git diff clean，仅以 read-only mount 方式被引用）
+- [x] **DATAGEN-01**: 合成输入生成器扩展分布到三类：(a) 同分布密集填充 (b) OOD / 边界（min_green<15s, max_green>120s, 极端饱和度等）(c) v1.0 高 MAE / lint reject targeted 案例
+- [x] **DATAGEN-02**: 生成 ≥7K 新输入（去重后），与 v1.0 现有 3K 不重叠
+- [x] **DATAGEN-03**: GPT-5.5 high + reasoning_effort="high"，并发 ≤10 worker，指数退避，复用 `EvoProgTSC/client.py` 既有重试/降级逻辑
+- [x] **DATAGEN-04**: 教师输出过硬约束 lint（min_green ≤ final ≤ max_green、整数秒、相位顺序、覆盖全相位）；lint 失败样本丢弃不重生成
+- [x] **DATAGEN-05**: 进度持久化 JSONL append；支持断点续跑（不重复调用 GPT-5.5）
+- [x] **DATAGEN-06**: v3.0 训练集 = v1.0 valid `labeled.jsonl` (read-only) ∪ 新增 lint pass samples，目标 ≥9000 valid samples
+- [x] **DATAGEN-07**: v1.0 `data/labeled.jsonl` 内容字节级不变（git diff clean，仅以 read-only mount 方式被引用）
 
 ### DATA — 训练数据集构建
 
@@ -106,13 +106,13 @@ All 39 v3.0 requirements mapped to exactly one phase. Coverage: 39/39 ✓
 | MEM-01 | Phase 1 | Pending |
 | MEM-02 | Phase 1 | Pending |
 | MEM-03 | Phase 1 | Pending |
-| DATAGEN-01 | Phase 2 | Pending |
-| DATAGEN-02 | Phase 2 | Pending |
-| DATAGEN-03 | Phase 2 | Pending |
-| DATAGEN-04 | Phase 2 | Pending |
-| DATAGEN-05 | Phase 2 | Pending |
-| DATAGEN-06 | Phase 2 | Pending |
-| DATAGEN-07 | Phase 2 | Pending |
+| DATAGEN-01 | Phase 2 | Complete |
+| DATAGEN-02 | Phase 2 | Complete |
+| DATAGEN-03 | Phase 2 | Complete |
+| DATAGEN-04 | Phase 2 | Complete |
+| DATAGEN-05 | Phase 2 | Complete |
+| DATAGEN-06 | Phase 2 | Complete |
+| DATAGEN-07 | Phase 2 | Complete |
 | DATA-01 | Phase 3 | Pending |
 | DATA-02 | Phase 3 | Pending |
 | DATA-03 | Phase 3 | Pending |

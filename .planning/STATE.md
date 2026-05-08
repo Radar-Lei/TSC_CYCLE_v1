@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: 9B 基座切换
 status: executing
-last_updated: "2026-05-08T14:18:36.400Z"
+last_updated: "2026-05-08T15:07:35.278Z"
 last_activity: 2026-05-08
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 11
-  completed_plans: 6
-  percent: 55
+  completed_plans: 7
+  percent: 64
 ---
 
 # TSC-CYCLE State
@@ -24,12 +24,12 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-05-08)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近 GPT-5.5 high 教师 — 不过拟合到 reality.log。
-**Current focus:** Phase 01 — tokenizer-llama-cpp
+**Current focus:** Phase 02 — 数据扩量到 10K（教师只标新增 7K）
 
 ## Current Position
 
-Phase: 01 (tokenizer-llama-cpp) — EXECUTING
-Plan: 2 of 6
+Phase: 02 (数据扩量到 10K（教师只标新增 7K）) — EXECUTING
+Plan: 2 of 5
 
 - Phase: 1 (not started)
 - Plan: — (run `/gsd-plan-phase 1` next)
@@ -38,7 +38,7 @@ Plan: 2 of 6
 
 **Progress:**
 
-[███████░░░] 67%
+[██████░░░░] 64%
 [░░░░░░] 0/6 phases complete
 
 ```
