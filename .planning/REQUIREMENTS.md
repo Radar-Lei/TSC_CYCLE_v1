@@ -18,7 +18,7 @@
 
 - [ ] **TOK-01**: 4 个自定义思考标签（`<start_working_out>` / `<end_working_out>` / `<SOLUTION>` / `</SOLUTION>`）在 Qwen3.5 tokenizer 下均拆为 ≥3 sub-tokens（不被 248K vocab BPE merge 合并成单 token）
 - [ ] **TOK-02**: 动态查表 native `<think>` / `</think>` 在 Qwen3.5 vocab 中的 token id 写入 `tokenizer_audit.json`，禁止硬编码 v1.0 的 151667/151668
-- [ ] **TOK-03**: HF `AutoTokenizer.encode` ↔ `llama-tokenize` 在 100 个测试 prompt 上 100% parity
+- [x] **TOK-03**: HF `AutoTokenizer.encode` ↔ `llama-tokenize` 在 100 个测试 prompt 上 100% parity
 - [ ] **TOK-04**: 训练数据组装绕开 chat_template，raw text 直接拼 `<start_working_out>...`（避免 native `<think>` 注入）
 
 ### MEM — 显存预算实测
@@ -101,7 +101,7 @@ All 39 v3.0 requirements mapped to exactly one phase. Coverage: 39/39 ✓
 | ENV-03 | Phase 1 | Pending |
 | TOK-01 | Phase 1 | Pending |
 | TOK-02 | Phase 1 | Pending |
-| TOK-03 | Phase 1 | Pending |
+| TOK-03 | Phase 1 | Complete |
 | TOK-04 | Phase 1 | Pending |
 | MEM-01 | Phase 1 | Pending |
 | MEM-02 | Phase 1 | Pending |

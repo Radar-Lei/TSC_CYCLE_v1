@@ -30,12 +30,12 @@
 **Plans:** 6 plans
 Plans:
 **Wave 1**
-- [ ] 01-01-PLAN.md — Qwen3.5 causal-LM environment smoke gate + run_safe/swap artifact gate
-- [ ] 01-02-PLAN.md — Dynamic tokenizer audit + raw-text dataset/native-ID leakage wiring
-- [ ] 01-05-PLAN.md — Qwen3.5 llama.cpp micro-convert + tokenizer GGUF fixture gate
+- [x] 01-01-PLAN.md — Qwen3.5 causal-LM environment smoke gate + run_safe/swap artifact gate
+- [x] 01-02-PLAN.md — Dynamic tokenizer audit + raw-text dataset/native-ID leakage wiring
+- [x] 01-05-PLAN.md — Qwen3.5 llama.cpp micro-convert + tokenizer GGUF fixture gate
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 01-03-PLAN.md — HF tokenizer ↔ llama-tokenize 100-prompt parity using GGUF fixture
+- [x] 01-03-PLAN.md — HF tokenizer ↔ llama-tokenize 100-prompt parity using GGUF fixture
 - [ ] 01-04-PLAN.md — Qwen3.5 memory budget sweep + 100-step dry-run gate
 
 **Wave 3** *(blocked on Wave 2 completion)*
