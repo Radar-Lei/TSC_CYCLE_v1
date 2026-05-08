@@ -1,0 +1,24 @@
+{
+  "counts_requested": {
+    "ood": 1500,
+    "same_dist": 5250,
+    "targeted": 750
+  },
+  "counts_written": {
+    "ood": 1500,
+    "same_dist": 5250,
+    "targeted": 750
+  },
+  "old_id_exclusion_count": 6000,
+  "old_sha_after": "2214301555f22640e542234abcd9c5f0e3f6982df08c894124af45367ad30809",
+  "old_sha_before": "2214301555f22640e542234abcd9c5f0e3f6982df08c894124af45367ad30809",
+  "overlap_with_old_labeled": 0,
+  "seed": 42,
+  "self_duplicate_count": 0,
+  "source_output_paths": {
+    "all": "/home/samuel/TSC_CYCLE/data/v3/phase2/inputs_all.jsonl",
+    "ood": "/home/samuel/TSC_CYCLE/data/v3/phase2/inputs_ood.jsonl",
+    "same_dist": "/home/samuel/TSC_CYCLE/data/v3/phase2/inputs_same_dist.jsonl",
+    "targeted": "/home/samuel/TSC_CYCLE/data/v3/phase2/inputs_targeted.jsonl"
+  }
+}
