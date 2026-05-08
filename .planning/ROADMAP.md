@@ -12,7 +12,7 @@
 
 | Phase | Name | Goal | Requirements |
 |-------|------|------|--------------|
-| 7 | 标签协议全链路迁移 | 全链路统一使用 `<end_working_out>` 作为思考结束标签，并拒绝旧标签输出。 | TAG-01, TAG-02 |
+| 7 | 1/1 | Complete    | 2026-05-08 |
 | 8 | 10K 混合数据扩容与教师标注 | 构建 10K 同分布/OOD/targeted 混合数据集，并完成 GPT-5.5 high 标注与 split。 | DATA-01, DATA-02, DATA-03 |
 | 9 | 扩容数据 QLoRA 重训与 GGUF 导出 | 用 10K 数据重训 Qwen3-4B-Thinking，并导出 HF fp16、GGUF fp16、q4_K_M。 | TRAIN-01, TRAIN-02 |
 | 10 | v2.0 对比评测与部署门禁 | 对比 v1.0/v2.0 的 HF 与 q4 指标，验证三项严格提升并给出 go/no-go。 | EVAL-01, EVAL-02, EVAL-03, EVAL-04 |
@@ -31,7 +31,7 @@
 3. tokenizer 检查确认新标签仍按普通 sub-token 拆分，不注册 added token。
 4. 单元测试覆盖新标签正例、旧标签反例、缺失标签反例。
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [x] 07-01-PLAN.md — 协议常量迁移 + parser 拒绝旧标签 + 测试覆盖扩展（单 plan，3 task）
