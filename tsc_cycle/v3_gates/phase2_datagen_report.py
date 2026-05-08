@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 from collections import Counter
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +19,7 @@ REQUIREMENTS_COVERED = [
     "DATAGEN-06",
     "DATAGEN-07",
 ]
+DEFAULT_MIN_SOURCE_ATTEMPTED = {"same_dist": 5250, "ood": 1500, "targeted": 750}
 
 
 PathLike = str | Path
@@ -121,6 +123,33 @@ def _failure(gate: str, reason: str) -> dict[str, str]:
     return {"gate": gate, "reason": reason}
 
 
+def _normalize_source_minimums(minimums: Mapping[str, Any] | None) -> dict[str, int]:
+    if minimums is None:
+        return dict(DEFAULT_MIN_SOURCE_ATTEMPTED)
+    normalized: dict[str, int] = {}
+    for source, minimum in minimums.items():
+        normalized[str(source)] = int(minimum)
+    return normalized
+
+
+def _source_counts_from_manifest(manifest: dict[str, Any]) -> dict[str, int]:
+    source_counts = manifest.get("source_counts") or manifest.get("counts_written") or manifest.get("counts") or {}
+    if not isinstance(source_counts, dict):
+        return {}
+    normalized: dict[str, int] = {}
+    for source, count in source_counts.items():
+        try:
+            normalized[str(source)] = int(count)
+        except (TypeError, ValueError):
+            continue
+    return normalized
+
+
+def _source_attempted_counts(rows: list[dict[str, Any]]) -> dict[str, int]:
+    counts = Counter(_record_source(row) for row in rows)
+    return {source: int(count) for source, count in counts.items()}
+
+
 def _add_gate(
     gates: dict[str, Any],
     fatal_failures: list[dict[str, str]],
@@ -147,6 +176,7 @@ def build_phase2_report(
     labeler_model: str = "gpt-5.5",
     labeler_effort: str = "high",
     workers_max: int = 10,
+    min_source_attempted: Mapping[str, Any] | None = None,
     *,
     old_labeled_path: PathLike | None = None,
     new_labeled_path: PathLike | None = None,
@@ -201,6 +231,8 @@ def build_phase2_report(
     old_ids = {sample_id for sample_id in old_ids_all if sample_id is not None}
     new_ids = {sample_id for sample_id in new_ids_all if sample_id is not None}
     old_new_overlap_ids = sorted(old_ids & new_ids)
+    source_minimums = _normalize_source_minimums(min_source_attempted)
+    manifest_source_counts = _source_counts_from_manifest(manifest)
 
     valid_new_rows: list[dict[str, Any]] = []
     lint_failures: list[dict[str, Any]] = []
@@ -219,6 +251,18 @@ def build_phase2_report(
     rejected_count = len(rejected_rows)
     merged_valid = len(old_rows) + new_valid
     source_counts = dict(Counter(_record_source(row) for row in valid_new_rows))
+    attempted_rows = [*new_rows, *rejected_rows]
+    source_attempted_counts = _source_attempted_counts(attempted_rows)
+    source_attempted_failures = {
+        source: {"attempted": source_attempted_counts.get(source, 0), "minimum": minimum}
+        for source, minimum in source_minimums.items()
+        if source_attempted_counts.get(source, 0) < minimum
+    }
+    source_reservoir_failures = {
+        source: {"manifest_count": manifest_source_counts.get(source, 0), "minimum": minimum}
+        for source, minimum in source_minimums.items()
+        if manifest_source_counts.get(source, 0) < minimum
+    }
 
     done_ids = [sample_id for sample_id in [*new_ids_all, *rejected_ids_all] if sample_id is not None]
     duplicate_done_id_list = _duplicate_ids(done_ids)
@@ -292,6 +336,22 @@ def build_phase2_report(
     _add_gate(
         gates,
         fatal_failures,
+        "source_reservoir_coverage",
+        not source_reservoir_failures,
+        None if not source_reservoir_failures else f"manifest source counts below minimums: {source_reservoir_failures}",
+        {"manifest_source_counts": manifest_source_counts, "min_source_attempted": source_minimums},
+    )
+    _add_gate(
+        gates,
+        fatal_failures,
+        "source_attempted_coverage",
+        not source_attempted_failures,
+        None if not source_attempted_failures else f"attempted source counts below minimums: {source_attempted_failures}",
+        {"source_attempted_counts": source_attempted_counts, "min_source_attempted": source_minimums},
+    )
+    _add_gate(
+        gates,
+        fatal_failures,
         "labeler_model",
         labeler_model == "gpt-5.5",
         None if labeler_model == "gpt-5.5" else f"labeler_model must be gpt-5.5, got {labeler_model}",
@@ -349,7 +409,9 @@ def build_phase2_report(
         "old_new_overlap": len(old_new_overlap_ids),
         "old_new_overlap_ids_sample": old_new_overlap_ids[:10],
         "source_counts": source_counts,
-        "manifest_source_counts": manifest.get("source_counts") or manifest.get("counts") or {},
+        "source_attempted_counts": source_attempted_counts,
+        "min_source_attempted": source_minimums,
+        "manifest_source_counts": manifest_source_counts,
         "all_new_lint_ok": len(lint_failures) == 0,
         "lint_failures_sample": lint_failures[:10],
         "labeler_evidence": labeler_evidence,
@@ -388,11 +450,22 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--labeler-model", default="gpt-5.5")
     parser.add_argument("--labeler-effort", default="high")
     parser.add_argument("--workers-max", type=int, default=10)
+    parser.add_argument(
+        "--min-source-attempted",
+        default=json.dumps(DEFAULT_MIN_SOURCE_ATTEMPTED, sort_keys=True),
+        help="JSON object of required attempted counts per source; use '{}' to disable source coverage gate",
+    )
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    try:
+        min_source_attempted = json.loads(args.min_source_attempted)
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"--min-source-attempted must be a JSON object: {exc}") from exc
+    if not isinstance(min_source_attempted, dict):
+        raise SystemExit("--min-source-attempted must be a JSON object")
     report = build_phase2_report(
         old_labeled=args.old_labeled,
         new_labeled=args.new_labeled,
@@ -406,6 +479,7 @@ def main(argv: list[str] | None = None) -> int:
         labeler_model=args.labeler_model,
         labeler_effort=args.labeler_effort,
         workers_max=args.workers_max,
+        min_source_attempted=min_source_attempted,
     )
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
     return 0 if report["ok"] else 1

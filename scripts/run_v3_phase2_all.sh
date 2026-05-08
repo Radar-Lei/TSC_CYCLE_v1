@@ -11,8 +11,11 @@ REJECTED_NEW="${PHASE_DIR}/rejected_new.jsonl"
 RAW_CACHE="${ROOT}/raw_responses/v3_phase2"
 WORKERS="${PHASE2_WORKERS:-10}"
 CHUNK_SIZE=500
-MIN_ATTEMPTED=7000
+MIN_ATTEMPTED=7500
 MIN_ACCEPTED=6000
+MIN_SAME_DIST_ATTEMPTED=5250
+MIN_OOD_ATTEMPTED=1500
+MIN_TARGETED_ATTEMPTED=750
 MODE="${1:-all}"
 
 cd "${ROOT}"
@@ -41,6 +44,9 @@ from collections import Counter
 paths = [Path("data/v3/phase2/labeled_new.jsonl"), Path("data/v3/phase2/rejected_new.jsonl")]
 accepted = rejected = malformed = 0
 ids = []
+source_attempted = Counter()
+source_accepted = Counter()
+source_rejected = Counter()
 for idx, path in enumerate(paths):
     if not path.exists():
         continue
@@ -54,10 +60,14 @@ for idx, path in enumerate(paths):
             continue
         if obj.get("sample_id") is not None:
             ids.append(str(obj["sample_id"]))
+        source = str(obj.get("source") or (obj.get("input") or {}).get("source") or "unknown")
+        source_attempted[source] += 1
         if idx == 0:
             accepted += 1
+            source_accepted[source] += 1
         else:
             rejected += 1
+            source_rejected[source] += 1
 attempted = accepted + rejected
 duplicates = sum(n - 1 for n in Counter(ids).values() if n > 1)
 reject_rate = rejected / attempted if attempted else 0.0
@@ -70,6 +80,9 @@ print(json.dumps({
     "malformed": malformed,
     "labeled_exists": paths[0].exists(),
     "rejected_exists": paths[1].exists(),
+    "source_attempted": dict(source_attempted),
+    "source_accepted": dict(source_accepted),
+    "source_rejected": dict(source_rejected),
 }, sort_keys=True))
 PY
 }
@@ -128,6 +141,29 @@ if counts["malformed"] != 0:
 PY
 }
 
+source_coverage_met() {
+  local counts_json="$1"
+  "${PYTHON}" - "${counts_json}" "${MIN_SAME_DIST_ATTEMPTED}" "${MIN_OOD_ATTEMPTED}" "${MIN_TARGETED_ATTEMPTED}" <<'PY'
+import json
+import sys
+counts = json.loads(sys.argv[1])
+minimums = {
+    "same_dist": int(sys.argv[2]),
+    "ood": int(sys.argv[3]),
+    "targeted": int(sys.argv[4]),
+}
+source_attempted = counts.get("source_attempted") or {}
+missing = {
+    source: {"attempted": int(source_attempted.get(source, 0)), "minimum": minimum}
+    for source, minimum in minimums.items()
+    if int(source_attempted.get(source, 0)) < minimum
+}
+if missing:
+    print(json.dumps(missing, sort_keys=True), file=sys.stderr)
+    raise SystemExit(1)
+PY
+}
+
 run_generate() {
   print_status "before generate"
   require_clean_old_diff
@@ -181,8 +217,11 @@ PY
 )"
 
     if [[ "${attempted_before}" -ge "${MIN_ATTEMPTED}" && "${accepted_before}" -ge "${MIN_ACCEPTED}" ]]; then
-      printf 'Full labeling checkpoint target met: attempted=%s accepted=%s rejected=%s.\n' "${attempted_before}" "${accepted_before}" "${rejected_before}"
-      break
+      if source_coverage_met "${counts_before}"; then
+        printf 'Full labeling checkpoint target met: attempted=%s accepted=%s rejected=%s.\n' "${attempted_before}" "${accepted_before}" "${rejected_before}"
+        break
+      fi
+      printf 'Full labeling checkpoint still needs source coverage; counts=%s\n' "${counts_before}"
     fi
 
     if [[ "${attempted_before}" -ge "${total_inputs}" ]]; then
@@ -190,7 +229,11 @@ PY
         printf 'USER DECISION REQUIRED: reservoir exhausted with attempted=%s accepted=%s rejected=%s; accepted < %s.\n' "${attempted_before}" "${accepted_before}" "${rejected_before}" "${MIN_ACCEPTED}" >&2
         exit 3
       fi
-      printf 'Reservoir exhausted after sufficient accepted labels: attempted=%s accepted=%s rejected=%s.\n' "${attempted_before}" "${accepted_before}" "${rejected_before}"
+      if ! source_coverage_met "${counts_before}"; then
+        printf 'ERROR: reservoir exhausted without required source coverage; counts=%s\n' "${counts_before}" >&2
+        exit 1
+      fi
+      printf 'Reservoir exhausted after sufficient accepted labels and source coverage: attempted=%s accepted=%s rejected=%s.\n' "${attempted_before}" "${accepted_before}" "${rejected_before}"
       break
     fi
 

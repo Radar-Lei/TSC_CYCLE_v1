@@ -11,10 +11,13 @@ def build_phase2_report(**kwargs):
     return getattr(module, "build_phase2_report")(**kwargs)
 
 
-def _sample(sample_id: str, *, min_green: int = 20, max_green: int = 60) -> dict:
+def _sample(sample_id: str, *, source: str = "same_dist", min_green: int = 20, max_green: int = 60) -> dict:
     return {
         "sample_id": sample_id,
+        "source": source,
         "input": {
+            "sample_id": sample_id,
+            "source": source,
             "prediction": {
                 "as_of": f"2026-05-03 00:00:{int(sample_id[-2:], 16) % 60:02d}",
                 "phase_waits": [
@@ -35,14 +38,18 @@ def _sample(sample_id: str, *, min_green: int = 20, max_green: int = 60) -> dict
                         "capacity": 40,
                     },
                 ],
-            }
+            },
         },
         "result": {"success": True, "solution": {"1": min_green + 5, "2": min_green + 10}},
     }
 
 
-def _row(prefix: str, index: int, **kwargs) -> dict:
-    return _sample(f"{prefix}{index:060x}"[-64:], **kwargs)
+def _row(prefix: str, index: int, *, source: str = "same_dist", **kwargs) -> dict:
+    return _sample(f"{prefix}{index:060x}"[-64:], source=source, **kwargs)
+
+
+def _rows(prefix: str, count: int, *, source: str, offset: int = 0) -> list[dict]:
+    return [_row(prefix, offset + i, source=source) for i in range(count)]
 
 
 def _write_jsonl(path: Path, rows: list[dict]) -> Path:
@@ -57,15 +64,36 @@ def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _build_paths(tmp_path: Path, *, new_rows: list[dict] | None = None) -> dict[str, Path]:
+def _build_paths(
+    tmp_path: Path,
+    *,
+    new_rows: list[dict] | None = None,
+    rejected_rows: list[dict] | None = None,
+    manifest_counts: dict[str, int] | None = None,
+) -> dict[str, Path]:
     old_rows = [_row("a", i) for i in range(3000)]
     if new_rows is None:
-        new_rows = [_row("b", i) for i in range(6000)]
+        new_rows = [
+            *_rows("b", 4250, source="same_dist"),
+            *_rows("c", 1250, source="ood"),
+            *_rows("d", 500, source="targeted"),
+        ]
+    if rejected_rows is None:
+        rejected_rows = [
+            *_rows("e", 1000, source="same_dist"),
+            *_rows("f", 250, source="ood"),
+            *_rows("0", 250, source="targeted"),
+        ]
+    if manifest_counts is None:
+        manifest_counts = {"same_dist": 5250, "ood": 1500, "targeted": 750}
     old_labels = _write_jsonl(tmp_path / "old_labeled.jsonl", old_rows)
     new_labels = _write_jsonl(tmp_path / "labeled_new.jsonl", new_rows)
-    rejects = _write_jsonl(tmp_path / "rejected_new.jsonl", [])
+    rejects = _write_jsonl(tmp_path / "rejected_new.jsonl", rejected_rows)
     manifest = tmp_path / "datagen_manifest.json"
-    manifest.write_text(json.dumps({"phase": "02", "sources": ["same_dist", "ood", "targeted"]}), encoding="utf-8")
+    manifest.write_text(
+        json.dumps({"phase": "02", "sources": ["same_dist", "ood", "targeted"], "counts_written": manifest_counts}),
+        encoding="utf-8",
+    )
     return {
         "old_labeled_path": old_labels,
         "new_labeled_path": new_labels,
@@ -127,8 +155,17 @@ def test_v1_labeled_sha_unchanged(tmp_path: Path):
 def test_new_lint_violation_fails_gate(tmp_path: Path):
     invalid = _row("b", 0, min_green=20, max_green=60)
     invalid["result"]["solution"] = {"1": 10, "2": 30}
-    new_rows = [invalid] + [_row("b", i + 1) for i in range(5999)]
-    paths = _build_paths(tmp_path, new_rows=new_rows)
+    new_rows = [invalid] + [
+        *_rows("b", 4249, source="same_dist", offset=1),
+        *_rows("c", 1250, source="ood"),
+        *_rows("d", 500, source="targeted"),
+    ]
+    rejected_rows = [
+        *_rows("e", 1000, source="same_dist"),
+        *_rows("f", 250, source="ood"),
+        *_rows("0", 250, source="targeted"),
+    ]
+    paths = _build_paths(tmp_path, new_rows=new_rows, rejected_rows=rejected_rows)
     old_sha = _sha(paths["old_labeled_path"])
 
     report = build_phase2_report(
@@ -141,6 +178,44 @@ def test_new_lint_violation_fails_gate(tmp_path: Path):
     assert report["merged_valid"] == 8999
     assert report["all_new_lint_ok"] is False
     assert report["ok"] is False
+
+
+def test_source_attempted_coverage_gate_blocks_partial_targeted_reservoir(tmp_path: Path):
+    new_rows = [
+        *_rows("b", 5000, source="same_dist"),
+        *_rows("c", 1500, source="ood"),
+        *_rows("d", 500, source="targeted"),
+    ]
+    paths = _build_paths(tmp_path, new_rows=new_rows, rejected_rows=[])
+    old_sha = _sha(paths["old_labeled_path"])
+
+    report = build_phase2_report(
+        **paths,
+        old_sha_before=old_sha,
+        old_sha_after=old_sha,
+    )
+
+    assert report["new_valid"] == 7000
+    assert report["source_attempted_counts"]["targeted"] == 500
+    assert report["gates"]["source_attempted_coverage"]["ok"] is False
+    assert report["ok"] is False
+    assert not paths["merged_out_path"].exists()
+
+
+def test_source_reservoir_coverage_gate_blocks_bad_manifest(tmp_path: Path):
+    paths = _build_paths(tmp_path, manifest_counts={"same_dist": 5250, "ood": 1500, "targeted": 250})
+    old_sha = _sha(paths["old_labeled_path"])
+
+    report = build_phase2_report(
+        **paths,
+        old_sha_before=old_sha,
+        old_sha_after=old_sha,
+    )
+
+    assert report["manifest_source_counts"]["targeted"] == 250
+    assert report["gates"]["source_reservoir_coverage"]["ok"] is False
+    assert report["ok"] is False
+    assert not paths["merged_out_path"].exists()
 
 
 def test_merge_gate_does_not_write_production_labeled_jsonl(tmp_path: Path):
