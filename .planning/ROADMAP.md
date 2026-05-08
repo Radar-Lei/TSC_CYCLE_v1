@@ -60,7 +60,7 @@ Plans:
 - [x] 02-03-PLAN.md — Phase 2-safe GPT-5.5 high labeler hardening and smoke/full wrappers
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 02-04-PLAN.md — Merge/report gate proving frozen baseline, lint-pass new labels, and ≥9000 merged valid
+- [x] 02-04-PLAN.md — Merge/report gate proving frozen baseline, lint-pass new labels, and ≥9000 merged valid
 
 **Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 02-05-PLAN.md — Operational end-to-end wrapper with paid full-run approval checkpoint
