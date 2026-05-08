@@ -41,15 +41,16 @@ def _read_done_ids(*paths: Path) -> set[str]:
     for p in paths:
         if not p.exists():
             continue
-        for line in p.read_text(encoding="utf-8").splitlines():
+        for line_no, line in enumerate(p.read_text(encoding="utf-8").splitlines(), start=1):
             if not line.strip():
                 continue
             try:
                 obj = json.loads(line)
-                if "sample_id" in obj:
-                    ids.add(obj["sample_id"])
-            except json.JSONDecodeError:
-                continue
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"malformed progress JSONL at {p}:{line_no}: {exc.msg}") from exc
+            if not isinstance(obj, dict) or not obj.get("sample_id"):
+                raise ValueError(f"progress row missing sample_id at {p}:{line_no}")
+            ids.add(obj["sample_id"])
     return ids
 
 
