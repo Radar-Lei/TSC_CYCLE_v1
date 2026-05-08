@@ -92,15 +92,46 @@
 
 ## Traceability
 
-To be filled by gsd-roadmapper after roadmap creation.
+All 39 v3.0 requirements mapped to exactly one phase. Coverage: 39/39 ✓
 
 | REQ ID | Phase | Status |
 |--------|-------|--------|
-| ENV-01..03 | TBD | Pending |
-| TOK-01..04 | TBD | Pending |
-| MEM-01..03 | TBD | Pending |
-| DATAGEN-01..07 | TBD | Pending |
-| DATA-01..04 | TBD | Pending |
-| SFT-01..08 | TBD | Pending |
-| GGUF-01..05 | TBD | Pending |
-| EVAL-01..05 | TBD | Pending |
+| ENV-01 | Phase 1 | Pending |
+| ENV-02 | Phase 1 | Pending |
+| ENV-03 | Phase 1 | Pending |
+| TOK-01 | Phase 1 | Pending |
+| TOK-02 | Phase 1 | Pending |
+| TOK-03 | Phase 1 | Pending |
+| TOK-04 | Phase 1 | Pending |
+| MEM-01 | Phase 1 | Pending |
+| MEM-02 | Phase 1 | Pending |
+| MEM-03 | Phase 1 | Pending |
+| DATAGEN-01 | Phase 2 | Pending |
+| DATAGEN-02 | Phase 2 | Pending |
+| DATAGEN-03 | Phase 2 | Pending |
+| DATAGEN-04 | Phase 2 | Pending |
+| DATAGEN-05 | Phase 2 | Pending |
+| DATAGEN-06 | Phase 2 | Pending |
+| DATAGEN-07 | Phase 2 | Pending |
+| DATA-01 | Phase 3 | Pending |
+| DATA-02 | Phase 3 | Pending |
+| DATA-03 | Phase 3 | Pending |
+| DATA-04 | Phase 3 | Pending |
+| SFT-01 | Phase 4 | Pending |
+| SFT-02 | Phase 4 | Pending |
+| SFT-03 | Phase 4 | Pending |
+| SFT-04 | Phase 4 | Pending |
+| SFT-05 | Phase 4 | Pending |
+| SFT-06 | Phase 4 | Pending |
+| SFT-07 | Phase 4 | Pending |
+| SFT-08 | Phase 4 | Pending |
+| GGUF-01 | Phase 5 | Pending |
+| GGUF-02 | Phase 5 | Pending |
+| GGUF-03 | Phase 5 | Pending |
+| GGUF-04 | Phase 5 | Pending |
+| GGUF-05 | Phase 5 | Pending |
+| EVAL-01 | Phase 6 | Pending |
+| EVAL-02 | Phase 6 | Pending |
+| EVAL-03 | Phase 6 | Pending |
+| EVAL-04 | Phase 6 | Pending |
+| EVAL-05 | Phase 6 | Pending |
