@@ -27,7 +27,19 @@
   3. `memory_budget_v3.py` 在 5 候选 max_seq ∈ {1536, 2048, 2560, 3072, 4096} 上完成实测；选定 peak<85GB 最大值；100-step 训练 dry-run 在 100GB cap 内不 OOM
   4. 本机 `/home/samuel/projects/EvoProgTSC/llama.cpp` micro-convert dry-run 端到端 pass：dummy LoRA → bf16 GGUF → q4_K_M GGUF → `llama-cli` 推理 5 token 无 segfault
   5. 训练运行模板（`systemd-run --scope -p MemoryMax=100G -p MemorySwapMax=0` + swap=0）就位并验证一次空跑
-**Plans**: TBD
+**Plans:** 6 plans
+Plans:
+**Wave 1**
+- [ ] 01-01-PLAN.md — Qwen3.5 causal-LM environment smoke gate + run_safe/swap artifact gate
+- [ ] 01-02-PLAN.md — Dynamic tokenizer audit + raw-text dataset/native-ID leakage wiring
+- [ ] 01-05-PLAN.md — Qwen3.5 llama.cpp micro-convert + tokenizer GGUF fixture gate
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 01-03-PLAN.md — HF tokenizer ↔ llama-tokenize 100-prompt parity using GGUF fixture
+- [ ] 01-04-PLAN.md — Qwen3.5 memory budget sweep + 100-step dry-run gate
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 01-06-PLAN.md — Phase 1 all-gates runner + aggregate fatal report
 
 ### Phase 2: 数据扩量到 10K（教师只标新增 7K）
 **Goal**: 在不动 v1.0 `data/labeled.jsonl` 字节的前提下，扩展合成输入分布、用 GPT-5.5 high 并发标注新增 ≥7K 输入，过硬约束 lint 后与 v1.0 合并得到 ≥9000 valid 训练集。
@@ -91,7 +103,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. 环境 + Tokenizer + 显存 + llama.cpp 四合一硬门禁 | 0/0 | Not started | - |
+| 1. 环境 + Tokenizer + 显存 + llama.cpp 四合一硬门禁 | 0/6 | Not started | - |
 | 2. 数据扩量到 10K（教师只标新增 7K） | 0/0 | Not started | - |
 | 3. Dataset Rebuild（Qwen3.5 retokenize + split） | 0/0 | Not started | - |
 | 4. QLoRA SFT (9B, batch=1, 跑到收敛) | 0/0 | Not started | - |
