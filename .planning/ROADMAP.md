@@ -31,6 +31,11 @@
 3. tokenizer 检查确认新标签仍按普通 sub-token 拆分，不注册 added token。
 4. 单元测试覆盖新标签正例、旧标签反例、缺失标签反例。
 
+**Plans:** 1 plan
+
+Plans:
+- [ ] 07-01-PLAN.md — 协议常量迁移 + parser 拒绝旧标签 + 测试覆盖扩展（单 plan，3 task）
+
 ### Phase 8: 10K 混合数据扩容与教师标注
 
 **Goal:** 生成并标注 10K 规模混合分布训练数据，覆盖同分布、OOD/边界和 v1.0 错误/高 MAE targeted 样本。
