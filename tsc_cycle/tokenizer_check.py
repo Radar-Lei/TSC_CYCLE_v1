@@ -1,19 +1,15 @@
-"""Tokenizer assertions for Qwen3-4B-Thinking-2507.
+"""Tokenizer safety assertions for TSC-CYCLE thinking protocol.
 
-Two invariants:
-  1. The four custom tags MUST be split into multiple sub-tokens (i.e. NOT in
-     the vocabulary as single added tokens). This is what gives us a clean
-     learning signal — the model can't just memorize an ID, it has to learn
-     the multi-token sequence.
-  2. The native Qwen3 thinking tokens (<think>=151667, </think>=151668) MUST
-     remain single tokens in the vocab AND MUST NOT appear in any training
-     sample. They are pre-trained with a reasoning persona that conflicts
-     with our SFT objective.
+The custom SFT protocol uses project-owned text tags such as
+``<start_working_out>`` and must not train on model-native ``<think>`` token IDs.
+Native IDs are model/tokenizer specific, so v3 gates derive them from the active
+Qwen3.5 tokenizer instead of trusting v1.0 constants.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Iterable
 
 from tsc_cycle.prompt_builder import (
     TAG_SOLUTION_CLOSE,
@@ -23,9 +19,8 @@ from tsc_cycle.prompt_builder import (
 )
 
 CUSTOM_TAGS = (TAG_THINK_OPEN, TAG_THINK_CLOSE, TAG_SOLUTION_OPEN, TAG_SOLUTION_CLOSE)
-NATIVE_THINK_OPEN_ID = 151667   # <think>
-NATIVE_THINK_CLOSE_ID = 151668  # </think>
-EXPECTED_VOCAB_SIZE = 151936    # Qwen3-4B-Thinking-2507
+NATIVE_THINK_TAGS = ("<think>", "</think>")
+MIN_CUSTOM_TAG_SUBTOKENS = 3
 
 
 @dataclass
@@ -34,45 +29,62 @@ class CheckResult:
     details: dict
 
 
-def check_tokenizer(tokenizer) -> CheckResult:
-    """Run all invariants on a HF tokenizer instance."""
-    details: dict = {"custom_tags": {}, "native_think": {}, "vocab_size": None}
+def _encode_no_special(tokenizer, text: str) -> list[int]:
+    """Encode text with special-token injection disabled."""
+    return list(tokenizer.encode(text, add_special_tokens=False))
 
-    details["vocab_size"] = len(tokenizer)
 
-    # 1. Custom tags must each split into ≥2 sub-tokens with add_special_tokens=False.
-    bad_custom: list[str] = []
-    for tag in CUSTOM_TAGS:
-        ids = tokenizer.encode(tag, add_special_tokens=False)
-        details["custom_tags"][tag] = ids
-        if len(ids) < 2:
-            bad_custom.append(tag)
+def lookup_native_think_ids(tokenizer) -> dict[str, list[int]]:
+    """Return tokenizer-derived encodings for native thinking tags."""
+    return {tag: _encode_no_special(tokenizer, tag) for tag in NATIVE_THINK_TAGS}
 
-    # 2. Native <think> / </think> must each be a single token at the known IDs.
-    open_ids = tokenizer.encode("<think>", add_special_tokens=False)
-    close_ids = tokenizer.encode("</think>", add_special_tokens=False)
-    details["native_think"] = {
-        "<think>": open_ids,
-        "</think>": close_ids,
-        "expected_open_id": NATIVE_THINK_OPEN_ID,
-        "expected_close_id": NATIVE_THINK_CLOSE_ID,
+
+def native_think_token_ids(tokenizer) -> set[int]:
+    """Return native think IDs only for tags that encode as a single token."""
+    ids: set[int] = set()
+    for encoded in lookup_native_think_ids(tokenizer).values():
+        if len(encoded) == 1:
+            ids.add(encoded[0])
+    return ids
+
+
+def check_tokenizer(tokenizer, min_custom_subtokens: int = MIN_CUSTOM_TAG_SUBTOKENS) -> CheckResult:
+    """Run tokenizer invariants for custom tags and native think tokens."""
+    details: dict = {
+        "custom_tags": {},
+        "native_think": {},
+        "vocab_size": len(tokenizer),
+        "min_custom_subtokens": min_custom_subtokens,
+        "bad_custom_tags": [],
+        "bad_native_think": [],
     }
 
-    bad_native = []
-    if open_ids != [NATIVE_THINK_OPEN_ID]:
-        bad_native.append(f"<think> = {open_ids} (want [{NATIVE_THINK_OPEN_ID}])")
-    if close_ids != [NATIVE_THINK_CLOSE_ID]:
-        bad_native.append(f"</think> = {close_ids} (want [{NATIVE_THINK_CLOSE_ID}])")
+    bad_custom: list[str] = []
+    for tag in CUSTOM_TAGS:
+        ids = _encode_no_special(tokenizer, tag)
+        details["custom_tags"][tag] = ids
+        if len(ids) < min_custom_subtokens:
+            bad_custom.append(tag)
 
-    ok = not bad_custom and not bad_native
+    native = lookup_native_think_ids(tokenizer)
+    details["native_think"] = native
+    bad_native = [tag for tag, ids in native.items() if len(ids) != 1]
+
     details["bad_custom_tags"] = bad_custom
     details["bad_native_think"] = bad_native
-    return CheckResult(ok=ok, details=details)
+    return CheckResult(ok=not bad_custom and not bad_native, details=details)
 
 
-def assert_no_native_think_in_ids(token_ids: list[int]) -> None:
-    """Raise AssertionError if either native think token id appears."""
-    if NATIVE_THINK_OPEN_ID in token_ids:
-        raise AssertionError(f"native <think> id {NATIVE_THINK_OPEN_ID} present in token_ids")
-    if NATIVE_THINK_CLOSE_ID in token_ids:
-        raise AssertionError(f"native </think> id {NATIVE_THINK_CLOSE_ID} present in token_ids")
+def assert_no_native_think_in_ids(token_ids: Iterable[int], native_ids: set[int] | frozenset[int] | None = None) -> None:
+    """Raise AssertionError if any caller-supplied native think token ID appears.
+
+    ``native_ids`` is intentionally required. Falling back to Qwen3-4B v1.0
+    constants would make Qwen3.5 gates look safe while checking the wrong IDs.
+    """
+    if native_ids is None:
+        raise ValueError("native_ids must be provided from native_think_token_ids(tokenizer)")
+
+    found = set(token_ids) & set(native_ids)
+    if found:
+        bad = min(found)
+        raise AssertionError(f"native think token id {bad} present in token_ids")
