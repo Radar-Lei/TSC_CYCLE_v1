@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import random
+from collections import Counter
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -157,6 +159,16 @@ def _old_ids_from_labeled(path: Path | None) -> set[str]:
         if inp is not None:
             old_ids.add(sample_id(inp))
     return old_ids
+
+
+def _sha256_file(path: Path | None) -> str | None:
+    if path is None or not path.exists():
+        return None
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 
 def _attach_sample_metadata(sample_obj: dict[str, Any], *, source: str, split_hint: str) -> dict[str, Any]:
@@ -367,15 +379,104 @@ def write_jsonl(path: Path, items: list[dict]) -> None:
             f.write(json.dumps(it, ensure_ascii=False) + "\n")
 
 
+def _write_v3_phase2_outputs(
+    *,
+    reservoir: list[dict[str, Any]],
+    out_dir: Path,
+    counts_requested: Mapping[str, int],
+    old_labeled_path: Path,
+    seed: int,
+    old_sha_before: str | None = None,
+) -> dict[str, Any]:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    by_source = {
+        "same_dist": [r for r in reservoir if r.get("source") == "same_dist"],
+        "ood": [r for r in reservoir if r.get("source") == "ood"],
+        "targeted": [r for r in reservoir if r.get("source") == "targeted"],
+    }
+    output_paths = {
+        "same_dist": out_dir / "inputs_same_dist.jsonl",
+        "ood": out_dir / "inputs_ood.jsonl",
+        "targeted": out_dir / "inputs_targeted.jsonl",
+        "all": out_dir / "inputs_all.jsonl",
+        "manifest": out_dir / "datagen_manifest.json",
+    }
+    for source, rows in by_source.items():
+        write_jsonl(output_paths[source], rows)
+    write_jsonl(output_paths["all"], reservoir)
+
+    old_ids = _old_ids_from_labeled(old_labeled_path)
+    new_ids = [row["sample_id"] for row in reservoir]
+    source_counts = Counter(row.get("source") for row in reservoir)
+    old_sha_after = _sha256_file(old_labeled_path)
+    manifest = {
+        "seed": seed,
+        "counts_requested": {k: int(counts_requested[k]) for k in ["same_dist", "ood", "targeted"]},
+        "counts_written": {k: int(source_counts.get(k, 0)) for k in ["same_dist", "ood", "targeted"]},
+        "old_id_exclusion_count": len(old_ids),
+        "overlap_with_old_labeled": len(set(new_ids) & old_ids),
+        "self_duplicate_count": len(new_ids) - len(set(new_ids)),
+        "old_sha_before": old_sha_before or _sha256_file(old_labeled_path),
+        "old_sha_after": old_sha_after,
+        "source_output_paths": {k: str(v) for k, v in output_paths.items() if k != "manifest"},
+    }
+    output_paths["manifest"].write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False, sort_keys=True), encoding="utf-8"
+    )
+    return manifest
+
+
+def _run_v3_phase2(args: argparse.Namespace) -> int:
+    prior_path = Path(args.prior)
+    old_labeled_path = Path(args.exclude_labeled)
+    per_sample_path = Path(args.per_sample)
+    out_dir = Path(args.out_dir)
+    old_sha_before = _sha256_file(old_labeled_path)
+    prior = json.loads(prior_path.read_text(encoding="utf-8"))
+    counts = {"same_dist": args.same_dist, "ood": args.ood, "targeted": args.targeted}
+    reservoir = build_v3_phase2_reservoir(
+        prior=prior,
+        counts=counts,
+        seed=args.seed,
+        exclude_ids=_old_ids_from_labeled(old_labeled_path),
+        per_sample_path=per_sample_path,
+        old_labeled_path=old_labeled_path,
+    )
+    manifest = _write_v3_phase2_outputs(
+        reservoir=reservoir,
+        out_dir=out_dir,
+        counts_requested=counts,
+        old_labeled_path=old_labeled_path,
+        seed=args.seed,
+        old_sha_before=old_sha_before,
+    )
+    print(json.dumps(manifest, indent=2, ensure_ascii=False, sort_keys=True))
+    if manifest["overlap_with_old_labeled"] or manifest["self_duplicate_count"]:
+        return 1
+    if manifest["old_sha_before"] != manifest["old_sha_after"]:
+        return 1
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
+    ap.add_argument("--v3-phase2", action="store_true", help="write isolated v3 Phase 2 reservoir artifacts")
     ap.add_argument("--prior", default="data/dist_prior.json")
     ap.add_argument("--n-id", type=int, default=2700)
     ap.add_argument("--n-ood", type=int, default=300)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--out-id", default="data/inputs.jsonl")
     ap.add_argument("--out-ood", default="data/ood_inputs.jsonl")
+    ap.add_argument("--exclude-labeled", default="data/labeled.jsonl")
+    ap.add_argument("--per-sample", default="runs/20260507T032419Z/eval/per_sample.jsonl")
+    ap.add_argument("--out-dir", default="data/v3/phase2")
+    ap.add_argument("--same-dist", type=int, default=5250)
+    ap.add_argument("--ood", type=int, default=1500)
+    ap.add_argument("--targeted", type=int, default=750)
     args = ap.parse_args()
+
+    if args.v3_phase2:
+        return _run_v3_phase2(args)
 
     prior = json.loads(Path(args.prior).read_text(encoding="utf-8"))
     id_samples, ood_samples = sample(prior, args.n_id, args.n_ood, seed=args.seed)
