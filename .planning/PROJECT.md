@@ -20,20 +20,25 @@ GGUF（fp16 + q4_K_M）部署、且带显式思考过程的 4B 推理模型。
 
 **Deployment artifact**: `runs/20260507T032419Z/gguf/model.q4_K_M.gguf` — 可直接装载到 EvoProgTSC TSC 决策端点。
 
+**v2.0 强化版 ABANDONED** (2026-05-08) — 完成 Phase 7（标签协议全链路迁移），Phase 8（10K 数据扩容）已规划未执行；用户决定放弃 v2.0、直接切到更大基座。归档见 `milestones/v2.0-abandoned/`。
+
 See `milestones/v1.0-ROADMAP.md` for phase breakdown.
 
-## Current Milestone: v2.0 强化版
+## Current Milestone: v3.0 9B 基座切换
 
-**Goal:** 在 v1.0 已可部署模型基础上，通过 10K 教师标注数据扩容、混合分布增强和重训，产出在 OOD 硬约束、教师 MAE、思考格式稳定性三方面都严格优于 v1.0 的更强 GGUF 模型。
+**Goal:** 把学生模型基座从 Qwen3-4B-Thinking-2507 切换到 **Qwen3.5-9B**（Qwen3.6 系列目前无 sub-10B 模型），重做端到端蒸馏 pipeline；证明 9B 学生在硬约束/教师 MAE/思考格式稳定性上达标且可在 DGX Spark + llama.cpp 部署。
 
 **Target features:**
-- 全链路把思考结束标签从 `</end_working_out>` 修正为 `<end_working_out>`。
-- 生成 10K 规模训练数据，覆盖同分布、OOD/边界样本、v1.0 错误/高 MAE targeted 样本。
-- 使用 GPT-5.5 high 教师重新标注并通过硬约束 lint。
-- 基于扩容数据重训 Qwen3-4B-Thinking 学生并导出 fp16 + q4_K_M GGUF。
-- 用与 v1.0 可比的评测证明三项指标严格提升。
+- 验证 Qwen3.5-9B 架构与 DGX Spark + `/dgx-spark-training` v1.0 已知良好环境的兼容性（不引入新环境）。
+- Qwen3.5 tokenizer 适配：核实自定义思考标签（`<start_working_out>` / `<end_working_out>` / `<SOLUTION>`）在新 tokenizer 中仍被拆为 sub-token、不与原生 thinking token 冲突。
+- 沿用 v1.0 数据生成 + GPT-5.5 high 标注 pipeline；评估是否需要为 9B 扩量。
+- QLoRA r=64 SFT，**batch_size=1** + gradient_accumulation 调到合适 effective batch；6h 预算下 9B + r=64 可行性早期验证。
+- LoRA merge → fp16 → q4_K_M GGUF；llama.cpp `convert_hf_to_gguf.py` 是否已注册 Qwen3.5 架构需核实。
+- 评测对齐 v1.0 baseline：硬约束 / 教师 MAE Δ / OOD / q4 vs fp16 ratio ≥ 0.95。
 
-**Baseline to beat:** v1.0 q4_K_M OOD lint=98.7%，HF bf16=99.3%，教师 MAE Δ +0.18s；v2.0 必须证明不只是扩大数据，而是获得可验证收益。
+**Baseline to beat:** v1.0 q4_K_M OOD lint=98.7%，HF bf16=99.3%，教师 MAE Δ +0.18s；v3.0 必须证明 9B 升级带来可验证收益（或反之，证明 4B 已是甜点）。
+
+**Environment lock:** 训练环境严格沿用 `/dgx-spark-training` skill + `/home/samuel/dgx-spark-setup/.venv`（v1.0 已验证）。本里程碑不引入新训练框架/新版本 PyTorch。
 
 ## Requirements
 
@@ -48,21 +53,27 @@ See `milestones/v1.0-ROADMAP.md` for phase breakdown.
 - [x] LoRA merge → bf16 → GGUF bf16 → q4_K_M — Validated in Phase 5
 - [x] 评测套件（硬约束 / MAE / OOD / Reasoning） + 部署 go/no-go — Validated in Phase 6
 
-### Active
+### Validated (v2.0 partial — abandoned)
 
-- [ ] v2.0 使用 10K GPT-5.5 high 教师标注数据重训学生模型。
-- [ ] 全链路统一思考结束标签为 `<end_working_out>`。
-- [ ] v2.0 q4_K_M GGUF 在 OOD 硬约束、教师 MAE、思考格式稳定性三方面严格优于 v1.0 baseline。
+- [x] 思考结束标签全链路从 `</end_working_out>` 修正为 `<end_working_out>` — Validated in v2.0 Phase 7（迁移本身是好的，与 v3.0 兼容，沿用）
 
-### Out of Scope
+### Active (v3.0)
 
-- 在线/RL 优化（GRPO 等）— 本里程碑只做 SFT 蒸馏，RL 留给后续
+- [ ] 学生基座切换到 Qwen3.5-9B（架构兼容性 + tokenizer 兼容性已论证）。
+- [ ] QLoRA r=64 SFT 在 batch_size=1 + 沿用 `/dgx-spark-training` 环境下 6h 预算可行。
+- [ ] q4_K_M GGUF 导出（llama.cpp 支持已核实），9B 学生 q4 vs fp16 ratio ≥ 0.95。
+- [ ] OOD 硬约束、教师 MAE、思考格式稳定性达到或超过 v1.0 baseline。
+
+### Out of Scope (v3.0)
+
+- 在线/RL 优化（GRPO 等）— 本里程碑只做 SFT 蒸馏
 - 教师模型改用别家 API — 锁定 GPT-5.5 high；reasoning_effort 不降档
-- 用 reality.log 的 `<SOLUTION>` 作为标签 — 教师输出为准，避免学生学到旧 lmstudio 模型的偏差
-- Qwen3.5-4B / Qwen3.6 系列 — Qwen3.5-4B 架构新（GatedDeltaNet+MoE），DGX Spark 训练栈兼容性未验证；Qwen3.6 没有 4B 版本
+- Qwen3.6 系列基座 — 该系列目前最小 27B，与"小模型本地部署" Core Value 冲突且超出 DGX Spark 6h 预算
 - 模型原生 `<think>...</think>` 标签 — 与 memory 验证过的自定义标签方案冲突，且 reality.log 已是自定义标签格式
-- 全参 SFT — 显存与 6h 预算下 QLoRA r=64 更稳；如果 QLoRA 效果不满意再升级
+- 全参 SFT — 9B 在 DGX Spark 100GB 上做全参不可行；锁 QLoRA r=64
 - vLLM 推理 — 本机现状不能用 vLLM，最终部署走 llama.cpp / GGUF
+- 引入新训练栈（Unsloth on Spark / Axolotl / 新 PyTorch 版本）— 锁定 `/dgx-spark-training` v1.0 已验证环境，不接受环境变更带来的额外风险
+- batch_size > 1 — 用户明确要求 batch_size=1（与 9B 显存压力一致）
 
 ## Context
 
@@ -132,4 +143,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-08 after starting milestone v2.0 强化版*
+*Last updated: 2026-05-08 — v2.0 abandoned, milestone v3.0 9B 基座切换 started*
