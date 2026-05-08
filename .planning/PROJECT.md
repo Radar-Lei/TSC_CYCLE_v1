@@ -22,12 +22,18 @@ GGUF（fp16 + q4_K_M）部署、且带显式思考过程的 4B 推理模型。
 
 See `milestones/v1.0-ROADMAP.md` for phase breakdown.
 
-## Next Milestone Goals
+## Current Milestone: v2.0 强化版
 
-*待定 — 通过 `/gsd-new-milestone` 启动 v1.1+ 时定义。可选方向：*
-- imatrix 重量化（若生产监控发现 q4 退化）
-- 更大蒸馏数据集（5K-10K 样本）+ longer context training
-- DPO/RLHF 后训练增强
+**Goal:** 在 v1.0 已可部署模型基础上，通过 10K 教师标注数据扩容、混合分布增强和重训，产出在 OOD 硬约束、教师 MAE、思考格式稳定性三方面都严格优于 v1.0 的更强 GGUF 模型。
+
+**Target features:**
+- 全链路把思考结束标签从 `</end_working_out>` 修正为 `<end_working_out>`。
+- 生成 10K 规模训练数据，覆盖同分布、OOD/边界样本、v1.0 错误/高 MAE targeted 样本。
+- 使用 GPT-5.5 high 教师重新标注并通过硬约束 lint。
+- 基于扩容数据重训 Qwen3-4B-Thinking 学生并导出 fp16 + q4_K_M GGUF。
+- 用与 v1.0 可比的评测证明三项指标严格提升。
+
+**Baseline to beat:** v1.0 q4_K_M OOD lint=98.7%，HF bf16=99.3%，教师 MAE Δ +0.18s；v2.0 必须证明不只是扩大数据，而是获得可验证收益。
 
 ## Requirements
 
@@ -44,7 +50,9 @@ See `milestones/v1.0-ROADMAP.md` for phase breakdown.
 
 ### Active
 
-(None — milestone shipped. Run `/gsd-new-milestone` for v1.1+.)
+- [ ] v2.0 使用 10K GPT-5.5 high 教师标注数据重训学生模型。
+- [ ] 全链路统一思考结束标签为 `<end_working_out>`。
+- [ ] v2.0 q4_K_M GGUF 在 OOD 硬约束、教师 MAE、思考格式稳定性三方面严格优于 v1.0 baseline。
 
 ### Out of Scope
 
@@ -124,4 +132,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-07 after initialization*
+*Last updated: 2026-05-08 after starting milestone v2.0 强化版*
