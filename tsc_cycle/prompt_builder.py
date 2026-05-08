@@ -25,6 +25,10 @@ TAG_THINK_CLOSE = "<end_working_out>"
 TAG_SOLUTION_OPEN = "<SOLUTION>"
 TAG_SOLUTION_CLOSE = "</SOLUTION>"
 
+# Legacy literal — kept ONLY as a rejection target for parse_assistant_output (TAG-02).
+# Do NOT use as a positive protocol literal anywhere in the codebase.
+LEGACY_THINK_CLOSE = "</end_working_out>"
+
 SYSTEM_PROMPT = "你是交通信号配时优化专家。"
 
 USER_TEMPLATE = """{system}
@@ -92,10 +96,9 @@ def parse_assistant_output(text: str) -> tuple[str, dict[str, int] | None]:
     reasoning = ""
     solution: dict[str, int] | None = None
 
-    # TAG-02 (per D-03): 显式拒绝旧结束标签。仅当出现旧字面值且新字面值缺失时返回失败。
-    # 注意：<end_working_out> 不是 </end_working_out> 的子串（前者无 '/'），子串关系无歧义。
-    OLD_THINK_CLOSE = "</end_working_out>"
-    if OLD_THINK_CLOSE in text and TAG_THINK_CLOSE not in text:
+    # TAG-02 (per D-03): 显式拒绝任何包含旧结束标签的样本。
+    # 即便新旧标签同时出现也视为反例 —— D-02 不留兼容余地。
+    if LEGACY_THINK_CLOSE in text:
         return "", None
 
     # Reasoning: between <start_working_out> and <end_working_out>

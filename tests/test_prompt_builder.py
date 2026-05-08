@@ -99,10 +99,23 @@ def test_parse_rejects_old_close_tag():
 
 
 def test_parse_old_close_in_prefill_form():
-    # D-03: prefill-only OLD close tag must also be rejected (solution=None).
+    # D-03: prefill-only OLD close tag must also be rejected (solution=None, reasoning="").
     # OLD/REJECT/NEGATIVE: legacy </end_working_out> in prefill form.
     body = "step-by-step</end_working_out><SOLUTION>{\"1\":60}</SOLUTION>"
-    _r, s = parse_assistant_output(body)
+    r, s = parse_assistant_output(body)
+    assert r == ""
+    assert s is None
+
+
+def test_parse_rejects_when_both_close_tags_present():
+    # D-02 / D-03: 即便新旧闭标签同时出现，含旧字面值即视为反例。
+    # OLD/REJECT/NEGATIVE: a corrupted sample mixing both tags must not parse.
+    body = (
+        "<start_working_out>x<end_working_out>y</end_working_out>"
+        "<SOLUTION>{\"1\":60}</SOLUTION>"
+    )
+    r, s = parse_assistant_output(body)
+    assert r == ""
     assert s is None
 
 
