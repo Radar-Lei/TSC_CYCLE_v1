@@ -1,0 +1,46 @@
+{
+  "ok": true,
+  "model": "Qwen/Qwen3.5-9B",
+  "vocab_size": 248077,
+  "custom_tags": {
+    "<start_working_out>": [
+      27,
+      2388,
+      78307,
+      5878,
+      29
+    ],
+    "<end_working_out>": [
+      27,
+      400,
+      78307,
+      5878,
+      29
+    ],
+    "<SOLUTION>": [
+      18288,
+      44442,
+      29
+    ],
+    "</SOLUTION>": [
+      510,
+      50,
+      44442,
+      29
+    ]
+  },
+  "native_think": {
+    "<think>": [
+      248068
+    ],
+    "</think>": [
+      248069
+    ]
+  },
+  "min_custom_subtokens": 3,
+  "chat_template_used": false,
+  "dataset_raw_text_path": "prompt_builder.build_user_prompt+build_full_assistant",
+  "bad_custom_tags": [],
+  "bad_native_think": [],
+  "error": null
+}
