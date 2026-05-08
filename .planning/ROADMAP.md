@@ -34,7 +34,7 @@
 **Plans:** 1 plan
 
 Plans:
-- [ ] 07-01-PLAN.md — 协议常量迁移 + parser 拒绝旧标签 + 测试覆盖扩展（单 plan，3 task）
+- [x] 07-01-PLAN.md — 协议常量迁移 + parser 拒绝旧标签 + 测试覆盖扩展（单 plan，3 task）
 
 ### Phase 8: 10K 混合数据扩容与教师标注
 

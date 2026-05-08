@@ -7,8 +7,8 @@
 
 ### 标签协议
 
-- [ ] **TAG-01**: 全链路 prompt、数据生成、训练、推理测试、reward/eval 输出协议统一使用 `<start_working_out>...<end_working_out><SOLUTION>...</SOLUTION>`。
-- [ ] **TAG-02**: 解析器和 lint 能拒绝旧的 `</end_working_out>` 输出，并验证新标签完整可解析。
+- [x] **TAG-01**: 全链路 prompt、数据生成、训练、推理测试、reward/eval 输出协议统一使用 `<start_working_out>...<end_working_out><SOLUTION>...</SOLUTION>`。
+- [x] **TAG-02**: 解析器和 lint 能拒绝旧的 `</end_working_out>` 输出，并验证新标签完整可解析。
 
 ### 数据扩容
 
@@ -52,8 +52,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TAG-01 | Phase 7 | Pending |
-| TAG-02 | Phase 7 | Pending |
+| TAG-01 | Phase 7 | Complete |
+| TAG-02 | Phase 7 | Complete |
 | DATA-01 | Phase 8 | Pending |
 | DATA-02 | Phase 8 | Pending |
 | DATA-03 | Phase 8 | Pending |
