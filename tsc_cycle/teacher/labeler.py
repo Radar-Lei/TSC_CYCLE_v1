@@ -96,6 +96,15 @@ def _input_paths(args: argparse.Namespace) -> list[Path]:
     return [Path(args.inputs), Path(args.ood_inputs)]
 
 
+def _done_paths(args: argparse.Namespace, labeled_path: Path, rejected_path: Path) -> list[Path]:
+    """Progress files whose sample IDs must not be submitted again."""
+    return [
+        labeled_path,
+        rejected_path,
+        *(Path(p) for p in getattr(args, "exclude_labeled", []) or []),
+    ]
+
+
 def run_labeling(
     args: argparse.Namespace,
     *,
@@ -125,11 +134,7 @@ def run_labeling(
     for path in _input_paths(args):
         all_inputs.extend(_read_jsonl(path))
 
-    done = _read_done_ids(
-        labeled_path,
-        rejected_path,
-        *(Path(p) for p in getattr(args, "exclude_labeled", []) or []),
-    )
+    done = _read_done_ids(*_done_paths(args, labeled_path, rejected_path))
     pending = [s for s in all_inputs if s["sample_id"] not in done]
     if args.limit:
         pending = pending[: args.limit]
