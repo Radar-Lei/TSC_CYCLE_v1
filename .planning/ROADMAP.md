@@ -39,7 +39,7 @@ Plans:
 - [x] 01-04-PLAN.md — Qwen3.5 memory budget sweep + 100-step dry-run gate
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 01-06-PLAN.md — Phase 1 all-gates runner + aggregate fatal report
+- [x] 01-06-PLAN.md — Phase 1 all-gates runner + aggregate fatal report
 
 ### Phase 2: 数据扩量到 10K（教师只标新增 7K）
 **Goal**: 在不动 v1.0 `data/labeled.jsonl` 字节的前提下，扩展合成输入分布、用 GPT-5.5 high 并发标注新增 ≥7K 输入，过硬约束 lint 后与 v1.0 合并得到 ≥9000 valid 训练集。
