@@ -57,7 +57,7 @@ Plans:
 
 **Wave 1** *(blocked on Wave 0 completion)*
 - [x] 02-02-PLAN.md — Three-source isolated Phase 2 input reservoir generator
-- [ ] 02-03-PLAN.md — Phase 2-safe GPT-5.5 high labeler hardening and smoke/full wrappers
+- [x] 02-03-PLAN.md — Phase 2-safe GPT-5.5 high labeler hardening and smoke/full wrappers
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 02-04-PLAN.md — Merge/report gate proving frozen baseline, lint-pass new labels, and ≥9000 merged valid
