@@ -42,9 +42,24 @@ def main() -> int:
     print(f"bf16 matmul: {tuple(y.shape)} {y.dtype} {y.device}")
     print()
 
-    for name in ["transformers", "accelerate", "datasets", "peft", "deepspeed", "vllm"]:
-        mod = __import__(name)
+    required_packages = ["transformers", "accelerate", "datasets", "peft"]
+    optional_packages = ["deepspeed", "vllm"]
+
+    for name in required_packages:
+        try:
+            mod = __import__(name)
+        except ImportError as exc:
+            print(f"ERROR: required {name}: unavailable ({exc})")
+            return 1
         print(f"{name}: {getattr(mod, '__version__', 'ok')}")
+
+    for name in optional_packages:
+        try:
+            mod = __import__(name)
+        except ImportError:
+            print(f"optional {name}: unavailable")
+            continue
+        print(f"optional {name}: {getattr(mod, '__version__', 'ok')}")
 
     flash_attn = importlib.util.find_spec("flash_attn") is not None
     print(f"flash_attn installed: {flash_attn}")
