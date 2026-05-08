@@ -1,5 +1,5 @@
 {
-  "model_profile": "quality",
+  "model_profile": "inherit",
   "commit_docs": true,
   "parallelization": true,
   "search_gitignored": false,
@@ -39,5 +39,15 @@
   "features": {},
   "resolve_model_ids": "omit",
   "mode": "yolo",
-  "granularity": "standard"
+  "granularity": "standard",
+  "model_overrides": {
+    "gsd-phase-researcher": "gpt-5.5-fast[m]",
+    "gsd-planner": "gpt-5.5-fast[m]",
+    "gsd-plan-checker": "gpt-5.5-fast[m]",
+    "gsd-executor": "gpt-5.5-fast[m]",
+    "gsd-verifier": "gpt-5.5-fast[m]",
+    "gsd-nyquist-auditor": "gpt-5.5-fast[m]",
+    "gsd-code-reviewer": "gpt-5.5-fast[m]",
+    "gsd-code-fixer": "gpt-5.5-fast[m]"
+  }
 }

@@ -29,9 +29,9 @@ from tsc_cycle.prompt_builder import (
     build_user_prompt,
 )
 from tsc_cycle.tokenizer_check import (
-    NATIVE_THINK_CLOSE_ID,
-    NATIVE_THINK_OPEN_ID,
+    assert_no_native_think_in_ids,
     check_tokenizer,
+    native_think_token_ids,
 )
 
 MODEL_NAME = "Qwen/Qwen3-4B-Thinking-2507"
@@ -43,15 +43,28 @@ def split_bucket(sample_id: str, n: int = 10) -> int:
     return int.from_bytes(h[:8], "big") % n
 
 
+DATASET_RAW_TEXT_PATH = "prompt_builder.build_user_prompt+build_full_assistant"
+CHAT_TEMPLATE_USED = False
+
+
+def dataset_wiring_metadata() -> dict[str, str | bool]:
+    """Evidence that v3 SFT data uses raw prompt text, not chat templates."""
+    return {
+        "chat_template_used": CHAT_TEMPLATE_USED,
+        "dataset_raw_text_path": DATASET_RAW_TEXT_PATH,
+    }
+
+
 def build_text(input_obj: dict, reasoning: str, solution: dict[str, int]) -> tuple[str, str]:
-    """Returns (prompt_text, assistant_text). Their concatenation is the full sequence."""
+    """Returns raw (prompt_text, assistant_text); no tokenizer chat template is used."""
     prompt = build_user_prompt(input_obj)
     assistant = build_full_assistant(reasoning, solution)
     return prompt, assistant
 
 
-def tokenize_one(tokenizer, prompt: str, assistant: str, max_length: int) -> dict[str, list[int]]:
-    """Tokenize prompt+assistant; mask prompt with -100 in labels."""
+def tokenize_one(tokenizer, prompt: str, assistant: str, max_length: int) -> dict[str, list[int] | bool | dict]:
+    """Tokenize prompt+assistant raw text; mask prompt with -100 in labels."""
+    native_ids = native_think_token_ids(tokenizer)
     full = prompt + "\n" + assistant + tokenizer.eos_token
     enc = tokenizer(full, truncation=True, max_length=max_length, add_special_tokens=False)
     input_ids = enc["input_ids"]
@@ -64,14 +77,16 @@ def tokenize_one(tokenizer, prompt: str, assistant: str, max_length: int) -> dic
     for i in range(n_prompt, len(input_ids)):
         labels[i] = input_ids[i]
 
-    # Native think token id leakage check: must NOT appear anywhere in input_ids
-    if NATIVE_THINK_OPEN_ID in input_ids or NATIVE_THINK_CLOSE_ID in input_ids:
-        raise AssertionError("native <think>/</think> token id found in tokenized sample")
+    # Native think token id leakage check: must NOT appear anywhere in input_ids.
+    assert_no_native_think_in_ids(input_ids, native_ids=native_ids)
 
+    metadata = dataset_wiring_metadata()
     return {
         "input_ids": input_ids,
         "attention_mask": [1] * len(input_ids),
         "labels": labels,
+        "chat_template_used": metadata["chat_template_used"],
+        "metadata": metadata,
     }
 
 
