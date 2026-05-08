@@ -48,6 +48,19 @@ Plans:
 3. GPT-5.5 high 标注流程在 ≤10 worker 下可断点续跑，并只保留通过硬约束 lint 的样本。
 4. 产出可复现 train/val/OOD split，且 split metadata 记录随机种子、输入版本和标注版本。
 
+**Plans:** 4 plans
+
+Plans:
+**Wave 1**
+- [ ] 08-01-PLAN.md — sample_targeted + manifest 模块 + Wave 0 测试脚手架（DATA-01/03）
+- [ ] 08-02-PLAN.md — dataset.py 输出 dataset_report + split_manifest + dist_check targeted（DATA-02/03）
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 08-03-PLAN.md — cache 协议审计 + smoke probe + 10K 全量教师标注（DATA-01/03）
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 08-04-PLAN.md — run_pipeline.sh 端到端 + 用户 checkpoint 验证（DATA-01/02/03）
+
 ### Phase 9: 扩容数据 QLoRA 重训与 GGUF 导出
 
 **Goal:** 使用扩容数据完成学生重训，并导出可部署 GGUF 产物。
