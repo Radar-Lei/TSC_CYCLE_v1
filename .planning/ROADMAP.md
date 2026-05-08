@@ -56,7 +56,7 @@ Plans:
 - [x] 02-01-PLAN.md — Wave 0 RED tests for DATAGEN-01..07 invariants
 
 **Wave 1** *(blocked on Wave 0 completion)*
-- [ ] 02-02-PLAN.md — Three-source isolated Phase 2 input reservoir generator
+- [x] 02-02-PLAN.md — Three-source isolated Phase 2 input reservoir generator
 - [ ] 02-03-PLAN.md — Phase 2-safe GPT-5.5 high labeler hardening and smoke/full wrappers
 
 **Wave 2** *(blocked on Wave 1 completion)*
