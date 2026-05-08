@@ -369,22 +369,17 @@ def load_targeted_seed_ids(per_sample_path: Path, mae_threshold: float = 10.0) -
 | A4 | Isolated `raw_responses/v3_phase2/` cache is preferred over reusing root cache. | Runtime State / State of Art | More API calls if identical current-protocol prompts already exist elsewhere, but avoids legacy parser cache issues. |
 | A5 | Adding labeler CLI args is preferable to writing a separate Phase 2 labeler. | Architecture Patterns | If retrofitting labeler becomes messy, a thin wrapper may be safer. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should Phase 2 label exactly 7,000 or allow a fixed reserve up to 7,500?**
-   - What we know: ≥9000 merged valid requires ≥6000 new valid, and lint failures cannot be regenerated. [VERIFIED: DATAGEN-04/06]
-   - What's unclear: Whether the title “教师只标新增 7K” is intended as exact API budget or minimum new-data scale. [ASSUMED]
-   - Recommendation: Use a pre-declared 7,500 reservoir but gate full success at ≥6000 new valid; stop for user decision if reserve is exhausted. [ASSUMED]
+1. **RESOLVED — Phase 2 uses a pre-declared 7,500-candidate reservoir, not an exact 7,000-candidate ceiling.**
+   - Decision: Generate 7,500 new candidate inputs up front with the planned 5,250 same-dist / 1,500 OOD / 750 targeted source split. Full labeling must attempt at least 7,000 new inputs and may continue into the remaining reserve only when needed to reach `new_valid >= 6000`. If the 7,500 reserve is exhausted before `new_valid >= 6000`, stop for a user decision rather than generating replacements. [RESOLVED: checker fix_hint + DATAGEN-02/04/06]
 
-2. **What targeted threshold should be locked: lint fail ∪ MAE>10 or lint fail ∪ MAE>5?**
-   - What we know: Local v1 eval has 4 lint-fail IDs, 104 MAE>10 IDs, and 248 MAE>5 IDs. [VERIFIED: local v1 eval probe]
-   - What's unclear: Which threshold best improves OOD without overfitting. [ASSUMED]
-   - Recommendation: Use lint fail ∪ MAE>10 for seeds, then generate enough perturbations per seed to fill 10% targeted quota. [ASSUMED]
+2. **RESOLVED — Targeted seeds are `lint_ok is False ∪ mae > 10.0`.**
+   - Decision: Use v1 eval rows from `runs/20260507T032419Z/eval/per_sample.jsonl` where `lint_ok is False` or `mae > 10.0`, then perturb numeric fields and recompute `sample_id`; do not use the broader MAE>5 threshold in Phase 2. [RESOLVED: checker fix_hint + local v1 eval probe]
 
-3. **Should `reasoning_tokens_min=100` remain hard for OOD/targeted?**
-   - What we know: `TeacherClient` rejects responses with reasoning_tokens below threshold. [VERIFIED: teacher/client.py]
-   - What's unclear: Whether GPT-5.5 high sometimes produces valid short-reasoning answers for easy/trivial samples. [ASSUMED]
-   - Recommendation: Keep default 100 for full run; analyze 50-sample smoke before changing. [ASSUMED]
+3. **RESOLVED — Keep `reasoning_tokens_min=100` unless the 50-sample smoke exposes a blocker.**
+   - Decision: Full-run labeler configuration keeps the existing `reasoning_tokens_min=100` behavior. The 50-sample smoke may surface evidence that this blocks otherwise valid labels; if so, stop for a user decision before changing the threshold. [RESOLVED: checker fix_hint + teacher/client.py]
+
 
 ## Environment Availability
 
