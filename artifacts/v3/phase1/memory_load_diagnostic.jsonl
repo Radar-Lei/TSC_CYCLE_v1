@@ -1,0 +1,6 @@
+{"stage": "start", "t": 1778240389.9073946, "cuda_alloc": 0.0, "cuda_reserved": 0.0, "cuda_max_reserved": 0.0}
+{"stage": "tokenizer_loaded", "t": 1778240393.3543065, "vocab": 248077, "cuda_alloc": 0.0, "cuda_reserved": 0.0, "cuda_max_reserved": 0.0}
+{"stage": "model_loaded", "t": 1778240430.6924627, "cuda_alloc": 7.115, "cuda_reserved": 11.008, "cuda_max_reserved": 11.008}
+{"stage": "after_model_gc", "t": 1778240430.839396, "cuda_alloc": 7.115, "cuda_reserved": 7.16, "cuda_max_reserved": 11.008}
+{"stage": "prepared", "t": 1778240431.140193, "cuda_alloc": 10.907, "cuda_reserved": 14.74, "cuda_max_reserved": 14.74}
+{"stage": "lora_attached", "t": 1778240431.949138, "cuda_alloc": 11.551, "cuda_reserved": 15.355, "cuda_max_reserved": 15.355}

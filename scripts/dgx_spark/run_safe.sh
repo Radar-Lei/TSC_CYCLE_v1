@@ -21,6 +21,22 @@ if [ "$free_gb" -lt 60 ]; then
     exit 1
 fi
 
+if ! sudo -n /usr/bin/systemd-run --version >/dev/null 2>&1; then
+    cat >&2 <<'EOF'
+ERROR: non-interactive sudo is not available for run_safe.sh.
+
+run_safe.sh must launch jobs through sudo systemd-run so DGX Spark memory
+limits are enforced with MemoryMax and MemorySwapMax. This script will not
+accept sudo passwords via stdin, environment variables, or command arguments.
+
+Configure a minimal sudoers rule with visudo, for example:
+  samuel ALL=(root) NOPASSWD: /usr/bin/systemd-run
+
+Then rerun the same run_safe.sh command.
+EOF
+    exit 1
+fi
+
 exec sudo systemd-run --scope \
     --uid="$(id -un)" \
     --gid="$(id -gn)" \

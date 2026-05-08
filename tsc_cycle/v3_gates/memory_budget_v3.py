@@ -159,6 +159,10 @@ def cleanup_cuda() -> None:
         torch.cuda.synchronize()
 
 
+def iter_trainable_parameters(model):
+    return (param for param in model.parameters() if param.requires_grad)
+
+
 def run_candidate(model, tokenizer, seq: int, steps: int, batch_size: int, grad_accum: int) -> dict[str, Any]:
     record: dict[str, Any] = {
         "seq": seq,
@@ -172,7 +176,7 @@ def run_candidate(model, tokenizer, seq: int, steps: int, batch_size: int, grad_
     }
     cleanup_cuda()
     torch.cuda.reset_peak_memory_stats()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
+    optimizer = torch.optim.AdamW(iter_trainable_parameters(model), lr=1e-4)
     started = time.time()
     try:
         optimizer.zero_grad(set_to_none=True)
@@ -185,6 +189,7 @@ def run_candidate(model, tokenizer, seq: int, steps: int, batch_size: int, grad_
                 optimizer.step()
                 optimizer.zero_grad(set_to_none=True)
             del batch, outputs, loss
+            cleanup_cuda()
         torch.cuda.synchronize()
         record["peak_allocated_gb"] = _gb(torch.cuda.max_memory_allocated())
         record["peak_reserved_gb"] = _gb(torch.cuda.max_memory_reserved())

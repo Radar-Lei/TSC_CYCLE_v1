@@ -36,7 +36,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [x] 01-03-PLAN.md — HF tokenizer ↔ llama-tokenize 100-prompt parity using GGUF fixture
-- [ ] 01-04-PLAN.md — Qwen3.5 memory budget sweep + 100-step dry-run gate
+- [x] 01-04-PLAN.md — Qwen3.5 memory budget sweep + 100-step dry-run gate
 
 **Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 01-06-PLAN.md — Phase 1 all-gates runner + aggregate fatal report

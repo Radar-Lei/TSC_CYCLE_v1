@@ -1,8 +1,28 @@
-from tsc_cycle.v3_gates.memory_budget_v3 import default_seqs, select_max_seq
+from tsc_cycle.v3_gates.memory_budget_v3 import default_seqs, iter_trainable_parameters, select_max_seq
+
+
+class FakeParam:
+    def __init__(self, requires_grad):
+        self.requires_grad = requires_grad
+
+
+class FakeModel:
+    def __init__(self):
+        self.frozen = FakeParam(False)
+        self.trainable = FakeParam(True)
+
+    def parameters(self):
+        return [self.frozen, self.trainable]
 
 
 def test_default_seqs_are_required_measured_candidates():
     assert default_seqs() == [1536, 2048, 2560, 3072, 4096]
+
+
+def test_iter_trainable_parameters_filters_frozen_base_weights():
+    model = FakeModel()
+
+    assert list(iter_trainable_parameters(model)) == [model.trainable]
 
 
 def test_select_max_seq_chooses_largest_success_below_strict_threshold():
