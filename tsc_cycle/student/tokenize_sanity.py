@@ -5,7 +5,7 @@ Goal
 After exporting the merged bf16 model to GGUF (fp16) and quantising to q4_K_M,
 prove that the four custom multi-token tags
 
-    <start_working_out>  </end_working_out>  <SOLUTION>  </SOLUTION>
+    <start_working_out>  <end_working_out>  <SOLUTION>  </SOLUTION>
 
 tokenize **identically** under:
   1. The Hugging Face tokenizer of the merged checkpoint
@@ -33,12 +33,19 @@ import sys
 from pathlib import Path
 from typing import Any
 
-# Custom multi-token tags (must match tsc_cycle.prompt_builder).
+# Custom multi-token tags (single source of truth in tsc_cycle.prompt_builder).
+from tsc_cycle.prompt_builder import (
+    TAG_SOLUTION_CLOSE,
+    TAG_SOLUTION_OPEN,
+    TAG_THINK_CLOSE,
+    TAG_THINK_OPEN,
+)
+
 CUSTOM_TAGS: list[str] = [
-    "<start_working_out>",
-    "</end_working_out>",
-    "<SOLUTION>",
-    "</SOLUTION>",
+    TAG_THINK_OPEN,
+    TAG_THINK_CLOSE,
+    TAG_SOLUTION_OPEN,
+    TAG_SOLUTION_CLOSE,
 ]
 # Native Qwen3 single-token thinking tokens (must remain unchanged).
 NATIVE_TAGS: list[str] = ["<think>", "</think>"]

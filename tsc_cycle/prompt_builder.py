@@ -4,10 +4,10 @@ The format MUST match `reality.log` exactly:
   - System prefix: "你是交通信号配时优化专家。"
   - 【cycle_predict_input_json】 ... 【/cycle_predict_input_json】 wrapping the prediction JSON
   - Hard constraints + decision hint
-  - Output requirements: <start_working_out>...</end_working_out><SOLUTION>...</SOLUTION>
+  - Output requirements: <start_working_out>...<end_working_out><SOLUTION>...</SOLUTION>
 
 Custom thinking tags (intentionally NOT in Qwen3 vocab — see MEMORY.md):
-  <start_working_out> / </end_working_out>  — replaces native <think>/</think>
+  <start_working_out> / <end_working_out>  — replaces native <think>/</think>
   <SOLUTION> / </SOLUTION>                  — final JSON dict
 
 The assistant turn during SFT MUST be prefixed with `<start_working_out>` so the
@@ -21,7 +21,7 @@ from typing import Any
 
 # Tags. Each is multi-token under Qwen3 BPE tokenizer (verified by tokenizer_check).
 TAG_THINK_OPEN = "<start_working_out>"
-TAG_THINK_CLOSE = "</end_working_out>"
+TAG_THINK_CLOSE = "<end_working_out>"
 TAG_SOLUTION_OPEN = "<SOLUTION>"
 TAG_SOLUTION_CLOSE = "</SOLUTION>"
 
@@ -48,11 +48,11 @@ USER_TEMPLATE = """{system}
 - 最终决策以 pred_saturation 为主，capacity 仅供参考。
 
 输出要求（必须严格遵守）：
-1) 必须先输出 <start_working_out>...</end_working_out>，其中只写思考分析过程，不要输出最终 JSON。
+1) 必须先输出 <start_working_out>...<end_working_out>，其中只写思考分析过程，不要输出最终 JSON。
 2) 随后输出 <SOLUTION>...</SOLUTION>；<SOLUTION> 内只允许最终 JSON，不允许其它文本。
 3) JSON 顶层必须是对象(dict)，键为相位ID的字符串，值为整数秒，键必须使用双引号。
 4) 必须覆盖 prediction.phase_waits 中所有相位ID，不能缺少或多余。
-5) 除 <start_working_out>...</end_working_out> 与 <SOLUTION>...</SOLUTION> 外，不允许输出任何其它文本。
+5) 除 <start_working_out>...<end_working_out> 与 <SOLUTION>...</SOLUTION> 外，不允许输出任何其它文本。
 """
 
 
@@ -92,7 +92,13 @@ def parse_assistant_output(text: str) -> tuple[str, dict[str, int] | None]:
     reasoning = ""
     solution: dict[str, int] | None = None
 
-    # Reasoning: between <start_working_out> and </end_working_out>
+    # TAG-02 (per D-03): 显式拒绝旧结束标签。仅当出现旧字面值且新字面值缺失时返回失败。
+    # 注意：<end_working_out> 不是 </end_working_out> 的子串（前者无 '/'），子串关系无歧义。
+    OLD_THINK_CLOSE = "</end_working_out>"
+    if OLD_THINK_CLOSE in text and TAG_THINK_CLOSE not in text:
+        return "", None
+
+    # Reasoning: between <start_working_out> and <end_working_out>
     if TAG_THINK_OPEN in text and TAG_THINK_CLOSE in text:
         a = text.index(TAG_THINK_OPEN) + len(TAG_THINK_OPEN)
         b = text.index(TAG_THINK_CLOSE, a)

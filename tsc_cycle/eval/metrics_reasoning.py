@@ -1,6 +1,6 @@
 """Rule-based reasoning quality metric (no LLM-as-judge).
 
-Tier mapping by `hit_count` inside the `<start_working_out>...</end_working_out>`
+Tier mapping by `hit_count` inside the `<start_working_out>...<end_working_out>`
 segment:
   0 hits        -> miss
   1-2 hits      -> partial
