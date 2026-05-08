@@ -52,23 +52,23 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TAG-01 | TBD | Pending |
-| TAG-02 | TBD | Pending |
-| DATA-01 | TBD | Pending |
-| DATA-02 | TBD | Pending |
-| DATA-03 | TBD | Pending |
-| TRAIN-01 | TBD | Pending |
-| TRAIN-02 | TBD | Pending |
-| EVAL-01 | TBD | Pending |
-| EVAL-02 | TBD | Pending |
-| EVAL-03 | TBD | Pending |
-| EVAL-04 | TBD | Pending |
+| TAG-01 | Phase 7 | Pending |
+| TAG-02 | Phase 7 | Pending |
+| DATA-01 | Phase 8 | Pending |
+| DATA-02 | Phase 8 | Pending |
+| DATA-03 | Phase 8 | Pending |
+| TRAIN-01 | Phase 9 | Pending |
+| TRAIN-02 | Phase 9 | Pending |
+| EVAL-01 | Phase 10 | Pending |
+| EVAL-02 | Phase 10 | Pending |
+| EVAL-03 | Phase 10 | Pending |
+| EVAL-04 | Phase 10 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 11 total
-- Mapped to phases: 0
-- Unmapped: 11 ⚠️
+- Mapped to phases: 11
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-08*
-*Last updated: 2026-05-08 after milestone v2.0 requirements definition*
+*Last updated: 2026-05-08 after milestone v2.0 roadmap creation*
