@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="/home/samuel/TSC_CYCLE"
 PYTHON="/home/samuel/TSC_CYCLE/.venv/bin/python"
+cd "${ROOT}"
 
 "${PYTHON}" -m tsc_cycle.sample_inputs \
   --v3-phase2 \
