@@ -63,7 +63,7 @@ Plans:
 - [x] 02-04-PLAN.md — Merge/report gate proving frozen baseline, lint-pass new labels, and ≥9000 merged valid
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 02-05-PLAN.md — Operational end-to-end wrapper with paid full-run approval checkpoint
+- [x] 02-05-PLAN.md — Operational end-to-end wrapper with paid full-run approval checkpoint
 
 ### Phase 3: Dataset Rebuild（Qwen3.5 retokenize + split）
 **Goal**: 用 Qwen3.5 tokenizer 重新 tokenize 合并后的 ≥9000 valid 数据集，做 80/10/10 split (seed=42)，OOD val 包含 v1.0 OOD val 全集以保跨里程碑可比。
