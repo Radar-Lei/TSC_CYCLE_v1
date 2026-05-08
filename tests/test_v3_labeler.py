@@ -185,6 +185,40 @@ def test_resume_skips_done_ids_from_labeled_and_rejected(tmp_path: Path):
     assert SENTINEL_API_KEY not in rejected.read_text(encoding="utf-8")
 
 
+def test_duplicate_pending_sample_id_fails_before_api_call(tmp_path: Path):
+    sample = _sample("2026-05-02 00:00:00")
+    duplicate = dict(sample)
+    input_path = _write_jsonl(tmp_path / "inputs.jsonl", [sample, duplicate])
+    old_labeled = _write_jsonl(tmp_path / "old_labeled.jsonl", [])
+    labeled = tmp_path / "labeled_new.jsonl"
+    rejected = tmp_path / "rejected_new.jsonl"
+    fake = FakeClient()
+
+    args = build_parser().parse_args(
+        [
+            "--input-files",
+            str(input_path),
+            "--exclude-labeled",
+            str(old_labeled),
+            "--labeled",
+            str(labeled),
+            "--rejected",
+            str(rejected),
+            "--cache-dir",
+            str(tmp_path / "cache"),
+            "--workers",
+            "1",
+        ]
+    )
+
+    with pytest.raises(ValueError, match="duplicate pending sample_id"):
+        run_labeling(args, client_factory=lambda **_: fake)
+
+    assert fake.prompts == []
+    assert (not labeled.exists()) or labeled.read_text(encoding="utf-8") == ""
+    assert (not rejected.exists()) or rejected.read_text(encoding="utf-8") == ""
+
+
 def test_lint_failure_dropped_not_retried(tmp_path: Path):
     sample = _sample(min_green=20, max_green=60)
     input_path = _write_jsonl(tmp_path / "inputs.jsonl", [sample])

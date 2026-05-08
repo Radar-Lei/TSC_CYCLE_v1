@@ -135,7 +135,18 @@ def run_labeling(
         all_inputs.extend(_read_jsonl(path))
 
     done = _read_done_ids(*_done_paths(args, labeled_path, rejected_path))
-    pending = [s for s in all_inputs if s["sample_id"] not in done]
+    seen_pending: set[str] = set()
+    pending: list[dict] = []
+    for sample in all_inputs:
+        sid = sample.get("sample_id")
+        if not sid:
+            raise ValueError("input row missing sample_id")
+        if sid in done:
+            continue
+        if sid in seen_pending:
+            raise ValueError(f"duplicate pending sample_id: {sid}")
+        seen_pending.add(sid)
+        pending.append(sample)
     if args.limit:
         pending = pending[: args.limit]
     print(f"total inputs: {len(all_inputs)}; done: {len(done)}; pending: {len(pending)}")
