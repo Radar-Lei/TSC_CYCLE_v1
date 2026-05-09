@@ -29,7 +29,7 @@
 Plans:
 - [x] 07-01-PLAN.md — 修正共享协议常量、parser、prompt 与协议 fixture gate，接受 `</end_working_out>` 并拒绝 `<end_working_out>`/native think。
 - [x] 07-02-PLAN.md — 实现 4B model lock、环境只读证据与 v1 baseline read-only snapshot gate。
-- [ ] 07-03-PLAN.md — 实现 Qwen3-4B tokenizer audit，证明四个自定义标签多 sub-token 并动态记录 native think IDs。
+- [x] 07-03-PLAN.md — 实现 Qwen3-4B tokenizer audit，证明四个自定义标签多 sub-token 并动态记录 native think IDs。
 - [ ] 07-04-PLAN.md — 聚合 Phase 7 子门禁并提供固定 argv wrapper，生成 `phase7_gate_report.json`。
 
 ### Phase 8: v3 扩展数据 → 4B dataset rebuild
