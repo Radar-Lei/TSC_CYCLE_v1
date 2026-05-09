@@ -452,20 +452,15 @@ scripts/dgx_spark/run_safe.sh 100G -- \
 | A2 | SFT loss alone does not guarantee hard-constraint satisfaction. | Common Pitfalls | Medium; if wrong, dry-run lint would still be required by SFT-04, so planning impact is minimal. |
 | A3 | Some ASVS category names/controls below are mapped from general ASVS knowledge rather than successfully extracted from OWASP page in this session. | Security Domain | Low for Phase 4 because this is offline training, but planner should not treat ASVS wording as compliance evidence. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Dry-run 500-sample selection source**
-   - What we know: SFT-04 says 500-sample dry-run gate and OOD pass rate ≥95%; Phase 3 has 950 OOD val rows [VERIFIED: /home/samuel/TSC_CYCLE/.planning/REQUIREMENTS.md] [VERIFIED: /home/samuel/TSC_CYCLE/data/splits/v3/rebuild_report.json].
-   - What's unclear: Whether the 500 samples should be all training samples, all OOD prompts, or a deterministic subset mixing train/ood [UNVERIFIED].
-   - Recommendation: Use a deterministic 500-sample subset from `ood_val.arrow` if generation runtime is acceptable; otherwise use 500 total with at least 300 v1 OOD + 200 new OOD and document seed/hash [RECOMMENDED].
-2. **Exact checkpoint cadence beyond eval every 200 steps**
-   - What we know: early stopping monitors every 200 steps with patience=3 [VERIFIED: /home/samuel/TSC_CYCLE/.planning/phases/04-qlora-sft-9b-batch-1/04-CONTEXT.md].
-   - What's unclear: Whether to save every 200 or 400 steps; Transformers requires compatible save/eval cadence when loading best model [CITED: https://huggingface.co/docs/transformers/v4.56.2/en/main_classes/trainer].
-   - Recommendation: Save every 200 steps initially and set `save_total_limit=3` to bound disk usage [RECOMMENDED].
-3. **Whether to use `Trainer` or `SFTTrainer` after refactor**
-   - What we know: Existing code uses `Trainer`; TRL `SFTTrainer` can apply chat templates and packing, which are undesired unless explicitly disabled [VERIFIED: /home/samuel/TSC_CYCLE/tsc_cycle/student/train.py] [CITED: https://context7.com/huggingface/trl/llms.txt].
-   - What's unclear: Whether TRL 1.3.0 adds value when labels are already precomputed in Arrow [UNVERIFIED].
-   - Recommendation: Use existing HF `Trainer` for Phase 4, not `SFTTrainer`, because the dataset already contains masked labels [RECOMMENDED].
+1. **Dry-run 500-sample selection source — RESOLVED**
+   - Final choice: Use exactly 500 deterministic OOD examples selected from `data/splits/v3/ood_val.index.jsonl`, with raw prediction inputs recovered from `data/v3/phase2/labeled_merged.jsonl` by `raw_index` and cross-checked by `sample_id`. The dry-run evaluator must not compute hard-constraint lint from `data/tokenized/v3/ood_val.arrow` token IDs alone; Arrow may be used only for sample/hash alignment evidence.
+   - Evidence required: dry-run generated evidence JSONL includes `sample_id`, `raw_index`, `prediction_input`, `generated_text`, `parsed_solution`, and `lint_result` for each of the 500 examples, plus deterministic seed/hash.
+2. **Exact checkpoint cadence beyond eval every 200 steps — RESOLVED**
+   - Final choice: Use `eval_steps=200` and `save_steps=200` with compatible steps-based eval/save, `load_best_model_at_end=True`, `metric_for_best_model="eval_loss"`, `greater_is_better=False`, and `save_total_limit=3`.
+3. **Whether to use `Trainer` or `SFTTrainer` after refactor — RESOLVED**
+   - Final choice: Use the existing HF `Trainer`, not TRL `SFTTrainer`, because Phase 3 already produced pre-tokenized Arrow records with masked `labels`, and Phase 4 must avoid hidden packing/chat-template preprocessing.
 
 ## Environment Availability
 
