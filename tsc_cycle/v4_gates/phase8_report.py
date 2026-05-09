@@ -192,8 +192,6 @@ def _artifact_paths_gate(
         "split_manifest": str(split_dir / "manifest.json"),
         "v1_ood_alignment": str(split_dir / "v1_ood_alignment.json"),
     }
-    if phase8_report_path is not None:
-        paths["phase8_gate_report"] = str(phase8_report_path)
     for split_name in ("train", "val", "ood_val"):
         arrow = tokenized_dir / f"{split_name}.arrow"
         if arrow.exists():
@@ -317,8 +315,8 @@ def evaluate_phase8_report(
         out = Path(out_path)
         _assert_not_frozen_output(out)
         out.parent.mkdir(parents=True, exist_ok=True)
-        serialized_without_self_hash = json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
-        report["artifact_manifest"]["sha256"]["phase8_gate_report"] = hashlib.sha256(serialized_without_self_hash.encode("utf-8")).hexdigest()
+        report["artifact_manifest"]["paths"]["phase8_gate_report"] = str(out)
+        report["artifact_manifest"]["sha256"]["phase8_gate_report"] = "self-referential-report"
         out.write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return report
 
