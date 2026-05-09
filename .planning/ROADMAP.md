@@ -46,7 +46,7 @@ Plans:
 Plans:
 - [x] 08-01-PLAN.md — 建立 Phase 8 RED 测试合约，覆盖 v1/v3 source merge、标签规范化、split/tokenize、aggregate gate 与 dataset card。
 - [x] 08-02-PLAN.md — 实现 v4 source merge、清洗报告、deterministic 80/10/10 split、Qwen3-4B raw-text tokenization 与 rebuild report。
-- [ ] 08-03-PLAN.md — 实现 Phase 8 aggregate gate 与固定 argv wrapper，阻止不完整数据进入 Phase 9。
+- [x] 08-03-PLAN.md — 实现 Phase 8 aggregate gate 与固定 argv wrapper，阻止不完整数据进入 Phase 9。
 - [ ] 08-04-PLAN.md — 更新 dataset card 的 v4 Phase 8 数据来源、标签规范化、split hash 与 v1/v3/v4 artifact 边界。
 
 ### Phase 9: 4B QLoRA retrain
