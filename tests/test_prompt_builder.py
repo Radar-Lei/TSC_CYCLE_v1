@@ -29,7 +29,7 @@ def test_user_prompt_contains_required_blocks():
     assert "你是交通信号配时优化专家。" in p
     assert "【cycle_predict_input_json】" in p and "【/cycle_predict_input_json】" in p
     assert "硬约束（必须满足）" in p
-    assert "<start_working_out>" in p and "<end_working_out>" in p
+    assert "<start_working_out>" in p and "</end_working_out>" in p
     assert "<SOLUTION>" in p and "</SOLUTION>" in p
 
 
@@ -58,7 +58,7 @@ def test_full_assistant_roundtrip():
 
 def test_parse_with_prefill_only():
     # Output as model would emit: prefilled <start_working_out> NOT in text, only the new close
-    body = "step-by-step<end_working_out><SOLUTION>{\"1\":60}</SOLUTION>"
+    body = "step-by-step</end_working_out><SOLUTION>{\"1\":60}</SOLUTION>"
     r, s = parse_assistant_output(body)
     assert r == "step-by-step"
     assert s == {"1": 60}
@@ -81,16 +81,14 @@ def test_parse_int_coercion():
 def test_constants_match_protocol():
     # D-02: lock the four protocol literals
     assert TAG_THINK_OPEN == "<start_working_out>"
-    assert TAG_THINK_CLOSE == "<end_working_out>"
+    assert TAG_THINK_CLOSE == "</end_working_out>"
     assert TAG_SOLUTION_OPEN == "<SOLUTION>"
     assert TAG_SOLUTION_CLOSE == "</SOLUTION>"
 
 
-def test_parse_rejects_old_close_tag():
-    # D-03 / TAG-02: full-form OLD close tag must be rejected (solution=None)
-    # OLD/REJECT/NEGATIVE: this body uses the legacy </end_working_out> close.
+def test_parse_rejects_malformed_close_tag():
     body = (
-        "<start_working_out>x</end_working_out>"
+        "<start_working_out>x<end_working_out>"
         "<SOLUTION>{\"1\":60}</SOLUTION>"
     )
     r, s = parse_assistant_output(body)
@@ -98,18 +96,14 @@ def test_parse_rejects_old_close_tag():
     assert s is None
 
 
-def test_parse_old_close_in_prefill_form():
-    # D-03: prefill-only OLD close tag must also be rejected (solution=None, reasoning="").
-    # OLD/REJECT/NEGATIVE: legacy </end_working_out> in prefill form.
-    body = "step-by-step</end_working_out><SOLUTION>{\"1\":60}</SOLUTION>"
+def test_parse_malformed_close_in_prefill_form():
+    body = "step-by-step<end_working_out><SOLUTION>{\"1\":60}</SOLUTION>"
     r, s = parse_assistant_output(body)
     assert r == ""
     assert s is None
 
 
 def test_parse_rejects_when_both_close_tags_present():
-    # D-02 / D-03: 即便新旧闭标签同时出现，含旧字面值即视为反例。
-    # OLD/REJECT/NEGATIVE: a corrupted sample mixing both tags must not parse.
     body = (
         "<start_working_out>x<end_working_out>y</end_working_out>"
         "<SOLUTION>{\"1\":60}</SOLUTION>"
@@ -119,17 +113,13 @@ def test_parse_rejects_when_both_close_tags_present():
     assert s is None
 
 
-def test_user_prompt_no_old_close_tag():
-    # D-08 / TAG-01: USER_TEMPLATE must not contain the OLD close literal.
+def test_user_prompt_uses_slash_close_tag():
     p = build_user_prompt(EX_INPUT)
-    # OLD/REJECT/NEGATIVE: the legacy </end_working_out> must NOT appear.
-    assert "</end_working_out>" not in p
-    assert "<end_working_out>" in p
+    assert "</end_working_out>" in p
+    assert "<end_working_out>" not in p
 
 
-def test_full_assistant_uses_new_close_tag():
-    # TAG-01: build_full_assistant must emit only the new close tag.
+def test_full_assistant_uses_slash_close_tag():
     txt = build_full_assistant("r", {"1": 60})
-    # OLD/REJECT/NEGATIVE: legacy </end_working_out> must NOT appear.
-    assert "</end_working_out>" not in txt
-    assert "<end_working_out>" in txt
+    assert "</end_working_out>" in txt
+    assert "<end_working_out>" not in txt

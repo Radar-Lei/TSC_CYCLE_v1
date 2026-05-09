@@ -1,0 +1,45 @@
+{
+  "accepted_fixture": {
+    "name": "slash_close_full",
+    "ok": true,
+    "reasoning": "reasoning",
+    "solution": {
+      "1": 60
+    }
+  },
+  "chat_template_used": false,
+  "fatal_failures": [],
+  "ok": true,
+  "rejected_fixtures": [
+    {
+      "name": "bare_close",
+      "reasoning": "",
+      "rejected": true,
+      "solution": null
+    },
+    {
+      "name": "native_think_open",
+      "reasoning": "",
+      "rejected": true,
+      "solution": null
+    },
+    {
+      "name": "native_think_close",
+      "reasoning": "",
+      "rejected": true,
+      "solution": null
+    },
+    {
+      "name": "mixed_close",
+      "reasoning": "",
+      "rejected": true,
+      "solution": null
+    }
+  ],
+  "requirements_covered": [
+    "TAG-01",
+    "TAG-02",
+    "TAG-03"
+  ],
+  "warnings": []
+}
