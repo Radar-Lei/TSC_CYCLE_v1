@@ -1,0 +1,7 @@
+{
+  "all_v1_ood_in_ood_val": true,
+  "ood_val_v1_ood_count": 0,
+  "v1_ood_count": 0,
+  "v1_ood_sample_ids": [],
+  "v1_ood_sample_ids_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

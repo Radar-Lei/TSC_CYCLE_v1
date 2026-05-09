@@ -1,0 +1,54 @@
+{
+  "fatal_failures": [],
+  "forbidden_malformed_close_after_normalization": [],
+  "forbidden_native_think_rows": [],
+  "gates": {
+    "explicit_two_sources": {
+      "data": {
+        "merged_input_provided": false,
+        "v1_valid_labeled_jsonl": "/home/samuel/TSC_CYCLE/data/labeled.jsonl",
+        "v3_new_lint_pass_labeled_jsonl": "/home/samuel/TSC_CYCLE/data/v3/phase2/labeled_new.jsonl"
+      },
+      "ok": true,
+      "reason": null
+    },
+    "jsonl_read": {
+      "data": {
+        "error_count": 0
+      },
+      "ok": true,
+      "reason": null
+    },
+    "malformed_close_normalized": {
+      "data": {
+        "sample_ids": []
+      },
+      "ok": true,
+      "reason": null
+    },
+    "native_think_text_absent": {
+      "data": {
+        "sample_ids": []
+      },
+      "ok": true,
+      "reason": null
+    },
+    "phase7_next_phase_allowed": {
+      "data": {
+        "next_phase_allowed": true,
+        "ok": true,
+        "path": "/home/samuel/TSC_CYCLE/artifacts/v4/phase7/phase7_gate_report.json"
+      },
+      "ok": true,
+      "reason": null
+    }
+  },
+  "malformed_close_remaining": 0,
+  "malformed_close_replacements": 6516,
+  "malformed_think_close_replacements": 6516,
+  "native_think_occurrences": 0,
+  "ok": true,
+  "requirements_covered": [
+    "DATA4B-01"
+  ]
+}
