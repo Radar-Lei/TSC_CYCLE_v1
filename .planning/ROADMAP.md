@@ -8,7 +8,7 @@
 
 ## Phases
 
-- [ ] **Phase 7: 4B baseline/label protocol gate** — 回退到 v1 已验证 4B 基座，先把基座、环境、只读 baseline 与正确标签协议全部设为硬门禁
+- [x] **Phase 7: 4B baseline/label protocol gate** — 回退到 v1 已验证 4B 基座，先把基座、环境、只读 baseline 与正确标签协议全部设为硬门禁
 - [ ] **Phase 8: v3 扩展数据 → 4B dataset rebuild** — 复用 v1/v3 lint-pass 数据，用 Qwen3-4B tokenizer 重建 v4 split/tokenized artifacts
 - [ ] **Phase 9: 4B QLoRA retrain** — 沿用 v1 已验证 4B QLoRA 路线，在 v4 数据与正确标签协议上完成重训
 - [ ] **Phase 10: merge + GGUF export** — 将 v4 adapter merge 并导出 GGUF fp16 与 q4_K_M，验证三精度协议与 tokenizer parity
@@ -30,7 +30,7 @@ Plans:
 - [x] 07-01-PLAN.md — 修正共享协议常量、parser、prompt 与协议 fixture gate，接受 `</end_working_out>` 并拒绝 `<end_working_out>`/native think。
 - [x] 07-02-PLAN.md — 实现 4B model lock、环境只读证据与 v1 baseline read-only snapshot gate。
 - [x] 07-03-PLAN.md — 实现 Qwen3-4B tokenizer audit，证明四个自定义标签多 sub-token 并动态记录 native think IDs。
-- [ ] 07-04-PLAN.md — 聚合 Phase 7 子门禁并提供固定 argv wrapper，生成 `phase7_gate_report.json`。
+- [x] 07-04-PLAN.md — 聚合 Phase 7 子门禁并提供固定 argv wrapper，生成 `phase7_gate_report.json`。
 
 ### Phase 8: v3 扩展数据 → 4B dataset rebuild
 **Goal**: 将 v1.0 valid labeled data 与 v3 新增 lint-pass labeled data 合并去重，并用 Qwen3-4B tokenizer 产出隔离的 v4 split/tokenized dataset。
@@ -42,7 +42,12 @@ Plans:
   3. v4 隔离路径中存在 seed=42 的 80/10/10 split 与 Qwen3-4B tokenized artifacts，OOD val 同时保留 v1.0 可比子集与 v3 扩展 OOD 子集。
   4. rebuild 报告显示截断率 ≤5%，任一样本均未编码出 native `<think>`/`</think>` token id。
   5. dataset card 清楚记录数据来源、标签规范化、split 哈希，以及 v1/v3/v4 artifact 边界。
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [x] 08-01-PLAN.md — 建立 Phase 8 RED 测试合约，覆盖 v1/v3 source merge、标签规范化、split/tokenize、aggregate gate 与 dataset card。
+- [ ] 08-02-PLAN.md — 实现 v4 source merge、清洗报告、deterministic 80/10/10 split、Qwen3-4B raw-text tokenization 与 rebuild report。
+- [ ] 08-03-PLAN.md — 实现 Phase 8 aggregate gate 与固定 argv wrapper，阻止不完整数据进入 Phase 9。
+- [ ] 08-04-PLAN.md — 更新 dataset card 的 v4 Phase 8 数据来源、标签规范化、split hash 与 v1/v3/v4 artifact 边界。
 
 ### Phase 9: 4B QLoRA retrain
 **Goal**: 使用 v4 rebuilt dataset 和正确 raw-text protocol，按 v1 已验证 4B QLoRA 路线重新训练 Qwen3-4B adapter。
@@ -81,8 +86,8 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 7. 4B baseline/label protocol gate | 0/4 | Planned | - |
-| 8. v3 扩展数据 → 4B dataset rebuild | 0/0 | Not started | - |
+| 7. 4B baseline/label protocol gate | 4/4 | Complete | 2026-05-10 |
+| 8. v3 扩展数据 → 4B dataset rebuild | 1/4 | In progress | - |
 | 9. 4B QLoRA retrain | 0/0 | Not started | - |
 | 10. merge + GGUF export | 0/0 | Not started | - |
 | 11. eval matrix + decision | 0/0 | Not started | - |

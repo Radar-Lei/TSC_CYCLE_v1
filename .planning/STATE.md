@@ -3,43 +3,43 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: 4B 回退 + 扩展数据重训 + 标签协议修复
 status: executing
-last_updated: "2026-05-09T17:02:48.360Z"
-last_activity: 2026-05-09
+last_updated: "2026-05-10T00:00:00.000Z"
+last_activity: 2026-05-10
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 3
-  percent: 75
+  completed_plans: 4
+  percent: 20
 ---
 
 # TSC-CYCLE State
 
-**Last Activity:** 2026-05-09
+**Last Activity:** 2026-05-10
 **Current Milestone:** v4.0 4B 回退 + 扩展数据重训 + 标签协议修复
-**Status:** Executing Phase 07
+**Status:** Phase 08 planned; executing Phase 08
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-05-10)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近 GPT-5.5 high 教师 — 不过拟合到 reality.log。
-**Current focus:** Phase 07 — 4B baseline/label protocol gate
+**Current focus:** Phase 08 — v3 扩展数据 → 4B dataset rebuild
 
 ## Current Position
 
-Phase: 07 (4B baseline/label protocol gate) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 07
-Progress: [████████░░] 75%
-Last activity: 2026-05-09 -- Phase 07 execution started
+Phase: 08 (v3 扩展数据 → 4B dataset rebuild) — EXECUTING
+Plan: 2 of 4
+Status: Completed Phase 08 Plan 01; ready for Phase 08 Plan 02
+Progress: [███░░░░░░░] 25%
+Last activity: 2026-05-10 -- Phase 08 Plan 01 RED contracts committed
 
 ## Phase Status
 
 | Phase | Status | Notes |
 |---|---|---|
-| 7. 4B baseline/label protocol gate | ○ next | Hard gate for Qwen3-4B base, v1 read-only baseline, tokenizer audit, and corrected `</end_working_out>` protocol |
-| 8. v3 扩展数据 → 4B dataset rebuild | ○ pending | Reuse v1 valid + v3 lint-pass data; rebuild split/tokenized artifacts with Qwen3-4B tokenizer |
+| 7. 4B baseline/label protocol gate | ✓ complete | `artifacts/v4/phase7/phase7_gate_report.json` passed with `next_phase_allowed: true` |
+| 8. v3 扩展数据 → 4B dataset rebuild | ○ next | Reuse v1 valid + v3 lint-pass data; rebuild split/tokenized artifacts with Qwen3-4B tokenizer |
 | 9. 4B QLoRA retrain | ○ pending | v1 verified 4B QLoRA path; raw-text protocol; isolated v4 run root |
 | 10. merge + GGUF export | ○ pending | Merge adapter; export GGUF fp16 + q4_K_M; verify three-precision protocol smoke |
 | 11. eval matrix + decision | ○ pending | Compare v4 HF/q4 against v1 q4 baseline; produce GO/NO-GO/user decision |
@@ -68,10 +68,11 @@ Last activity: 2026-05-09 -- Phase 07 execution started
 - v4.0 route: 回到 v1 已验证 `Qwen/Qwen3-4B-Thinking-2507`，复用 v3 新增 lint-pass 数据，但必须用 Qwen3-4B tokenizer 重新 rebuild dataset/split/tokenized artifacts。
 - 训练栈继续沿用 `/dgx-spark-training` 与 `/home/samuel/dgx-spark-setup/.venv`；不引入新 PyTorch、Unsloth、Axolotl 或 vLLM。
 - 全链路协议固定为 `<start_working_out>...</end_working_out><SOLUTION>...</SOLUTION>`；禁止原生 `<think>`/`</think>`。
+- Phase 8 RED contracts require explicit v1 valid + v3 new lint-pass sources, v4-isolated outputs, Qwen3-4B raw-text tokenization, and aggregate report gating before Phase 9.
 
 ### Active Todos
 
-- Run `/gsd-plan-phase 7` — 规划 4B baseline/label protocol gate。
+- Execute Phase 8 Plan 02 — implement v4 source merge, deterministic split/tokenization, and rebuild report against RED contracts.
 
 ### Blockers
 
@@ -85,7 +86,7 @@ Last activity: 2026-05-09 -- Phase 07 execution started
 
 ## Session Continuity
 
-**Next action:** `/gsd-plan-phase 7`
+**Next action:** `/gsd-execute-phase 8` (continue with 08-02-PLAN.md)
 
 **Key files:**
 

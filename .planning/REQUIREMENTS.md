@@ -23,11 +23,11 @@
 
 ### DATA4B — 扩展数据 4B rebuild
 
-- [ ] **DATA4B-01**: v4.0 数据源 = v1.0 valid labeled data ∪ v3 新增 lint-pass labeled data，去重后生成 manifest 与样本哈希
-- [ ] **DATA4B-02**: 使用 Qwen3-4B tokenizer 重新执行 80/10/10 split/tokenize，seed=42，输出到 v4 隔离路径
-- [ ] **DATA4B-03**: OOD val 保留 v1.0 OOD 可比子集，并加入 v3 扩展 OOD 子集
-- [ ] **DATA4B-04**: 截断率 ≤5%，且任一样本不得包含 native `<think>`/`</think>` token id
-- [ ] **DATA4B-05**: dataset card 记录数据来源、标签规范化、split 哈希、v1/v3/v4 artifact 边界
+- [x] **DATA4B-01**: v4.0 数据源 = v1.0 valid labeled data ∪ v3 新增 lint-pass labeled data，去重后生成 manifest 与样本哈希
+- [x] **DATA4B-02**: 使用 Qwen3-4B tokenizer 重新执行 80/10/10 split/tokenize，seed=42，输出到 v4 隔离路径
+- [x] **DATA4B-03**: OOD val 保留 v1.0 OOD 可比子集，并加入 v3 扩展 OOD 子集
+- [x] **DATA4B-04**: 截断率 ≤5%，且任一样本不得包含 native `<think>`/`</think>` token id
+- [x] **DATA4B-05**: dataset card 记录数据来源、标签规范化、split 哈希、v1/v3/v4 artifact 边界
 
 ### SFT4B — 4B QLoRA 重训
 
@@ -83,11 +83,11 @@ Traceability populated during v4.0 roadmap creation.
 | TAG-02 | Phase 7 | Pending |
 | TAG-03 | Phase 7 | Pending |
 | TAG-04 | Phase 7 | Pending |
-| DATA4B-01 | Phase 8 | Pending |
-| DATA4B-02 | Phase 8 | Pending |
-| DATA4B-03 | Phase 8 | Pending |
-| DATA4B-04 | Phase 8 | Pending |
-| DATA4B-05 | Phase 8 | Pending |
+| DATA4B-01 | Phase 8 | Complete |
+| DATA4B-02 | Phase 8 | Complete |
+| DATA4B-03 | Phase 8 | Complete |
+| DATA4B-04 | Phase 8 | Complete |
+| DATA4B-05 | Phase 8 | Complete |
 | SFT4B-01 | Phase 9 | Pending |
 | SFT4B-02 | Phase 9 | Pending |
 | SFT4B-03 | Phase 9 | Pending |
