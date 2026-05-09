@@ -15,7 +15,7 @@ progress:
 
 # TSC-CYCLE State
 
-**Last Activity:** 2026-05-09
+**Last Activity:** 2026-05-09 - Completed quick task 260509-x43: fixed Phase 4 dry-run TrainingArguments packing filter
 **Current Milestone:** v3.0 9B 基座切换
 **Status:** Ready to execute
 
@@ -84,6 +84,12 @@ Plan: 5 of 5
 ### Blockers
 
 - None — Phase 1 无外部依赖
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260509-x43 | 修复 Phase 4 dry-run TrainingArguments packing 过滤 | 2026-05-09 | 67ae7a7 | [260509-x43-phase-4-dry-run-trainingarguments-init-p](./quick/260509-x43-phase-4-dry-run-trainingarguments-init-p/) |
 
 ## Session Continuity
 
