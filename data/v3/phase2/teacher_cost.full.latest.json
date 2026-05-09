@@ -1,0 +1,14 @@
+{
+  "model": "gpt-5.5",
+  "effort": "high",
+  "elapsed_s": 2174.0578351020813,
+  "n_ok": 428,
+  "n_rej": 72,
+  "reject_rate": 0.144,
+  "input_tokens": 368418,
+  "completion_tokens": 400792,
+  "reasoning_tokens": 341882,
+  "estimated_usd_input": 0.46052250000000006,
+  "estimated_usd_output": 4.0079199999999995,
+  "estimated_usd_total": 4.468442499999999
+}

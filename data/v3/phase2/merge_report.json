@@ -1,0 +1,169 @@
+{
+  "all_new_lint_ok": true,
+  "expected_old_sha": null,
+  "fatal_failures": [],
+  "gates": {
+    "all_new_lint_ok": {
+      "data": {
+        "lint_failures_sample": []
+      },
+      "ok": true,
+      "reason": null
+    },
+    "append_outputs_present": {
+      "data": {},
+      "ok": true,
+      "reason": null
+    },
+    "labeler_effort": {
+      "data": {},
+      "ok": true,
+      "reason": null
+    },
+    "labeler_model": {
+      "data": {},
+      "ok": true,
+      "reason": null
+    },
+    "min_merged_valid": {
+      "data": {
+        "merged_valid": 9501,
+        "min_merged_valid": 9000
+      },
+      "ok": true,
+      "reason": null
+    },
+    "min_new_valid": {
+      "data": {
+        "min_new_valid": 6000,
+        "new_valid": 6501
+      },
+      "ok": true,
+      "reason": null
+    },
+    "old_new_overlap": {
+      "data": {
+        "overlap_ids_sample": []
+      },
+      "ok": true,
+      "reason": null
+    },
+    "old_sha_unchanged": {
+      "data": {
+        "old_sha_after": "2214301555f22640e542234abcd9c5f0e3f6982df08c894124af45367ad30809",
+        "old_sha_before": "2214301555f22640e542234abcd9c5f0e3f6982df08c894124af45367ad30809"
+      },
+      "ok": true,
+      "reason": null
+    },
+    "resume_no_duplicates": {
+      "data": {
+        "duplicate_done_ids_sample": []
+      },
+      "ok": true,
+      "reason": null
+    },
+    "source_attempted_coverage": {
+      "data": {
+        "min_source_attempted": {
+          "ood": 1500,
+          "same_dist": 5250,
+          "targeted": 750
+        },
+        "source_attempted_counts": {
+          "ood": 1500,
+          "same_dist": 5250,
+          "targeted": 750
+        }
+      },
+      "ok": true,
+      "reason": null
+    },
+    "source_reservoir_coverage": {
+      "data": {
+        "manifest_source_counts": {
+          "ood": 1500,
+          "same_dist": 5250,
+          "targeted": 750
+        },
+        "min_source_attempted": {
+          "ood": 1500,
+          "same_dist": 5250,
+          "targeted": 750
+        }
+      },
+      "ok": true,
+      "reason": null
+    },
+    "worker_cap": {
+      "data": {
+        "workers_max": 10
+      },
+      "ok": true,
+      "reason": null
+    }
+  },
+  "labeler_evidence": {
+    "accepted_new": 6501,
+    "attempted_new": 7500,
+    "effort": "high",
+    "model": "gpt-5.5",
+    "rejected_new": 999,
+    "workers_max": 10,
+    "workers_within_cap": true
+  },
+  "lint_failures_sample": [],
+  "manifest_source_counts": {
+    "ood": 1500,
+    "same_dist": 5250,
+    "targeted": 750
+  },
+  "merged_valid": 9501,
+  "merged_written": true,
+  "min_source_attempted": {
+    "ood": 1500,
+    "same_dist": 5250,
+    "targeted": 750
+  },
+  "new_valid": 6501,
+  "ok": true,
+  "old_count": 3000,
+  "old_new_overlap": 0,
+  "old_new_overlap_ids_sample": [],
+  "old_sha_after": "2214301555f22640e542234abcd9c5f0e3f6982df08c894124af45367ad30809",
+  "old_sha_before": "2214301555f22640e542234abcd9c5f0e3f6982df08c894124af45367ad30809",
+  "paths": {
+    "datagen_manifest": "data/v3/phase2/datagen_manifest.json",
+    "merged_out": "data/v3/phase2/labeled_merged.jsonl",
+    "new_labeled": "data/v3/phase2/labeled_new.jsonl",
+    "old_labeled": "data/labeled.jsonl",
+    "rejected": "data/v3/phase2/rejected_new.jsonl",
+    "report_out": "data/v3/phase2/merge_report.json"
+  },
+  "rejected_count": 999,
+  "requirements_covered": [
+    "DATAGEN-01",
+    "DATAGEN-02",
+    "DATAGEN-03",
+    "DATAGEN-04",
+    "DATAGEN-05",
+    "DATAGEN-06",
+    "DATAGEN-07"
+  ],
+  "resume_evidence": {
+    "append_outputs_present": true,
+    "done_ids_total": 7500,
+    "duplicate_api_attempt_ids": [],
+    "duplicate_done_ids": 0
+  },
+  "source_attempted_counts": {
+    "ood": 1500,
+    "same_dist": 5250,
+    "targeted": 750
+  },
+  "source_counts": {
+    "ood": 1258,
+    "same_dist": 4595,
+    "targeted": 648
+  }
+}
