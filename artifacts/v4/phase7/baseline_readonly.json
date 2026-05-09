@@ -1,0 +1,55 @@
+{
+  "after": {
+    "discovered_q4_caches": [
+      "eval/gen_cache/gguf_q4_k_m",
+      "eval/gen_cache/server_gguf_q4_k_m.log"
+    ],
+    "documented_cache": {
+      "exists": false,
+      "path": "/home/samuel/TSC_CYCLE/runs/20260507T032419Z/eval/gen_cache/gguf_q4km"
+    },
+    "exists": true,
+    "file_count": 1851,
+    "latest_mtime_ns": 1778341692735337127,
+    "mode": "0o555",
+    "q4_artifact": {
+      "exists": true,
+      "path": "/home/samuel/TSC_CYCLE/runs/20260507T032419Z/gguf/model.q4_K_M.gguf",
+      "sha256_prefix": "0c72d4aba951ea2b",
+      "size": 2497280160
+    },
+    "root": "/home/samuel/TSC_CYCLE/runs/20260507T032419Z",
+    "write_bits": 0
+  },
+  "before": {
+    "discovered_q4_caches": [
+      "eval/gen_cache/gguf_q4_k_m",
+      "eval/gen_cache/server_gguf_q4_k_m.log"
+    ],
+    "documented_cache": {
+      "exists": false,
+      "path": "/home/samuel/TSC_CYCLE/runs/20260507T032419Z/eval/gen_cache/gguf_q4km"
+    },
+    "exists": true,
+    "file_count": 1851,
+    "latest_mtime_ns": 1778341692735337127,
+    "mode": "0o555",
+    "q4_artifact": {
+      "exists": true,
+      "path": "/home/samuel/TSC_CYCLE/runs/20260507T032419Z/gguf/model.q4_K_M.gguf",
+      "sha256_prefix": "0c72d4aba951ea2b",
+      "size": 2497280160
+    },
+    "root": "/home/samuel/TSC_CYCLE/runs/20260507T032419Z",
+    "write_bits": 0
+  },
+  "fatal_failures": [],
+  "ok": true,
+  "requirements_covered": [
+    "BASE-03"
+  ],
+  "unchanged": true,
+  "warnings": [
+    "documented cache path gguf_q4km is missing; use discovered q4 cache paths"
+  ]
+}

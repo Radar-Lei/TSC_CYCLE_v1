@@ -1,0 +1,68 @@
+{
+  "dgx_setup_venv": {
+    "executable": "/home/samuel/dgx-spark-setup/.venv/bin/python",
+    "exists": true,
+    "packages": {
+      "bitsandbytes": null,
+      "pytest": null,
+      "torch": "2.11.0+cu130",
+      "transformers": "5.8.0",
+      "trl": null
+    },
+    "path": "/home/samuel/dgx-spark-setup/.venv/bin/python",
+    "returncode": 0,
+    "version": "3.12.3"
+  },
+  "fatal_failures": [],
+  "model": {
+    "expected": "Qwen/Qwen3-4B-Thinking-2507",
+    "ok": true,
+    "selected": "Qwen/Qwen3-4B-Thinking-2507"
+  },
+  "mutation_actions": [],
+  "ok": true,
+  "packages": {
+    "dgx_setup_venv": {
+      "bitsandbytes": null,
+      "pytest": null,
+      "torch": "2.11.0+cu130",
+      "transformers": "5.8.0",
+      "trl": null
+    },
+    "project_venv": {
+      "bitsandbytes": "0.48.0",
+      "pytest": "9.0.3",
+      "torch": "2.11.0+cu130",
+      "transformers": "5.8.0",
+      "trl": "1.3.0"
+    }
+  },
+  "project_venv": {
+    "executable": "/home/samuel/TSC_CYCLE/.venv/bin/python",
+    "exists": true,
+    "packages": {
+      "bitsandbytes": "0.48.0",
+      "pytest": "9.0.3",
+      "torch": "2.11.0+cu130",
+      "transformers": "5.8.0",
+      "trl": "1.3.0"
+    },
+    "path": "/home/samuel/TSC_CYCLE/.venv/bin/python",
+    "returncode": 0,
+    "version": "3.12.3"
+  },
+  "requirements_covered": [
+    "BASE-01",
+    "BASE-02"
+  ],
+  "run_safe": {
+    "executable": true,
+    "exists": true,
+    "path": "/home/samuel/TSC_CYCLE/scripts/dgx_spark/run_safe.sh"
+  },
+  "sys_executable": "/home/samuel/TSC_CYCLE/.venv/bin/python",
+  "warnings": [
+    "bitsandbytes missing in /home/samuel/dgx-spark-setup/.venv/bin/python; Phase 7 reports only and does not install",
+    "trl missing in /home/samuel/dgx-spark-setup/.venv/bin/python; Phase 7 reports only and does not install"
+  ]
+}
