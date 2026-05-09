@@ -110,10 +110,10 @@ Plans:
 - [x] 04-03-PLAN.md — 500-sample dry-run gate wrapper/report with OOD lint ≥95%, grad_norm p99<3.0, no NaN, and fail-closed full-run permission
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 04-04-PLAN.md — Full-run wrapper and manifest with early stopping, no 6h cap, isolated run root, wandb isolation, and human launch approval
+- [x] 04-04-PLAN.md — Full-run wrapper and manifest with early stopping, no 6h cap, isolated run root, wandb isolation, and human launch approval
 
 **Wave 4** *(blocked on Wave 3 completion)*
-- [ ] 04-05-PLAN.md — Aggregate Phase 4 SFT report proving SFT-01..08, artifact hashes, adapter handoff, and read-only v1.0 evidence
+- [x] 04-05-PLAN.md — Aggregate Phase 4 SFT report proving SFT-01..08, artifact hashes, adapter handoff, and read-only v1.0 evidence
 
 ### Phase 5: Merge + GGUF Export + imatrix
 **Goal**: LoRA merge → bf16 HF safetensors → fp16 GGUF → q4_K_M GGUF（imatrix 必跑），三精度生成合法 SOLUTION 段，HF/llama-tokenize parity。
