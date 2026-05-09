@@ -76,6 +76,25 @@ def test_sft_03_d05_batch_accum_checkpointing_and_no_packing_are_locked(tmp_path
     assert args.get("apply_chat_template") in (None, False)
 
 
+def test_training_arguments_init_kwargs_filters_sft_only_evidence_keys(tmp_path) -> None:
+    from tsc_cycle.student.train import training_arguments_init_kwargs  # noqa: PLC0415
+
+    contract = _sft_contract()
+    raw = contract["locked_training_arguments_kwargs"](str(tmp_path / "runs" / "v3.0-9B-20260509T000000Z"))
+    init_kwargs = training_arguments_init_kwargs(raw)
+
+    assert raw["packing"] is False
+    assert raw["chat_template"] is False
+    assert raw["apply_chat_template"] is False
+    assert "packing" not in init_kwargs
+    assert "chat_template" not in init_kwargs
+    assert "apply_chat_template" not in init_kwargs
+    assert init_kwargs["output_dir"] == raw["output_dir"]
+    assert init_kwargs["per_device_train_batch_size"] == 1
+    assert init_kwargs["gradient_accumulation_steps"] == 16
+    assert init_kwargs["gradient_checkpointing_kwargs"] == {"use_reentrant": False}
+
+
 def test_sft_05_d08_early_stopping_eval_and_best_model_settings_are_locked(tmp_path) -> None:
     contract = _sft_contract()
     args = contract["locked_training_arguments_kwargs"](str(tmp_path / "runs" / "v3.0-9B-20260509T000000Z"))

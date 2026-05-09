@@ -53,6 +53,11 @@ from tsc_cycle.tokenizer_check import check_tokenizer, native_think_token_ids
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 TRAIN_MODEL_NAME = "Qwen/Qwen3.5-9B"
 V1_ROOT = PROJECT_ROOT / "runs" / "20260507T032419Z"
+SFT_EVIDENCE_ONLY_TRAINING_ARG_KEYS = frozenset({"packing", "chat_template", "apply_chat_template"})
+
+
+def training_arguments_init_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
+    return {key: value for key, value in kwargs.items() if key not in SFT_EVIDENCE_ONLY_TRAINING_ARG_KEYS}
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -199,7 +204,7 @@ def build_trainer(
     targs_kwargs = locked_training_arguments_kwargs(train_output)
     if max_steps > 0:
         targs_kwargs["max_steps"] = max_steps
-    training_args = TrainingArguments(**targs_kwargs)
+    training_args = TrainingArguments(**training_arguments_init_kwargs(targs_kwargs))
     grad_callback = GradNormAbortCallback(run_root=run_root, mode=mode, gate_steps=200, p99_limit=3.0)
     callbacks = [
         grad_callback,

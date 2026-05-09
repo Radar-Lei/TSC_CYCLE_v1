@@ -309,6 +309,7 @@ def test_full_manifest_is_green_only_with_early_stopping_evidence(tmp_path: Path
     result = evaluate_sft_manifest(manifest_path)
 
     assert payload["ok"] is True
+    assert payload["training_args"]["packing"] is False
     assert payload["early_stopping"] == {"patience": 3, "eval_steps": 200, "save_steps": 200, "max_epochs": 5}
     assert payload["early_stopping_triggered"] is True
     assert payload["stop_reason"] == "early_stopping"
