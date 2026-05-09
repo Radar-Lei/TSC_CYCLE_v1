@@ -2,22 +2,22 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: 4B 回退 + 扩展数据重训 + 标签协议修复
-status: executing
-last_updated: "2026-05-09T17:58:11.273Z"
+status: verifying
+last_updated: "2026-05-09T18:04:07.125Z"
 last_activity: 2026-05-09
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 8
-  completed_plans: 7
-  percent: 88
+  completed_plans: 8
+  percent: 100
 ---
 
 # TSC-CYCLE State
 
 **Last Activity:** 2026-05-09
 **Current Milestone:** v4.0 4B 回退 + 扩展数据重训 + 标签协议修复
-**Status:** Ready to execute
+**Status:** Phase complete — ready for verification
 
 ## Project Reference
 
@@ -30,8 +30,8 @@ See: `.planning/PROJECT.md` (updated 2026-05-10)
 
 Phase: 08 (v3 扩展数据 → 4B dataset rebuild) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
-Progress: [█████████░] 88%
+Status: Phase complete — ready for verification
+Progress: [██████████] 100%
 Last activity: 2026-05-09
 
 ## Phase Status
@@ -39,8 +39,8 @@ Last activity: 2026-05-09
 | Phase | Status | Notes |
 |---|---|---|
 | 7. 4B baseline/label protocol gate | ✓ complete | `artifacts/v4/phase7/phase7_gate_report.json` passed with `next_phase_allowed: true` |
-| 8. v3 扩展数据 → 4B dataset rebuild | ○ next | Reuse v1 valid + v3 lint-pass data; rebuild split/tokenized artifacts with Qwen3-4B tokenizer |
-| 9. 4B QLoRA retrain | ○ pending | v1 verified 4B QLoRA path; raw-text protocol; isolated v4 run root |
+| 8. v3 扩展数据 → 4B dataset rebuild | ✓ complete | DATA4B-01..05 covered; `artifacts/v4/phase8/phase8_gate_report.json` passed with `next_phase_allowed: true` |
+| 9. 4B QLoRA retrain | ○ next | v1 verified 4B QLoRA path; raw-text protocol; isolated v4 run root |
 | 10. merge + GGUF export | ○ pending | Merge adapter; export GGUF fp16 + q4_K_M; verify three-precision protocol smoke |
 | 11. eval matrix + decision | ○ pending | Compare v4 HF/q4 against v1 q4 baseline; produce GO/NO-GO/user decision |
 
@@ -69,10 +69,12 @@ Last activity: 2026-05-09
 - 训练栈继续沿用 `/dgx-spark-training` 与 `/home/samuel/dgx-spark-setup/.venv`；不引入新 PyTorch、Unsloth、Axolotl 或 vLLM。
 - 全链路协议固定为 `<start_working_out>...</end_working_out><SOLUTION>...</SOLUTION>`；禁止原生 `<think>`/`</think>`。
 - Phase 8 RED contracts require explicit v1 valid + v3 new lint-pass sources, v4-isolated outputs, Qwen3-4B raw-text tokenization, and aggregate report gating before Phase 9.
+- DATA4B-05 uses generated Phase 8 JSON artifacts as the source of truth for hashes, counts, truncation evidence, and native-think safety.
+- The final Phase 8 wrapper run is the authority for Phase 9 readiness; `phase8_gate_report.json` is green with `next_phase_allowed: true` only after dataset card evidence exists.
 
 ### Active Todos
 
-- Execute Phase 8 Plan 02 — implement v4 source merge, deterministic split/tokenization, and rebuild report against RED contracts.
+- Verify Phase 8 completion, then execute Phase 9 Plan 01 for 4B QLoRA retrain setup and smoke gates.
 
 ### Blockers
 
@@ -86,7 +88,7 @@ Last activity: 2026-05-09
 
 ## Session Continuity
 
-**Next action:** `/gsd-execute-phase 8` (continue with 08-02-PLAN.md)
+**Next action:** Verify Phase 8, then `/gsd-execute-phase 9` for 4B QLoRA retrain.
 
 **Key files:**
 
