@@ -196,3 +196,146 @@ def test_split_indices_persist_hashes_and_manifest(tmp_path: Path) -> None:
     assert alignment["v1_ood_count"] == 300
     assert alignment["new_ood_count"] == 650
     assert len(alignment["v1_ood_sample_ids_sha256"]) == 64
+
+
+class FakeTokenizer:
+    eos_token = "<eos>"
+
+    def __init__(self) -> None:
+        self.chat_template_used = False
+        self.native_leak_checked_on_untruncated_ids = False
+
+    def apply_chat_template(self, *args: Any, **kwargs: Any) -> None:
+        self.chat_template_used = True
+        raise AssertionError("Phase 3 dataset rebuild must not call tokenizer.apply_chat_template")
+
+    def encode(self, text: str, add_special_tokens: bool = False) -> list[int]:
+        assert add_special_tokens is False
+        if text == "<think>":
+            return [99]
+        if text == "</think>":
+            return [100]
+        return self._ids(text, truncation=False, max_length=None)
+
+    def __call__(
+        self,
+        text: str,
+        truncation: bool = False,
+        max_length: int | None = None,
+        add_special_tokens: bool = False,
+    ) -> dict[str, list[int]]:
+        assert add_special_tokens is False
+        ids = self._ids(text, truncation=truncation, max_length=max_length)
+        if not truncation and any(token_id in {99, 100} for token_id in ids):
+            self.native_leak_checked_on_untruncated_ids = True
+        return {"input_ids": ids}
+
+    def _ids(self, text: str, *, truncation: bool, max_length: int | None) -> list[int]:
+        ids: list[int] = []
+        i = 0
+        while i < len(text):
+            if text.startswith("<think>", i):
+                ids.append(99)
+                i += len("<think>")
+            elif text.startswith("</think>", i):
+                ids.append(100)
+                i += len("</think>")
+            elif text.startswith("<LONG_2050>", i):
+                ids.extend([2050] * 2050)
+                i += len("<LONG_2050>")
+            else:
+                ids.append(ord(text[i]) + 1000)
+                i += 1
+        if truncation and max_length is not None:
+            ids = ids[:max_length]
+        return ids
+
+
+def _phase3_dataset(tmp_path: Path, rows: list[dict[str, Any]] | None = None):
+    if rows is None:
+        rows = _synthetic_phase3_rows()
+    merged = _write_jsonl(tmp_path / "labeled_merged.jsonl", rows)
+    config = _config(tmp_path, merged)
+    tokenizer = FakeTokenizer()
+    return config, tokenizer, _dataset_contract()["build_phase3_dataset"](config, tokenizer=tokenizer)
+
+
+def _open_arrow(path: Path):
+    import pyarrow as pa  # noqa: PLC0415
+
+    with pa.memory_map(str(path), "r") as source:
+        return pa.ipc.open_file(source).read_all()
+
+
+def test_writes_arrow_ipc_files(tmp_path: Path) -> None:
+    config, tokenizer, report = _phase3_dataset(tmp_path)
+
+    assert report["ok"] is True
+    assert tokenizer.chat_template_used is False
+    assert report["tokenized_paths"] == {
+        "train": str(config.tokenized_dir / "train.arrow"),
+        "val": str(config.tokenized_dir / "val.arrow"),
+        "ood_val": str(config.tokenized_dir / "ood_val.arrow"),
+    }
+
+    expected_columns = {
+        "sample_id",
+        "input_ids",
+        "attention_mask",
+        "labels",
+        "raw_length",
+        "truncated",
+        "prompt_hash",
+        "assistant_hash",
+    }
+    expected_rows = {"train": 7601, "val": 950, "ood_val": 950}
+    for split_name, expected_count in expected_rows.items():
+        arrow_path = config.tokenized_dir / f"{split_name}.arrow"
+        assert arrow_path.exists()
+        table = _open_arrow(arrow_path)
+        assert table.num_rows == expected_count
+        assert set(table.column_names) == expected_columns
+        assert "chat_template" not in table.schema.metadata if table.schema.metadata else True
+        assert "metadata" not in table.column_names
+
+    assert not (tmp_path / "data" / "tokenized" / "train" / "data.parquet").exists()
+
+
+def test_truncation_rate_gate_fails_closed(tmp_path: Path) -> None:
+    rows = _synthetic_phase3_rows()
+    for idx in range(501):
+        rows[idx]["result"]["reasoning"] = "<LONG_2050>"
+    config, tokenizer, report = _phase3_dataset(tmp_path, rows)
+
+    assert report["ok"] is False
+    assert report["gates"]["truncation_rate"]["ok"] is False
+    assert report["truncation"]["max_seq_length"] == 2048
+    assert report["truncation"]["over_length_count"] == 501
+    assert report["truncation"]["over_length_rate"] > 0.05
+    assert tokenizer.chat_template_used is False
+    assert not (config.tokenized_dir / "train.arrow").exists()
+    assert not (config.tokenized_dir / "val.arrow").exists()
+    assert not (config.tokenized_dir / "ood_val.arrow").exists()
+
+
+def test_tokenize_record_checks_native_think_ids_before_truncation(tmp_path: Path) -> None:
+    contract = _dataset_contract()
+    tokenizer = FakeTokenizer()
+    record = _sample(
+        "native-leak-after-boundary",
+        lineage="v3.0",
+        split_hint="same_dist",
+        reasoning="<LONG_2050><think>",
+    )
+
+    tokenized = contract["tokenize_record"](
+        record,
+        tokenizer=tokenizer,
+        max_seq_length=2048,
+        split="train",
+    )
+
+    assert tokenized["ok"] is False
+    assert tokenized["error"] == "native_think_token_leak"
+    assert tokenizer.native_leak_checked_on_untruncated_ids is True
+    assert not (tmp_path / "data" / "tokenized" / "v3" / "train.arrow").exists()
