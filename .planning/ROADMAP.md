@@ -77,7 +77,7 @@ Plans:
 **Plans:** 4 plans
 Plans:
 **Wave 0**
-- [ ] 03-01-PLAN.md — Wave 0 RED tests for DATA-01..04 dataset rebuild invariants
+- [x] 03-01-PLAN.md — Wave 0 RED tests for DATA-01..04 dataset rebuild invariants
 
 **Wave 1** *(blocked on Wave 0 completion)*
 - [ ] 03-02-PLAN.md — Deterministic exact split indices, manifest, and v1 OOD alignment evidence

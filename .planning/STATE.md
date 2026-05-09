@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: 9B 基座切换
 status: executing
-last_updated: "2026-05-09T10:06:19.871Z"
+last_updated: "2026-05-09T10:11:20.316Z"
 last_activity: 2026-05-09
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 15
-  completed_plans: 11
-  percent: 73
+  completed_plans: 12
+  percent: 80
 ---
 
 # TSC-CYCLE State
@@ -24,12 +24,12 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-05-08)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近 GPT-5.5 high 教师 — 不过拟合到 reality.log。
-**Current focus:** Phase 02 — 数据扩量到 10K（教师只标新增 7K）
+**Current focus:** Phase 03 — Dataset Rebuild（Qwen3.5 retokenize + split）
 
 ## Current Position
 
-Phase: 3
-Plan: Not started
+Phase: 03 (Dataset Rebuild（Qwen3.5 retokenize + split）) — EXECUTING
+Plan: 2 of 4
 
 - Phase: 1 (not started)
 - Plan: — (run `/gsd-plan-phase 1` next)
@@ -38,7 +38,7 @@ Plan: Not started
 
 **Progress:**
 
-[█████████░] 91%
+[████████░░] 80%
 [░░░░░░] 0/6 phases complete
 
 ```

@@ -39,10 +39,10 @@
 
 ### DATA — 训练数据集构建
 
-- [ ] **DATA-01**: 80/10/10 split (train/val/ood_val)，seed=42；OOD val 包含 v1.0 OOD val 全集 + 新增 OOD subset，便于跨里程碑可比 subset 评测
-- [ ] **DATA-02**: retokenize 用 Qwen3.5 tokenizer，输出到 `data/tokenized/v3/{train,val,ood_val}.arrow`
-- [ ] **DATA-03**: 截断率 ≤5%（max_seq_length 由 MEM-01 决定）
-- [ ] **DATA-04**: split 索引文件持久化（含哈希），便于评测复现
+- [x] **DATA-01**: 80/10/10 split (train/val/ood_val)，seed=42；OOD val 包含 v1.0 OOD val 全集 + 新增 OOD subset，便于跨里程碑可比 subset 评测
+- [x] **DATA-02**: retokenize 用 Qwen3.5 tokenizer，输出到 `data/tokenized/v3/{train,val,ood_val}.arrow`
+- [x] **DATA-03**: 截断率 ≤5%（max_seq_length 由 MEM-01 决定）
+- [x] **DATA-04**: split 索引文件持久化（含哈希），便于评测复现
 
 ### SFT — QLoRA 训练（batch_size=1，跑到收敛）
 
@@ -113,10 +113,10 @@ All 39 v3.0 requirements mapped to exactly one phase. Coverage: 39/39 ✓
 | DATAGEN-05 | Phase 2 | Complete |
 | DATAGEN-06 | Phase 2 | Complete |
 | DATAGEN-07 | Phase 2 | Complete |
-| DATA-01 | Phase 3 | Pending |
-| DATA-02 | Phase 3 | Pending |
-| DATA-03 | Phase 3 | Pending |
-| DATA-04 | Phase 3 | Pending |
+| DATA-01 | Phase 3 | Complete |
+| DATA-02 | Phase 3 | Complete |
+| DATA-03 | Phase 3 | Complete |
+| DATA-04 | Phase 3 | Complete |
 | SFT-01 | Phase 4 | Pending |
 | SFT-02 | Phase 4 | Pending |
 | SFT-03 | Phase 4 | Pending |
