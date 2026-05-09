@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: 9B 基座切换
 status: executing
-last_updated: "2026-05-09T10:11:20.316Z"
+last_updated: "2026-05-09T14:38:59.567Z"
 last_activity: 2026-05-09
 progress:
   total_phases: 6
-  completed_phases: 2
-  total_plans: 15
-  completed_plans: 12
+  completed_phases: 3
+  total_plans: 20
+  completed_plans: 16
   percent: 80
 ---
 
@@ -24,12 +24,12 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-05-08)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近 GPT-5.5 high 教师 — 不过拟合到 reality.log。
-**Current focus:** Phase 03 — Dataset Rebuild（Qwen3.5 retokenize + split）
+**Current focus:** Phase 04 — qlora-sft-9b-batch-1
 
 ## Current Position
 
-Phase: 03 (Dataset Rebuild（Qwen3.5 retokenize + split）) — EXECUTING
-Plan: 2 of 4
+Phase: 04 (qlora-sft-9b-batch-1) — EXECUTING
+Plan: 2 of 5
 
 - Phase: 1 (not started)
 - Plan: — (run `/gsd-plan-phase 1` next)
@@ -39,7 +39,7 @@ Plan: 2 of 4
 **Progress:**
 
 [████████░░] 80%
-[░░░░░░] 0/6 phases complete
+[███░░░] 3/6 phases complete
 
 ```
 
@@ -47,9 +47,9 @@ Plan: 2 of 4
 
 | Phase | Status | Notes |
 |---|---|---|
-| 1. 环境 + Tokenizer + 显存 + llama.cpp 四合一硬门禁 | ○ pending | Hard gates；任一 fatal fail → milestone abort |
-| 2. 数据扩量到 10K（教师只标新增 7K） | ○ pending | v1.0 labeled.jsonl read-only；新增 ≥7K 经 lint |
-| 3. Dataset Rebuild（Qwen3.5 retokenize + split） | ○ pending | 80/10/10 seed=42；OOD val 含 v1.0 OOD 全集 |
+| 1. 环境 + Tokenizer + 显存 + llama.cpp 四合一硬门禁 | ● complete | Hard gates passed |
+| 2. 数据扩量到 10K（教师只标新增 7K） | ● complete | v1.0 labeled.jsonl read-only；合并集完成 |
+| 3. Dataset Rebuild（Qwen3.5 retokenize + split） | ● complete | train=7601 / val=950 / ood_val=950；truncation_rate=0.0 |
 | 4. QLoRA SFT (9B, batch=1, 跑到收敛) | ○ pending | 500-sample dry-run gate + early-stopping，不设 6h 上限 |
 | 5. Merge + GGUF Export + imatrix | ○ pending | imatrix 必跑；三精度 SOLUTION smoke |
 | 6. Eval Matrix + 三阈值决策门 | ○ pending | v1.0 baseline read-only mount；GO/NO-GO/用户决策三态 |
@@ -79,7 +79,7 @@ Plan: 2 of 4
 
 ### Active Todos
 
-- Run `/gsd-plan-phase 1` — 把 Phase 1 的 10 项硬门禁 requirements 拆解为 plans
+- Run `/gsd-plan-phase 4` — 规划 QLoRA SFT (9B, batch=1, 跑到收敛)
 
 ### Blockers
 
@@ -87,7 +87,7 @@ Plan: 2 of 4
 
 ## Session Continuity
 
-**Next action:** `/gsd-plan-phase 1`
+**Next action:** `/gsd-plan-phase 4`
 
 **Key files:**
 

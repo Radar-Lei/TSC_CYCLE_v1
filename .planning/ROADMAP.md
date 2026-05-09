@@ -8,9 +8,9 @@
 
 ## Phases
 
-- [ ] **Phase 1: 环境 + Tokenizer + 显存 + llama.cpp 四合一硬门禁** — 9B/Qwen3.5 兼容性硬门禁；任一 fatal gate fail → milestone abort
-- [ ] **Phase 2: 数据扩量到 10K（教师只标新增 7K）** — 合成 7K 新输入 + GPT-5.5 high 并发标注 + lint，目标合并集 ≥9000 valid
-- [ ] **Phase 3: Dataset Rebuild（Qwen3.5 retokenize + split）** — 80/10/10 split (seed=42)、Qwen3.5 tokenizer 重 tokenize、截断率 ≤5%
+- [x] **Phase 1: 环境 + Tokenizer + 显存 + llama.cpp 四合一硬门禁** — 9B/Qwen3.5 兼容性硬门禁；任一 fatal gate fail → milestone abort
+- [x] **Phase 2: 数据扩量到 10K（教师只标新增 7K）** — 合成 7K 新输入 + GPT-5.5 high 并发标注 + lint，目标合并集 ≥9000 valid
+- [x] **Phase 3: Dataset Rebuild（Qwen3.5 retokenize + split）** — 80/10/10 split (seed=42)、Qwen3.5 tokenizer 重 tokenize、截断率 ≤5%
 - [ ] **Phase 4: QLoRA SFT (9B, batch=1, 跑到收敛)** — 500-sample 1h dry-run early-exit gate + 全量训练 + early-stopping，不设 6h 上限
 - [ ] **Phase 5: Merge + GGUF Export + imatrix** — LoRA merge → fp16 GGUF → Q4_K_M（imatrix 必跑），三精度 SOLUTION smoke
 - [ ] **Phase 6: Eval Matrix + 三阈值决策门** — 4 variant matrix（含 v1.0 q4_K_M baseline read-only mount）+ GO/NO-GO/用户决策三态 decision.md
@@ -80,13 +80,13 @@ Plans:
 - [x] 03-01-PLAN.md — Wave 0 RED tests for DATA-01..04 dataset rebuild invariants
 
 **Wave 1** *(blocked on Wave 0 completion)*
-- [ ] 03-02-PLAN.md — Deterministic exact split indices, manifest, and v1 OOD alignment evidence
+- [x] 03-02-PLAN.md — Deterministic exact split indices, manifest, and v1 OOD alignment evidence
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 03-03-PLAN.md — Qwen3.5 raw-text tokenization, truncation/native-ID gates, and Arrow IPC outputs
+- [x] 03-03-PLAN.md — Qwen3.5 raw-text tokenization, truncation/native-ID gates, and Arrow IPC outputs
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 03-04-PLAN.md — Canonical Phase 3 CLI wrapper, final report, and artifact manifest
+- [x] 03-04-PLAN.md — Canonical Phase 3 CLI wrapper, final report, and artifact manifest
 
 ### Phase 4: QLoRA SFT (9B, batch=1, 跑到收敛)
 **Goal**: 在 DGX Spark 上完成 Qwen3.5-9B QLoRA r=64 SFT，500-sample dry-run 通过后进入全量训练（不设 6h 上限，靠 early-stopping 收敛），artifact 与 v1.0 物理隔离。
@@ -98,7 +98,22 @@ Plans:
   3. 500-sample 1h dry-run early-exit gate 通过：OOD 硬约束满足率 ≥95%；前 200 step grad_norm p99<3.0 且无 NaN
   4. 全量训练完成（不设 6h 上限），early-stopping callback 触发收敛（val loss patience=3，监控间隔 200 steps；最大 epoch 上限 5）；adapter 落盘到 `runs/v3.0-9B-{utc_timestamp}/`
   5. v1.0 production artifact `runs/20260507T032419Z/` 标记 FROZEN.md + `chmod -w`，v3.0 流程零写入；wandb project=`tsc-cycle-v3-9b` 与 v1.0 严格隔离
-**Plans**: TBD
+**Plans:** 5 plans
+Plans:
+**Wave 0**
+- [x] 04-01-PLAN.md — RED tests and fail-closed contract for locked SFT config, Arrow loader, dry-run/grad gates, artifact isolation, and FROZEN guard
+
+**Wave 1** *(blocked on Wave 0 completion)*
+- [ ] 04-02-PLAN.md — Phase 4 trainer helpers and entrypoint refactor for Arrow IPC, locked QLoRA config, LoRA coverage, TrainingArguments locks, and FROZEN safety
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 04-03-PLAN.md — 500-sample dry-run gate wrapper/report with OOD lint ≥95%, grad_norm p99<3.0, no NaN, and fail-closed full-run permission
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 04-04-PLAN.md — Full-run wrapper and manifest with early stopping, no 6h cap, isolated run root, wandb isolation, and human launch approval
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 04-05-PLAN.md — Aggregate Phase 4 SFT report proving SFT-01..08, artifact hashes, adapter handoff, and read-only v1.0 evidence
 
 ### Phase 5: Merge + GGUF Export + imatrix
 **Goal**: LoRA merge → bf16 HF safetensors → fp16 GGUF → q4_K_M GGUF（imatrix 必跑），三精度生成合法 SOLUTION 段，HF/llama-tokenize parity。
@@ -128,10 +143,10 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. 环境 + Tokenizer + 显存 + llama.cpp 四合一硬门禁 | 0/6 | Not started | - |
-| 2. 数据扩量到 10K（教师只标新增 7K） | 0/5 | Planned | - |
-| 3. Dataset Rebuild（Qwen3.5 retokenize + split） | 0/4 | Planned | - |
-| 4. QLoRA SFT (9B, batch=1, 跑到收敛) | 0/0 | Not started | - |
+| 1. 环境 + Tokenizer + 显存 + llama.cpp 四合一硬门禁 | 6/6 | Complete | 2026-05-09 |
+| 2. 数据扩量到 10K（教师只标新增 7K） | 5/5 | Complete | 2026-05-09 |
+| 3. Dataset Rebuild（Qwen3.5 retokenize + split） | 4/4 | Complete | 2026-05-09 |
+| 4. QLoRA SFT (9B, batch=1, 跑到收敛) | 0/5 | Planned | - |
 | 5. Merge + GGUF Export + imatrix | 0/0 | Not started | - |
 | 6. Eval Matrix + 三阈值决策门 | 0/0 | Not started | - |
 

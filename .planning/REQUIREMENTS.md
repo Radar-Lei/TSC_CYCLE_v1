@@ -46,14 +46,14 @@
 
 ### SFT — QLoRA 训练（batch_size=1，跑到收敛）
 
-- [ ] **SFT-01**: QLoRA r=64, alpha=64, lora_dropout=0.0, target_modules="all-linear"（覆盖 GatedDeltaNet 24 linear-attention 层 + 8 full-attention 层全部 projections）
-- [ ] **SFT-02**: lr=1e-4 (cosine schedule with warmup), max_grad_norm=0.5, optimizer=`adamw_torch_fused`（避免 paged_adamw_8bit underflow）
-- [ ] **SFT-03**: batch_size=1 + gradient_accumulation_steps=16 (effective batch 16); packing=False; gradient_checkpointing(use_reentrant=False)
-- [ ] **SFT-04**: 500-sample 1h dry-run early-exit gate：OOD 硬约束满足率 ≥95% 才进全量训练；否则 abort 调参
-- [ ] **SFT-05**: 全量训练**不设 6h 上限**，启用 early-stopping callback（val loss patience=3，监控间隔 200 steps）；最大 epoch 上限 5
-- [ ] **SFT-06**: 训练 200 steps 后 grad_norm p99<3.0 且无 NaN；任一断言失败立即 abort
-- [ ] **SFT-07**: run artifact 命名隔离 `runs/v3.0-9B-{utc_timestamp}/`；wandb project=`tsc-cycle-v3-9b`（与 v1.0 隔离）
-- [ ] **SFT-08**: v1.0 production artifact `runs/20260507T032419Z/` 标记 FROZEN.md + `chmod -w`，禁止 v3.0 流程触碰
+- [x] **SFT-01**: QLoRA r=64, alpha=64, lora_dropout=0.0, target_modules="all-linear"（覆盖 GatedDeltaNet 24 linear-attention 层 + 8 full-attention 层全部 projections）
+- [x] **SFT-02**: lr=1e-4 (cosine schedule with warmup), max_grad_norm=0.5, optimizer=`adamw_torch_fused`（避免 paged_adamw_8bit underflow）
+- [x] **SFT-03**: batch_size=1 + gradient_accumulation_steps=16 (effective batch 16); packing=False; gradient_checkpointing(use_reentrant=False)
+- [x] **SFT-04**: 500-sample 1h dry-run early-exit gate：OOD 硬约束满足率 ≥95% 才进全量训练；否则 abort 调参
+- [x] **SFT-05**: 全量训练**不设 6h 上限**，启用 early-stopping callback（val loss patience=3，监控间隔 200 steps）；最大 epoch 上限 5
+- [x] **SFT-06**: 训练 200 steps 后 grad_norm p99<3.0 且无 NaN；任一断言失败立即 abort
+- [x] **SFT-07**: run artifact 命名隔离 `runs/v3.0-9B-{utc_timestamp}/`；wandb project=`tsc-cycle-v3-9b`（与 v1.0 隔离）
+- [x] **SFT-08**: v1.0 production artifact `runs/20260507T032419Z/` 标记 FROZEN.md + `chmod -w`，禁止 v3.0 流程触碰
 
 ### GGUF — 导出 + 量化（imatrix 必跑）
 
@@ -117,14 +117,14 @@ All 39 v3.0 requirements mapped to exactly one phase. Coverage: 39/39 ✓
 | DATA-02 | Phase 3 | Complete |
 | DATA-03 | Phase 3 | Complete |
 | DATA-04 | Phase 3 | Complete |
-| SFT-01 | Phase 4 | Pending |
-| SFT-02 | Phase 4 | Pending |
-| SFT-03 | Phase 4 | Pending |
-| SFT-04 | Phase 4 | Pending |
-| SFT-05 | Phase 4 | Pending |
-| SFT-06 | Phase 4 | Pending |
-| SFT-07 | Phase 4 | Pending |
-| SFT-08 | Phase 4 | Pending |
+| SFT-01 | Phase 4 | Complete |
+| SFT-02 | Phase 4 | Complete |
+| SFT-03 | Phase 4 | Complete |
+| SFT-04 | Phase 4 | Complete |
+| SFT-05 | Phase 4 | Complete |
+| SFT-06 | Phase 4 | Complete |
+| SFT-07 | Phase 4 | Complete |
+| SFT-08 | Phase 4 | Complete |
 | GGUF-01 | Phase 5 | Pending |
 | GGUF-02 | Phase 5 | Pending |
 | GGUF-03 | Phase 5 | Pending |
