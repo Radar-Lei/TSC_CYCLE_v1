@@ -104,7 +104,7 @@ Plans:
 - [x] 04-01-PLAN.md — RED tests and fail-closed contract for locked SFT config, Arrow loader, dry-run/grad gates, artifact isolation, and FROZEN guard
 
 **Wave 1** *(blocked on Wave 0 completion)*
-- [ ] 04-02-PLAN.md — Phase 4 trainer helpers and entrypoint refactor for Arrow IPC, locked QLoRA config, LoRA coverage, TrainingArguments locks, and FROZEN safety
+- [x] 04-02-PLAN.md — Phase 4 trainer helpers and entrypoint refactor for Arrow IPC, locked QLoRA config, LoRA coverage, TrainingArguments locks, and FROZEN safety
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 04-03-PLAN.md — 500-sample dry-run gate wrapper/report with OOD lint ≥95%, grad_norm p99<3.0, no NaN, and fail-closed full-run permission
