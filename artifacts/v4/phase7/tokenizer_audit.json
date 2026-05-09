@@ -1,0 +1,55 @@
+{
+  "bad_custom_tags": [],
+  "bad_native_think": [],
+  "chat_template_used": false,
+  "custom_tags": {
+    "</SOLUTION>": [
+      522,
+      50,
+      45977,
+      29
+    ],
+    "</end_working_out>": [
+      522,
+      408,
+      81101,
+      6068,
+      29
+    ],
+    "<SOLUTION>": [
+      18858,
+      45977,
+      29
+    ],
+    "<start_working_out>": [
+      27,
+      2468,
+      81101,
+      6068,
+      29
+    ]
+  },
+  "fatal_failures": [],
+  "min_custom_subtokens": 3,
+  "model_id": "Qwen/Qwen3-4B-Thinking-2507",
+  "native_think": {
+    "</think>": [
+      151668
+    ],
+    "<think>": [
+      151667
+    ]
+  },
+  "native_think_token_ids": [
+    151667,
+    151668
+  ],
+  "ok": true,
+  "requirements_covered": [
+    "TAG-04",
+    "TAG-03",
+    "TAG-01"
+  ],
+  "vocab_size": 151669,
+  "warnings": []
+}

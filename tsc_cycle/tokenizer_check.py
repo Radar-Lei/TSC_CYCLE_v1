@@ -2,8 +2,8 @@
 
 The custom SFT protocol uses project-owned text tags such as
 ``<start_working_out>`` and must not train on model-native ``<think>`` token IDs.
-Native IDs are model/tokenizer specific, so v3 gates derive them from the active
-Qwen3.5 tokenizer instead of trusting v1.0 constants.
+Native IDs are model/tokenizer specific, so v4 gates derive them from the active
+Qwen3-4B tokenizer instead of trusting fixed constants.
 """
 
 from __future__ import annotations
