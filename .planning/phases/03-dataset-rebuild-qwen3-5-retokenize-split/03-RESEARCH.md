@@ -43,9 +43,9 @@ None — discuss phase skipped.
 
 Phase 3 should be implemented as a fail-closed local rebuild gate over the Phase 2 merged dataset at `/home/samuel/TSC_CYCLE/data/v3/phase2/labeled_merged.jsonl`, which contains 9501 valid rows with 3000 old v1 rows and 6501 new rows. [VERIFIED: /home/samuel/TSC_CYCLE/data/v3/phase2/merge_report.json; VERIFIED: /home/samuel/TSC_CYCLE/.planning/phases/02-10k-7k/02-VERIFICATION.md] The merged dataset has 2206 rows whose root `split_hint` is `ood`: 300 from v1.0 and 1906 from v3.0 new data. [VERIFIED: local compact JSONL count]
 
-The recommended split contract is exact-size 80/10/10 over 9501 rows: `train=7601`, `val=950`, `ood_val=950`. [VERIFIED: local arithmetic over Phase 2 count] To preserve cross-milestone comparability, `ood_val` must include every v1.0 row with `split_hint="ood"` and add exactly 650 v3.0 OOD rows sampled with `random.Random(42)` from sorted candidate IDs. [VERIFIED: local compact JSONL count; ASSUMED] The `val` split should be sampled from remaining ID rows with the same seed discipline; all remaining rows go to `train`. [ASSUMED]
+The resolved split contract is exact-size 80/10/10 over 9501 rows: `train=7601`, `val=950`, `ood_val=950`. [VERIFIED: local arithmetic over Phase 2 count; RESOLVED: checker revision 2026-05-09] To preserve cross-milestone comparability, `ood_val` must include every v1.0 row with `split_hint="ood"` and add exactly 650 v3.0 OOD rows sampled with `random.Random(42)` from sorted candidate IDs. [VERIFIED: local compact JSONL count; RESOLVED: checker revision 2026-05-09] The `val` split must be sampled with `random.Random(42)` from all remaining rows after removing `ood_val` (including remaining v3 OOD candidates); all rows not selected for `ood_val` or `val` go to `train`. [RESOLVED: checker revision 2026-05-09]
 
-Tokenization should reuse the existing raw-text path in `tsc_cycle.student.dataset` and `tsc_cycle.prompt_builder`, but Phase 3 should write new v3 artifacts rather than reusing the v1 Parquet layout. [VERIFIED: /home/samuel/TSC_CYCLE/tsc_cycle/student/dataset.py; VERIFIED: /home/samuel/TSC_CYCLE/tsc_cycle/prompt_builder.py] The output requirement names single `.arrow` files, so use PyArrow IPC file writing for `data/tokenized/v3/train.arrow`, `val.arrow`, and `ood_val.arrow`. [VERIFIED: /home/samuel/TSC_CYCLE/.planning/ROADMAP.md; CITED: Context7 Apache Arrow docs]
+Tokenization should reuse the existing raw-text path in `tsc_cycle.student.dataset` and `tsc_cycle.prompt_builder`, but Phase 3 should write new v3 artifacts rather than reusing the v1 Parquet layout. [VERIFIED: /home/samuel/TSC_CYCLE/tsc_cycle/student/dataset.py; VERIFIED: /home/samuel/TSC_CYCLE/tsc_cycle/prompt_builder.py] Phase 3 writes only the required `.arrow` outputs plus docs/manifests; it must not create an extra Parquet or Hugging Face dataset-directory mirror for compatibility. If training reader compatibility is needed, Phase 4 owns that update. [RESOLVED: checker revision 2026-05-09] The output requirement names single `.arrow` files, so use PyArrow IPC file writing for `data/tokenized/v3/train.arrow`, `val.arrow`, and `ood_val.arrow`. [VERIFIED: /home/samuel/TSC_CYCLE/.planning/ROADMAP.md; CITED: Context7 Apache Arrow docs]
 
 **Primary recommendation:** Build one tested CLI, `tsc_cycle.v3_gates.dataset_rebuild_v3`, that reads Phase 2 merged JSONL, creates deterministic split index artifacts under `data/splits/v3/`, tokenizes with Qwen3.5 at max length 2048, writes Arrow IPC files under `data/tokenized/v3/`, and emits a manifest/report that fails if any DATA-01..04 invariant is broken. [VERIFIED: project v3 gate pattern in `/home/samuel/TSC_CYCLE/tsc_cycle/v3_gates`; ASSUMED]
 
@@ -110,7 +110,7 @@ sort candidate sample_ids ---------------> seed=42 deterministic selectors
         |                  +------------------------+------------------------+
         |                  |                                                 |
         v                  v                                                 v
-  ood_val index     val index from ID rows                           train index remainder
+  ood_val index     val index from remaining rows                    train index remainder
 (v1 OOD all +       (950 rows)                                      (7601 rows)
 650 new OOD)
         |                  |                                                 |
@@ -165,8 +165,10 @@ data/tokenized/v3/
 # Source: Python stdlib random.Random behavior [ASSUMED]
 rng = random.Random(42)
 new_ood_subset = rng.sample(sorted(new_ood_ids), 650)
-val_ids = rng.sample(sorted(remaining_id_ids), 950)
-train_ids = all_ids - set(new_ood_subset) - set(v1_ood_ids) - set(val_ids)
+ood_val_ids = set(v1_ood_ids) | set(new_ood_subset)
+remaining_after_oodval_ids = sorted(set(all_ids) - ood_val_ids)
+val_ids = rng.sample(remaining_after_oodval_ids, 950)
+train_ids = set(all_ids) - ood_val_ids - set(val_ids)
 ```
 
 ### Pattern 2: Tokenize raw text, not chat templates
@@ -224,7 +226,7 @@ with pa.OSFile(str(out_path), "wb") as sink:
 ### Pitfall 1: OOD split ratio conflict
 **What goes wrong:** All rows with `split_hint="ood"` are assigned to `ood_val`, producing 2206 OOD validation rows instead of a 10% split. [VERIFIED: local compact JSONL count]  
 **Why it happens:** Existing v1 dataset code maps every `split_hint="ood"` row to `val_ood`. [VERIFIED: /home/samuel/TSC_CYCLE/tsc_cycle/student/dataset.py]  
-**How to avoid:** Treat `split_hint="ood"` as an OOD-candidate flag; force all v1 OOD into `ood_val`, sample only enough new OOD to reach 950, and put remaining rows into train. [ASSUMED]  
+**How to avoid:** Treat `split_hint="ood"` as an OOD-candidate flag; force all v1 OOD into `ood_val`, sample exactly 650 new v3 OOD rows to reach 950, then sample `val` from all remaining rows (including non-held-out v3 OOD) and put the rest into `train`. [RESOLVED: checker revision 2026-05-09]  
 **Warning signs:** `data/splits/v3/ood_val.index.jsonl` has 2206 rows or `train+val+ood_val != 9501`. [VERIFIED: local compact JSONL count]
 
 ### Pitfall 2: Off-by-one split sizing
@@ -236,7 +238,7 @@ with pa.OSFile(str(out_path), "wb") as sink:
 ### Pitfall 3: Tokenization output format drift
 **What goes wrong:** Existing code writes Parquet directories, but Phase 3 success criteria require `.arrow` files. [VERIFIED: /home/samuel/TSC_CYCLE/tsc_cycle/student/dataset.py; VERIFIED: /home/samuel/TSC_CYCLE/.planning/ROADMAP.md]  
 **Why it happens:** v1 training code uses `pyarrow.parquet` and split names `val_id`/`val_ood`. [VERIFIED: /home/samuel/TSC_CYCLE/tsc_cycle/student/dataset.py]  
-**How to avoid:** Write v3-specific Arrow IPC files and plan a Phase 4 reader update if needed. [ASSUMED]  
+**How to avoid:** Write only the required v3-specific Arrow IPC files plus docs/manifests in Phase 3; do not create a Parquet or dataset-directory compatibility mirror. Phase 4 owns any training reader compatibility update if needed. [RESOLVED: checker revision 2026-05-09]  
 **Warning signs:** New artifacts appear under `data/tokenized/v3/train/data.parquet` instead of `data/tokenized/v3/train.arrow`. [VERIFIED: /home/samuel/TSC_CYCLE/.planning/ROADMAP.md]
 
 ### Pitfall 4: Truncation silently corrupts assistant/SOLUTION labels
@@ -293,7 +295,7 @@ Use the PyArrow IPC example for Phase 3 because the required output path is a `.
 | Old Approach | Current Approach | When Changed | Impact |
 |--------------|------------------|--------------|--------|
 | Qwen3-4B tokenizer with `data/tokenized/{train,val_id,val_ood}/data.parquet` | Qwen3.5 tokenizer with `data/tokenized/v3/{train,val,ood_val}.arrow` | v3.0 Phase 3 | Planner must create new v3 artifacts and not overwrite v1 tokenized data. [VERIFIED: /home/samuel/TSC_CYCLE/data/dataset_card.md; VERIFIED: /home/samuel/TSC_CYCLE/.planning/ROADMAP.md] |
-| Hash-bucket ID split and all OOD held out | Exact-size 80/10/10 with v1 OOD pinned and v3 OOD subset sampled | v3.0 Phase 3 | Planner must handle OOD candidates separately from exact split sizes. [VERIFIED: /home/samuel/TSC_CYCLE/tsc_cycle/student/dataset.py; VERIFIED: local compact JSONL count; ASSUMED] |
+| Hash-bucket ID split and all OOD held out | Exact-size 80/10/10 with v1 OOD pinned and v3 OOD subset sampled | v3.0 Phase 3 | Planner must handle OOD candidates separately from exact split sizes. [VERIFIED: /home/samuel/TSC_CYCLE/tsc_cycle/student/dataset.py; VERIFIED: local compact JSONL count; RESOLVED] |
 | p99-derived max length 1164 under v1 | Phase 1 MEM-01 max length 2048 under Qwen3.5-9B | v3.0 Phase 1 | Phase 3 must use 2048 and report truncation against that fixed cap. [VERIFIED: /home/samuel/TSC_CYCLE/data/dataset_card.md; VERIFIED: /home/samuel/TSC_CYCLE/artifacts/v3/phase1/memory_budget.json] |
 
 **Deprecated/outdated:**
@@ -304,23 +306,25 @@ Use the PyArrow IPC example for Phase 3 because the required output path is a `.
 
 | # | Claim | Section | Risk if Wrong |
 |---|-------|---------|---------------|
-| A1 | `ood_val` should be exactly 950 rows: all 300 v1 OOD rows plus 650 sampled new OOD rows. | Summary / Phase Requirements | If the user expected all 2206 OOD rows held out, train/eval sizes and comparability contract would change. |
-| A2 | Remaining OOD rows not selected for `ood_val` may be used for training. | Summary / Common Pitfalls | If OOD rows must never train, exact 80/10/10 is impossible with current OOD counts without discarding data. |
+| A1 | `ood_val` is exactly 950 rows: all 300 v1 OOD rows plus exactly 650 seed=42-sampled v3 OOD rows. | Summary / Phase Requirements / Open Questions (RESOLVED) | Resolved by checker revision; implementing a larger OOD holdout would violate the explicit 80/10/10 contract. |
+| A2 | Remaining v3 OOD rows not selected for `ood_val` may be used in `train` or `val` according to the deterministic split plan. | Summary / Common Pitfalls / Open Questions (RESOLVED) | Resolved by checker revision; excluding them from both train and val would contradict the exact-size full-dataset split contract. |
 | A3 | Phase 3 should introduce `tsc_cycle.v3_gates.dataset_rebuild_v3`. | Architecture Patterns | Planner could instead refactor `tsc_cycle.student.dataset`, but a v3 gate module better matches existing v3 patterns. |
 | A4 | Hash manifest should include record/prompt/assistant hashes beyond sample_id. | Phase Requirements / Don’t Hand-Roll | If only sample_id is required, extra hashes add implementation work but improve reproducibility. |
 | A5 | Native think leakage should be checked on untruncated IDs before truncation. | Anti-Patterns / Pitfalls | If omitted, a leak beyond 2048 tokens could evade the check. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should `ood_val` be exact 10% or include every v3 OOD row?**
-   - What we know: Roadmap says 80/10/10 and says OOD val includes v1.0 OOD full set plus v3.0 new OOD subset. [VERIFIED: /home/samuel/TSC_CYCLE/.planning/ROADMAP.md]
-   - What's unclear: Whether “subset” is intended to be the minimum needed for 10%, or a larger held-out subset. [ASSUMED]
-   - Recommendation: Plan exact 10% unless user overrides, because it satisfies both 80/10/10 and v1 OOD inclusion. [ASSUMED]
+1. **Resolved: `ood_val` is exact 10% with pinned v1 OOD plus seeded v3 OOD subset.**
+   - Decision: Use exact 80/10/10 sizes over 9501 rows: `train=7601`, `val=950`, `ood_val=950`. [RESOLVED: checker revision 2026-05-09]
+   - Decision: `ood_val` includes all 300 v1 OOD rows plus exactly 650 v3 OOD rows sampled from sorted v3 OOD candidate IDs with `random.Random(42)`. [RESOLVED: checker revision 2026-05-09]
+   - Decision: Remaining v3 OOD rows are eligible for the deterministic `val` sample and otherwise fall into `train`; they are not automatically held out or discarded. [RESOLVED: checker revision 2026-05-09]
+   - Implementation consequence: Fail if `ood_val` row count is not 950, if v1 OOD count is not 300, if sampled v3 OOD count is not 650, or if total split sizes are not `7601/950/950`.
 
-2. **Should Phase 4 consume `.arrow` files directly or require a compatibility Parquet/dataset-directory mirror?**
-   - What we know: Current train loader reads Parquet from `data/tokenized/{split}/data.parquet`. [VERIFIED: /home/samuel/TSC_CYCLE/tsc_cycle/student/train.py]
-   - What's unclear: Phase 4 plan may update the reader or request a compatibility output. [ASSUMED]
-   - Recommendation: Phase 3 should write required `.arrow` files and optionally document a reader update needed in Phase 4, not create extra formats unless planner decides it is necessary. [ASSUMED]
+2. **Resolved: Phase 3 writes only required outputs; Phase 4 owns reader compatibility.**
+   - Decision: Phase 3 writes `data/tokenized/v3/train.arrow`, `data/tokenized/v3/val.arrow`, `data/tokenized/v3/ood_val.arrow`, plus docs/manifests needed for reproducibility. [RESOLVED: checker revision 2026-05-09]
+   - Decision: Phase 3 must not create extra Parquet outputs or a Hugging Face dataset-directory mirror solely for training reader compatibility. [RESOLVED: checker revision 2026-05-09]
+   - Decision: If the Phase 4 training reader cannot consume these `.arrow` files as-is, Phase 4 owns updating reader compatibility. [RESOLVED: checker revision 2026-05-09]
+   - Implementation consequence: Keep Phase 3 artifact contract narrow and explicit: required Arrow IPC files, split indices, manifest/report, and dataset documentation only.
 
 ## Environment Availability
 
@@ -410,13 +414,13 @@ Use the PyArrow IPC example for Phase 3 because the required output path is a `.
 - Local `importlib.metadata` and CLI version probes — environment availability. [VERIFIED]
 
 ### Tertiary (LOW confidence)
-- Exact choice to put non-held-out OOD rows into train — reasoned from 80/10/10 plus “new OOD subset” wording, needs user confirmation if policy-sensitive. [ASSUMED]
+- Exact choice to allow non-held-out v3 OOD rows into train/val — resolved by checker revision from the 80/10/10 split contract and “v3.0 new OOD subset” wording. [RESOLVED: checker revision 2026-05-09]
 
 ## Metadata
 
 **Confidence breakdown:**
 - Standard stack: HIGH — local pyproject, local installed versions, and Context7 docs were checked. [VERIFIED]
-- Architecture: HIGH — phase inputs/outputs and codebase v3 gate patterns are explicit, with only the exact OOD residual policy assumed. [VERIFIED; ASSUMED]
+- Architecture: HIGH — phase inputs/outputs, codebase v3 gate patterns, exact OOD policy, and Phase 3/Phase 4 output boundary are explicit after checker revision. [VERIFIED; RESOLVED]
 - Pitfalls: MEDIUM — major pitfalls are grounded in existing v1 code and Phase 2 counts; native-leak-before-truncation is a preventive assumption. [VERIFIED; ASSUMED]
 
 **Research date:** 2026-05-09  

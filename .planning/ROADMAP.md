@@ -74,7 +74,19 @@ Plans:
   2. Qwen3.5 tokenizer 重 tokenize 输出到 `data/tokenized/v3/{train,val,ood_val}.arrow`
   3. 截断率 ≤5%（max_seq_length 用 Phase 1 MEM-01 选定值）
   4. split 索引文件 + 样本哈希持久化，便于评测复现并校验 v1.0 OOD val 子集对齐
-**Plans**: TBD
+**Plans:** 4 plans
+Plans:
+**Wave 0**
+- [ ] 03-01-PLAN.md — Wave 0 RED tests for DATA-01..04 dataset rebuild invariants
+
+**Wave 1** *(blocked on Wave 0 completion)*
+- [ ] 03-02-PLAN.md — Deterministic exact split indices, manifest, and v1 OOD alignment evidence
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 03-03-PLAN.md — Qwen3.5 raw-text tokenization, truncation/native-ID gates, and Arrow IPC outputs
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 03-04-PLAN.md — Canonical Phase 3 CLI wrapper, final report, and artifact manifest
 
 ### Phase 4: QLoRA SFT (9B, batch=1, 跑到收敛)
 **Goal**: 在 DGX Spark 上完成 Qwen3.5-9B QLoRA r=64 SFT，500-sample dry-run 通过后进入全量训练（不设 6h 上限，靠 early-stopping 收敛），artifact 与 v1.0 物理隔离。
@@ -118,7 +130,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. 环境 + Tokenizer + 显存 + llama.cpp 四合一硬门禁 | 0/6 | Not started | - |
 | 2. 数据扩量到 10K（教师只标新增 7K） | 0/5 | Planned | - |
-| 3. Dataset Rebuild（Qwen3.5 retokenize + split） | 0/0 | Not started | - |
+| 3. Dataset Rebuild（Qwen3.5 retokenize + split） | 0/4 | Planned | - |
 | 4. QLoRA SFT (9B, batch=1, 跑到收敛) | 0/0 | Not started | - |
 | 5. Merge + GGUF Export + imatrix | 0/0 | Not started | - |
 | 6. Eval Matrix + 三阈值决策门 | 0/0 | Not started | - |
