@@ -1,58 +1,48 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.0
-milestone_name: 9B 基座切换
-status: executing
-last_updated: "2026-05-09T15:18:42.308Z"
-last_activity: 2026-05-09
+milestone: v4.0
+milestone_name: 4B 回退 + 扩展数据重训 + 标签协议修复
+status: planning
+last_updated: "2026-05-10T00:00:00Z"
+last_activity: 2026-05-10
 progress:
-  total_phases: 6
-  completed_phases: 4
-  total_plans: 20
-  completed_plans: 20
-  percent: 100
+  total_phases: 5
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # TSC-CYCLE State
 
-**Last Activity:** 2026-05-09 - Completed quick task 260509-x43: fixed Phase 4 dry-run TrainingArguments packing filter
-**Current Milestone:** v3.0 9B 基座切换
-**Status:** Ready to execute
+**Last Activity:** 2026-05-10 — Created v4.0 roadmap after stopping v3.0 9B route
+**Current Milestone:** v4.0 4B 回退 + 扩展数据重训 + 标签协议修复
+**Status:** Ready to plan Phase 7
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-05-08)
+See: `.planning/PROJECT.md` (updated 2026-05-10)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近 GPT-5.5 high 教师 — 不过拟合到 reality.log。
-**Current focus:** Phase 04 — qlora-sft-9b-batch-1
+**Current focus:** Phase 7 — 4B baseline/label protocol gate
 
 ## Current Position
 
-Phase: 04 (qlora-sft-9b-batch-1) — EXECUTING
-Plan: 5 of 5
-
-- Phase: 1 (not started)
-- Plan: — (run `/gsd-plan-phase 1` next)
-- Status: Roadmap created, ready for Phase 1 planning
-- Last activity: 2026-05-08 — Milestone v3.0 ROADMAP created (6 phases, 39/39 REQ coverage)
-
-**Progress:**
-
-[██████████] 100%
-[███░░░] 3/6 phases complete
-
-```
+Phase: Phase 7 — 4B baseline/label protocol gate
+Plan: —
+Status: Roadmap created; awaiting phase planning
+Progress: [----------] 0/5 phases complete (0%)
+Last activity: 2026-05-10 — v4.0 roadmap created with 24/24 requirements mapped
 
 ## Phase Status
 
 | Phase | Status | Notes |
 |---|---|---|
-| 1. 环境 + Tokenizer + 显存 + llama.cpp 四合一硬门禁 | ● complete | Hard gates passed |
-| 2. 数据扩量到 10K（教师只标新增 7K） | ● complete | v1.0 labeled.jsonl read-only；合并集完成 |
-| 3. Dataset Rebuild（Qwen3.5 retokenize + split） | ● complete | train=7601 / val=950 / ood_val=950；truncation_rate=0.0 |
-| 4. QLoRA SFT (9B, batch=1, 跑到收敛) | ○ pending | 500-sample dry-run gate + early-stopping，不设 6h 上限 |
-| 5. Merge + GGUF Export + imatrix | ○ pending | imatrix 必跑；三精度 SOLUTION smoke |
-| 6. Eval Matrix + 三阈值决策门 | ○ pending | v1.0 baseline read-only mount；GO/NO-GO/用户决策三态 |
+| 7. 4B baseline/label protocol gate | ○ next | Hard gate for Qwen3-4B base, v1 read-only baseline, tokenizer audit, and corrected `</end_working_out>` protocol |
+| 8. v3 扩展数据 → 4B dataset rebuild | ○ pending | Reuse v1 valid + v3 lint-pass data; rebuild split/tokenized artifacts with Qwen3-4B tokenizer |
+| 9. 4B QLoRA retrain | ○ pending | v1 verified 4B QLoRA path; raw-text protocol; isolated v4 run root |
+| 10. merge + GGUF export | ○ pending | Merge adapter; export GGUF fp16 + q4_K_M; verify three-precision protocol smoke |
+| 11. eval matrix + decision | ○ pending | Compare v4 HF/q4 against v1 q4 baseline; produce GO/NO-GO/user decision |
 
 ## Baseline to Beat (v1.0)
 
@@ -60,30 +50,32 @@ Plan: 5 of 5
 - v1.0 HF bf16 OOD hard-constraint lint: **99.3%**
 - v1.0 q4_K_M vs HF bf16 ratio: **0.9933**
 - v1.0 teacher MAE delta: **+0.18s**
-- v3.0 决策门：`q4_v3 vs fp16_v3 ≥ 0.95` ∧ `q4_v3 vs q4_v1 ≥ 1.00` ∧ `q4_v3 hard_constraint_pass ≥ 98%`
+- v4.0 decision gate: `v4 q4_K_M hard_constraint_pass ≥ 98%` ∧ `v4 q4_K_M vs v4 HF ≥ 0.95` ∧ `v4 q4_K_M vs v1 q4_K_M not significantly worse`
 
-## Frozen v1.0 Artifact (read-only mount in v3.0)
+## Frozen v1.0 Artifact (read-only reference in v4.0)
 
 **Path:** `runs/20260507T032419Z/gguf/model.q4_K_M.gguf` (2.4 GB)
 **Eval gen_cache:** `runs/20260507T032419Z/eval/gen_cache/gguf_q4km/`
-**Constraint:** v3.0 全 phase 零写入；Phase 4 SFT-08 强制标记 FROZEN.md + chmod -w。
+**Constraint:** v4.0 全 phase 零写入；Phase 7 必须证明只读引用有效。
 
 ## Accumulated Context
 
 ### Key Decisions
 
-- v2.0 abandoned (2026-05-08)；v3.0 phase numbering reset to 1（v2.0 phases 7-8 归档到 `milestones/v2.0-abandoned/`）
-- v3.0 训练不设 6h 上限（用户决定）；靠 early-stopping callback 收敛（val loss patience=3，max epoch 5）
-- 数据扩量到 10K = v1.0 3K read-only ∪ 教师标 7K 新增（lint pass 后 ≥9000 valid）
-- 训练栈完全沿用 `/dgx-spark-training` v1.0 已验证环境；不引入新 PyTorch/Unsloth/Axolotl
+- v1.0 shipped (2026-05-07): 4B QLoRA → GGUF q4_K_M 端到端闭环，OOD hard-constraint lint 98.7%，部署裁决 GO。
+- v2.0 abandoned (2026-05-08): 标签迁移方向需要纠正；本项目思考结束标签必须是 `</end_working_out>`，不是 `<end_working_out>`。
+- v3.0 stopped (2026-05-10): Phase 1-3 完成并产出扩展数据与 Qwen3.5 split/tokenized artifacts，但 Qwen3.5-9B 本机训练太慢，用户决定停止 9B 路线。
+- v4.0 route: 回到 v1 已验证 `Qwen/Qwen3-4B-Thinking-2507`，复用 v3 新增 lint-pass 数据，但必须用 Qwen3-4B tokenizer 重新 rebuild dataset/split/tokenized artifacts。
+- 训练栈继续沿用 `/dgx-spark-training` 与 `/home/samuel/dgx-spark-setup/.venv`；不引入新 PyTorch、Unsloth、Axolotl 或 vLLM。
+- 全链路协议固定为 `<start_working_out>...</end_working_out><SOLUTION>...</SOLUTION>`；禁止原生 `<think>`/`</think>`。
 
 ### Active Todos
 
-- Run `/gsd-plan-phase 4` — 规划 QLoRA SFT (9B, batch=1, 跑到收敛)
+- Run `/gsd-plan-phase 7` — 规划 4B baseline/label protocol gate。
 
 ### Blockers
 
-- None — Phase 1 无外部依赖
+- None — v4.0 roadmap 已创建；下一步是 Phase 7 planning。
 
 ### Quick Tasks Completed
 
@@ -93,12 +85,12 @@ Plan: 5 of 5
 
 ## Session Continuity
 
-**Next action:** `/gsd-plan-phase 4`
+**Next action:** `/gsd-plan-phase 7`
 
 **Key files:**
 
 - `.planning/PROJECT.md`
-- `.planning/REQUIREMENTS.md` (39 v3.0 REQs + traceability)
-- `.planning/ROADMAP.md` (6 phases)
-- `.planning/research/{SUMMARY,ARCHITECTURE,PITFALLS,STACK,FEATURES}.md`
+- `.planning/REQUIREMENTS.md` (24 v4.0 REQs + traceability)
+- `.planning/ROADMAP.md` (v4.0 phases 7-11)
 - `.planning/milestones/v1.0-ROADMAP.md`
+- `runs/20260507T032419Z/gguf/model.q4_K_M.gguf` (read-only baseline reference)
