@@ -111,6 +111,44 @@ def _resolve_phase3_manifest(run_dir: Path, phase3_manifest: Path) -> Path:
     return phase3_manifest
 
 
+def _latest_candidate_run(root: Path) -> Path:
+    candidates = sorted((root / "runs").glob("v3.0-9B-*"))
+    return candidates[-1] if candidates else root / "runs" / "v3.0-9B-PENDING"
+
+
+def _pending_report(project_root: Path, reason: str, out: str | Path | None = None) -> dict[str, Any]:
+    run_dir = _latest_candidate_run(project_root)
+    manifest_path = run_dir / "sft_manifest.json"
+    manifest: dict[str, Any] = {}
+    if manifest_path.exists():
+        manifest, _errors = _load_json(manifest_path)
+    paths = _artifact_paths(run_dir, manifest, project_root / "data" / "splits" / "v3" / "manifest.json")
+    artifact_manifest = {
+        "paths": {key: str(path) for key, path in paths.items()},
+        "sha256": _hash_artifacts(paths),
+    }
+    failures = [_failure("full_run_pending", reason)]
+    report = {
+        "ok": False,
+        "next_phase_allowed": False,
+        "status": "pending_full_run",
+        "human_needed": True,
+        "requirements_covered": REQUIREMENTS_COVERED,
+        "gates": {req: _gate(False, reason, {}) for req in REQUIREMENTS_COVERED},
+        "fatal_failures": failures,
+        "artifact_manifest": artifact_manifest,
+        "run_root": str(run_dir),
+        "wandb_project": manifest.get("wandb_project"),
+        "adapter_path": str(paths["adapter_path"]),
+        "arrow_hashes": manifest.get("arrow_hashes", {}) if isinstance(manifest.get("arrow_hashes"), dict) else {},
+    }
+    if out is not None:
+        out_path = Path(out)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return report
+
+
 def _artifact_paths(run_dir: Path, manifest: dict[str, Any], phase3_manifest: Path) -> dict[str, Path]:
     phase3_manifest = _resolve_phase3_manifest(run_dir, phase3_manifest)
     dry_report = _first_existing(
@@ -519,15 +557,21 @@ def evaluate_gates(
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Aggregate Phase 4 SFT gate report for SFT-01 through SFT-08")
-    parser.add_argument("--run-dir", required=True)
+    parser.add_argument("--run-dir", default=None, help="Phase 4 run root; omit with --allow-pending to write a fail-closed pending report")
     parser.add_argument("--phase3-manifest", default="data/splits/v3/manifest.json")
     parser.add_argument("--out", default=None)
+    parser.add_argument("--allow-pending", action="store_true", help="Return/write ok=false pending report instead of argparse failure when no run-dir exists")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    report = evaluate_gates(args.run_dir, phase3_manifest=args.phase3_manifest, out=args.out)
+    if args.run_dir is None:
+        if not args.allow_pending:
+            build_parser().error("--run-dir is required unless --allow-pending is set")
+        report = _pending_report(Path.cwd(), "no valid green full-run sft_manifest.json or adapter found", out=args.out)
+    else:
+        report = evaluate_gates(args.run_dir, phase3_manifest=args.phase3_manifest, out=args.out)
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
     return 0 if report.get("ok") is True else 1
 
