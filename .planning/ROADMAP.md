@@ -25,7 +25,12 @@
   2. v1.0 baseline artifact 与 gen_cache 以只读方式挂载或引用，v4.0 gate 能证明 `runs/20260507T032419Z/` 未被写入。
   3. Qwen3-4B tokenizer audit 显示 4 个自定义标签均拆成多个 sub-token，并动态记录 native `<think>`/`</think>` token id 供后续泄漏检查使用。
   4. 标签协议 fixture 能接受完整 `<start_working_out>...</end_working_out><SOLUTION>...</SOLUTION>`，并拒绝错误结束标签 `<end_working_out>` 与任意 native `<think>`/`</think>` 注入。
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 07-01-PLAN.md — 修正共享协议常量、parser、prompt 与协议 fixture gate，接受 `</end_working_out>` 并拒绝 `<end_working_out>`/native think。
+- [ ] 07-02-PLAN.md — 实现 4B model lock、环境只读证据与 v1 baseline read-only snapshot gate。
+- [ ] 07-03-PLAN.md — 实现 Qwen3-4B tokenizer audit，证明四个自定义标签多 sub-token 并动态记录 native think IDs。
+- [ ] 07-04-PLAN.md — 聚合 Phase 7 子门禁并提供固定 argv wrapper，生成 `phase7_gate_report.json`。
 
 ### Phase 8: v3 扩展数据 → 4B dataset rebuild
 **Goal**: 将 v1.0 valid labeled data 与 v3 新增 lint-pass labeled data 合并去重，并用 Qwen3-4B tokenizer 产出隔离的 v4 split/tokenized dataset。
@@ -76,7 +81,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 7. 4B baseline/label protocol gate | 0/0 | Not started | - |
+| 7. 4B baseline/label protocol gate | 0/4 | Planned | - |
 | 8. v3 扩展数据 → 4B dataset rebuild | 0/0 | Not started | - |
 | 9. 4B QLoRA retrain | 0/0 | Not started | - |
 | 10. merge + GGUF export | 0/0 | Not started | - |
