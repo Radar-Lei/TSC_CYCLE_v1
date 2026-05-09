@@ -262,3 +262,270 @@ def test_canonical_hash_dedupe_prefers_v1_rows_and_records_manifest_evidence(tmp
     for path_text in json.dumps(report, ensure_ascii=False).split('"'):
         if path_text.startswith(str(tmp_path)):
             assert not _is_under(Path(path_text), FROZEN_V1_ROOT)
+
+
+class FakeQwen4BTokenizer:
+    eos_token = "<eos>"
+
+    def __init__(self) -> None:
+        self.chat_template_used = False
+        self.calls: list[dict[str, Any]] = []
+        self.checked_untruncated_native_ids: list[list[int]] = []
+
+    def __len__(self) -> int:
+        return 151669
+
+    def apply_chat_template(self, *args: Any, **kwargs: Any) -> None:
+        self.chat_template_used = True
+        raise AssertionError("DATA4B-02/DATA4B-04 must tokenize raw text and never call apply_chat_template")
+
+    def encode(self, text: str, add_special_tokens: bool = False) -> list[int]:
+        assert add_special_tokens is False
+        if text == "<think>":
+            return [151667]
+        if text == "</think>":
+            return [151668]
+        return self._ids(text)
+
+    def __call__(
+        self,
+        text: str,
+        *,
+        add_special_tokens: bool = False,
+        truncation: bool = False,
+        max_length: int | None = None,
+    ) -> dict[str, list[int]]:
+        assert add_special_tokens is False, "DATA4B-04 requires add_special_tokens=False"
+        ids = self._ids(text)
+        self.calls.append(
+            {
+                "add_special_tokens": add_special_tokens,
+                "truncation": truncation,
+                "max_length": max_length,
+                "raw_len": len(ids),
+                "ids": list(ids),
+            }
+        )
+        if not truncation and any(token_id in {151667, 151668} for token_id in ids):
+            self.checked_untruncated_native_ids.append(list(ids))
+        if truncation and max_length is not None:
+            ids = ids[:max_length]
+        return {"input_ids": ids}
+
+    def _ids(self, text: str) -> list[int]:
+        ids: list[int] = []
+        i = 0
+        while i < len(text):
+            if text.startswith("<think>", i):
+                ids.append(151667)
+                i += len("<think>")
+            elif text.startswith("</think>", i):
+                ids.append(151668)
+                i += len("</think>")
+            elif text.startswith("<LONG_2050>", i):
+                ids.extend([2050] * 2050)
+                i += len("<LONG_2050>")
+            else:
+                ids.append(1000 + (ord(text[i]) % 200))
+                i += 1
+        return ids
+
+
+def _phase8_ready_source(tmp_path: Path, rows: list[dict[str, Any]]) -> tuple[Any, Path]:
+    v1_path = _write_jsonl(tmp_path / "src" / "v1.jsonl", [row for row in rows if row["lineage"] == "v1.0"])
+    v3_path = _write_jsonl(tmp_path / "src" / "v3.jsonl", [row for row in rows if row["lineage"] == "v3.0"])
+    config = _phase8_config(tmp_path, v1_path, v3_path, expected_train=6, expected_val=1, expected_ood_val=3)
+    source_report = _dataset_contract()["build_v4_source_dataset"](config)
+    assert source_report["ok"] is True, "DATA4B-01 source preparation must be green before split/tokenize contracts run"
+    return config, Path(source_report["merged_jsonl_path"])
+
+
+def _ten_row_source_rows() -> list[dict[str, Any]]:
+    return [
+        _sample("v1-ood-comparable-0000", lineage="v1.0", split_hint="ood"),
+        _sample("v1-ood-comparable-0001", lineage="v1.0", split_hint="ood"),
+        _sample("v3-extended-ood-0000", lineage="v3.0", split_hint="ood"),
+        _sample("v3-same-0001", lineage="v3.0", split_hint="same_dist"),
+        _sample("v3-same-0002", lineage="v3.0", split_hint="same_dist"),
+        _sample("v3-same-0003", lineage="v3.0", split_hint="same_dist"),
+        _sample("v3-same-0004", lineage="v3.0", split_hint="same_dist"),
+        _sample("v3-same-0005", lineage="v3.0", split_hint="same_dist"),
+        _sample("v3-same-0006", lineage="v3.0", split_hint="same_dist"),
+        _sample("v3-same-0007", lineage="v3.0", split_hint="same_dist"),
+    ]
+
+
+def _open_arrow(path: Path):
+    import pyarrow as pa  # noqa: PLC0415
+
+    with pa.memory_map(str(path), "r") as source:
+        return pa.ipc.open_file(source).read_all()
+
+
+def test_cli_defaults_are_qwen4b_and_v4_isolated_paths() -> None:
+    parser = _dataset_contract()["build_parser"]()
+    args = parser.parse_args([])
+
+    assert args.model_name == EXPECTED_MODEL_ID, "DATA4B-02 must use Qwen/Qwen3-4B-Thinking-2507 by default"
+    assert Path(args.split_dir) == V4_SPLIT_DIR
+    assert Path(args.tokenized_dir) == V4_TOKENIZED_DIR
+    assert Path(args.artifacts_dir) == V4_ARTIFACTS_DIR
+    assert args.seed == 42
+    assert args.max_truncation_rate == 0.05
+    defaults_text = json.dumps(vars(args), ensure_ascii=False)
+    assert "Qwen3.5" not in defaults_text
+    assert "data/v4/phase8/splits" in defaults_text
+    assert "data/v4/phase8/tokenized" in defaults_text
+    assert "artifacts/v4/phase8" in defaults_text
+
+
+def test_split_tokenize_keeps_v1_ood_and_v3_extended_ood_without_overlap(tmp_path: Path) -> None:
+    config, _merged_path = _phase8_ready_source(tmp_path, _ten_row_source_rows())
+    tokenizer = FakeQwen4BTokenizer()
+
+    report = _dataset_contract()["build_v4_splits_and_tokenized"](config, tokenizer=tokenizer)
+
+    assert report["ok"] is True, "DATA4B-02/DATA4B-03 split-tokenize contract should pass on compact fixtures"
+    assert report["requirements_covered"] == ["DATA4B-02", "DATA4B-03", "DATA4B-04", "DATA4B-05"]
+    assert report["split_counts"] == {"train": 6, "val": 1, "ood_val": 3}
+    assert report["seed"] == 42
+    assert report["v1_ood_alignment"]["all_v1_ood_in_ood_val"] is True
+    assert set(report["v1_ood_alignment"]["v1_ood_sample_ids"]) == {"v1-ood-comparable-0000", "v1-ood-comparable-0001"}
+    assert report["v3_extended_ood"]["selected_count"] == 1
+    assert set(report["v3_extended_ood"]["sample_ids"]) == {"v3-extended-ood-0000"}
+
+    split_ids = {name: set(ids) for name, ids in report["split_ids"].items()}
+    assert split_ids["train"].isdisjoint(split_ids["val"])
+    assert split_ids["train"].isdisjoint(split_ids["ood_val"])
+    assert split_ids["val"].isdisjoint(split_ids["ood_val"])
+    assert tokenizer.chat_template_used is False
+    assert all(call["add_special_tokens"] is False for call in tokenizer.calls)
+
+    for split_name, expected_count in {"train": 6, "val": 1, "ood_val": 3}.items():
+        arrow_path = tmp_path / V4_TOKENIZED_DIR / f"{split_name}.arrow"
+        assert arrow_path.exists()
+        assert not _is_under(arrow_path, FROZEN_V1_ROOT)
+        table = _open_arrow(arrow_path)
+        assert table.num_rows == expected_count
+        assert {"sample_id", "input_ids", "attention_mask", "labels", "raw_length", "truncated"} <= set(table.column_names)
+
+
+def test_tokenization_checks_native_think_ids_before_truncation_and_blocks_leaks(tmp_path: Path) -> None:
+    rows = _ten_row_source_rows()
+    rows[-1]["result"]["reasoning"] = "<LONG_2050><think>"
+    v1_path = _write_jsonl(tmp_path / "native" / "v1.jsonl", [row for row in rows if row["lineage"] == "v1.0"])
+    v3_path = _write_jsonl(tmp_path / "native" / "v3.jsonl", [row for row in rows if row["lineage"] == "v3.0"])
+    config = _phase8_config(tmp_path / "native", v1_path, v3_path, expected_train=6, expected_val=1, expected_ood_val=3)
+    tokenizer = FakeQwen4BTokenizer()
+
+    report = _dataset_contract()["build_v4_splits_and_tokenized"](config, tokenizer=tokenizer)
+
+    assert report["ok"] is False, "DATA4B-04 must fail closed when native think token IDs [151667, 151668] appear"
+    assert report["gates"]["native_think_token_ids_checked_before_truncation"]["ok"] is True
+    assert report["native_think_token_ids"] == [151667, 151668]
+    assert report["gates"]["native_think_token_leak"]["ok"] is False
+    assert tokenizer.checked_untruncated_native_ids, "native_think_token_ids must be checked on untruncated IDs before max_seq_length truncation"
+    assert not (tmp_path / "native" / V4_TOKENIZED_DIR / "train.arrow").exists()
+
+
+def test_truncation_rate_above_five_percent_fails_closed(tmp_path: Path) -> None:
+    rows = _ten_row_source_rows()
+    rows[3]["result"]["reasoning"] = "<LONG_2050>"
+    config, _merged_path = _phase8_ready_source(tmp_path, rows)
+    tokenizer = FakeQwen4BTokenizer()
+
+    report = _dataset_contract()["build_v4_splits_and_tokenized"](config, tokenizer=tokenizer)
+
+    assert report["ok"] is False, "DATA4B-04 truncation rate must be <= 5%"
+    assert report["gates"]["truncation_rate"]["ok"] is False
+    assert report["truncation"]["over_length_count"] == 1
+    assert report["truncation"]["over_length_rate"] > 0.05
+    assert report["truncation"]["max_allowed_rate"] == 0.05
+    assert tokenizer.chat_template_used is False
+    assert not (tmp_path / V4_TOKENIZED_DIR / "train.arrow").exists()
+
+
+def _phase8_report_contract():
+    from tsc_cycle.v4_gates.phase8_report import evaluate_phase8_report  # noqa: PLC0415
+
+    return evaluate_phase8_report
+
+
+def _green_phase8_gate_files(tmp_path: Path, *, include_dataset_card_v4: bool = True) -> dict[str, Path]:
+    phase7_report = _write_json(
+        tmp_path / "artifacts" / "v4" / "phase7" / "phase7_gate_report.json",
+        {"ok": True, "next_phase_allowed": True, "native_think_token_ids": [151667, 151668], "requirements_covered": ["TAG-04"]},
+    )
+    source_manifest = _write_json(
+        tmp_path / V4_ARTIFACTS_DIR / "source_manifest.json",
+        {"ok": True, "requirements_covered": ["DATA4B-01"], "source_counts": {"v1_valid": 3, "v3_new_lint_pass": 7}},
+    )
+    cleaning_report = _write_json(
+        tmp_path / V4_ARTIFACTS_DIR / "cleaning_report.json",
+        {"ok": True, "requirements_covered": ["DATA4B-01"], "malformed_think_close_replacements": 1},
+    )
+    rebuild_report = _write_json(
+        tmp_path / V4_ARTIFACTS_DIR / "rebuild_report.json",
+        {
+            "ok": True,
+            "requirements_covered": ["DATA4B-02", "DATA4B-03", "DATA4B-04", "DATA4B-05"],
+            "split_counts": {"train": 6, "val": 1, "ood_val": 3},
+            "native_think_token_ids": [151667, 151668],
+            "truncation": {"over_length_rate": 0.0, "max_allowed_rate": 0.05},
+        },
+    )
+    card_text = "# Dataset Card\n\n"
+    if include_dataset_card_v4:
+        card_text += "## v4 Phase 8 Dataset Rebuild\n\nSources, label normalization, split hashes, v1/v3/v4 artifact boundaries.\n"
+    dataset_card = tmp_path / "data" / "dataset_card.md"
+    dataset_card.parent.mkdir(parents=True, exist_ok=True)
+    dataset_card.write_text(card_text, encoding="utf-8")
+    return {
+        "phase7_report": phase7_report,
+        "source_manifest": source_manifest,
+        "cleaning_report": cleaning_report,
+        "rebuild_report": rebuild_report,
+        "dataset_card": dataset_card,
+    }
+
+
+def test_aggregate_phase8_report_allows_phase9_only_when_all_gates_are_green(tmp_path: Path) -> None:
+    paths = _green_phase8_gate_files(tmp_path)
+    evaluate_phase8_report = _phase8_report_contract()
+
+    report = evaluate_phase8_report(**paths, out_path=tmp_path / V4_ARTIFACTS_DIR / "phase8_gate_report.json")
+
+    assert report["ok"] is True
+    assert report["next_phase_allowed"] is True
+    assert report["requirements_covered"] == ["DATA4B-01", "DATA4B-02", "DATA4B-03", "DATA4B-04", "DATA4B-05"]
+    assert report["gates"]["phase7_next_phase_allowed"]["ok"] is True
+    assert report["gates"]["source_manifest"]["ok"] is True
+    assert report["gates"]["cleaning_report"]["ok"] is True
+    assert report["gates"]["rebuild_report"]["ok"] is True
+    assert report["gates"]["dataset_card_v4_section"]["ok"] is True
+    assert (tmp_path / V4_ARTIFACTS_DIR / "phase8_gate_report.json").exists()
+
+
+def test_aggregate_phase8_report_blocks_when_dataset_card_lacks_v4_section(tmp_path: Path) -> None:
+    paths = _green_phase8_gate_files(tmp_path, include_dataset_card_v4=False)
+    evaluate_phase8_report = _phase8_report_contract()
+
+    report = evaluate_phase8_report(**paths, out_path=tmp_path / V4_ARTIFACTS_DIR / "phase8_gate_report.json")
+
+    assert report["ok"] is False
+    assert report["next_phase_allowed"] is False, "DATA4B-05 must block Phase 9 when dataset card lacks the v4 Phase 8 section"
+    assert report["gates"]["dataset_card_v4_section"]["ok"] is False
+    assert any(failure["gate"] == "dataset_card_v4_section" for failure in report["fatal_failures"])
+
+
+def test_aggregate_phase8_report_blocks_when_phase7_handoff_is_not_allowed(tmp_path: Path) -> None:
+    paths = _green_phase8_gate_files(tmp_path)
+    _write_json(paths["phase7_report"], {"ok": True, "next_phase_allowed": False, "native_think_token_ids": [151667, 151668]})
+    evaluate_phase8_report = _phase8_report_contract()
+
+    report = evaluate_phase8_report(**paths, out_path=tmp_path / V4_ARTIFACTS_DIR / "phase8_gate_report.json")
+
+    assert report["ok"] is False
+    assert report["next_phase_allowed"] is False
+    assert report["gates"]["phase7_next_phase_allowed"]["ok"] is False
+    assert set(report["requirements_expected"]) == {"DATA4B-01", "DATA4B-02", "DATA4B-03", "DATA4B-04", "DATA4B-05"}
