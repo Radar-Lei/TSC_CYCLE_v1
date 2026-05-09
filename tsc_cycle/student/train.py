@@ -50,8 +50,9 @@ from tsc_cycle.student.sft_v3 import (
 )
 from tsc_cycle.tokenizer_check import check_tokenizer, native_think_token_ids
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 TRAIN_MODEL_NAME = "Qwen/Qwen3.5-9B"
-V1_ROOT = Path("runs/20260507T032419Z")
+V1_ROOT = PROJECT_ROOT / "runs" / "20260507T032419Z"
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -234,6 +235,16 @@ def _state_value(trainer_state: Any, key: str, default: Any = None) -> Any:
     return getattr(trainer_state, key, default)
 
 
+def _jsonable(value: Any) -> Any:
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, dict):
+        return {str(key): _jsonable(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_jsonable(item) for item in value]
+    return value
+
+
 def _trainer_state_payload(trainer_state: Any) -> dict[str, Any]:
     return {
         "epoch": _state_value(trainer_state, "epoch"),
@@ -268,6 +279,8 @@ def write_sft_manifest(
     lora_coverage_path: Path,
     dry_run_report_path: Path | None = None,
     input_arrow_hashes: dict[str, str] | None = None,
+    training_args: dict[str, Any] | None = None,
+    lora_config: dict[str, Any] | None = None,
 ) -> Path:
     state_payload = _trainer_state_payload(trainer_state)
     stop_reason = _full_stop_reason(state_payload) if mode == "full" else "completed"
@@ -300,6 +313,8 @@ def write_sft_manifest(
         "ok": ok,
         "mode": mode,
         "run_root": str(run_root),
+        "training_args": _jsonable(training_args or locked_training_arguments_kwargs(run_root / mode)),
+        "lora_config": _jsonable(lora_config or locked_lora_config_kwargs()),
         "adapter_path": str(adapter_path),
         "best_model_checkpoint": state_payload.get("best_model_checkpoint"),
         "best_metric": state_payload.get("best_metric"),
@@ -345,6 +360,8 @@ def write_mode_manifest(run_root: Path, mode: str, *, elapsed_seconds: float, gr
         frozen_evidence={"ok": False, "write_bits_removed": False},
         adapter_path=run_root / "adapter",
         lora_coverage_path=run_root / "reports" / "lora_coverage.json",
+        training_args=locked_training_arguments_kwargs(run_root / mode),
+        lora_config=locked_lora_config_kwargs(),
     )
 
 
@@ -387,6 +404,9 @@ def main(argv: list[str] | None = None) -> int:
         data_dir=Path(args.data_dir),
         max_steps=args.max_steps,
     )
+    targs_kwargs = locked_training_arguments_kwargs(run_root / args.mode)
+    if args.max_steps > 0:
+        targs_kwargs["max_steps"] = args.max_steps
 
     print(f"[BOOT] output_root={run_root} mode={args.mode} model={MODEL_NAME} bs=1x16")
     started = time.time()
@@ -414,6 +434,8 @@ def main(argv: list[str] | None = None) -> int:
         lora_coverage_path=run_root / "reports" / "lora_coverage.json",
         dry_run_report_path=dry_run_report,
         input_arrow_hashes=arrow_hashes(args.data_dir),
+        training_args=targs_kwargs,
+        lora_config=locked_lora_config_kwargs(),
     )
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     with (run_root / "train_log.jsonl").open("a", encoding="utf-8") as f:

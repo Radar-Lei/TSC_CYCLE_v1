@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT=/home/samuel/TSC_CYCLE
+cd "$ROOT"
 PY=/home/samuel/TSC_CYCLE/.venv/bin/python
 RUN_SAFE="$ROOT/scripts/dgx_spark/run_safe.sh"
 ENV_SH="$ROOT/scripts/dgx_spark/env.sh"
@@ -87,12 +88,6 @@ trainer_cmd=(
 
 "$ROOT/scripts/dgx_spark/run_safe.sh" 100G -- "${trainer_cmd[@]}"
 
-end_epoch=$(date +%s)
-elapsed_seconds=$((end_epoch - start_epoch))
-if [ "$elapsed_seconds" -gt 3600 ]; then
-  fail "dry-run exceeded 3600 seconds: ${elapsed_seconds}"
-fi
-
 require_file "$GRAD_GATE"
 
 "$PY" -m tsc_cycle.v3_gates.sft_dry_run_v3 \
@@ -103,8 +98,14 @@ require_file "$GRAD_GATE"
   --ood-index "$OOD_INDEX" \
   --evidence-out "$EVIDENCE_JSONL" \
   --report-out "$DRY_REPORT" \
-  --elapsed-seconds "$elapsed_seconds" \
+  --elapsed-seconds "$(($(date +%s) - start_epoch))" \
   --sample-count 500
+
+end_epoch=$(date +%s)
+elapsed_seconds=$((end_epoch - start_epoch))
+if [ "$elapsed_seconds" -gt 3600 ]; then
+  fail "dry-run exceeded 3600 seconds including OOD generation: ${elapsed_seconds}"
+fi
 
 "$PY" - "$DRY_REPORT" <<'PY'
 import json

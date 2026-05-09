@@ -68,3 +68,28 @@ def test_sft_04_d07_adapter_or_checkpoint_existence_alone_cannot_false_green() -
         "ood_hard_constraint_pass_rate",
         "grad_gate",
     }
+
+
+def test_sft_04_d07_dry_run_gate_counts_generation_time_in_one_hour_budget() -> None:
+    from tsc_cycle.v3_gates.sft_dry_run_v3 import evaluate_dry_run_gate  # noqa: PLC0415
+
+    result = evaluate_dry_run_gate(_passing_report(elapsed_seconds=3500, wall_clock_generation_seconds=101))
+
+    assert result["ok"] is False
+    assert result["full_run_allowed"] is False
+    assert any(item["gate"] == "elapsed_seconds" for item in result["fatal_failures"])
+
+
+def test_sft_04_d07_raw_solution_lint_rejects_non_integer_outputs() -> None:
+    from tsc_cycle.v3_gates.sft_dry_run_v3 import parse_solution_block_raw  # noqa: PLC0415
+    from tsc_cycle.constraint_lint import validate  # noqa: PLC0415
+
+    raw = parse_solution_block_raw('<start_working_out>x<end_working_out><SOLUTION>{"1": 20.9}</SOLUTION>')
+    lint = validate(
+        {"prediction": {"phase_waits": [{"phase_id": 1, "min_green": 20, "max_green": 45}]}},
+        raw,
+    )
+
+    assert raw == {"1": 20.9}
+    assert lint.ok is False
+    assert any(item["kind"] == "not_integer" for item in lint.violations)

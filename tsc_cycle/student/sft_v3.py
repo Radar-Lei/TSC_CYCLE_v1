@@ -366,17 +366,15 @@ def _layer_index(name: str) -> int | None:
 
 
 def build_lora_coverage_report(model: Any) -> dict[str, Any]:
-    module_names = [name for name, _module in model.named_modules()]
     trainable_names: list[str] = []
     if hasattr(model, "named_parameters"):
-        trainable_names = sorted(name for name, param in model.named_parameters() if getattr(param, "requires_grad", False))
-    lora_module_names = sorted(name for name in module_names if "lora" in name.lower())
-    trainable_lora_module_names = sorted({name.rsplit(".", 1)[0] for name in trainable_names if "lora" in name.lower()} | set(lora_module_names))
+        trainable_names = sorted(name for name, param in model.named_parameters() if getattr(param, "requires_grad", False) and "lora" in name.lower())
+    trainable_lora_module_names = sorted({name.rsplit(".lora_", 1)[0] for name in trainable_names if ".lora_" in name})
 
     gated_layers: dict[int, set[str]] = {}
     full_layers: dict[int, set[str]] = {}
     projection_names: set[str] = set()
-    for name in [*module_names, *trainable_lora_module_names]:
+    for name in trainable_lora_module_names:
         lowered = name.lower()
         layer = _layer_index(name)
         if layer is None:
@@ -399,10 +397,18 @@ def build_lora_coverage_report(model: Any) -> dict[str, Any]:
 
     return {
         "ok": not fatal_failures,
+        "r": 64,
+        "alpha": 64,
+        "dropout": 0.0,
+        "target_modules": "all-linear",
         "expected_gated_deltanet_layers": 24,
         "expected_full_attention_layers": 8,
         "observed_gated_deltanet_layers": len(gated_layers),
         "observed_full_attention_layers": len(full_layers),
+        "projection_coverage": {
+            "gated_deltanet": {str(idx): sorted(values) for idx, values in sorted(gated_layers.items())},
+            "full_attention": {str(idx): sorted(values) for idx, values in sorted(full_layers.items())},
+        },
         "gated_deltanet_layer_projections": {str(idx): sorted(values) for idx, values in sorted(gated_layers.items())},
         "full_attention_layer_projections": {str(idx): sorted(values) for idx, values in sorted(full_layers.items())},
         "projection_names": sorted(projection_names),

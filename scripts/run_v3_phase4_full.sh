@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT=/home/samuel/TSC_CYCLE
+cd "$ROOT"
 PY=/home/samuel/TSC_CYCLE/.venv/bin/python
 RUN_SAFE="$ROOT/scripts/dgx_spark/run_safe.sh"
 RUN_SAFE_CONTRACT="run_safe.sh 100G --"

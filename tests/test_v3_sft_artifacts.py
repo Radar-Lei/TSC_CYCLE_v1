@@ -27,6 +27,7 @@ def _passing_manifest(tmp_path: Path) -> Path:
     full_report = run_root / "reports" / "full_run.json"
     adapter = run_root / "adapter"
     adapter_file = adapter / "adapter_model.safetensors"
+    adapter_config = adapter / "adapter_config.json"
     best_checkpoint = run_root / "full" / "checkpoint-800"
     best_checkpoint_file = best_checkpoint / "adapter_model.safetensors"
     lora_coverage = run_root / "reports" / "lora_coverage.json"
@@ -44,6 +45,7 @@ def _passing_manifest(tmp_path: Path) -> Path:
     frozen_root.mkdir(parents=True, exist_ok=True)
     train_arrow.parent.mkdir(parents=True, exist_ok=True)
     adapter_file.write_text("adapter", encoding="utf-8")
+    adapter_config.write_text("{}\n", encoding="utf-8")
     best_checkpoint_file.write_text("best", encoding="utf-8")
     frozen_marker.write_text("frozen", encoding="utf-8")
     train_arrow.write_text("train", encoding="utf-8")
@@ -87,7 +89,7 @@ def _passing_manifest(tmp_path: Path) -> Path:
             "projection_coverage": {"gated_deltanet": "all", "full_attention": "all"},
         },
     )
-    _write_json(grad_gate, {"ok": True, "losses_finite": True, "grad_norm_p99": 1.2, "observed_steps": 200})
+    _write_json(grad_gate, {"ok": True, "losses_finite": True, "grad_norm_finite": True, "grad_norm_p99": 1.2, "observed_steps": 200})
     _write_json(
         phase3_manifest,
         {
@@ -233,7 +235,7 @@ def test_full_manifest_fails_closed_without_early_stopping(tmp_path: Path) -> No
             "best_model_checkpoint": str(run_root / "full" / "checkpoint-800"),
             "best_metric": 0.42,
         },
-        grad_gate={"ok": True, "status": "pass", "observed_steps": 200, "grad_norm_p99": 1.2, "fatal_failures": []},
+        grad_gate={"ok": True, "status": "pass", "observed_steps": 200, "grad_norm_p99": 1.2, "loss_finite": True, "grad_norm_finite": True, "fatal_failures": []},
         frozen_evidence={"ok": True, "write_bits_removed": True, "pre": {"content_sha256": "a" * 64}, "post": {"content_sha256": "a" * 64}},
         adapter_path=adapter,
         lora_coverage_path=lora_coverage,
@@ -260,12 +262,29 @@ def test_full_manifest_is_green_only_with_early_stopping_evidence(tmp_path: Path
     best_checkpoint = run_root / "full" / "checkpoint-800"
     adapter.mkdir(parents=True)
     best_checkpoint.mkdir(parents=True)
+    (adapter / "adapter_model.safetensors").write_text("adapter", encoding="utf-8")
+    (adapter / "adapter_config.json").write_text("{}\n", encoding="utf-8")
+    (best_checkpoint / "adapter_model.safetensors").write_text("best", encoding="utf-8")
     dry_report = run_root / "dry_run_report.json"
     lora_coverage = run_root / "reports" / "lora_coverage.json"
     grad_gate_path = run_root / "reports" / "full" / "grad_gate.json"
-    _write_json(dry_report, {"ok": True, "full_run_allowed": True, "sample_count": 500})
-    _write_json(lora_coverage, {"ok": True})
-    _write_json(grad_gate_path, {"ok": True, "status": "pass", "observed_steps": 200, "grad_norm_p99": 1.2, "fatal_failures": []})
+    _write_json(dry_report, {"ok": True, "full_run_allowed": True, "sample_count": 500, "ood_hard_constraint_pass_rate": 0.96})
+    _write_json(
+        lora_coverage,
+        {
+            "ok": True,
+            "r": 64,
+            "alpha": 64,
+            "dropout": 0.0,
+            "target_modules": "all-linear",
+            "expected_gated_deltanet_layers": 24,
+            "observed_gated_deltanet_layers": 24,
+            "expected_full_attention_layers": 8,
+            "observed_full_attention_layers": 8,
+            "projection_coverage": {"gated_deltanet": "all", "full_attention": "all"},
+        },
+    )
+    _write_json(grad_gate_path, {"ok": True, "status": "pass", "observed_steps": 200, "grad_norm_p99": 1.2, "loss_finite": True, "grad_norm_finite": True, "fatal_failures": []})
 
     manifest_path = write_sft_manifest(
         run_root=run_root,
@@ -278,7 +297,7 @@ def test_full_manifest_is_green_only_with_early_stopping_evidence(tmp_path: Path
             "best_metric": 0.42,
             "epoch": 3.5,
         },
-        grad_gate={"ok": True, "status": "pass", "observed_steps": 200, "grad_norm_p99": 1.2, "fatal_failures": []},
+        grad_gate={"ok": True, "status": "pass", "observed_steps": 200, "grad_norm_p99": 1.2, "loss_finite": True, "grad_norm_finite": True, "fatal_failures": []},
         frozen_evidence={"ok": True, "write_bits_removed": True, "pre": {"content_sha256": "a" * 64}, "post": {"content_sha256": "a" * 64}},
         adapter_path=adapter,
         lora_coverage_path=lora_coverage,
@@ -390,3 +409,66 @@ def test_aggregate_report_cli_writes_report_with_adapter_handoff(tmp_path: Path)
     assert payload["next_phase_allowed"] is True
     assert payload["artifact_manifest"]["paths"]["adapter_path"].endswith("adapter")
     assert payload["requirements_covered"] == REQUIREMENTS_COVERED
+
+
+def test_aggregate_report_fails_without_machine_training_args_or_lora_config(tmp_path: Path) -> None:
+    from tsc_cycle.v3_gates.sft_report_v3 import evaluate_gates  # noqa: PLC0415
+
+    manifest_path = _passing_manifest(tmp_path)
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    payload.pop("training_args")
+    _write_json(manifest_path, payload)
+    coverage_path = Path(payload["lora_coverage_path"])
+    coverage = json.loads(coverage_path.read_text(encoding="utf-8"))
+    coverage.pop("r")
+    _write_json(coverage_path, coverage)
+
+    result = evaluate_gates(manifest_path.parent)
+
+    assert result["ok"] is False
+    assert any(item["gate"] == "SFT-01" for item in result["fatal_failures"])
+    assert any(item["gate"] == "SFT-02" for item in result["fatal_failures"])
+    assert any(item["gate"] == "SFT-03" for item in result["fatal_failures"])
+
+
+def test_aggregate_report_fails_when_dry_run_pass_rate_missing(tmp_path: Path) -> None:
+    from tsc_cycle.v3_gates.sft_report_v3 import evaluate_gates  # noqa: PLC0415
+
+    manifest_path = _passing_manifest(tmp_path)
+    dry_path = Path(json.loads(manifest_path.read_text(encoding="utf-8"))["dry_run_report"])
+    dry = json.loads(dry_path.read_text(encoding="utf-8"))
+    dry.pop("ood_hard_constraint_pass_rate")
+    _write_json(dry_path, dry)
+
+    result = evaluate_gates(manifest_path.parent)
+
+    assert result["ok"] is False
+    assert any(item["gate"] == "SFT-04" for item in result["fatal_failures"])
+
+
+def test_aggregate_report_fails_when_grad_gate_lacks_finite_flags(tmp_path: Path) -> None:
+    from tsc_cycle.v3_gates.sft_report_v3 import evaluate_gates  # noqa: PLC0415
+
+    manifest_path = _passing_manifest(tmp_path)
+    grad_path = Path(json.loads(manifest_path.read_text(encoding="utf-8"))["grad_gate_path"])
+    grad = json.loads(grad_path.read_text(encoding="utf-8"))
+    grad.pop("losses_finite")
+    _write_json(grad_path, grad)
+
+    result = evaluate_gates(manifest_path.parent)
+
+    assert result["ok"] is False
+    assert any(item["gate"] == "SFT-06" for item in result["fatal_failures"])
+
+
+def test_aggregate_report_fails_when_adapter_or_checkpoint_weight_files_missing(tmp_path: Path) -> None:
+    from tsc_cycle.v3_gates.sft_report_v3 import evaluate_gates  # noqa: PLC0415
+
+    manifest_path = _passing_manifest(tmp_path)
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    (Path(payload["adapter_path"]) / "adapter_model.safetensors").unlink()
+
+    result = evaluate_gates(manifest_path.parent)
+
+    assert result["ok"] is False
+    assert any(item["gate"] == "SFT-05" for item in result["fatal_failures"])

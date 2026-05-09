@@ -18,7 +18,7 @@ from typing import Any, Iterable
 
 from tsc_cycle import constraint_lint
 from tsc_cycle.constraint_lint import validate
-from tsc_cycle.prompt_builder import build_assistant_prefill, build_user_prompt, parse_assistant_output
+from tsc_cycle.prompt_builder import TAG_SOLUTION_CLOSE, TAG_SOLUTION_OPEN, build_assistant_prefill, build_user_prompt, parse_assistant_output
 from tsc_cycle.student.sft_v3 import evaluate_grad_gate, validate_run_root
 from tsc_cycle.tokenizer_check import native_think_token_ids
 
@@ -63,6 +63,20 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
                 raise ValueError(f"JSONL row must be an object {path}:{line_no}")
             rows.append(payload)
     return rows
+
+
+def parse_solution_block_raw(text: str) -> dict[str, Any] | None:
+    if TAG_SOLUTION_OPEN not in text or TAG_SOLUTION_CLOSE not in text:
+        return None
+    start = text.index(TAG_SOLUTION_OPEN) + len(TAG_SOLUTION_OPEN)
+    end = text.index(TAG_SOLUTION_CLOSE, start)
+    try:
+        payload = json.loads(text[start:end].strip())
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    return {str(key): value for key, value in payload.items()}
 
 
 def _record_input(record: dict[str, Any]) -> dict[str, Any]:
@@ -138,14 +152,22 @@ def evaluate_dry_run_gate(report: dict[str, Any]) -> dict[str, Any]:
         fatal_failures.append(_failure("ood_hard_constraint_pass_rate", f"OOD hard-constraint pass rate {pass_rate_value} < 0.95"))
 
     elapsed_value = report.get("elapsed_seconds", 0)
+    generation_value = report.get("wall_clock_generation_seconds", 0)
     try:
         elapsed_seconds = float(elapsed_value)
+        generation_seconds = float(generation_value)
     except (TypeError, ValueError):
         elapsed_seconds = math.inf
-    elapsed_ok = math.isfinite(elapsed_seconds) and elapsed_seconds <= 3600
-    gates["elapsed_seconds"] = _gate(elapsed_ok, expected="<=3600", observed=elapsed_value)
+        generation_seconds = math.inf
+    total_elapsed_seconds = elapsed_seconds + generation_seconds
+    elapsed_ok = math.isfinite(total_elapsed_seconds) and total_elapsed_seconds <= 3600
+    gates["elapsed_seconds"] = _gate(
+        elapsed_ok,
+        expected="training + OOD generation <=3600",
+        observed={"training_seconds": elapsed_value, "generation_seconds": generation_value, "total_seconds": total_elapsed_seconds},
+    )
     if not elapsed_ok:
-        fatal_failures.append(_failure("elapsed_seconds", f"dry-run elapsed_seconds {elapsed_value} exceeds 3600"))
+        fatal_failures.append(_failure("elapsed_seconds", f"dry-run total elapsed_seconds {total_elapsed_seconds} exceeds 3600"))
 
     adapter_recorded = bool(report.get("dry_run_adapter_recorded") or report.get("dry_run_adapter_path") or report.get("adapter_path") or report.get("checkpoint_path"))
     gates["dry_run_adapter_recorded"] = _gate(adapter_recorded, expected=True, observed=adapter_recorded)
@@ -204,7 +226,7 @@ def evaluate_dry_run_gate(report: dict[str, Any]) -> dict[str, Any]:
         "requirements_covered": REQUIREMENTS_COVERED,
         "sample_count": sample_count,
         "ood_hard_constraint_pass_rate": pass_rate if math.isfinite(pass_rate) else pass_rate_value,
-        "elapsed_seconds": elapsed_seconds if math.isfinite(elapsed_seconds) else elapsed_value,
+        "elapsed_seconds": total_elapsed_seconds if math.isfinite(total_elapsed_seconds) else elapsed_value,
         "grad_gate_path": str(report.get("grad_gate_path", "")),
         "grad_gate_status": "pass" if grad_gate_ok else "fail",
         "grad_norm_p99": grad_norm_p99,
@@ -273,8 +295,10 @@ def generate_and_lint_ood(
         native_leak = bool(set(generated_ids) & native_ids) or "<think>" in generated_text or "</think>" in generated_text
         if native_leak:
             native_leak_count += 1
-        _reasoning, parsed_solution = parse_assistant_output(build_assistant_prefill() + generated_text)
-        lint_result = validate(sample["prediction_input"], parsed_solution)
+        full_output = build_assistant_prefill() + generated_text
+        _reasoning, _parsed_solution = parse_assistant_output(full_output)
+        raw_solution = parse_solution_block_raw(full_output)
+        lint_result = validate(sample["prediction_input"], raw_solution)
         if lint_result.ok and not native_leak:
             pass_count += 1
         for violation in lint_result.violations:
@@ -285,7 +309,7 @@ def generate_and_lint_ood(
             "prediction_input": sample["prediction_input"],
             "generated_text": generated_text,
             "generated_token_ids": generated_ids,
-            "parsed_solution": parsed_solution,
+            "parsed_solution": raw_solution,
             "native_think_leak": native_leak,
             "lint_result": {"ok": lint_result.ok and not native_leak, "violations": lint_result.violations},
         }

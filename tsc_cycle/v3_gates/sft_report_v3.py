@@ -237,37 +237,12 @@ def _read_path_payload(path: Path) -> dict[str, Any]:
 
 
 def _check_lora_coverage(coverage: dict[str, Any], manifest: dict[str, Any]) -> tuple[bool, str | None, dict[str, Any]]:
-    if not coverage.get("r") and coverage.get("ok") is True and manifest.get("ok") is True:
-        coverage = {
-            **coverage,
-            "r": 64,
-            "alpha": 64,
-            "dropout": 0.0,
-            "target_modules": "all-linear",
-            "expected_gated_deltanet_layers": 24,
-            "observed_gated_deltanet_layers": EXPECTED_GATED_DELTANET_LAYERS,
-            "expected_full_attention_layers": 8,
-            "observed_full_attention_layers": EXPECTED_FULL_ATTENTION_LAYERS,
-            "projection_coverage": {"manifest_minimal": True},
-        }
-    if not coverage and manifest.get("ok") is True and manifest.get("lora_coverage_path"):
-        coverage = {
-            "ok": True,
-            "r": 64,
-            "alpha": 64,
-            "dropout": 0.0,
-            "target_modules": "all-linear",
-            "expected_gated_deltanet_layers": 24,
-            "observed_gated_deltanet_layers": EXPECTED_GATED_DELTANET_LAYERS,
-            "expected_full_attention_layers": 8,
-            "observed_full_attention_layers": EXPECTED_FULL_ATTENTION_LAYERS,
-            "projection_coverage": {"manifest_minimal": True},
-        }
+    lora_config = manifest.get("lora_config") if isinstance(manifest.get("lora_config"), dict) else {}
     data = {
-        "r": coverage.get("r", manifest.get("r", manifest.get("lora_r"))),
-        "alpha": coverage.get("alpha", coverage.get("lora_alpha", manifest.get("alpha", manifest.get("lora_alpha")))),
-        "dropout": coverage.get("dropout", coverage.get("lora_dropout", manifest.get("dropout", manifest.get("lora_dropout")))),
-        "target_modules": coverage.get("target_modules", manifest.get("target_modules")),
+        "r": coverage.get("r", lora_config.get("r")),
+        "alpha": coverage.get("alpha", coverage.get("lora_alpha", lora_config.get("lora_alpha"))),
+        "dropout": coverage.get("dropout", coverage.get("lora_dropout", lora_config.get("lora_dropout"))),
+        "target_modules": coverage.get("target_modules", lora_config.get("target_modules")),
         "expected_gated_deltanet_layers": coverage.get("expected_gated_deltanet_layers"),
         "observed_gated_deltanet_layers": coverage.get("observed_gated_deltanet_layers"),
         "expected_full_attention_layers": coverage.get("expected_full_attention_layers"),
@@ -294,22 +269,11 @@ def _check_lora_coverage(coverage: dict[str, Any], manifest: dict[str, Any]) -> 
 
 def _training_args(manifest: dict[str, Any]) -> dict[str, Any]:
     args = manifest.get("training_args")
-    if isinstance(args, dict):
-        return args
-    return manifest
+    return args if isinstance(args, dict) else {}
 
 
 def _check_sft02(manifest: dict[str, Any]) -> tuple[bool, str | None, dict[str, Any]]:
     args = _training_args(manifest)
-    if not isinstance(manifest.get("training_args"), dict) and manifest.get("ok") is True:
-        args = {
-            **args,
-            "learning_rate": 1e-4,
-            "lr_scheduler_type": "cosine",
-            "warmup_ratio": 0.03,
-            "max_grad_norm": 0.5,
-            "optim": "adamw_torch_fused",
-        }
     data = {
         "learning_rate": args.get("learning_rate"),
         "lr_scheduler_type": args.get("lr_scheduler_type"),
@@ -323,14 +287,6 @@ def _check_sft02(manifest: dict[str, Any]) -> tuple[bool, str | None, dict[str, 
 
 def _check_sft03(manifest: dict[str, Any]) -> tuple[bool, str | None, dict[str, Any]]:
     args = _training_args(manifest)
-    if not isinstance(manifest.get("training_args"), dict) and manifest.get("ok") is True:
-        args = {
-            **args,
-            "per_device_train_batch_size": 1,
-            "gradient_accumulation_steps": 16,
-            "packing": False,
-            "gradient_checkpointing_kwargs": {"use_reentrant": False},
-        }
     grad_ckpt = args.get("gradient_checkpointing_kwargs") if isinstance(args.get("gradient_checkpointing_kwargs"), dict) else {}
     data = {
         "per_device_train_batch_size": args.get("per_device_train_batch_size"),
@@ -350,10 +306,24 @@ def _check_sft04(dry_report: dict[str, Any], dry_path: Path) -> tuple[bool, str 
         "sample_count": dry_report.get("sample_count"),
         "ood_hard_constraint_pass_rate": dry_report.get("ood_hard_constraint_pass_rate"),
     }
-    pass_rate_present = dry_report.get("ood_hard_constraint_pass_rate") is not None
-    pass_rate_ok = (not pass_rate_present) or float(dry_report.get("ood_hard_constraint_pass_rate", 0.0)) >= 0.95
+    try:
+        pass_rate = float(dry_report.get("ood_hard_constraint_pass_rate"))
+    except (TypeError, ValueError):
+        pass_rate = -1.0
+    pass_rate_ok = pass_rate >= 0.95
     ok = dry_path.exists() and dry_report.get("ok") is True and dry_report.get("full_run_allowed") is True and dry_report.get("sample_count") == 500 and pass_rate_ok
     return ok, None if ok else "SFT-04 requires dry-run ok=true/full_run_allowed=true, sample_count=500, pass_rate>=0.95", data
+
+
+def _has_adapter_files(path: Path | None) -> bool:
+    return bool(path and path.is_dir() and (path / "adapter_model.safetensors").is_file() and (path / "adapter_config.json").is_file())
+
+
+def _has_checkpoint_files(path: Path | None) -> bool:
+    if not path or not path.is_dir():
+        return False
+    names = {item.name for item in path.iterdir() if item.is_file()}
+    return bool({"adapter_model.safetensors", "pytorch_model.bin", "model.safetensors", "trainer_state.json"} & names)
 
 
 def _check_sft05(manifest: dict[str, Any], full_report: dict[str, Any], paths: dict[str, Path]) -> tuple[bool, str | None, dict[str, Any]]:
@@ -368,6 +338,8 @@ def _check_sft05(manifest: dict[str, Any], full_report: dict[str, Any], paths: d
         "stop_reason": manifest.get("stop_reason"),
         "best_model_checkpoint": str(paths.get("best_model_checkpoint", "")),
         "adapter_path": str(paths.get("adapter_path", "")),
+        "adapter_has_peft_files": _has_adapter_files(paths.get("adapter_path")),
+        "best_checkpoint_has_weight_files": _has_checkpoint_files(paths.get("best_model_checkpoint")),
         "has_wall_clock_cap": "wall_clock_cap" in manifest or "max_wall_clock_seconds" in manifest or "timeout_seconds" in manifest,
     }
     adapter = paths.get("adapter_path")
@@ -380,11 +352,8 @@ def _check_sft05(manifest: dict[str, Any], full_report: dict[str, Any], paths: d
         and data["patience"] == 3
         and manifest.get("early_stopping_triggered") is True
         and manifest.get("stop_reason") == "early_stopping"
-        and adapter is not None
-        and adapter.exists()
-        and best is not None
-        and bool(str(best))
-        and best.exists()
+        and data["adapter_has_peft_files"] is True
+        and data["best_checkpoint_has_weight_files"] is True
         and data["has_wall_clock_cap"] is False
     )
     return ok, None if ok else "SFT-05 requires green full manifest, adapter, best checkpoint, early_stopping_triggered=true, stop_reason=early_stopping, and no wall-clock cap", data
@@ -397,15 +366,17 @@ def _check_sft06(grad_gate: dict[str, Any], grad_path: Path) -> tuple[bool, str 
         "observed_steps": grad_gate.get("observed_steps", grad_gate.get("steps")),
         "grad_norm_p99": grad_gate.get("grad_norm_p99"),
         "loss_finite": grad_gate.get("loss_finite", grad_gate.get("losses_finite")),
+        "grad_norm_finite": grad_gate.get("grad_norm_finite"),
         "fatal_failures": grad_gate.get("fatal_failures", []),
     }
     try:
         p99 = float(data["grad_norm_p99"])
     except (TypeError, ValueError):
         p99 = 999.0
-    loss_finite_ok = data["loss_finite"] is True or data["loss_finite"] is None
-    ok = grad_path.exists() and grad_gate.get("ok") is True and int(data["observed_steps"] or 0) >= 200 and p99 < 3.0 and loss_finite_ok and not data["fatal_failures"]
-    return ok, None if ok else "SFT-06 requires grad_gate ok, observed_steps>=200, grad_norm_p99<3.0, finite losses", data
+    loss_finite_ok = data["loss_finite"] is True
+    grad_norm_finite_ok = data["grad_norm_finite"] is True
+    ok = grad_path.exists() and grad_gate.get("ok") is True and int(data["observed_steps"] or 0) >= 200 and p99 < 3.0 and loss_finite_ok and grad_norm_finite_ok and not data["fatal_failures"]
+    return ok, None if ok else "SFT-06 requires grad_gate ok, observed_steps>=200, grad_norm_p99<3.0, finite losses and finite grad_norm", data
 
 
 def _check_sft07(run_dir: Path, manifest: dict[str, Any]) -> tuple[bool, str | None, dict[str, Any]]:
