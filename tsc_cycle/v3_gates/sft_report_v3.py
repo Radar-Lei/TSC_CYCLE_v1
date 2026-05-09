@@ -90,6 +90,16 @@ def evaluate_sft_manifest(manifest_path: str | Path) -> dict[str, Any]:
     else:
         failures.append(_failure("full_run_report", "missing full-run evidence"))
 
+    if payload.get("mode") == "full":
+        if payload.get("early_stopping_triggered") is not True or payload.get("stop_reason") != "early_stopping":
+            failures.append(_failure("early_stopping", "full-run manifest must prove early_stopping convergence"))
+        early_cfg = payload.get("early_stopping", {})
+        if early_cfg != {"patience": 3, "eval_steps": 200, "save_steps": 200, "max_epochs": 5}:
+            failures.append(_failure("early_stopping", "early-stopping config must be patience=3/eval_steps=200/save_steps=200/max_epochs=5"))
+        best_checkpoint = payload.get("best_model_checkpoint")
+        if not best_checkpoint:
+            failures.append(_failure("best_model_checkpoint", "missing best model checkpoint evidence"))
+
     frozen_evidence = payload.get("frozen_evidence")
     if not isinstance(frozen_evidence, dict) or frozen_evidence.get("write_bits_removed") is not True:
         failures.append(_failure("frozen_evidence", "missing read-only v1.0 FROZEN evidence"))

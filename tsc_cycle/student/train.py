@@ -228,12 +228,88 @@ def _read_grad_gate(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def write_mode_manifest(run_root: Path, mode: str, *, elapsed_seconds: float, grad_gate: dict[str, Any]) -> Path:
+def _state_value(trainer_state: Any, key: str, default: Any = None) -> Any:
+    if isinstance(trainer_state, dict):
+        return trainer_state.get(key, default)
+    return getattr(trainer_state, key, default)
+
+
+def _trainer_state_payload(trainer_state: Any) -> dict[str, Any]:
+    return {
+        "epoch": _state_value(trainer_state, "epoch"),
+        "global_step": int(_state_value(trainer_state, "global_step", 0) or 0),
+        "max_steps": int(_state_value(trainer_state, "max_steps", 0) or 0),
+        "best_model_checkpoint": _state_value(trainer_state, "best_model_checkpoint"),
+        "best_metric": _state_value(trainer_state, "best_metric"),
+        "best_global_step": _state_value(trainer_state, "best_global_step"),
+        "eval_steps": _state_value(trainer_state, "eval_steps", 200),
+        "save_steps": _state_value(trainer_state, "save_steps", 200),
+        "log_history": _state_value(trainer_state, "log_history", []),
+    }
+
+
+def _full_stop_reason(state_payload: dict[str, Any]) -> str:
+    global_step = int(state_payload.get("global_step") or 0)
+    max_steps = int(state_payload.get("max_steps") or 0)
+    if max_steps > 0 and global_step < max_steps:
+        return "early_stopping"
+    return "max_epochs"
+
+
+def write_sft_manifest(
+    *,
+    run_root: Path,
+    mode: str,
+    elapsed_seconds: float,
+    trainer_state: Any,
+    grad_gate: dict[str, Any],
+    frozen_evidence: dict[str, Any],
+    adapter_path: Path,
+    lora_coverage_path: Path,
+    dry_run_report_path: Path | None = None,
+    input_arrow_hashes: dict[str, str] | None = None,
+) -> Path:
+    state_payload = _trainer_state_payload(trainer_state)
+    stop_reason = _full_stop_reason(state_payload) if mode == "full" else "completed"
+    early_stopping_triggered = mode == "full" and stop_reason == "early_stopping"
+    full_report_path = run_root / "reports" / "full_run.json"
+    grad_failures = grad_gate.get("fatal_failures", []) if isinstance(grad_gate.get("fatal_failures", []), list) else []
+    fatal_failures = [dict(item) for item in grad_failures if isinstance(item, dict)]
+    if mode == "full" and not early_stopping_triggered:
+        fatal_failures.append({"gate": "early_stopping", "reason": "full run reached max epochs without early stopping convergence"})
+    if grad_gate.get("ok") is not True:
+        fatal_failures.append({"gate": "grad_gate", "reason": "grad gate did not pass"})
+    if frozen_evidence.get("ok") is not True or frozen_evidence.get("write_bits_removed") is not True:
+        fatal_failures.append({"gate": "frozen_evidence", "reason": "v1.0 FROZEN evidence is not green"})
+
+    full_report = {
+        "ok": not fatal_failures and mode == "full",
+        "mode": mode,
+        "early_stopping": {"patience": 3, "eval_steps": 200, "save_steps": 200, "max_epochs": 5},
+        "early_stopping_triggered": early_stopping_triggered,
+        "stop_reason": stop_reason,
+        "best_model_checkpoint": state_payload.get("best_model_checkpoint"),
+        "best_metric": state_payload.get("best_metric"),
+        "global_step": state_payload.get("global_step"),
+        "fatal_failures": fatal_failures,
+    }
+    _write_json(full_report_path, full_report)
+
+    ok = grad_gate.get("ok") is True and frozen_evidence.get("ok") is True and not fatal_failures
     manifest = {
-        "ok": bool(grad_gate.get("ok")),
+        "ok": ok,
         "mode": mode,
         "run_root": str(run_root),
+        "adapter_path": str(adapter_path),
+        "best_model_checkpoint": state_payload.get("best_model_checkpoint"),
+        "best_metric": state_payload.get("best_metric"),
+        "trainer_state": state_payload,
+        "early_stopping": {"patience": 3, "eval_steps": 200, "save_steps": 200, "max_epochs": 5},
+        "early_stopping_triggered": early_stopping_triggered,
+        "stop_reason": stop_reason,
         "wandb_project": WANDB_PROJECT,
+        "dry_run_report": str(dry_run_report_path or run_root / "dry_run_report.json"),
+        "full_run_report": str(full_report_path),
         "grad_gate_path": str(grad_gate_report_path(run_root, mode)),
         "grad_gate_filename": GRAD_GATE_FILENAME,
         "grad_gate_status": grad_gate.get("status"),
@@ -241,12 +317,35 @@ def write_mode_manifest(run_root: Path, mode: str, *, elapsed_seconds: float, gr
         "observed_steps": grad_gate.get("observed_steps"),
         "grad_gate_fatal_failures": grad_gate.get("fatal_failures", []),
         "elapsed_seconds": elapsed_seconds,
-        "arrow_hashes": arrow_hashes("data/tokenized/v3"),
-        "requirements_covered": ["SFT-01", "SFT-02", "SFT-03", "SFT-05", "SFT-06", "SFT-07", "SFT-08"],
+        "arrow_hashes": input_arrow_hashes or arrow_hashes("data/tokenized/v3"),
+        "lora_coverage_path": str(lora_coverage_path),
+        "frozen_evidence": frozen_evidence,
+        "gates": {
+            "sft_05_early_stopping": {"ok": mode != "full" or early_stopping_triggered, "stop_reason": stop_reason},
+            "sft_06_grad_gate": {"ok": grad_gate.get("ok") is True, "path": str(grad_gate_report_path(run_root, mode))},
+            "sft_07_isolated_artifacts": {"ok": adapter_path == run_root / "adapter", "adapter_path": str(adapter_path)},
+            "sft_08_frozen": {"ok": frozen_evidence.get("ok") is True, "marker": frozen_evidence.get("frozen_marker")},
+        },
+        "fatal_failures": fatal_failures,
+        "requirements_covered": ["SFT-01", "SFT-02", "SFT-03", "SFT-04", "SFT-05", "SFT-06", "SFT-07", "SFT-08"],
     }
-    path = run_root / "reports" / mode / "train_manifest.json"
+    path = run_root / "sft_manifest.json"
     _write_json(path, manifest)
+    _write_json(run_root / "reports" / mode / "train_manifest.json", manifest)
     return path
+
+
+def write_mode_manifest(run_root: Path, mode: str, *, elapsed_seconds: float, grad_gate: dict[str, Any]) -> Path:
+    return write_sft_manifest(
+        run_root=run_root,
+        mode=mode,
+        elapsed_seconds=elapsed_seconds,
+        trainer_state={},
+        grad_gate=grad_gate,
+        frozen_evidence={"ok": False, "write_bits_removed": False},
+        adapter_path=run_root / "adapter",
+        lora_coverage_path=run_root / "reports" / "lora_coverage.json",
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -301,10 +400,25 @@ def main(argv: list[str] | None = None) -> int:
     print(f"saved adapter: {adapter_dir}")
 
     grad_gate = _read_grad_gate(grad_gate_report_path(run_root, args.mode))
-    manifest_path = write_mode_manifest(run_root, args.mode, elapsed_seconds=elapsed, grad_gate=grad_gate)
+    dry_run_report = run_root / "dry_run_report.json"
+    if args.mode == "full" and not dry_run_report.exists():
+        dry_run_report = run_root / "reports" / "dry-run" / "dry_run_report.json"
+    manifest_path = write_sft_manifest(
+        run_root=run_root,
+        mode=args.mode,
+        elapsed_seconds=elapsed,
+        trainer_state=trainer.state,
+        grad_gate=grad_gate,
+        frozen_evidence=frozen_evidence,
+        adapter_path=adapter_dir,
+        lora_coverage_path=run_root / "reports" / "lora_coverage.json",
+        dry_run_report_path=dry_run_report,
+        input_arrow_hashes=arrow_hashes(args.data_dir),
+    )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     with (run_root / "train_log.jsonl").open("a", encoding="utf-8") as f:
         f.write(json.dumps({"event": "training_complete", "mode": args.mode, "elapsed_h": elapsed / 3600, "manifest": str(manifest_path)}, ensure_ascii=False) + "\n")
-    return 0 if grad_gate.get("ok") is True else 1
+    return 0 if manifest.get("ok") is True else 1
 
 
 if __name__ == "__main__":
