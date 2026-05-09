@@ -1,61 +1,68 @@
 {
   "artifact_manifest": {
     "paths": {
-      "cleaning_report": "artifacts/v4/phase8/cleaning_report.json",
-      "dataset_card": "data/dataset_card.md",
+      "cleaning_report": "/home/samuel/TSC_CYCLE/artifacts/v4/phase8/cleaning_report.json",
+      "dataset_card": "/home/samuel/TSC_CYCLE/data/dataset_card.md",
+      "ood_val_arrow": "data/v4/phase8/tokenized/ood_val.arrow",
       "ood_val_index": "data/v4/phase8/splits/ood_val.index.jsonl",
       "phase8_gate_report": "/home/samuel/TSC_CYCLE/artifacts/v4/phase8/phase8_gate_report.json",
-      "rebuild_report": "artifacts/v4/phase8/rebuild_report.json",
-      "source_manifest": "artifacts/v4/phase8/source_manifest.json",
+      "rebuild_report": "/home/samuel/TSC_CYCLE/artifacts/v4/phase8/rebuild_report.json",
+      "source_manifest": "/home/samuel/TSC_CYCLE/artifacts/v4/phase8/source_manifest.json",
       "split_manifest": "data/v4/phase8/splits/manifest.json",
+      "train_arrow": "data/v4/phase8/tokenized/train.arrow",
       "train_index": "data/v4/phase8/splits/train.index.jsonl",
       "v1_ood_alignment": "data/v4/phase8/splits/v1_ood_alignment.json",
+      "val_arrow": "data/v4/phase8/tokenized/val.arrow",
       "val_index": "data/v4/phase8/splits/val.index.jsonl"
     },
     "sha256": {
       "cleaning_report": "7984e2a34d7bfd266a288901e69d34af34b56b0ef906d63e6b8b5fe2a5569a80",
-      "dataset_card": "588b17e438b1ee7e1206b502f13af429c221aa9efea4f3df54d8f75011c693a1",
+      "dataset_card": "f8e82d808e12d424da66f628f3773621313fdcc0addc6cd417f1db1618538d3f",
+      "ood_val_arrow": "7414958f399959bd86fcb5b114937b129f7630bf545c03e725954aeffce3471f",
       "ood_val_index": "39a7eb87515e76b26cbe02b711052a654f32f8afdcfaae4bf9831be213132fa1",
       "phase8_gate_report": "self-referential-report",
       "rebuild_report": "af2b8fe7d0e875f71253d175a374e8a09b53de7f8bc2ed3f42b3d19cc0983b5b",
       "source_manifest": "ddd30b83034e57a96ba0b053150ccd0a7a8b6c7a07f7756e6d4402af426baac5",
       "split_manifest": "1be9f885dba7f939a0b4cdb1bffe57d9b5ee973a02e2c9c7889da2449ab80ce0",
+      "train_arrow": "6934945eacef87c79f845d86ddfe5a0a2abd8b654c993c716a8e6a8fa9c94128",
       "train_index": "08ca31ae767985cecbe22e35e7b75ed4978a87a695d1112dd47c0b557bee12c7",
       "v1_ood_alignment": "da85e7f0a0b13fbcc086052d27677f1380eb19d2f712d4ea6f0584f0d1e83fbd",
+      "val_arrow": "60931fcdadd73c32002c9dd2710c4e8e1bec8060b2e01dee97937dff0cd40f1e",
       "val_index": "07485c6ac012af599ab1a89abc3da30c8301cb477b7026edaf85870b67ab011d"
     }
   },
-  "fatal_failures": [
-    {
-      "gate": "dataset_card_v4_section",
-      "reason": "missing heading ## v4.0 Phase 8 — 4B dataset rebuild"
-    }
-  ],
+  "fatal_failures": [],
   "gates": {
     "artifact_paths": {
       "data": {
         "paths": {
-          "cleaning_report": "artifacts/v4/phase8/cleaning_report.json",
-          "dataset_card": "data/dataset_card.md",
+          "cleaning_report": "/home/samuel/TSC_CYCLE/artifacts/v4/phase8/cleaning_report.json",
+          "dataset_card": "/home/samuel/TSC_CYCLE/data/dataset_card.md",
+          "ood_val_arrow": "data/v4/phase8/tokenized/ood_val.arrow",
           "ood_val_index": "data/v4/phase8/splits/ood_val.index.jsonl",
           "phase8_gate_report": "/home/samuel/TSC_CYCLE/artifacts/v4/phase8/phase8_gate_report.json",
-          "rebuild_report": "artifacts/v4/phase8/rebuild_report.json",
-          "source_manifest": "artifacts/v4/phase8/source_manifest.json",
+          "rebuild_report": "/home/samuel/TSC_CYCLE/artifacts/v4/phase8/rebuild_report.json",
+          "source_manifest": "/home/samuel/TSC_CYCLE/artifacts/v4/phase8/source_manifest.json",
           "split_manifest": "data/v4/phase8/splits/manifest.json",
+          "train_arrow": "data/v4/phase8/tokenized/train.arrow",
           "train_index": "data/v4/phase8/splits/train.index.jsonl",
           "v1_ood_alignment": "data/v4/phase8/splits/v1_ood_alignment.json",
+          "val_arrow": "data/v4/phase8/tokenized/val.arrow",
           "val_index": "data/v4/phase8/splits/val.index.jsonl"
         },
         "sha256": {
           "cleaning_report": "7984e2a34d7bfd266a288901e69d34af34b56b0ef906d63e6b8b5fe2a5569a80",
-          "dataset_card": "588b17e438b1ee7e1206b502f13af429c221aa9efea4f3df54d8f75011c693a1",
+          "dataset_card": "f8e82d808e12d424da66f628f3773621313fdcc0addc6cd417f1db1618538d3f",
+          "ood_val_arrow": "7414958f399959bd86fcb5b114937b129f7630bf545c03e725954aeffce3471f",
           "ood_val_index": "39a7eb87515e76b26cbe02b711052a654f32f8afdcfaae4bf9831be213132fa1",
           "phase8_gate_report": "self-referential-report",
           "rebuild_report": "af2b8fe7d0e875f71253d175a374e8a09b53de7f8bc2ed3f42b3d19cc0983b5b",
           "source_manifest": "ddd30b83034e57a96ba0b053150ccd0a7a8b6c7a07f7756e6d4402af426baac5",
           "split_manifest": "1be9f885dba7f939a0b4cdb1bffe57d9b5ee973a02e2c9c7889da2449ab80ce0",
+          "train_arrow": "6934945eacef87c79f845d86ddfe5a0a2abd8b654c993c716a8e6a8fa9c94128",
           "train_index": "08ca31ae767985cecbe22e35e7b75ed4978a87a695d1112dd47c0b557bee12c7",
           "v1_ood_alignment": "da85e7f0a0b13fbcc086052d27677f1380eb19d2f712d4ea6f0584f0d1e83fbd",
+          "val_arrow": "60931fcdadd73c32002c9dd2710c4e8e1bec8060b2e01dee97937dff0cd40f1e",
           "val_index": "07485c6ac012af599ab1a89abc3da30c8301cb477b7026edaf85870b67ab011d"
         }
       },
@@ -130,20 +137,20 @@
     "dataset_card_phase8_section": {
       "data": {
         "heading": "## v4.0 Phase 8 — 4B dataset rebuild",
-        "path": "data/dataset_card.md",
-        "section_length": 0
+        "path": "/home/samuel/TSC_CYCLE/data/dataset_card.md",
+        "section_length": 4954
       },
-      "ok": false,
-      "reason": "missing heading ## v4.0 Phase 8 — 4B dataset rebuild"
+      "ok": true,
+      "reason": null
     },
     "dataset_card_v4_section": {
       "data": {
         "heading": "## v4.0 Phase 8 — 4B dataset rebuild",
-        "path": "data/dataset_card.md",
-        "section_length": 0
+        "path": "/home/samuel/TSC_CYCLE/data/dataset_card.md",
+        "section_length": 4954
       },
-      "ok": false,
-      "reason": "missing heading ## v4.0 Phase 8 — 4B dataset rebuild"
+      "ok": true,
+      "reason": null
     },
     "phase7_handoff": {
       "data": {
@@ -21844,8 +21851,8 @@
       "reason": null
     }
   },
-  "next_phase_allowed": false,
-  "ok": false,
+  "next_phase_allowed": true,
+  "ok": true,
   "requirements_covered": [
     "DATA4B-01",
     "DATA4B-02",
