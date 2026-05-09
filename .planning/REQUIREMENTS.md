@@ -31,10 +31,10 @@
 
 ### SFT4B — 4B QLoRA 重训
 
-- [ ] **SFT4B-01**: QLoRA r=64 训练配置沿用 v1 已验证 4B 路线，packing=False，raw-text protocol 不走 chat_template
-- [ ] **SFT4B-02**: 训练前 smoke gate 覆盖 tokenizer leakage、样本格式、最小训练步、SOLUTION parse 与硬约束 lint
-- [ ] **SFT4B-03**: 全量训练产物写入 `runs/v4.0-4B-{utc_timestamp}/`，与 v1/v3 物理隔离
-- [ ] **SFT4B-04**: 训练报告记录 loss 曲线、训练时长、显存峰值、adapter hash、数据 manifest hash
+- [x] **SFT4B-01**: QLoRA r=64 训练配置沿用 v1 已验证 4B 路线，packing=False，raw-text protocol 不走 chat_template
+- [x] **SFT4B-02**: 训练前 smoke gate 覆盖 tokenizer leakage、样本格式、最小训练步、SOLUTION parse 与硬约束 lint
+- [x] **SFT4B-03**: 全量训练产物写入 `runs/v4.0-4B-{utc_timestamp}/`，与 v1/v3 物理隔离
+- [x] **SFT4B-04**: 训练报告记录 loss 曲线、训练时长、显存峰值、adapter hash、数据 manifest hash
 
 ### GGUF4B — merge + GGUF 导出
 
@@ -88,10 +88,10 @@ Traceability populated during v4.0 roadmap creation.
 | DATA4B-03 | Phase 8 | Complete |
 | DATA4B-04 | Phase 8 | Complete |
 | DATA4B-05 | Phase 8 | Complete |
-| SFT4B-01 | Phase 9 | Pending |
-| SFT4B-02 | Phase 9 | Pending |
-| SFT4B-03 | Phase 9 | Pending |
-| SFT4B-04 | Phase 9 | Pending |
+| SFT4B-01 | Phase 9 | Complete |
+| SFT4B-02 | Phase 9 | Complete |
+| SFT4B-03 | Phase 9 | Complete |
+| SFT4B-04 | Phase 9 | Complete |
 | GGUF4B-01 | Phase 10 | Pending |
 | GGUF4B-02 | Phase 10 | Pending |
 | GGUF4B-03 | Phase 10 | Pending |

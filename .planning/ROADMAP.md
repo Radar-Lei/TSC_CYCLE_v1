@@ -9,7 +9,7 @@
 ## Phases
 
 - [x] **Phase 7: 4B baseline/label protocol gate** — 回退到 v1 已验证 4B 基座，先把基座、环境、只读 baseline 与正确标签协议全部设为硬门禁
-- [ ] **Phase 8: v3 扩展数据 → 4B dataset rebuild** — 复用 v1/v3 lint-pass 数据，用 Qwen3-4B tokenizer 重建 v4 split/tokenized artifacts
+- [x] **Phase 8: v3 扩展数据 → 4B dataset rebuild** — 复用 v1/v3 lint-pass 数据，用 Qwen3-4B tokenizer 重建 v4 split/tokenized artifacts
 - [ ] **Phase 9: 4B QLoRA retrain** — 沿用 v1 已验证 4B QLoRA 路线，在 v4 数据与正确标签协议上完成重训
 - [ ] **Phase 10: merge + GGUF export** — 将 v4 adapter merge 并导出 GGUF fp16 与 q4_K_M，验证三精度协议与 tokenizer parity
 - [ ] **Phase 11: eval matrix + decision** — 对比 v4 HF/q4 与 v1 q4 baseline，给出 GO/NO-GO/用户决策
@@ -58,7 +58,12 @@ Plans:
   2. 全量训练在 v1 已验证的 4B QLoRA 配置下运行，`packing=False`，raw-text protocol 不走 chat_template，且产物写入 `runs/v4.0-4B-{utc_timestamp}/`。
   3. 训练完成后，操作者可以查看报告中的 loss 曲线、训练时长、显存峰值、adapter hash 与数据 manifest hash。
   4. 训练产物的验证生成样本包含完整 `<start_working_out>...</end_working_out><SOLUTION>...</SOLUTION>` 结构，且 SOLUTION 可解析并通过基本硬约束 lint。
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [x] 09-01-PLAN.md — 建立 Phase 9 RED 合约，覆盖 4B QLoRA 配置、pre-train smoke、DGX-safe wrapper 与最终 report/handoff。
+- [ ] 09-02-PLAN.md — 实现 4B/v4 SFT helper、pre-train smoke evaluator 与 Phase 9-aware trainer mode。
+- [ ] 09-03-PLAN.md — 实现 Phase 9 smoke/full-training wrappers 与 fail-closed aggregate report evaluator。
+- [ ] 09-04-PLAN.md — 自动执行 smoke gate、run_safe full training 与最终 Phase 9 aggregate handoff report。
 
 ### Phase 10: merge + GGUF export
 **Goal**: 将 v4 4B adapter 合并为 HF 权重并导出 GGUF fp16 与 q4_K_M，确认量化后协议、约束与 tokenizer parity 不崩塌。
@@ -87,8 +92,8 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 7. 4B baseline/label protocol gate | 4/4 | Complete | 2026-05-10 |
-| 8. v3 扩展数据 → 4B dataset rebuild | 1/4 | In progress | - |
-| 9. 4B QLoRA retrain | 0/0 | Not started | - |
+| 8. v3 扩展数据 → 4B dataset rebuild | 4/4 | Complete | 2026-05-10 |
+| 9. 4B QLoRA retrain | 0/4 | Planned | - |
 | 10. merge + GGUF export | 0/0 | Not started | - |
 | 11. eval matrix + decision | 0/0 | Not started | - |
 
