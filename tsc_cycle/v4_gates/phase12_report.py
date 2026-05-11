@@ -148,6 +148,7 @@ def evaluate_phase12_report(
             "manifest": str(manifest_path),
             "per_sample": str(per_sample_path),
             "final_log": str(final_log_path),
+            "reality_test_log": str(final_log_path),
             "gate_report": str(out_path) if out_path is not None else str(REPORT_PATH),
         },
         "requirements_covered": list(REQUIREMENTS_COVERED),
