@@ -2,7 +2,7 @@
   "artifact_root": "/home/samuel/TSC_CYCLE/artifacts/v4/phase12",
   "backend_label": "tsc-cycle-v4-q4_K_M",
   "dry_run": true,
-  "elapsed_sec": 0.001981019973754883,
+  "elapsed_sec": 0.0019321441650390625,
   "input_count": 3,
   "input_sha256": "56eed54d37d105773bfd40614ce0c650a38c01f0df73c668e52c40c38c8cfff8",
   "limit": 3,
@@ -154,5 +154,5 @@
       "timestamp": "2026-04-27 00:07:27"
     }
   ],
-  "started_at_epoch": 1778501606.8385592
+  "started_at_epoch": 1778501621.8813722
 }
