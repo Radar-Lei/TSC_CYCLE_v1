@@ -30,14 +30,23 @@ GGUF（fp16 + q4_K_M）部署、且带显式思考过程的 4B 推理模型。
 
 See `milestones/v4.0-ROADMAP.md` and `milestones/v4.0-REQUIREMENTS.md` for shipped v4.0 details.
 
+## Current Milestone: v4.1 项目清理 / v4 最小复现包
+
+**Goal:** 清理当前项目目录中与 v4.0 Qwen3-4B 9k 训练复现无关的文件，把仓库整理成他人可理解、可复现、可审计的最小包。
+
+**Target features:**
+- 盘点当前根目录、data/artifacts/runs/planning/tests 中哪些文件属于 v4.0 复现权威源，哪些是旧里程碑、临时文件或重复产物。
+- 建立 v4 最小复现包边界：代码、配置、数据 manifest/必要数据、最终报告、最终 q4_K_M GGUF、`reality_test.log` 及必要验证证据。
+- 将与 v4 无关或非必要的文件安全归档/移除，并保证清理后测试与复现入口仍可运行。
+- 补齐复现说明或清单，让外部人员知道从哪里开始、哪些产物是最终产物、如何验证 v4 结果。
+
 ## Next Milestone Goals
 
-下一里程碑尚未定义。推荐从 `/gsd-new-milestone` 开始，围绕以下候选方向收敛需求：
+下一里程碑聚焦 v4.1 清理完成后的部署或分析方向，暂不纳入当前范围：
 
 - 将 v4.0 q4_K_M artifact 接入 EvoProgTSC 决策端点并做端到端部署验证。
 - 对显式思考协议做 thinking on/off 对照，量化其对最终绿灯决策的边际收益。
 - 若部署端发现量化敏感性，补做 imatrix 或 q5_K_M fallback 路线。
-- 清理 v4.0 非阻塞 Nyquist 技术债：Phase 8–10 VALIDATION.md 缺失、Phase 11 validation frontmatter 不完整。
 
 ## Requirements
 
@@ -67,7 +76,9 @@ See `milestones/v4.0-ROADMAP.md` and `milestones/v4.0-REQUIREMENTS.md` for shipp
 
 ### Active
 
-- [ ] Define next milestone requirements with `/gsd-new-milestone`.
+- [ ] v4.1 清理当前项目目录中与 v4.0 Qwen3-4B 9k 训练复现无关的文件，形成最小复现包。
+- [ ] v4.1 保留并标注 v4.0 复现权威源：代码、配置、必要数据/manifest、最终模型、最终报告和验证证据。
+- [ ] v4.1 清理后仍能运行关键测试、报告生成或验证入口，证明复现链路没有被破坏。
 
 ### Out of Scope (current route)
 
@@ -79,6 +90,7 @@ See `milestones/v4.0-ROADMAP.md` and `milestones/v4.0-REQUIREMENTS.md` for shipp
 - 全参 SFT — 当前目标是本地可训练、可部署的 QLoRA 4B 路线
 - vLLM 推理 — 本机现状不能用 vLLM，最终部署走 llama.cpp / GGUF
 - 引入新训练栈（Unsloth on Spark / Axolotl / 新 PyTorch 版本）— 锁定 `/dgx-spark-training` v1.0 已验证环境
+- v4.1 不重新训练、不新增模型能力、不做 imatrix/q5_K_M 或 thinking on/off 新实验、不接入 EvoProgTSC 部署端点 — 当前范围只做项目清理与复现打包
 
 ## Context
 
@@ -131,6 +143,7 @@ prompt/输出协议见 `reality.log`。
 | GGUF 同时导出 fp16 与 q4_K_M | 部署灵活；q4_K_M 需单独评测以防量化崩塌 | ✓ Good |
 | v4.0 回退 4B 而不是继续 9B | Qwen3.5-9B 本机训练太慢；4B 已验证可训练可部署，且符合本地小模型 Core Value | ✓ Good |
 | Phase 12 使用 Phase 11 GO q4_K_M 生成 `reality_test.log` | 需要以最新训练模型输出替换 reality.log 旧输出，同时保留显式思考过程 | ✓ Good |
+| v4.1 只做项目清理与最小复现包 | 用户对 v4.0 的 Qwen3-4B 9k 训练效果满意，当前痛点是项目文件夹过杂、影响他人复现 | — Pending |
 
 ## Evolution
 
@@ -150,4 +163,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-11 after v4.0 milestone completion*
+*Last updated: 2026-05-12 after v4.1 milestone initialization*

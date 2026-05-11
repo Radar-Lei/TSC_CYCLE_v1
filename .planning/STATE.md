@@ -1,111 +1,91 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.0
-milestone_name: 4B 回退 + 扩展数据重训 + 标签协议修复
-status: completed
-last_updated: "2026-05-11T14:36:49.152Z"
-last_activity: 2026-05-11
+milestone: v4.1
+milestone_name: 项目清理 / v4 最小复现包
+status: roadmap_created
+last_updated: "2026-05-12"
+last_activity: 2026-05-12
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 23
-  completed_plans: 23
-  percent: 100
+  total_phases: 4
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # TSC-CYCLE State
 
-**Last Activity:** 2026-05-11
-**Current Milestone:** v4.0 4B 回退 + 扩展数据重训 + 标签协议修复
-**Status:** v4.0 milestone complete
-
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-05-11)
+See: `.planning/PROJECT.md` (updated 2026-05-12)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近 GPT-5.5 high 教师 — 不过拟合到 reality.log。
-**Current focus:** v4.0 shipped; awaiting next milestone definition or deployment handoff.
+**Current focus:** v4.1 Phase 13 — Inventory & Cleanup Boundaries
 
 ## Current Position
 
-Phase: Milestone v4.0 complete
-Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-05-11 — Milestone v4.0 completed and archived
+Phase: 13 of 16 overall; 1 of 4 for v4.1 (Inventory & Cleanup Boundaries)
+Plan: TBD in current phase
+Status: Ready to plan
+Last activity: 2026-05-12 — v4.1 roadmap created from cleanup/reproduction requirements
 
-## Phase Status
+Progress: [░░░░░░░░░░] 0%
 
-| Phase | Status | Notes |
-|---|---|---|
-| 7. 4B baseline/label protocol gate | ✓ complete | `artifacts/v4/phase7/phase7_gate_report.json` passed with `next_phase_allowed: true` |
-| 8. v3 扩展数据 → 4B dataset rebuild | ✓ complete | DATA4B-01..05 covered; `artifacts/v4/phase8/phase8_gate_report.json` passed with `next_phase_allowed: true` |
-| 9. 4B QLoRA retrain | ✓ complete | `runs/v4.0-4B-20260509T184844Z/phase9_sft_report.json` passed with `next_phase_allowed: true` |
-| 10. merge + GGUF export | ✓ complete | `runs/v4.0-4B-20260509T184844Z/phase10_gguf_report.json` passed with `next_phase_allowed: true` |
-| 11. eval matrix + decision | ✓ complete | `artifacts/v4/phase11/phase11_gate_report.json` passed with verdict `GO`, `next_phase_allowed: true`; recommended artifact `runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf` |
-| 12. reality.log → reality_test.log replay | ✓ complete | `artifacts/v4/phase12/phase12_report.json` passed with 426/426 parse/lint/protocol counts; human spot-check approved |
+## Performance Metrics
 
-## Baseline to Beat (v1.0)
+**Velocity:**
+- v4.1 plans completed: 0
+- Average duration: N/A
+- Total execution time: 0 hours
 
-- v1.0 q4_K_M OOD hard-constraint lint: **98.7%**
-- v1.0 HF bf16 OOD hard-constraint lint: **99.3%**
-- v1.0 q4_K_M vs HF bf16 ratio: **0.9933**
-- v1.0 teacher MAE delta: **+0.18s**
-- v4.0 decision gate: `v4 q4_K_M hard_constraint_pass ≥ 98%` ∧ `v4 q4_K_M vs v4 HF ≥ 0.95` ∧ `v4 q4_K_M vs v1 q4_K_M not significantly worse`
+**By Phase:**
 
-## Frozen v1.0 Artifact (read-only reference in v4.0)
-
-**Path:** `runs/20260507T032419Z/gguf/model.q4_K_M.gguf` (2.4 GB)
-**Eval gen_cache:** `runs/20260507T032419Z/eval/gen_cache/gguf_q4km/`
-**Constraint:** v4.0 全 phase 零写入；Phase 7 必须证明只读引用有效。
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| 13. Inventory & Cleanup Boundaries | 0 | TBD | - |
+| 14. Canonical v4 Reproduction Package | 0 | TBD | - |
+| 15. Safe Cleanup Execution | 0 | TBD | - |
+| 16. Verification & Handoff | 0 | TBD | - |
 
 ## Accumulated Context
 
-### Key Decisions
+### Decisions
 
-- v1.0 shipped (2026-05-07): 4B QLoRA → GGUF q4_K_M 端到端闭环，OOD hard-constraint lint 98.7%，部署裁决 GO。
-- v2.0 abandoned (2026-05-08): 标签迁移方向需要纠正；本项目思考结束标签必须是 `</end_working_out>`，不是 `<end_working_out>`。
-- v3.0 stopped (2026-05-10): Phase 1-3 完成并产出扩展数据与 Qwen3.5 split/tokenized artifacts，但 Qwen3.5-9B 本机训练太慢，用户决定停止 9B 路线。
-- v4.0 route: 回到 v1 已验证 `Qwen/Qwen3-4B-Thinking-2507`，复用 v3 新增 lint-pass 数据，但必须用 Qwen3-4B tokenizer 重新 rebuild dataset/split/tokenized artifacts。
-- 训练栈继续沿用 `/dgx-spark-training` 与 `/home/samuel/dgx-spark-setup/.venv`；不引入新 PyTorch、Unsloth、Axolotl 或 vLLM。
-- 全链路协议固定为 `<start_working_out>...</end_working_out><SOLUTION>...</SOLUTION>`；禁止原生 `<think>`/`</think>`。
-- Phase 8 RED contracts require explicit v1 valid + v3 new lint-pass sources, v4-isolated outputs, Qwen3-4B raw-text tokenization, and aggregate report gating before Phase 9.
-- DATA4B-05 uses generated Phase 8 JSON artifacts as the source of truth for hashes, counts, truncation evidence, and native-think safety.
-- The final Phase 8 wrapper run is the authority for Phase 9 readiness; `phase8_gate_report.json` is green with `next_phase_allowed: true` only after dataset card evidence exists.
+Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecting current work:
 
-### Roadmap Evolution
+- v4.1 is cleanup/reproduction packaging only: no retraining, no new model capability, no imatrix/q5_K_M, no thinking ablation, no EvoProgTSC deployment.
+- Research was explicitly skipped for this milestone.
+- Destructive cleanup must not start until Phase 13 inventory defines keep/archive/remove boundaries.
+- Phase numbering continues after v4.0 Phase 12; v4.1 starts at Phase 13.
 
-- Phase 12 added: 需要用最新训练好的模型，以 /home/samuel/TSC_CYCLE/reality.log 的输入为输入（忽略其输出，以我们自己的模型输出为输出，要包括思考过程），构成一个reality_test.log
+### Preserved v4.0 Context
 
-### Active Todos
+- v4.0 shipped (2026-05-11): returned to `Qwen/Qwen3-4B-Thinking-2507`, rebuilt the v3 expanded data with the Qwen3-4B tokenizer, fixed the protocol to `<start_working_out>...</end_working_out><SOLUTION>...</SOLUTION>`, retrained 4B QLoRA, merged/exported GGUF fp16/q4_K_M, completed eval matrix GO, and replayed 426 `reality.log` inputs.
+- v4.0 recommended deployment artifact: `runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf`.
+- v4.0 final replay output: `reality_test.log`, generated by the Phase 11 GO q4_K_M model with 426/426 parse, lint, and protocol gates passing.
+- v4.0 key reports include `artifacts/v4/phase8/phase8_gate_report.json`, `runs/v4.0-4B-20260509T184844Z/phase9_sft_report.json`, `runs/v4.0-4B-20260509T184844Z/phase10_gguf_report.json`, `artifacts/v4/phase11/phase11_gate_report.json`, and `artifacts/v4/phase12/phase12_report.json`.
+- v1.0 q4_K_M baseline remains a read-only historical reference at `runs/20260507T032419Z/gguf/model.q4_K_M.gguf`; it should not be treated as the v4.1 reproduction target unless Phase 13 explicitly classifies it as optional legacy evidence.
 
-- None for v4.0 milestone execution; Phase 12 final `reality_test.log` replay is complete and human-approved.
+### Pending Todos
 
-### Blockers
+None yet.
 
-- None — v4.0 milestone execution complete.
+### Blockers/Concerns
 
-### Quick Tasks Completed
+- `.planning/phases/` currently contains many old/uncommitted phase files from prior milestones; treat them as inventory targets, not already-archived evidence.
+- Cleanup must preserve canonical v4.0 Qwen3-4B reproduction assets and source imports.
 
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 260509-x43 | 修复 Phase 4 dry-run TrainingArguments packing 过滤 | 2026-05-09 | 67ae7a7 | [260509-x43-phase-4-dry-run-trainingarguments-init-p](./quick/260509-x43-phase-4-dry-run-trainingarguments-init-p/) |
+## Deferred Items
+
+| Category | Item | Status | Deferred At |
+|----------|------|--------|-------------|
+| Deployment | EvoProgTSC endpoint integration | Deferred to later milestone | v4.1 start |
+| Experiment | imatrix/q5_K_M fallback evaluation | Deferred to later milestone | v4.1 start |
+| Experiment | thinking on/off ablation | Deferred to later milestone | v4.1 start |
 
 ## Session Continuity
 
-**Next action:** Optional final milestone audit/cleanup or prepare deployment handoff for `/home/samuel/TSC_CYCLE/runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf` and `/home/samuel/TSC_CYCLE/reality_test.log`.
-
-**Key files:**
-
-- `.planning/PROJECT.md`
-- `.planning/REQUIREMENTS.md` (current milestone requirements; fresh file should be created by `/gsd-new-milestone`)
-- `.planning/ROADMAP.md` (collapsed milestone overview)
-- `.planning/milestones/v1.0-ROADMAP.md`
-- `.planning/milestones/v4.0-ROADMAP.md`
-- `.planning/milestones/v4.0-REQUIREMENTS.md`
-- `runs/20260507T032419Z/gguf/model.q4_K_M.gguf` (read-only baseline reference)
-- [FLAG] Phase 10 smoke MAE q4_K_M vs HF = 3.09s (>3.0s); Phase 11 should consider imatrix/q5_K_M sensitivity if eval matrix shows regression.
-- `reality_test.log` (Phase 12 final replay output, 426/426 parse/lint/protocol green, human-approved)
-
-## Operator Next Steps
-
-- Start the next milestone with /gsd-new-milestone
+Last session: 2026-05-12
+Stopped at: v4.1 roadmap and state initialized
+Resume file: None
+Next action: `/gsd-plan-phase 13`
