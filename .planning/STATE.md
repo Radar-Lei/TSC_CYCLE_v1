@@ -2,37 +2,37 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: 4B 回退 + 扩展数据重训 + 标签协议修复
-status: verifying
-last_updated: "2026-05-11T02:01:31.886Z"
+status: executing
+last_updated: "2026-05-11T12:04:09.610Z"
 last_activity: 2026-05-11
 progress:
-  total_phases: 5
-  completed_phases: 3
-  total_plans: 16
-  completed_plans: 14
-  percent: 88
+  total_phases: 6
+  completed_phases: 5
+  total_plans: 23
+  completed_plans: 20
+  percent: 87
 ---
 
 # TSC-CYCLE State
 
 **Last Activity:** 2026-05-11
 **Current Milestone:** v4.0 4B 回退 + 扩展数据重训 + 标签协议修复
-**Status:** Phase complete — ready for verification
+**Status:** Ready to execute
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-05-10)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近 GPT-5.5 high 教师 — 不过拟合到 reality.log。
-**Current focus:** Phase 08 — v3 扩展数据 → 4B dataset rebuild
+**Current focus:** v4.0 milestone complete; recommended deployment artifact is `runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf`
 
 ## Current Position
 
-Phase: 08 (v3 扩展数据 → 4B dataset rebuild) — EXECUTING
-Plan: 4 of 4
-Status: Phase complete — ready for verification
-Progress: [█████████░] 88%
-Last activity: 2026-05-11
+Phase: 11 (eval matrix + decision) — COMPLETE
+Plan: 11-01..11-04 complete
+Status: Ready to execute
+Progress: [██████████] 100%
+Last activity: 2026-05-11 -- Phase 12 planning complete
 
 ## Phase Status
 
@@ -40,9 +40,9 @@ Last activity: 2026-05-11
 |---|---|---|
 | 7. 4B baseline/label protocol gate | ✓ complete | `artifacts/v4/phase7/phase7_gate_report.json` passed with `next_phase_allowed: true` |
 | 8. v3 扩展数据 → 4B dataset rebuild | ✓ complete | DATA4B-01..05 covered; `artifacts/v4/phase8/phase8_gate_report.json` passed with `next_phase_allowed: true` |
-| 9. 4B QLoRA retrain | ○ next | v1 verified 4B QLoRA path; raw-text protocol; isolated v4 run root |
-| 10. merge + GGUF export | ○ pending | Merge adapter; export GGUF fp16 + q4_K_M; verify three-precision protocol smoke |
-| 11. eval matrix + decision | ○ pending | Compare v4 HF/q4 against v1 q4 baseline; produce GO/NO-GO/user decision |
+| 9. 4B QLoRA retrain | ✓ complete | `runs/v4.0-4B-20260509T184844Z/phase9_sft_report.json` passed with `next_phase_allowed: true` |
+| 10. merge + GGUF export | ✓ complete | `runs/v4.0-4B-20260509T184844Z/phase10_gguf_report.json` passed with `next_phase_allowed: true` |
+| 11. eval matrix + decision | ✓ complete | `artifacts/v4/phase11/phase11_gate_report.json` passed with verdict `GO`, `next_phase_allowed: true`; recommended artifact `runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf` |
 
 ## Baseline to Beat (v1.0)
 
@@ -72,9 +72,13 @@ Last activity: 2026-05-11
 - DATA4B-05 uses generated Phase 8 JSON artifacts as the source of truth for hashes, counts, truncation evidence, and native-think safety.
 - The final Phase 8 wrapper run is the authority for Phase 9 readiness; `phase8_gate_report.json` is green with `next_phase_allowed: true` only after dataset card evidence exists.
 
+### Roadmap Evolution
+
+- Phase 12 added: 需要用最新训练好的模型，以 /home/samuel/TSC_CYCLE/reality.log 的输入为输入（忽略其输出，以我们自己的模型输出为输出，要包括思考过程），构成一个reality_test.log
+
 ### Active Todos
 
-- Verify Phase 8 completion, then execute Phase 9 Plan 01 for 4B QLoRA retrain setup and smoke gates.
+- None for v4.0 milestone execution; Phase 11 decision gate is complete and GO.
 
 ### Blockers
 
@@ -88,7 +92,7 @@ Last activity: 2026-05-11
 
 ## Session Continuity
 
-**Next action:** Verify Phase 8, then `/gsd-execute-phase 9` for 4B QLoRA retrain.
+**Next action:** Optional final milestone audit/cleanup or prepare deployment handoff for `runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf`.
 
 **Key files:**
 
@@ -97,3 +101,4 @@ Last activity: 2026-05-11
 - `.planning/ROADMAP.md` (v4.0 phases 7-11)
 - `.planning/milestones/v1.0-ROADMAP.md`
 - `runs/20260507T032419Z/gguf/model.q4_K_M.gguf` (read-only baseline reference)
+- [FLAG] Phase 10 smoke MAE q4_K_M vs HF = 3.09s (>3.0s); Phase 11 should consider imatrix/q5_K_M sensitivity if eval matrix shows regression.
