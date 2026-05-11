@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: 4B 回退 + 扩展数据重训 + 标签协议修复
 status: executing
-last_updated: "2026-05-11T12:04:09.610Z"
+last_updated: "2026-05-11T12:07:34.376Z"
 last_activity: 2026-05-11
 progress:
   total_phases: 6
@@ -24,15 +24,15 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-05-10)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近 GPT-5.5 high 教师 — 不过拟合到 reality.log。
-**Current focus:** v4.0 milestone complete; recommended deployment artifact is `runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf`
+**Current focus:** Phase 12 — home-samuel-tsc-cycle-reality-log-reality-test-log
 
 ## Current Position
 
-Phase: 11 (eval matrix + decision) — COMPLETE
-Plan: 11-01..11-04 complete
+Phase: 12 (home-samuel-tsc-cycle-reality-log-reality-test-log) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Progress: [██████████] 100%
-Last activity: 2026-05-11 -- Phase 12 planning complete
+Progress: [█████████░] 87%
+Last activity: 2026-05-11
 
 ## Phase Status
 
