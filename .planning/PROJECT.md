@@ -18,28 +18,26 @@ GGUF（fp16 + q4_K_M）部署、且带显式思考过程的 4B 推理模型。
 
 **v1.0 SHIPPED** (2026-05-07) — 端到端蒸馏 pipeline 闭环，部署裁决 **GO**：q4_K_M GGUF (2.4GB) 在 OOD val 上硬约束满足率 98.7%（vs HF bf16 99.3%，ratio=0.9933 ≥ 0.95 阈值），教师 MAE Δ +0.18s（远低于 3s）。
 
-**Deployment artifact**: `runs/20260507T032419Z/gguf/model.q4_K_M.gguf` — 可直接装载到 EvoProgTSC TSC 决策端点。
+**v1.0 deployment artifact**: `runs/20260507T032419Z/gguf/model.q4_K_M.gguf` — v4.0 中作为只读 baseline。
 
 **v2.0 强化版 ABANDONED** (2026-05-08) — 完成 Phase 7（标签协议全链路迁移），Phase 8（10K 数据扩容）已规划未执行；用户决定放弃 v2.0、直接切到更大基座。归档见 `milestones/v2.0-abandoned/`。
 
 **v3.0 9B 基座切换 STOPPED** (2026-05-10) — Phase 1-3 完成，扩展数据与 Qwen3.5 retokenize/split 已产出；Phase 4 发现 Qwen3.5-9B 在本机训练太慢，用户决定停止 9B 路线，回到 v1 的 4B 基座。
 
-See `milestones/v1.0-ROADMAP.md` for phase breakdown.
+**v4.0 SHIPPED** (2026-05-11) — 回到 `Qwen/Qwen3-4B-Thinking-2507`，复用 v3 lint-pass 扩展数据重建 Qwen3-4B 数据集，修复全链路思考协议为 `<start_working_out>...</end_working_out><SOLUTION>...</SOLUTION>`，完成 4B QLoRA 重训、merge、GGUF fp16/q4_K_M 导出、eval matrix GO 决策与 426 条 `reality.log` 输入 replay。
 
-## Current Milestone: v4.0 4B 回退 + 扩展数据重训 + 标签协议修复
+**v4.0 deployment artifact**: `runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf` — Phase 11 推荐 q4_K_M GGUF；`reality_test.log` 已由该模型生成并通过 426/426 parse、lint、protocol gate。
 
-**Goal:** 回到 v1 已验证的 Qwen3-4B-Thinking-2507 基座，复用 v3 已扩展的新数据重新构建 4B 训练集，并把思考标签协议固定为 `<start_working_out>...</end_working_out><SOLUTION>...</SOLUTION>`。
+See `milestones/v4.0-ROADMAP.md` and `milestones/v4.0-REQUIREMENTS.md` for shipped v4.0 details.
 
-**Target features:**
-- 学生基座回退到 v1 的 `Qwen/Qwen3-4B-Thinking-2507`，训练/导出路径沿用已验证的 4B QLoRA → GGUF pipeline。
-- 复用 v3 扩展后的新增标注数据，但用 Qwen3-4B tokenizer 重新 rebuild dataset/split/tokenized artifacts，保持 v1 baseline 只读。
-- 全链路使用 `</end_working_out>` 作为思考结束标签；不使用 `<end_working_out>`，不使用原生 `<think>`/`</think>`。
-- 重新训练 4B QLoRA，并导出 GGUF fp16 + q4_K_M。
-- 评测对比 v1 baseline，判断“4B + 扩展数据 + 正确标签协议”是否带来硬约束、教师 MAE、思考格式稳定性收益。
+## Next Milestone Goals
 
-**Baseline to beat:** v1.0 q4_K_M OOD lint=98.7%，HF bf16=99.3%，教师 MAE Δ +0.18s；v4.0 必须证明扩展数据与标签协议修复在 4B 可训练/可部署前提下带来收益或至少不回退。
+下一里程碑尚未定义。推荐从 `/gsd-new-milestone` 开始，围绕以下候选方向收敛需求：
 
-**Environment lock:** 训练环境严格沿用 `/dgx-spark-training` skill + `/home/samuel/dgx-spark-setup/.venv`（v1.0 已验证）。本里程碑不引入新训练框架/新版本 PyTorch。
+- 将 v4.0 q4_K_M artifact 接入 EvoProgTSC 决策端点并做端到端部署验证。
+- 对显式思考协议做 thinking on/off 对照，量化其对最终绿灯决策的边际收益。
+- 若部署端发现量化敏感性，补做 imatrix 或 q5_K_M fallback 路线。
+- 清理 v4.0 非阻塞 Nyquist 技术债：Phase 8–10 VALIDATION.md 缺失、Phase 11 validation frontmatter 不完整。
 
 ## Requirements
 
@@ -54,26 +52,30 @@ See `milestones/v1.0-ROADMAP.md` for phase breakdown.
 - [x] LoRA merge → bf16 → GGUF bf16 → q4_K_M — Validated in Phase 5
 - [x] 评测套件（硬约束 / MAE / OOD / Reasoning） + 部署 go/no-go — Validated in Phase 6
 
+### Validated (v4.0)
+
+- [x] 学生基座回退到 `Qwen/Qwen3-4B-Thinking-2507`，沿用 v1 已验证训练与 GGUF 导出路径 — Validated in Phase 7
+- [x] 复用 v3 扩展数据，重建 Qwen3-4B tokenizer 下的 split/tokenized dataset — Validated in Phase 8
+- [x] 全链路标签协议固定为 `<start_working_out>...</end_working_out><SOLUTION>...</SOLUTION>`，禁止 `<end_working_out>` 和原生 `<think>` — Validated in Phase 7-12
+- [x] 重新完成 4B QLoRA SFT、merge、GGUF fp16/q4_K_M 导出与 eval matrix — Validated in Phase 9-11
+- [x] OOD 硬约束、教师 MAE、思考格式稳定性达到 v4.0 GO gate，并完成 `reality_test.log` replay — Validated in Phase 11-12
+
 ### Lessons (v2.0/v3.0 stopped)
 
 - [x] v2.0 标签迁移方向需要纠正：本项目协议应使用 `</end_working_out>` 作为思考结束标签，而不是 `<end_working_out>`。
 - [x] v3.0 Phase 1-3 产出的扩展数据有复用价值，但 Qwen3.5-9B 本机训练太慢，不适合作为当前路线。
 
-### Active (v4.0)
+### Active
 
-- [ ] 学生基座回退到 `Qwen/Qwen3-4B-Thinking-2507`，沿用 v1 已验证训练与 GGUF 导出路径。
-- [ ] 复用 v3 扩展数据，重建 Qwen3-4B tokenizer 下的 split/tokenized dataset。
-- [ ] 全链路标签协议固定为 `<start_working_out>...</end_working_out><SOLUTION>...</SOLUTION>`，禁止 `<end_working_out>` 和原生 `<think>`。
-- [ ] 重新完成 4B QLoRA SFT、merge、GGUF fp16/q4_K_M 导出与 eval matrix。
-- [ ] OOD 硬约束、教师 MAE、思考格式稳定性达到或超过 v1.0 baseline。
+- [ ] Define next milestone requirements with `/gsd-new-milestone`.
 
-### Out of Scope (v4.0)
+### Out of Scope (current route)
 
 - Qwen3.5-9B 继续训练 — 本机训练太慢，当前路线回到 4B
 - Qwen3.6 系列基座 — 系列最小 27B，与"小模型本地部署" Core Value 冲突
 - 模型原生 `<think>...</think>` 标签 — 与自定义协议冲突
 - 使用 `<end_working_out>` 作为结束标签 — 用户明确要求结束标签是 `</end_working_out>`
-- 在线/RL 优化（GRPO 等）— 本里程碑只做 SFT 蒸馏
+- 在线/RL 优化（GRPO 等）— 当前路线只做 SFT 蒸馏
 - 全参 SFT — 当前目标是本地可训练、可部署的 QLoRA 4B 路线
 - vLLM 推理 — 本机现状不能用 vLLM，最终部署走 llama.cpp / GGUF
 - 引入新训练栈（Unsloth on Spark / Axolotl / 新 PyTorch 版本）— 锁定 `/dgx-spark-training` v1.0 已验证环境
@@ -120,13 +122,15 @@ prompt/输出协议见 `reality.log`。
 |----------|-----------|---------|
 | 学生基座选 Qwen3-4B-Thinking-2507 | 已具备 reasoning 能力可加速学习；架构成熟，DGX Spark 训练栈完全支持；v3.0 9B 训练过慢后重新确认为当前甜点基座 | ✓ Good |
 | 思考标签沿用 reality.log 体系 `<start_working_out>...</end_working_out><SOLUTION>...</SOLUTION>` | 用户确认结束标签必须是 `</end_working_out>`；不与 Qwen3 tokenizer 原生 `<think>` 协议混用 | ✓ Good |
-| 教师固定 GPT-5.5 high，reasoning_effort=high | 蒸馏只在最强教师上才有最大收益 | — Pending |
+| 教师固定 GPT-5.5 high，reasoning_effort=high | 蒸馏只在最强教师上才有最大收益 | ✓ Good |
 | 不采用 reality.log 标签，重新让教师标注 | 旧 lmstudio 输出有偏；教师为准 | ✓ Good |
 | 输入分布扩展合成（防过拟合） | reality.log 分布窄，OOD 泛化是 Core Value | ✓ Good |
-| QLoRA r=64 + merge → GGUF | DGX Spark 6h 内最稳路径；以 `/home/samuel/dgx-spark-setup` + `/dgx-spark-training` 为准（natolambert 上游），不参考 waybarrios | — Pending |
-| 训练 / val / OOD val = 80/10/10 | OOD val 单列以验证泛化，避免随机划分掩盖过拟合 | — Pending |
-| 首轮规模 3000 样本，并发 ≤10 | API 速率友好；先打通闭环再扩量 | — Pending |
-| GGUF 同时导出 fp16 与 q4_K_M | 部署灵活；q4_K_M 需单独评测以防量化崩塌 | — Pending |
+| QLoRA r=64 + merge → GGUF | DGX Spark 6h 内最稳路径；以 `/home/samuel/dgx-spark-setup` + `/dgx-spark-training` 为准（natolambert 上游），不参考 waybarrios | ✓ Good |
+| 训练 / val / OOD val = 80/10/10 | OOD val 单列以验证泛化，避免随机划分掩盖过拟合 | ✓ Good |
+| 首轮规模 3000 样本，并发 ≤10 | API 速率友好；先打通闭环再扩量 | ✓ Good |
+| GGUF 同时导出 fp16 与 q4_K_M | 部署灵活；q4_K_M 需单独评测以防量化崩塌 | ✓ Good |
+| v4.0 回退 4B 而不是继续 9B | Qwen3.5-9B 本机训练太慢；4B 已验证可训练可部署，且符合本地小模型 Core Value | ✓ Good |
+| Phase 12 使用 Phase 11 GO q4_K_M 生成 `reality_test.log` | 需要以最新训练模型输出替换 reality.log 旧输出，同时保留显式思考过程 | ✓ Good |
 
 ## Evolution
 
@@ -146,4 +150,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-10 — v4.0 4B 回退 + 扩展数据重训 + 标签协议修复 started*
+*Last updated: 2026-05-11 after v4.0 milestone completion*

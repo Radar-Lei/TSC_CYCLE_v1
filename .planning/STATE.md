@@ -2,37 +2,36 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: 4B 回退 + 扩展数据重训 + 标签协议修复
-status: executing
-last_updated: "2026-05-11T12:07:34.376Z"
+status: completed
+last_updated: "2026-05-11T14:36:49.152Z"
 last_activity: 2026-05-11
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 23
-  completed_plans: 21
-  percent: 91
+  completed_plans: 23
+  percent: 100
 ---
 
 # TSC-CYCLE State
 
 **Last Activity:** 2026-05-11
 **Current Milestone:** v4.0 4B 回退 + 扩展数据重训 + 标签协议修复
-**Status:** Ready to execute
+**Status:** v4.0 milestone complete
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-05-10)
+See: `.planning/PROJECT.md` (updated 2026-05-11)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近 GPT-5.5 high 教师 — 不过拟合到 reality.log。
-**Current focus:** Phase 12 — home-samuel-tsc-cycle-reality-log-reality-test-log completed; optional final milestone audit/deployment handoff next.
+**Current focus:** v4.0 shipped; awaiting next milestone definition or deployment handoff.
 
 ## Current Position
 
-Phase: 12 (home-samuel-tsc-cycle-reality-log-reality-test-log) — COMPLETE
-Plan: 3 of 3
-Status: Complete
-Progress: [█████████░] 91%
-Last activity: 2026-05-11
+Phase: Milestone v4.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-05-11 — Milestone v4.0 completed and archived
 
 ## Phase Status
 
@@ -83,7 +82,7 @@ Last activity: 2026-05-11
 
 ### Blockers
 
-- None — v4.0 roadmap 已创建；下一步是 Phase 7 planning。
+- None — v4.0 milestone execution complete.
 
 ### Quick Tasks Completed
 
@@ -98,9 +97,15 @@ Last activity: 2026-05-11
 **Key files:**
 
 - `.planning/PROJECT.md`
-- `.planning/REQUIREMENTS.md` (24 v4.0 REQs + traceability)
-- `.planning/ROADMAP.md` (v4.0 phases 7-11)
+- `.planning/REQUIREMENTS.md` (current milestone requirements; fresh file should be created by `/gsd-new-milestone`)
+- `.planning/ROADMAP.md` (collapsed milestone overview)
 - `.planning/milestones/v1.0-ROADMAP.md`
+- `.planning/milestones/v4.0-ROADMAP.md`
+- `.planning/milestones/v4.0-REQUIREMENTS.md`
 - `runs/20260507T032419Z/gguf/model.q4_K_M.gguf` (read-only baseline reference)
 - [FLAG] Phase 10 smoke MAE q4_K_M vs HF = 3.09s (>3.0s); Phase 11 should consider imatrix/q5_K_M sensitivity if eval matrix shows regression.
 - `reality_test.log` (Phase 12 final replay output, 426/426 parse/lint/protocol green, human-approved)
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone
