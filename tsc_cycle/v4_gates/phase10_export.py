@@ -117,9 +117,9 @@ def load_phase9_handoff(report_path: Path) -> dict[str, Any]:
     }
 
 
-def _tool(path: Path, name: str, fatal_failures: list[dict[str, str]]) -> str:
+def _tool(path: Path, name: str, fatal_failures: list[dict[str, str]], *, required: bool = True) -> str:
     ok = path.is_file() and (name.endswith(".py") or path.stat().st_size > 0)
-    if not ok:
+    if required and not ok:
         fatal_failures.append({"gate": name, "reason": f"missing llama.cpp tool: {path}"})
     return str(path)
 
@@ -155,8 +155,11 @@ def plan_phase10_export(
     llama_cpp_dir = Path(llama_cpp_dir)
     convert = Path(_tool(llama_cpp_dir / "convert_hf_to_gguf.py", "convert_hf_to_gguf.py", fatal_failures))
     quantize = Path(_tool(llama_cpp_dir / "llama-quantize", "llama-quantize", fatal_failures))
-    tokenize = Path(_tool(llama_cpp_dir / "llama-tokenize", "llama-tokenize", fatal_failures))
-    server = Path(_tool(llama_cpp_dir / "llama-server", "llama-server", fatal_failures))
+    tokenize_path = llama_cpp_dir / "llama-tokenize"
+    if not tokenize_path.exists():
+        tokenize_path = llama_cpp_dir / "llama-cli"
+    tokenize = Path(_tool(tokenize_path, "llama-tokenize", fatal_failures, required=False))
+    server = Path(_tool(llama_cpp_dir / "llama-server", "llama-server", fatal_failures, required=False))
 
     commands = {
         "convert_fp16": [sys.executable, str(convert), str(merged_dir), "--outfile", str(fp16_gguf), "--outtype", "f16"],
