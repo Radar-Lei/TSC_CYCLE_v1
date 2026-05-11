@@ -1,0 +1,31 @@
+{
+  "dry_run": true,
+  "fatal_failures": [],
+  "input_count": 3,
+  "input_sha256": "56eed54d37d105773bfd40614ce0c650a38c01f0df73c668e52c40c38c8cfff8",
+  "lint_ok_count": 3,
+  "model_artifact": "/home/samuel/TSC_CYCLE/runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf",
+  "model_sha256": "dry-run-no-model",
+  "next_phase_allowed": false,
+  "ok": false,
+  "output_count": 3,
+  "output_sha256": "f0a30a601a30c9a063bbb0314ae3e8987f95e39e0ad66e602fbfaea48d638ac4",
+  "parse_ok_count": 3,
+  "protocol_ok_count": 3,
+  "reports": {
+    "final_log": "/home/samuel/TSC_CYCLE/reality_test.log",
+    "gate_report": "/home/samuel/TSC_CYCLE/artifacts/v4/phase12/phase12_report.json",
+    "manifest": "/home/samuel/TSC_CYCLE/artifacts/v4/phase12/manifest.json",
+    "per_sample": "/home/samuel/TSC_CYCLE/artifacts/v4/phase12/per_sample.jsonl"
+  },
+  "requirements_covered": [
+    "PHASE12-GOAL"
+  ],
+  "timeout_count": 0,
+  "warnings": [
+    {
+      "gate": "dry_run",
+      "reason": "dry-run evidence is parser/report proof only and cannot authorize final reality_test.log"
+    }
+  ]
+}
