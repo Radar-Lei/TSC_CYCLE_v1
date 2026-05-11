@@ -43,6 +43,10 @@
 - [ ] **GGUF4B-03**: HF tokenizer ↔ llama-tokenize parity 在固定 prompt fixture 上通过
 - [ ] **GGUF4B-04**: q4_K_M 相对 HF/fp16 的格式与硬约束 smoke 不崩塌；失败时记录 q5_K_M fallback 决策点
 
+### PHASE12 — reality.log reality_test replay
+
+- [x] **PHASE12-GOAL**: 使用最新 Phase 11 GO q4_K_M GGUF 模型读取 `/home/samuel/TSC_CYCLE/reality.log` 输入，忽略原输出，生成包含显式自定义思考协议且通过 426/426 parse/lint/protocol gate 的 `/home/samuel/TSC_CYCLE/reality_test.log`。
+
 ### EVAL4B — v1 baseline 对比决策门
 
 - [ ] **EVAL4B-01**: 评测矩阵至少包含 v4 HF、v4 q4_K_M、v1 q4_K_M baseline，并保持 v1 baseline read-only 不重生成
@@ -100,6 +104,7 @@ Traceability populated during v4.0 roadmap creation.
 | EVAL4B-02 | Phase 11 | Pending |
 | EVAL4B-03 | Phase 11 | Pending |
 | EVAL4B-04 | Phase 11 | Pending |
+| PHASE12-GOAL | Phase 12 | Complete |
 
 **Coverage:**
 - v4.0 requirements: 24 total

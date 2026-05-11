@@ -9,8 +9,8 @@ progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 23
-  completed_plans: 20
-  percent: 87
+  completed_plans: 21
+  percent: 91
 ---
 
 # TSC-CYCLE State
@@ -24,14 +24,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-05-10)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近 GPT-5.5 high 教师 — 不过拟合到 reality.log。
-**Current focus:** Phase 12 — home-samuel-tsc-cycle-reality-log-reality-test-log
+**Current focus:** Phase 12 — home-samuel-tsc-cycle-reality-log-reality-test-log completed; optional final milestone audit/deployment handoff next.
 
 ## Current Position
 
-Phase: 12 (home-samuel-tsc-cycle-reality-log-reality-test-log) — EXECUTING
-Plan: 2 of 3
-Status: Ready to execute
-Progress: [█████████░] 87%
+Phase: 12 (home-samuel-tsc-cycle-reality-log-reality-test-log) — COMPLETE
+Plan: 3 of 3
+Status: Complete
+Progress: [█████████░] 91%
 Last activity: 2026-05-11
 
 ## Phase Status
@@ -43,6 +43,7 @@ Last activity: 2026-05-11
 | 9. 4B QLoRA retrain | ✓ complete | `runs/v4.0-4B-20260509T184844Z/phase9_sft_report.json` passed with `next_phase_allowed: true` |
 | 10. merge + GGUF export | ✓ complete | `runs/v4.0-4B-20260509T184844Z/phase10_gguf_report.json` passed with `next_phase_allowed: true` |
 | 11. eval matrix + decision | ✓ complete | `artifacts/v4/phase11/phase11_gate_report.json` passed with verdict `GO`, `next_phase_allowed: true`; recommended artifact `runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf` |
+| 12. reality.log → reality_test.log replay | ✓ complete | `artifacts/v4/phase12/phase12_report.json` passed with 426/426 parse/lint/protocol counts; human spot-check approved |
 
 ## Baseline to Beat (v1.0)
 
@@ -78,7 +79,7 @@ Last activity: 2026-05-11
 
 ### Active Todos
 
-- None for v4.0 milestone execution; Phase 11 decision gate is complete and GO.
+- None for v4.0 milestone execution; Phase 12 final `reality_test.log` replay is complete and human-approved.
 
 ### Blockers
 
@@ -92,7 +93,7 @@ Last activity: 2026-05-11
 
 ## Session Continuity
 
-**Next action:** Optional final milestone audit/cleanup or prepare deployment handoff for `runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf`.
+**Next action:** Optional final milestone audit/cleanup or prepare deployment handoff for `/home/samuel/TSC_CYCLE/runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf` and `/home/samuel/TSC_CYCLE/reality_test.log`.
 
 **Key files:**
 
@@ -102,3 +103,4 @@ Last activity: 2026-05-11
 - `.planning/milestones/v1.0-ROADMAP.md`
 - `runs/20260507T032419Z/gguf/model.q4_K_M.gguf` (read-only baseline reference)
 - [FLAG] Phase 10 smoke MAE q4_K_M vs HF = 3.09s (>3.0s); Phase 11 should consider imatrix/q5_K_M sensitivity if eval matrix shows regression.
+- `reality_test.log` (Phase 12 final replay output, 426/426 parse/lint/protocol green, human-approved)
