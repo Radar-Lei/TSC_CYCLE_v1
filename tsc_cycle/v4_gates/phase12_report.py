@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
 from typing import Any, Iterable
 
+from tsc_cycle.constraint_lint import validate
 from tsc_cycle.prompt_builder import parse_assistant_output
 
 PROJECT_ROOT = Path("/home/samuel/TSC_CYCLE")
@@ -27,13 +29,28 @@ def _is_under(path: Path, root: Path) -> bool:
     return candidate == root or root in candidate.parents
 
 
+def sha256_file(path: str | Path) -> str:
+    hasher = hashlib.sha256()
+    with Path(path).open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
+def _reject_unsafe_report_path(path: str | Path) -> Path:
+    candidate = Path(path).expanduser().resolve(strict=False)
+    artifact_root = ARTIFACT_ROOT.resolve(strict=False)
+    if candidate == REPORT_PATH.resolve(strict=False) or _is_under(candidate, artifact_root):
+        return candidate
+    raise ValueError(f"Phase 12 report output path is not allowed: {candidate}")
+
+
 def _write_json(path: Path | None, payload: dict[str, Any]) -> None:
     if path is None:
         return
-    if _is_under(path, FROZEN_V1_ROOT):
-        raise ValueError(f"refusing Phase 12 report output under frozen v1 root: {path}")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")
+    safe_path = _reject_unsafe_report_path(path)
+    safe_path.parent.mkdir(parents=True, exist_ok=True)
+    safe_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")
 
 
 def _normalise_records(records: Iterable[Any]) -> list[dict[str, Any]]:
@@ -46,12 +63,6 @@ def _normalise_records(records: Iterable[Any]) -> list[dict[str, Any]]:
         else:
             raise TypeError(f"unsupported Phase 12 record type: {type(record).__name__}")
     return result
-
-
-def _protocol_ok(output: dict[str, Any]) -> bool:
-    raw = str(output.get("raw_text") or "")
-    reasoning, solution = parse_assistant_output(raw)
-    return bool(reasoning) and solution is not None
 
 
 def _sample_id(output: dict[str, Any]) -> str:
@@ -91,16 +102,20 @@ def evaluate_phase12_report(
     lint_ok_count = 0
     protocol_ok_count = 0
     timeout_count = 0
-    for output in outs:
+    for record, output in zip(recs, outs, strict=False):
         if output.get("timeout") is True:
             timeout_count += 1
-        parsed = output.get("solution") is not None and not output.get("parse_error")
-        if parsed:
+        raw = str(output.get("raw_text") or "")
+        reasoning, solution = parse_assistant_output(raw)
+        if reasoning and solution is not None:
             parse_ok_count += 1
-        if output.get("lint_ok") is True or (isinstance(output.get("lint"), dict) and output["lint"].get("ok") is True):
-            lint_ok_count += 1
-        if _protocol_ok(output):
             protocol_ok_count += 1
+            lint = validate(record["input"], solution)
+            if lint.ok:
+                lint_ok_count += 1
+            serialized_solution = output.get("solution")
+            if serialized_solution is not None and serialized_solution != solution:
+                fatal_failures.append({"gate": "solution_consistency", "reason": f"serialized solution mismatch for {record.get('sample_id')}"})
 
     if parse_ok_count != len(recs):
         fatal_failures.append({"gate": "parse", "reason": f"parse_ok_count={parse_ok_count}, expected={len(recs)}"})
@@ -111,18 +126,32 @@ def evaluate_phase12_report(
     if timeout_count:
         fatal_failures.append({"gate": "timeout", "reason": f"timeout_count={timeout_count}"})
 
-    model_path = Path(model_artifact)
+    model_path = Path(model_artifact).expanduser().resolve(strict=False)
     if _is_under(model_path, FROZEN_V1_ROOT):
         fatal_failures.append({"gate": "model_artifact", "reason": f"frozen v1 artifact is not allowed: {model_path}"})
     if not str(model_path):
         fatal_failures.append({"gate": "model_artifact", "reason": "model_artifact is empty"})
-    for key, value in (
-        ("model_sha256", model_sha256),
-        ("input_sha256", input_sha256),
-        ("output_sha256", output_sha256),
-    ):
-        if not value:
-            fatal_failures.append({"gate": key, "reason": f"missing {key}"})
+    if not model_sha256:
+        fatal_failures.append({"gate": "model_sha256", "reason": "missing model_sha256"})
+    elif dry_run and model_sha256 == "dry-run-no-model":
+        pass
+    elif not model_path.is_file():
+        fatal_failures.append({"gate": "model_artifact", "reason": f"model artifact is missing: {model_path}"})
+    elif sha256_file(model_path) != model_sha256:
+        fatal_failures.append({"gate": "model_sha256", "reason": "model artifact hash mismatch"})
+
+    if not input_sha256:
+        fatal_failures.append({"gate": "input_sha256", "reason": "missing input_sha256"})
+
+    final_log = Path(final_log_path).expanduser().resolve(strict=False)
+    if not output_sha256:
+        fatal_failures.append({"gate": "output_sha256", "reason": "missing output_sha256"})
+    elif dry_run:
+        pass
+    elif not final_log.is_file():
+        fatal_failures.append({"gate": "final_log", "reason": f"missing final reality_test.log: {final_log}"})
+    elif sha256_file(final_log) != output_sha256:
+        fatal_failures.append({"gate": "output_sha256", "reason": "final log hash mismatch"})
 
     if dry_run:
         warnings.append({"gate": "dry_run", "reason": "dry-run evidence is parser/report proof only and cannot authorize final reality_test.log"})

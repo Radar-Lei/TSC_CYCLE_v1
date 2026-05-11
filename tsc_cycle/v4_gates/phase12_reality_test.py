@@ -58,10 +58,7 @@ def _stable_json(payload: Any) -> str:
 
 
 def sha256_text(text: str) -> str:
-    digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
-    # Keep stale-output sentinels out of serialized parser contracts while
-    # preserving a deterministic 256-bit hex digest.
-    return digest.replace("999", "998")
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def sha256_file(path: str | Path) -> str:
@@ -88,40 +85,46 @@ def reject_unsafe_phase12_output_path(path: str | Path) -> Path:
     raise ValueError(f"Phase 12 output path is not allowed: {candidate}")
 
 
-def _nearest_prompt_header(text: str, position: int) -> dict[str, str | None]:
-    header: dict[str, str | None] = {"timestamp": None, "crossing_id": None}
-    for match in HEADER_RE.finditer(text, 0, position):
-        if match.group("type") != "prompt":
-            continue
-        rest = match.group("rest") or ""
-        crossing_match = re.search(r"crossing_id=([^|\s]+)", rest)
-        header = {
-            "timestamp": match.group("ts"),
-            "crossing_id": crossing_match.group(1) if crossing_match else None,
-        }
-    return header
+def _iter_log_blocks(text: str) -> Iterable[tuple[re.Match[str], str]]:
+    matches = list(HEADER_RE.finditer(text))
+    for index, match in enumerate(matches):
+        block_start = match.end()
+        block_end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+        yield match, text[block_start:block_end]
+
+
+def _prompt_header(match: re.Match[str]) -> dict[str, str | None]:
+    rest = match.group("rest") or ""
+    crossing_match = re.search(r"crossing_id=([^|\s]+)", rest)
+    return {
+        "timestamp": match.group("ts"),
+        "crossing_id": crossing_match.group(1) if crossing_match else None,
+    }
 
 
 def extract_reality_inputs(log_path: str | Path = REALITY_LOG) -> list[dict[str, Any]]:
     text = Path(log_path).read_text(encoding="utf-8")
     records: list[dict[str, Any]] = []
-    for match in INPUT_FRAME_RE.finditer(text):
-        payload_text = match.group("payload").strip()
-        payload = json.loads(payload_text)
-        if not isinstance(payload, dict):
-            raise ValueError("framed reality input JSON must be an object")
-        header = _nearest_prompt_header(text, match.start())
-        sample_id = f"reality-{len(records) + 1:04d}"
-        prediction = payload.get("prediction") if isinstance(payload.get("prediction"), dict) else {}
-        record = RealityInputRecord(
-            sample_id=sample_id,
-            crossing_id=header.get("crossing_id"),
-            timestamp=header.get("timestamp"),
-            as_of=prediction.get("as_of") if isinstance(prediction.get("as_of"), str) else None,
-            input=payload,
-            input_sha256=sha256_text(_stable_json(payload)),
-        )
-        records.append(asdict(record))
+    for header_match, block in _iter_log_blocks(text):
+        if header_match.group("type") != "prompt":
+            continue
+        header = _prompt_header(header_match)
+        for match in INPUT_FRAME_RE.finditer(block):
+            payload_text = match.group("payload").strip()
+            payload = json.loads(payload_text)
+            if not isinstance(payload, dict):
+                raise ValueError("framed reality input JSON must be an object")
+            sample_id = f"reality-{len(records) + 1:04d}"
+            prediction = payload.get("prediction") if isinstance(payload.get("prediction"), dict) else {}
+            record = RealityInputRecord(
+                sample_id=sample_id,
+                crossing_id=header.get("crossing_id"),
+                timestamp=header.get("timestamp"),
+                as_of=prediction.get("as_of") if isinstance(prediction.get("as_of"), str) else None,
+                input=payload,
+                input_sha256=sha256_text(_stable_json(payload)),
+            )
+            records.append(asdict(record))
     return records
 
 
@@ -135,14 +138,14 @@ def _lint_payload(prediction_input: dict[str, Any], solution: dict[str, int] | N
 def _ensure_output_passes(record: dict[str, Any], output: dict[str, Any]) -> None:
     if output.get("sample_id") != record.get("sample_id"):
         raise ValueError(f"Phase 12 sample_id mismatch: {output.get('sample_id')} != {record.get('sample_id')}")
-    if output.get("parse_error"):
-        raise ValueError(f"Phase 12 parse gate failed for {record.get('sample_id')}: {output.get('parse_error')}")
+    if output.get("input_sha256") and output.get("input_sha256") != record.get("input_sha256"):
+        raise ValueError(f"Phase 12 input hash mismatch for {record.get('sample_id')}")
     raw = str(output.get("raw_text") or "")
     reasoning, solution = parse_assistant_output(raw)
     if not reasoning or solution is None:
-        raise ValueError(f"Phase 12 protocol gate failed for {record.get('sample_id')}")
-    lint_payload = output.get("lint") if isinstance(output.get("lint"), dict) else _lint_payload(record["input"], solution)
-    if lint_payload.get("ok") is not True or output.get("lint_ok") is False:
+        raise ValueError(f"Phase 12 protocol/parse gate failed for {record.get('sample_id')}")
+    lint_payload = _lint_payload(record["input"], solution)
+    if lint_payload.get("ok") is not True:
         raise ValueError(f"Phase 12 lint gate failed for {record.get('sample_id')}: {lint_payload}")
 
 
@@ -162,8 +165,8 @@ def render_reality_test_log(
         timestamp = record.get("timestamp") or record.get("as_of") or "unknown-time"
         crossing = record.get("crossing_id") or "unknown"
         prompt = build_user_prompt(record["input"])
-        parsed = output.get("solution")
-        lint_payload = output.get("lint") if isinstance(output.get("lint"), dict) else _lint_payload(record["input"], parsed)
+        _, parsed = parse_assistant_output(str(output.get("raw_text") or ""))
+        lint_payload = _lint_payload(record["input"], parsed)
         chunks.append(f"{timestamp}|INFO|type=prompt|crossing_id={crossing}|sample_id={record['sample_id']}\n\n{prompt}\n{SEPARATOR}")
         chunks.append(
             f"{timestamp}|INFO|type=result|engine={backend_label}|crossing_id={crossing}|sample_id={record['sample_id']}\n"
@@ -181,12 +184,9 @@ def write_final_log_atomically(
     out_log: str | Path = FINAL_LOG,
     records: Iterable[dict[str, Any]],
     outputs: Iterable[dict[str, Any]],
+    allow_test_path: bool = False,
 ) -> Path:
-    out_path = Path(out_log)
-    if out_path.resolve(strict=False) != FINAL_LOG.resolve(strict=False):
-        # Unit tests exercise arbitrary tmp final paths; production calls are guarded by CLI path validation.
-        if str(out_path).startswith(str(PROJECT_ROOT)):
-            reject_unsafe_phase12_output_path(out_path)
+    out_path = Path(out_log).expanduser().resolve(strict=False) if allow_test_path else reject_unsafe_phase12_output_path(out_log)
     recs = list(records)
     outs = list(outputs)
     if len(recs) != len(outs):
@@ -250,6 +250,7 @@ def _build_output_record(
         "retry": retry or {},
         "input_sha256": record["input_sha256"],
         "raw_sha256": sha256_text(raw_text),
+        "model_sha256": "",
     }
 
 
@@ -283,7 +284,36 @@ def _write_cache(path: Path, output: dict[str, Any]) -> None:
     path.write_text(json.dumps(output, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")
 
 
-def _run_live(records: list[dict[str, Any]], args: argparse.Namespace, cache_dir: Path) -> list[dict[str, Any]]:
+def _generation_metadata(args: argparse.Namespace) -> dict[str, Any]:
+    return {
+        "n_predict": int(args.n_predict),
+        "retry_n_predict": int(args.retry_n_predict),
+        "timeout_sec": int(args.timeout_sec),
+        "ngl": int(args.ngl),
+        "threads": int(args.threads),
+        "ctx_size": int(args.ctx_size),
+    }
+
+
+def _cache_matches_current_run(cached: dict[str, Any], record: dict[str, Any], args: argparse.Namespace, model_sha: str) -> bool:
+    if cached.get("sample_id") != record.get("sample_id"):
+        return False
+    if cached.get("input_sha256") != record.get("input_sha256"):
+        return False
+    if cached.get("backend") != args.backend_label:
+        return False
+    if cached.get("model_sha256") != model_sha:
+        return False
+    if cached.get("generation") != _generation_metadata(args):
+        return False
+    try:
+        _ensure_output_passes(record, cached)
+    except (TypeError, ValueError):
+        return False
+    return True
+
+
+def _run_live(records: list[dict[str, Any]], args: argparse.Namespace, cache_dir: Path, model_sha: str) -> list[dict[str, Any]]:
     from tsc_cycle.student.parity_gguf import _find_free_port, _kill_server, _post_completion, _spawn_server, _wait_health
 
     port = _find_free_port()
@@ -296,7 +326,7 @@ def _run_live(records: list[dict[str, Any]], args: argparse.Namespace, cache_dir
             cache_path = cache_dir / f"{record['sample_id']}.json"
             if args.resume:
                 cached = _load_cache(cache_path)
-                if cached is not None:
+                if cached is not None and _cache_matches_current_run(cached, record, args, model_sha):
                     outputs.append(cached)
                     continue
             prompt = build_user_prompt(record["input"]) + "\n" + build_assistant_prefill()
@@ -319,6 +349,8 @@ def _run_live(records: list[dict[str, Any]], args: argparse.Namespace, cache_dir
                 http_status=meta.get("http_status"),
                 retry=retry_meta,
             )
+            output["model_sha256"] = model_sha
+            output["generation"] = _generation_metadata(args)
             _write_cache(cache_path, output)
             outputs.append(output)
         return outputs
@@ -357,8 +389,7 @@ def main(argv: list[str] | None = None) -> int:
     reject_unsafe_phase12_output_path(manifest_path)
     reject_unsafe_phase12_output_path(per_sample_path)
     reject_unsafe_phase12_output_path(report_path)
-    if Path(args.out_log).resolve(strict=False) == FINAL_LOG.resolve(strict=False):
-        reject_unsafe_phase12_output_path(args.out_log)
+    reject_unsafe_phase12_output_path(args.out_log)
     if _is_under(Path(args.gguf_path), FROZEN_V1_ROOT):
         raise SystemExit("refusing to use frozen v1 GGUF for Phase 12 generation")
 
@@ -380,17 +411,21 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.dry_run:
         outputs = [
-            _build_output_record(
-                record,
-                raw_text=_format_synthetic_output(record),
-                backend_label=args.backend_label,
-                dry_run=True,
-                n_predict=0,
-            )
+            {
+                **_build_output_record(
+                    record,
+                    raw_text=_format_synthetic_output(record),
+                    backend_label=args.backend_label,
+                    dry_run=True,
+                    n_predict=0,
+                ),
+                "model_sha256": model_sha,
+                "generation": _generation_metadata(args),
+            }
             for record in records
         ]
     else:
-        outputs = _run_live(records, args, cache_dir)
+        outputs = _run_live(records, args, cache_dir, model_sha)
 
     _write_per_sample(outputs, per_sample_path)
     rendered = render_reality_test_log(records, outputs, backend_label=args.backend_label)
@@ -417,6 +452,24 @@ def main(argv: list[str] | None = None) -> int:
     }
     _write_manifest(manifest, manifest_path)
 
+    if args.dry_run:
+        report = evaluate_phase12_report(
+            records=records,
+            outputs=outputs,
+            model_artifact=args.gguf_path,
+            model_sha256=model_sha,
+            input_sha256=input_log_sha,
+            output_sha256=output_sha,
+            out_path=report_path,
+            dry_run=True,
+            manifest_path=manifest_path,
+            per_sample_path=per_sample_path,
+            final_log_path=args.out_log,
+        )
+        print(f"[PHASE12] dry-run OK records={len(records)} manifest={manifest_path} report={report_path}")
+        return 0 if report.get("dry_run") is True else 1
+
+    write_final_log_atomically(text=rendered, out_log=args.out_log, records=records, outputs=outputs)
     report = evaluate_phase12_report(
         records=records,
         outputs=outputs,
@@ -425,20 +478,15 @@ def main(argv: list[str] | None = None) -> int:
         input_sha256=input_log_sha,
         output_sha256=output_sha,
         out_path=report_path,
-        dry_run=bool(args.dry_run),
+        dry_run=False,
         manifest_path=manifest_path,
         per_sample_path=per_sample_path,
         final_log_path=args.out_log,
     )
 
-    if args.dry_run:
-        print(f"[PHASE12] dry-run OK records={len(records)} manifest={manifest_path} report={report_path}")
-        return 0
-
     if report.get("ok") is not True:
         print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False), file=sys.stderr)
         return 1
-    write_final_log_atomically(text=rendered, out_log=args.out_log, records=records, outputs=outputs)
     print(f"[PHASE12] OK wrote {args.out_log} records={len(records)} report={report_path}")
     return 0
 
