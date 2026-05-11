@@ -275,16 +275,19 @@ def test_render_rejects_native_think_and_malformed_close_tags() -> None:
 def test_report_evaluation_fails_closed_on_parse_lint_count_or_hash_failures(tmp_path: Path) -> None:
     mod = _phase12_report_contract()
     final_log = tmp_path / "reality_test.log"
-    final_log.write_text("audited final log\n", encoding="utf-8")
+    records = [_record("reality-0001")]
+    outputs = [_good_output("reality-0001")]
+    canonical_log = _phase12_reality_contract().render_reality_test_log(records, outputs)
+    final_log.write_text(canonical_log, encoding="utf-8")
     model_artifact = tmp_path / "model.q4_K_M.gguf"
     model_artifact.write_bytes(b"fake model artifact")
     base_kwargs = {
-        "records": [_record("reality-0001")],
-        "outputs": [_good_output("reality-0001")],
+        "records": records,
+        "outputs": outputs,
         "model_artifact": model_artifact,
         "model_sha256": hashlib.sha256(b"fake model artifact").hexdigest(),
         "input_sha256": "input-log-hash",
-        "output_sha256": hashlib.sha256(b"audited final log\n").hexdigest(),
+        "output_sha256": hashlib.sha256(canonical_log.encode("utf-8")).hexdigest(),
         "out_path": None,
         "final_log_path": final_log,
     }
@@ -318,7 +321,13 @@ def test_report_evaluation_fails_closed_on_parse_lint_count_or_hash_failures(tmp
         "missing_final_log": {**base_kwargs, "final_log_path": tmp_path / "missing_reality_test.log"},
         "bad_output_hash": {**base_kwargs, "output_sha256": hashlib.sha256(b"stale\n").hexdigest()},
         "bad_model_hash": {**base_kwargs, "model_sha256": hashlib.sha256(b"stale model").hexdigest()},
+        "mismatched_final_log": {
+            **base_kwargs,
+            "output_sha256": hashlib.sha256(canonical_log.encode("utf-8")).hexdigest(),
+            "final_log_path": tmp_path / "mismatched_reality_test.log",
+        },
     }
+    (tmp_path / "mismatched_reality_test.log").write_text(canonical_log.replace("PARSED:", "PARSED:\nSTALE", 1), encoding="utf-8")
     for name, kwargs in failing_cases.items():
         report = mod.evaluate_phase12_report(**kwargs)
         assert report["ok"] is False, name
@@ -326,20 +335,62 @@ def test_report_evaluation_fails_closed_on_parse_lint_count_or_hash_failures(tmp
         assert report["fatal_failures"], name
 
 
+def test_report_requires_canonical_final_log_content_even_when_hash_matches(tmp_path: Path) -> None:
+    mod = _phase12_report_contract()
+    records = [_record()]
+    outputs = [_good_output()]
+    canonical_log = _phase12_reality_contract().render_reality_test_log(records, outputs)
+    final_log = tmp_path / "reality_test.log"
+    final_log.write_text("unrelated final log with self-consistent hash\n", encoding="utf-8")
+    model_artifact = tmp_path / "model.q4_K_M.gguf"
+    model_artifact.write_bytes(b"fake model artifact")
+
+    mismatched = mod.evaluate_phase12_report(
+        records=records,
+        outputs=outputs,
+        model_artifact=model_artifact,
+        model_sha256=hashlib.sha256(b"fake model artifact").hexdigest(),
+        input_sha256="input-log-hash",
+        output_sha256=hashlib.sha256(final_log.read_bytes()).hexdigest(),
+        out_path=None,
+        final_log_path=final_log,
+    )
+    assert mismatched["ok"] is False
+    assert mismatched["next_phase_allowed"] is False
+    assert any(failure["gate"] == "canonical_final_log" for failure in mismatched["fatal_failures"])
+
+    final_log.write_text(canonical_log, encoding="utf-8")
+    passing = mod.evaluate_phase12_report(
+        records=records,
+        outputs=outputs,
+        model_artifact=model_artifact,
+        model_sha256=hashlib.sha256(b"fake model artifact").hexdigest(),
+        input_sha256="input-log-hash",
+        output_sha256=hashlib.sha256(canonical_log.encode("utf-8")).hexdigest(),
+        out_path=None,
+        final_log_path=final_log,
+    )
+    assert passing["ok"] is True
+    assert passing["next_phase_allowed"] is True
+
+
 def test_report_payload_contains_phase12_audit_fields(tmp_path: Path) -> None:
     mod = _phase12_report_contract()
     final_log = tmp_path / "reality_test.log"
-    final_log.write_text("audited final log\n", encoding="utf-8")
+    records = [_record()]
+    outputs = [_good_output()]
+    canonical_log = _phase12_reality_contract().render_reality_test_log(records, outputs)
+    final_log.write_text(canonical_log, encoding="utf-8")
     model_artifact = tmp_path / "model.q4_K_M.gguf"
     model_artifact.write_bytes(b"fake model artifact")
 
     report = mod.evaluate_phase12_report(
-        records=[_record()],
-        outputs=[_good_output()],
+        records=records,
+        outputs=outputs,
         model_artifact=model_artifact,
         model_sha256=hashlib.sha256(b"fake model artifact").hexdigest(),
         input_sha256="input-log-hash",
-        output_sha256=hashlib.sha256(b"audited final log\n").hexdigest(),
+        output_sha256=hashlib.sha256(canonical_log.encode("utf-8")).hexdigest(),
         out_path=None,
         final_log_path=final_log,
     )
@@ -361,16 +412,19 @@ def test_report_payload_contains_phase12_audit_fields(tmp_path: Path) -> None:
 def test_report_out_path_allows_only_phase12_artifact_paths(tmp_path: Path) -> None:
     mod = _phase12_report_contract()
     final_log = tmp_path / "reality_test.log"
-    final_log.write_text("audited final log\n", encoding="utf-8")
+    records = [_record()]
+    outputs = [_good_output()]
+    canonical_log = _phase12_reality_contract().render_reality_test_log(records, outputs)
+    final_log.write_text(canonical_log, encoding="utf-8")
     model_artifact = tmp_path / "model.q4_K_M.gguf"
     model_artifact.write_bytes(b"fake model artifact")
     kwargs = {
-        "records": [_record()],
-        "outputs": [_good_output()],
+        "records": records,
+        "outputs": outputs,
         "model_artifact": model_artifact,
         "model_sha256": hashlib.sha256(b"fake model artifact").hexdigest(),
         "input_sha256": "input-log-hash",
-        "output_sha256": hashlib.sha256(b"audited final log\n").hexdigest(),
+        "output_sha256": hashlib.sha256(canonical_log.encode("utf-8")).hexdigest(),
         "final_log_path": final_log,
     }
 

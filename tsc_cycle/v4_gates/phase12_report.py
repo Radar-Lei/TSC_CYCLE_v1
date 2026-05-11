@@ -11,6 +11,7 @@ from typing import Any, Iterable
 
 from tsc_cycle.constraint_lint import validate
 from tsc_cycle.prompt_builder import parse_assistant_output
+from tsc_cycle.v4_gates.phase12_log_render import DEFAULT_BACKEND_LABEL, render_reality_test_log
 
 PROJECT_ROOT = Path("/home/samuel/TSC_CYCLE")
 REALITY_TEST_LOG = PROJECT_ROOT / "reality_test.log"
@@ -67,6 +68,13 @@ def _normalise_records(records: Iterable[Any]) -> list[dict[str, Any]]:
 
 def _sample_id(output: dict[str, Any]) -> str:
     return str(output.get("sample_id") or "")
+
+
+def _backend_label(outputs: list[dict[str, Any]]) -> str:
+    labels = {str(output.get("backend") or "") for output in outputs if output.get("backend")}
+    if len(labels) == 1:
+        return labels.pop()
+    return DEFAULT_BACKEND_LABEL
 
 
 def evaluate_phase12_report(
@@ -150,8 +158,21 @@ def evaluate_phase12_report(
         pass
     elif not final_log.is_file():
         fatal_failures.append({"gate": "final_log", "reason": f"missing final reality_test.log: {final_log}"})
-    elif sha256_file(final_log) != output_sha256:
-        fatal_failures.append({"gate": "output_sha256", "reason": "final log hash mismatch"})
+    else:
+        actual_output_sha256 = sha256_file(final_log)
+        if actual_output_sha256 != output_sha256:
+            fatal_failures.append({"gate": "output_sha256", "reason": "final log hash mismatch"})
+        try:
+            canonical_log = render_reality_test_log(recs, outs, backend_label=_backend_label(outs))
+        except (KeyError, TypeError, ValueError) as exc:
+            fatal_failures.append({"gate": "canonical_final_log", "reason": f"canonical render failed: {exc}"})
+        else:
+            final_log_text = final_log.read_text(encoding="utf-8")
+            canonical_sha256 = hashlib.sha256(canonical_log.encode("utf-8")).hexdigest()
+            if final_log_text != canonical_log:
+                fatal_failures.append({"gate": "canonical_final_log", "reason": "final log content differs from canonical audited render"})
+            if canonical_sha256 != output_sha256:
+                fatal_failures.append({"gate": "output_sha256", "reason": "output_sha256 does not match canonical audited render"})
 
     if dry_run:
         warnings.append({"gate": "dry_run", "reason": "dry-run evidence is parser/report proof only and cannot authorize final reality_test.log"})

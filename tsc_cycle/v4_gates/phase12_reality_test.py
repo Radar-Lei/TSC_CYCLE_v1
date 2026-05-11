@@ -12,10 +12,15 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
-from tsc_cycle.constraint_lint import validate
 from tsc_cycle.eval.metrics_constraints import score_constraint
 from tsc_cycle.eval.metrics_reasoning import score_reasoning
 from tsc_cycle.prompt_builder import build_assistant_prefill, build_user_prompt, parse_assistant_output
+from tsc_cycle.v4_gates.phase12_log_render import (
+    DEFAULT_BACKEND_LABEL,
+    ensure_phase12_output_passes,
+    lint_phase12_payload,
+    render_reality_test_log,
+)
 from tsc_cycle.v4_gates.phase12_report import evaluate_phase12_report
 
 PROJECT_ROOT = Path("/home/samuel/TSC_CYCLE")
@@ -31,8 +36,6 @@ PHASE11_GATE_REPORT = PROJECT_ROOT / "artifacts" / "v4" / "phase11" / "phase11_g
 APPROVED_MODEL_ARTIFACT = PROJECT_ROOT / "runs" / "v4.0-4B-20260509T184844Z" / "gguf" / "model.q4_K_M.gguf"
 FROZEN_V1_ROOT = PROJECT_ROOT / "runs" / "20260507T032419Z"
 DEFAULT_LLAMA_SERVER = Path("/home/samuel/llama.cpp/build/bin/llama-server")
-DEFAULT_BACKEND_LABEL = "tsc-cycle-v4-q4_K_M"
-SEPARATOR = "-" * 80
 INPUT_FRAME_RE = re.compile(r"【cycle_predict_input_json】(?P<payload>.*?)【/cycle_predict_input_json】", re.DOTALL)
 HEADER_RE = re.compile(r"^(?P<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\|INFO\|type=(?P<type>\w+)(?P<rest>.*)$", re.MULTILINE)
 
@@ -129,53 +132,11 @@ def extract_reality_inputs(log_path: str | Path = REALITY_LOG) -> list[dict[str,
 
 
 def _lint_payload(prediction_input: dict[str, Any], solution: dict[str, int] | None) -> dict[str, Any]:
-    if solution is None:
-        return {"ok": False, "violations": [{"kind": "unparseable"}]}
-    lint = validate(prediction_input, solution)
-    return {"ok": bool(lint.ok), "violations": lint.violations}
+    return lint_phase12_payload(prediction_input, solution)
 
 
 def _ensure_output_passes(record: dict[str, Any], output: dict[str, Any]) -> None:
-    if output.get("sample_id") != record.get("sample_id"):
-        raise ValueError(f"Phase 12 sample_id mismatch: {output.get('sample_id')} != {record.get('sample_id')}")
-    if output.get("input_sha256") and output.get("input_sha256") != record.get("input_sha256"):
-        raise ValueError(f"Phase 12 input hash mismatch for {record.get('sample_id')}")
-    raw = str(output.get("raw_text") or "")
-    reasoning, solution = parse_assistant_output(raw)
-    if not reasoning or solution is None:
-        raise ValueError(f"Phase 12 protocol/parse gate failed for {record.get('sample_id')}")
-    lint_payload = _lint_payload(record["input"], solution)
-    if lint_payload.get("ok") is not True:
-        raise ValueError(f"Phase 12 lint gate failed for {record.get('sample_id')}: {lint_payload}")
-
-
-def render_reality_test_log(
-    records: Iterable[dict[str, Any]],
-    outputs: Iterable[dict[str, Any]],
-    *,
-    backend_label: str = DEFAULT_BACKEND_LABEL,
-) -> str:
-    recs = list(records)
-    outs = list(outputs)
-    if len(recs) != len(outs):
-        raise ValueError(f"cannot render Phase 12 log with count mismatch: {len(recs)} != {len(outs)}")
-    chunks: list[str] = []
-    for record, output in zip(recs, outs, strict=True):
-        _ensure_output_passes(record, output)
-        timestamp = record.get("timestamp") or record.get("as_of") or "unknown-time"
-        crossing = record.get("crossing_id") or "unknown"
-        prompt = build_user_prompt(record["input"])
-        _, parsed = parse_assistant_output(str(output.get("raw_text") or ""))
-        lint_payload = _lint_payload(record["input"], parsed)
-        chunks.append(f"{timestamp}|INFO|type=prompt|crossing_id={crossing}|sample_id={record['sample_id']}\n\n{prompt}\n{SEPARATOR}")
-        chunks.append(
-            f"{timestamp}|INFO|type=result|engine={backend_label}|crossing_id={crossing}|sample_id={record['sample_id']}\n"
-            f"RAW:\n{output['raw_text']}\n"
-            f"PARSED:\n{json.dumps(parsed, ensure_ascii=False, sort_keys=True)}\n"
-            f"LINT:\n{json.dumps(lint_payload, ensure_ascii=False, sort_keys=True)}\n"
-            f"{SEPARATOR}"
-        )
-    return "\n".join(chunks) + ("\n" if chunks else "")
+    ensure_phase12_output_passes(record, output)
 
 
 def write_final_log_atomically(
