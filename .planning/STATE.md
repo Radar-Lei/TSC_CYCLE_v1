@@ -3,19 +3,19 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: 4B 回退 + 扩展数据重训 + 标签协议修复
 status: verifying
-last_updated: "2026-05-09T18:31:21.250Z"
-last_activity: 2026-05-09
+last_updated: "2026-05-11T02:01:31.886Z"
+last_activity: 2026-05-11
 progress:
   total_phases: 5
-  completed_phases: 2
-  total_plans: 12
-  completed_plans: 9
-  percent: 75
+  completed_phases: 3
+  total_plans: 16
+  completed_plans: 14
+  percent: 88
 ---
 
 # TSC-CYCLE State
 
-**Last Activity:** 2026-05-09
+**Last Activity:** 2026-05-11
 **Current Milestone:** v4.0 4B 回退 + 扩展数据重训 + 标签协议修复
 **Status:** Phase complete — ready for verification
 
@@ -31,8 +31,8 @@ See: `.planning/PROJECT.md` (updated 2026-05-10)
 Phase: 08 (v3 扩展数据 → 4B dataset rebuild) — EXECUTING
 Plan: 4 of 4
 Status: Phase complete — ready for verification
-Progress: [████████░░] 75%
-Last activity: 2026-05-09
+Progress: [█████████░] 88%
+Last activity: 2026-05-11
 
 ## Phase Status
 

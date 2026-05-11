@@ -38,7 +38,7 @@
 
 ### GGUF4B — merge + GGUF 导出
 
-- [ ] **GGUF4B-01**: LoRA merge → HF bf16/fp16 safetensors → GGUF fp16 → q4_K_M GGUF 全链路通过
+- [x] **GGUF4B-01**: LoRA merge → HF bf16/fp16 safetensors → GGUF fp16 → q4_K_M GGUF 全链路通过
 - [ ] **GGUF4B-02**: HF / GGUF fp16 / GGUF q4_K_M 三精度 smoke 均输出完整 `<start_working_out>...</end_working_out><SOLUTION>...</SOLUTION>` 结构
 - [ ] **GGUF4B-03**: HF tokenizer ↔ llama-tokenize parity 在固定 prompt fixture 上通过
 - [ ] **GGUF4B-04**: q4_K_M 相对 HF/fp16 的格式与硬约束 smoke 不崩塌；失败时记录 q5_K_M fallback 决策点
@@ -92,7 +92,7 @@ Traceability populated during v4.0 roadmap creation.
 | SFT4B-02 | Phase 9 | Complete |
 | SFT4B-03 | Phase 9 | Complete |
 | SFT4B-04 | Phase 9 | Complete |
-| GGUF4B-01 | Phase 10 | Pending |
+| GGUF4B-01 | Phase 10 | Complete |
 | GGUF4B-02 | Phase 10 | Pending |
 | GGUF4B-03 | Phase 10 | Pending |
 | GGUF4B-04 | Phase 10 | Pending |

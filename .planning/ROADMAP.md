@@ -74,7 +74,12 @@ Plans:
   2. HF / GGUF fp16 / GGUF q4_K_M 三精度 smoke 均输出完整 `<start_working_out>...</end_working_out><SOLUTION>...</SOLUTION>` 结构。
   3. 固定 prompt fixture 上 HF tokenizer ↔ llama-tokenize parity 通过，说明 GGUF metadata 与训练 tokenizer 一致。
   4. q4_K_M 相对 HF/fp16 的协议与硬约束 smoke 未崩塌；若失败，报告中明确记录 q5_K_M fallback 决策点。
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [x] 10-01-PLAN.md — 建立 Phase 10 RED 合约，锁定 merge/export、tokenizer parity、三精度 smoke 与 q5_K_M fallback 决策证据。
+- [x] 10-02-PLAN.md — 实现并运行 v4 adapter merge、HF safetensors、GGUF fp16 与 q4_K_M 导出，并生成 hash-addressed export report。
+- [ ] 10-03-PLAN.md — 实现并运行固定 prompt fixture 的 HF tokenizer ↔ llama-tokenize parity 与 custom-tag GGUF metadata sanity gate。
+- [ ] 10-04-PLAN.md — 实现并运行 HF/GGUF fp16/GGUF q4_K_M 三精度协议与硬约束 smoke，生成最终 Phase 10 aggregate report。
 
 ### Phase 11: eval matrix + decision
 **Goal**: 用统一评测矩阵比较 v4 HF、v4 q4_K_M 与 v1 q4_K_M baseline，判断扩展数据与 `</end_working_out>` 标签修复是否带来收益或至少不回退。
@@ -94,7 +99,7 @@ Plans:
 | 7. 4B baseline/label protocol gate | 4/4 | Complete | 2026-05-10 |
 | 8. v3 扩展数据 → 4B dataset rebuild | 4/4 | Complete | 2026-05-10 |
 | 9. 4B QLoRA retrain | 0/4 | Planned | - |
-| 10. merge + GGUF export | 0/0 | Not started | - |
+| 10. merge + GGUF export | 2/4 | In Progress|  |
 | 11. eval matrix + decision | 0/0 | Not started | - |
 
 ## Coverage Map
