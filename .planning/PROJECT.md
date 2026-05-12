@@ -20,7 +20,7 @@ GGUF（fp16 + q4_K_M）部署、且带显式思考过程的 4B 推理模型。
 
 **v1.0 deployment artifact**: `runs/20260507T032419Z/gguf/model.q4_K_M.gguf` — v4.0 中作为只读 baseline。
 
-**v2.0 强化版 ABANDONED** (2026-05-08) — 完成 Phase 7（标签协议全链路迁移），Phase 8（10K 数据扩容）已规划未执行；用户决定放弃 v2.0、直接切到更大基座。归档见 `milestones/v2.0-abandoned/`。
+**v2.0 强化版 ABANDONED** (2026-05-08) — 完成 Phase 7（标签协议全链路迁移），Phase 8（10K 数据扩容）已规划未执行；用户决定放弃 v2.0、直接切到更大基座。归档见 `.planning/milestones/v2.0-abandoned/`。
 
 **v3.0 9B 基座切换 STOPPED** (2026-05-10) — Phase 1-3 完成，扩展数据与 Qwen3.5 retokenize/split 已产出；Phase 4 发现 Qwen3.5-9B 在本机训练太慢，用户决定停止 9B 路线，回到 v1 的 4B 基座。
 

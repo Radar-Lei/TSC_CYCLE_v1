@@ -7,7 +7,7 @@ v4.1 turns the shipped v4.0 Qwen3-4B result into a clean, minimal reproduction p
 ## Milestones
 
 - Shipped: **v1.0 Initial 4B Distillation Pipeline** — shipped 2026-05-07; archived in `milestones/v1.0-ROADMAP.md`
-- Abandoned: **v2.0 Label Migration** — abandoned 2026-05-08; archived in `milestones/v2.0-abandoned/`
+- Abandoned: **v2.0 Label Migration** — abandoned 2026-05-08; archived in `.planning/milestones/v2.0-abandoned/`
 - Stopped: **v3.0 Qwen3.5-9B Route** — stopped 2026-05-10 after Phase 1–3; 9B local training was too slow
 - Shipped: **v4.0 4B 回退 + 扩展数据重训 + 标签协议修复** — Phases 7–12 shipped 2026-05-11; archived in `milestones/v4.0-ROADMAP.md`
 - Planned: **v4.1 项目清理 / v4 最小复现包** — Phases 13–16

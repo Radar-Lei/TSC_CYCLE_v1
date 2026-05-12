@@ -1,6 +1,10 @@
+ M .planning/PROJECT.md
+ M .planning/ROADMAP.md
  M .planning/phases/04-qlora-sft-9b-batch-1/04-VERIFICATION.md
  M .planning/phases/12-home-samuel-tsc-cycle-reality-log-reality-test-log/12-REVIEW.md
+ M .planning/phases/15-safe-cleanup-execution/15-02-PLAN.md
  M .planning/phases/15-safe-cleanup-execution/15-CLEANUP-NOTES.md
+ M .planning/phases/15-safe-cleanup-execution/post_cleanup_git_status.txt
  M artifacts/v4/phase12/manifest.json
  M artifacts/v4/phase12/per_sample.jsonl
  M artifacts/v4/phase12/phase12_report.json
@@ -69,7 +73,7 @@
 ?? .planning/phases/11-eval-matrix-decision/
 ?? .planning/phases/12-home-samuel-tsc-cycle-reality-log-reality-test-log/.gitkeep
 ?? .planning/phases/12-home-samuel-tsc-cycle-reality-log-reality-test-log/12-VERIFICATION.md
-?? .planning/phases/15-safe-cleanup-execution/post_cleanup_git_status.txt
+?? .planning/phases/15-safe-cleanup-execution/15-VERIFICATION.md
 ?? .planning/quick/260509-x43-phase-4-dry-run-trainingarguments-init-p/PLAN.md
 ?? .planning/quick/260509-x43-phase-4-dry-run-trainingarguments-init-p/SUMMARY.md
 ?? artifacts/v4/phase11/

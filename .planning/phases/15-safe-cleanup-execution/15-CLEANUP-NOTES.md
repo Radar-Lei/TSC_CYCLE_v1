@@ -23,8 +23,8 @@ Safety guarantees:
 
 ## Legacy v1/v2/v3 Handling
 
-- `v2.0 Label Migration` is already abandoned/archived under `milestones/v2.0-abandoned/`.
-- `milestones/v2.0-abandoned/` is outside the main v4 reproduction path and must not be treated as a canonical v4 asset.
+- `v2.0 Label Migration` is already abandoned/archived under `.planning/milestones/v2.0-abandoned/`.
+- `.planning/milestones/v2.0-abandoned/` is outside the main v4 reproduction path and must not be treated as a canonical v4 asset.
 - The v1 baseline under `runs/20260507T032419Z` is a historical reference and remains deferred/manual-review.
 - The v3/raw legacy paths approved for automatic handling were archived locally, not deleted.
 
