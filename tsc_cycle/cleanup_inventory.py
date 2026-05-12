@@ -43,6 +43,30 @@ LOCAL_METADATA_PATHS = [
     ".claude/worktrees",
 ]
 
+EXTRA_TOP_LEVEL_DIRS = {
+    "raw_responses": (
+        "root",
+        "archived legacy",
+        "archive_candidate",
+        "archive_only",
+        "Raw teacher/API response outputs are legacy evidence and must be archived before any later deletion is considered.",
+    ),
+    "gen_cache": (
+        "local",
+        "temporary",
+        "manual_review_before_remove",
+        "manual_review_required",
+        "Generated cache directories are local workflow state and require maintainer review before cleanup.",
+    ),
+    "wandb": (
+        "local",
+        "temporary",
+        "manual_review_before_remove",
+        "manual_review_required",
+        "Weights & Biases local run metadata is developer-local workflow state and must not be removed without review.",
+    ),
+}
+
 GROUP_ROOTS = {
     "data": "data",
     "artifacts": "artifacts",
@@ -354,7 +378,33 @@ def _discover_top_level_entries(repo_root: Path, statuses: dict[str, str]) -> li
             continue
         if rel_path in LOCAL_METADATA_PATHS or rel_path.startswith(".") and rel_path in {".env", ".venv", ".claude", ".pytest_cache"}:
             continue
-        if child.is_file():
+        if child.is_dir():
+            group, classification, action, allowed, rationale = EXTRA_TOP_LEVEL_DIRS.get(
+                rel_path,
+                (
+                    "root",
+                    "archived legacy",
+                    "keep_or_archive",
+                    "manual_review_required",
+                    "Top-level directory requires explicit cleanup-boundary review before Phase 15.",
+                ),
+            )
+            entries.append(
+                _entry(
+                    rel_path=rel_path,
+                    repo_root=repo_root,
+                    statuses=statuses,
+                    group=group,
+                    classification=classification,
+                    recommended_action=action,
+                    phase15_allowed=allowed,
+                    rationale=rationale,
+                    risk_if_deleted="Deleting this directory without review may remove audit evidence, generated outputs, or local workflow state.",
+                    evidence_paths=[".planning/phases/13-inventory-cleanup-boundaries/13-RESEARCH.md"],
+                    high_impact=True,
+                )
+            )
+        elif child.is_file():
             entries.append(_root_entry(rel_path, repo_root, statuses))
     return entries
 
