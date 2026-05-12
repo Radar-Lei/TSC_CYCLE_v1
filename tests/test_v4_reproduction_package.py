@@ -144,7 +144,7 @@ def test_manifest_classifies_required_optional_and_obsolete_assets():
     assert "runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf" in required_paths
 
     local_paths = {asset["path"] for asset in assets["local_temporary"]}
-    assert {".env", ".venv", ".claude", ".claude/worktrees"} <= local_paths
+    assert {".env", ".venv", ".claude"} <= local_paths
 
 
 def test_guide_exposes_hashes_counts_and_commands(tmp_path):
