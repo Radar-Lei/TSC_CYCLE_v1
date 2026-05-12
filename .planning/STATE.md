@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v4.1
 milestone_name: 项目清理 / v4 最小复现包
-status: ready_to_complete
+status: Awaiting next milestone
 stopped_at: Phase 16 completed
-last_updated: "2026-05-12T07:58:00Z"
-last_activity: 2026-05-12 -- Phase 16 completed and v4.1 ready for milestone close
+last_updated: "2026-05-12T08:14:59.199Z"
+last_activity: 2026-05-12 — Milestone v4.1 completed and archived
 progress:
   total_phases: 4
   completed_phases: 4
@@ -21,16 +21,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-05-12)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近 GPT-5.5 high 教师 — 不过拟合到 reality.log。
-**Current focus:** v4.1 milestone completion
+**Current focus:** Awaiting next milestone
 
 ## Current Position
 
-Phase: 16 (Verification & Handoff) — COMPLETE
-Plan: 1 of 1
-Status: Ready to complete milestone
-Last activity: 2026-05-12 -- Phase 16 completed and v4.1 ready for milestone close
-
-Progress: [██████████] 100%
+Phase: Milestone v4.1 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-05-12 — Milestone v4.1 completed and archived
 
 ## Performance Metrics
 
@@ -81,11 +79,11 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 
 ### Pending Todos
 
-- Complete and archive v4.1 milestone.
+- Start the next milestone when ready.
 
 ### Blockers/Concerns
 
-- Open artifact audit currently flags Phase 14 UAT despite `status: passed` and 0 pending scenarios; treat as audit tooling noise unless a fresh audit reports actual pending scenarios.
+- None for v4.1 close. Open artifact audit flagged Phase 14 UAT despite `status: passed` and 0 pending scenarios; recorded as tooling noise in the v4.1 milestone audit.
 
 ## Deferred Items
 
@@ -100,4 +98,8 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 Last session: 2026-05-12T07:58:00Z
 Stopped at: Phase 16 completed
 Resume file: None
-Next action: /gsd-complete-milestone
+Next action: /gsd-new-milestone
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone

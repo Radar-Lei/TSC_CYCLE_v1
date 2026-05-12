@@ -1,5 +1,19 @@
 # Milestones
 
+## v4.1 项目清理 / v4 最小复现包 (Shipped: 2026-05-12)
+
+**Phases completed:** 4 phases, 6 plans, 15 tasks
+
+**Key accomplishments:**
+
+- Read-only cleanup boundary inventory with pytest contracts, canonical v4 no-delete evidence, and metadata-only handling for local secret/cache paths
+- Human-readable cleanup boundary report generated from inventory JSON with approved non-destructive Phase 15 guardrails.
+- Repo-level v4.0 Qwen3-4B 9k reproduction manifest and guide with disk-recomputed hashes, counts, and required/optional asset boundaries
+- Inventory-guided removal of non-v4 legacy/cache clutter, including v3/raw outputs, v1 baseline remnants, in-project archive payloads, optional tokenized caches, and local test/bytecode caches.
+- Secret-safe cleanup rationale plus final no-cache manifest/pytest validation proving the retained v4 package remains reproducible.
+
+---
+
 ## v4.0 4B 回退 + 扩展数据重训 + 标签协议修复 (Shipped: 2026-05-11)
 
 **Phases completed:** 6 phases, 23 plans, 26 tasks

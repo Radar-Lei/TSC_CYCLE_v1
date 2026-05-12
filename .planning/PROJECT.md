@@ -18,7 +18,7 @@ GGUF（fp16 + q4_K_M）部署、且带显式思考过程的 4B 推理模型。
 
 **v1.0 SHIPPED** (2026-05-07) — 端到端蒸馏 pipeline 闭环，部署裁决 **GO**：q4_K_M GGUF (2.4GB) 在 OOD val 上硬约束满足率 98.7%（vs HF bf16 99.3%，ratio=0.9933 ≥ 0.95 阈值），教师 MAE Δ +0.18s（远低于 3s）。
 
-**v1.0 deployment artifact**: `runs/20260507T032419Z/gguf/model.q4_K_M.gguf` — v4.0 中作为只读 baseline。
+**v1.0 deployment artifact**: formerly `runs/20260507T032419Z/gguf/model.q4_K_M.gguf`; removed from this working tree during v4.1 cleanup because it is not part of the v4 Qwen3-4B 9k reproduction package.
 
 **v2.0 强化版 ABANDONED** (2026-05-08) — 完成 Phase 7（标签协议全链路迁移），Phase 8（10K 数据扩容）已规划未执行；用户决定放弃 v2.0、直接切到更大基座。归档见 `.planning/milestones/v2.0-abandoned/`。
 
@@ -30,14 +30,20 @@ GGUF（fp16 + q4_K_M）部署、且带显式思考过程的 4B 推理模型。
 
 See `milestones/v4.0-ROADMAP.md` and `milestones/v4.0-REQUIREMENTS.md` for shipped v4.0 details.
 
-## Current Milestone: v4.1 项目清理 / v4 最小复现包
+**v4.1 SHIPPED** (2026-05-12) — 项目清理 / v4 最小复现包完成：建立 repo-level reproduction manifest/guide，删除非 v4 复现必需的 legacy/cache clutter，并通过 no-cache manifest/test handoff 验证保留的 v4.0 Qwen3-4B 9k 包仍可复核。
 
-**Goal:** 清理当前项目目录中与 v4.0 Qwen3-4B 9k 训练复现无关的文件，把仓库整理成他人可理解、可复现、可审计的最小包。
+**v4.1 reproduction entry point**: `reproduction/v4.0-qwen3-4b-9k-guide.md` and `reproduction/v4.0-qwen3-4b-9k-manifest.json`.
 
-**Target features:**
+See `milestones/v4.1-ROADMAP.md` and `milestones/v4.1-REQUIREMENTS.md` for shipped v4.1 details.
+
+## Current Milestone: None — awaiting next milestone
+
+**Last completed milestone:** v4.1 项目清理 / v4 最小复现包。
+
+**Validated features:**
 - 盘点当前根目录、data/artifacts/runs/planning/tests 中哪些文件属于 v4.0 复现权威源，哪些是旧里程碑、临时文件或重复产物。— Validated in Phase 13 via `inventory.json` and `inventory.md`
 - 建立 v4 最小复现包边界：代码、配置、数据 manifest/必要数据、最终报告、最终 q4_K_M GGUF、`reality_test.log` 及必要验证证据。— Validated in Phase 14 via `reproduction/v4.0-qwen3-4b-9k-manifest.json` and `reproduction/v4.0-qwen3-4b-9k-guide.md`
-- 将与 v4 无关或非必要的文件安全归档/移除，并保证清理后测试与复现入口仍可运行。— Validated in Phase 15 via archive-only cleanup, cleanup notes, manifest check, and cleanup/reproduction pytest subset
+- 将与 v4 无关或非必要的文件安全移除，并保证清理后测试与复现入口仍可运行。— Validated in Phase 15 via direct cleanup, cleanup notes, manifest check, and cleanup/reproduction pytest subset
 - 补齐复现说明或清单，让外部人员知道从哪里开始、哪些产物是最终产物、如何验证 v4 结果。— Validated in Phase 16 via no-cache manifest/test handoff verification
 
 ## Next Milestone Goals
@@ -74,11 +80,15 @@ See `milestones/v4.0-ROADMAP.md` and `milestones/v4.0-REQUIREMENTS.md` for shipp
 - [x] v2.0 标签迁移方向需要纠正：本项目协议应使用 `</end_working_out>` 作为思考结束标签，而不是 `<end_working_out>`。
 - [x] v3.0 Phase 1-3 产出的扩展数据有复用价值，但 Qwen3.5-9B 本机训练太慢，不适合作为当前路线。
 
-### Active
+### Validated (v4.1)
 
 - [x] v4.1 清理当前项目目录中与 v4.0 Qwen3-4B 9k 训练复现无关的文件，形成最小复现包。— Validated in Phase 15
 - [x] v4.1 保留并标注 v4.0 复现权威源：代码、配置、必要数据/manifest、最终模型、最终报告和验证证据。— Validated in Phase 16
 - [x] v4.1 清理后仍能运行关键测试、报告生成或验证入口，证明复现链路没有被破坏。— Validated in Phase 16
+
+### Active
+
+- [ ] 下一里程碑待定义。
 
 ### Out of Scope (current route)
 
@@ -163,4 +173,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-12 after Phase 16 verification handoff completion*
+*Last updated: 2026-05-12 after v4.1 milestone completion*
