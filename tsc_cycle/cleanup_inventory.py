@@ -159,12 +159,18 @@ def _git_status(repo_root: Path) -> dict[str, str]:
 
 
 def _status_for(path: str, statuses: dict[str, str]) -> str:
-    if path in statuses:
-        return statuses[path]
-    prefix = path.rstrip("/") + "/"
+    normalized = path.rstrip("/")
+    if normalized in statuses:
+        return statuses[normalized]
+    prefix = normalized + "/"
     child_states = sorted({state for rel, state in statuses.items() if rel.startswith(prefix)})
     if child_states:
         return ",".join(child_states)
+    parts = normalized.split("/")
+    for depth in range(len(parts) - 1, 0, -1):
+        ancestor = "/".join(parts[:depth])
+        if ancestor in statuses:
+            return statuses[ancestor]
     return "clean"
 
 

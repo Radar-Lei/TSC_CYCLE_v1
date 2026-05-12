@@ -148,6 +148,15 @@ def test_repo_relative_path_guard_rejects_outside_root():
         resolve_repo_path("/tmp/outside-tsc-cycle", REPO_ROOT)
 
 
+def test_status_for_propagates_ancestor_status_to_nested_local_paths():
+    from tsc_cycle.cleanup_inventory import _status_for
+
+    assert _status_for(".claude/worktrees", {".claude": "??"}) == "??"
+    assert _status_for(".claude/worktrees/agent-1", {".claude": "ignored"}) == "ignored"
+    assert _status_for(".claude/worktrees", {".claude/worktrees/session": "M"}) == "M"
+    assert _status_for(".claude/worktrees", {}) == "clean"
+
+
 REQUIRED_MARKDOWN_HEADINGS = [
     "# Phase 13 Inventory & Cleanup Boundaries",
     "## Scope and Non-Destructive Guarantee",
