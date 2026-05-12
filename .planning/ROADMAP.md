@@ -60,7 +60,10 @@ Plans:
   2. Reproducer can distinguish required reproduction assets from optional audit artifacts and obsolete v1/v2/v3/v4 intermediate outputs.
   3. Reproducer can see expected hashes, counts, final artifact names, and minimal verification commands from the manifest.
   4. Reproducer can follow the package boundary without using `.planning/phases/` history as the source of truth.
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+**Wave 1**
+- [ ] 14-01-PLAN.md — Build and validate the repo-level v4.0 Qwen3-4B 9k reproduction manifest and guide.
 
 ### Phase 15: Safe Cleanup Execution
 **Goal**: Maintainer can safely archive or remove non-v4 clutter while preserving canonical v4 reproduction assets and reviewability.
@@ -95,6 +98,6 @@ Plans:
 | 11. eval matrix + decision | 4/4 | Complete | 2026-05-11 |
 | 12. reality.log → reality_test.log replay | 3/3 | Complete | 2026-05-11 |
 | 13. Inventory & Cleanup Boundaries | 2/2 | Complete    | 2026-05-12 |
-| 14. Canonical v4 Reproduction Package | 0/TBD | Not started | - |
+| 14. Canonical v4 Reproduction Package | 0/1 | Not started | - |
 | 15. Safe Cleanup Execution | 0/TBD | Not started | - |
 | 16. Verification & Handoff | 0/TBD | Not started | - |
