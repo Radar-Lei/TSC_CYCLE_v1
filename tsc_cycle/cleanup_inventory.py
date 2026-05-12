@@ -418,7 +418,7 @@ def build_inventory(repo_root: Path | str = Path.cwd()) -> dict[str, Any]:
     ordered_entries = [deduped[path] for path in sorted(deduped)]
     return {
         "schema_version": 1,
-        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         "repo_root": str(root),
         "groups": _groups_summary(ordered_entries),
         "entries": ordered_entries,

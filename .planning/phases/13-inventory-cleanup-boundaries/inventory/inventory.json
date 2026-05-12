@@ -87,7 +87,7 @@
       "rationale": "Planning state records v4.1 cleanup boundaries and v4.0 preservation context; old phases should be inventoried before archive decisions.",
       "recommended_action": "keep_or_archive",
       "risk_if_deleted": "Deleting planning history or state could remove decisions needed to justify cleanup boundaries.",
-      "size_bytes": 2019596
+      "size_bytes": 2044298
     },
     {
       "classification": "temporary",
@@ -561,7 +561,7 @@
       "rationale": "Source and script entry points are needed for tests, reports, and v4 reproduction gates; cleanup must preserve imports unless later review proves otherwise.",
       "recommended_action": "keep",
       "risk_if_deleted": "Deleting source or scripts can break validation commands and reproduction entry points.",
-      "size_bytes": 1566704
+      "size_bytes": 1566683
     },
     {
       "classification": "temporary",
@@ -579,10 +579,10 @@
       "rationale": "Local ignored, secret, cache, virtualenv, or agent/worktree state is inventoried as metadata only and must not serialize file payloads.",
       "recommended_action": "manual_review_before_remove",
       "risk_if_deleted": "May disrupt the local developer environment, credentials, caches, or active agent state if removed without maintainer confirmation.",
-      "size_bytes": 71127
+      "size_bytes": 71116
     }
   ],
-  "generated_at": "2026-05-12T03:04:59Z",
+  "generated_at": "2026-05-12",
   "groups": {
     "artifacts": {
       "entries": 7,
@@ -597,12 +597,12 @@
     "local": {
       "entries": 6,
       "high_impact": 6,
-      "size_bytes": 10173542597
+      "size_bytes": 10173542586
     },
     "planning": {
       "entries": 1,
       "high_impact": 1,
-      "size_bytes": 2019596
+      "size_bytes": 2044298
     },
     "root": {
       "entries": 5,
@@ -622,7 +622,7 @@
     "source": {
       "entries": 1,
       "high_impact": 1,
-      "size_bytes": 1566704
+      "size_bytes": 1566683
     },
     "tests": {
       "entries": 1,
