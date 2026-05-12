@@ -28,7 +28,7 @@ Full details: `milestones/v4.0-ROADMAP.md`
 
 </details>
 
-- [ ] **Phase 13: Inventory & Cleanup Boundaries** - Non-destructively classify current files and define keep/archive/remove rationale before cleanup.
+- [x] **Phase 13: Inventory & Cleanup Boundaries** - Non-destructively classify current files and define keep/archive/remove rationale before cleanup. (completed 2026-05-12)
 - [ ] **Phase 14: Canonical v4 Reproduction Package** - Make the v4.0 reproduction assets identifiable without historical phase archaeology.
 - [ ] **Phase 15: Safe Cleanup Execution** - Archive or remove unrelated clutter while preserving canonical v4 assets and a reviewable change set.
 - [ ] **Phase 16: Verification & Handoff** - Prove the cleaned package still matches shipped v4 gates and is ready for the next milestone.
@@ -49,7 +49,7 @@ Plans:
 - [x] 13-01-PLAN.md — Create read-only inventory tests, generator, and machine-readable inventory JSON.
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 13-02-PLAN.md — Generate maintainer-facing Markdown cleanup boundary report and checkpoint rationale review.
+- [x] 13-02-PLAN.md — Generate maintainer-facing Markdown cleanup boundary report and checkpoint rationale review.
 
 ### Phase 14: Canonical v4 Reproduction Package
 **Goal**: Reproducer can locate and understand the minimal v4.0 Qwen3-4B 9k reproduction package without inspecting historical phase directories.
@@ -94,7 +94,7 @@ Plans:
 | 10. merge + GGUF export | 4/4 | Complete | 2026-05-11 |
 | 11. eval matrix + decision | 4/4 | Complete | 2026-05-11 |
 | 12. reality.log → reality_test.log replay | 3/3 | Complete | 2026-05-11 |
-| 13. Inventory & Cleanup Boundaries | 1/2 | In Progress|  |
+| 13. Inventory & Cleanup Boundaries | 2/2 | Complete   | 2026-05-12 |
 | 14. Canonical v4 Reproduction Package | 0/TBD | Not started | - |
 | 15. Safe Cleanup Execution | 0/TBD | Not started | - |
 | 16. Verification & Handoff | 0/TBD | Not started | - |
