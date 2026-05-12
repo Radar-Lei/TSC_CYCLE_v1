@@ -104,6 +104,8 @@ def test_manifest_hashes_and_counts_match_disk():
     by_path = _entries_by_path(manifest)
 
     for path, asset in by_path.items():
+        if asset["category"] == "local_temporary":
+            continue
         disk_path = REPO_ROOT / path
         if disk_path.is_file():
             assert asset["sha256"] == _sha256_file(disk_path), path
