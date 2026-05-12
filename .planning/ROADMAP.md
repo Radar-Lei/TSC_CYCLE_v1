@@ -43,7 +43,13 @@ Full details: `milestones/v4.0-ROADMAP.md`
   1. Maintainer can open an inventory that classifies root, data, artifacts, runs, planning, and tests file groups as v4 reproduction source, v4 evidence, archived legacy, temporary, or removable.
   2. Maintainer can see explicit keep/archive/remove rationale for every high-impact file group before destructive cleanup begins.
   3. Maintainer can identify the canonical v4 assets that must not be deleted and the legacy/temporary areas that require later archive or removal.
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+**Wave 1**
+- [ ] 13-01-PLAN.md — Create read-only inventory tests, generator, and machine-readable inventory JSON.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 13-02-PLAN.md — Generate maintainer-facing Markdown cleanup boundary report and checkpoint rationale review.
 
 ### Phase 14: Canonical v4 Reproduction Package
 **Goal**: Reproducer can locate and understand the minimal v4.0 Qwen3-4B 9k reproduction package without inspecting historical phase directories.
@@ -88,7 +94,7 @@ Full details: `milestones/v4.0-ROADMAP.md`
 | 10. merge + GGUF export | 4/4 | Complete | 2026-05-11 |
 | 11. eval matrix + decision | 4/4 | Complete | 2026-05-11 |
 | 12. reality.log → reality_test.log replay | 3/3 | Complete | 2026-05-11 |
-| 13. Inventory & Cleanup Boundaries | 0/TBD | Not started | - |
+| 13. Inventory & Cleanup Boundaries | 0/2 | Not started | - |
 | 14. Canonical v4 Reproduction Package | 0/TBD | Not started | - |
 | 15. Safe Cleanup Execution | 0/TBD | Not started | - |
 | 16. Verification & Handoff | 0/TBD | Not started | - |
