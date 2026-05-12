@@ -325,22 +325,19 @@ git -C /home/samuel/TSC_CYCLE status --short --untracked-files=normal
 | A1 | `runs/_legacy_archive/phase15-safe-cleanup/` is an acceptable local archive root for Phase 15 payload moves. [ASSUMED] | Recommended Project Structure | Maintainer may prefer a different archive location or may want tracked archival payloads instead of ignored local archive moves. |
 | A2 | Same-filesystem directory moves are preferred over tar/copy for huge archive-only directories. [ASSUMED] | Common Pitfalls | If cross-filesystem archival is required, planner must add disk-space checks and rsync/tar fallback steps. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should the archive payloads be tracked or intentionally local/ignored?**
    - What we know: `runs/` is ignored and the biggest archive-only candidate is under `runs/v3.0-gates`. [VERIFIED: /home/samuel/TSC_CYCLE/.gitignore] [VERIFIED: /home/samuel/TSC_CYCLE/.planning/phases/13-inventory-cleanup-boundaries/inventory/inventory.json]
-   - What's unclear: The maintainer has not explicitly approved the physical archive destination. [ASSUMED]
-   - Recommendation: Default to ignored local archive payloads plus tracked cleanup notes; ask before tracking large archives. [ASSUMED]
+   - RESOLVED decision: Use ignored local archive payloads under `runs/_legacy_archive/phase15-safe-cleanup/` plus tracked cleanup notes/status snapshots. This follows Phase 15 CONTEXT's Claude-discretion decision authority and avoids making tens of GB of legacy payloads part of the reviewable tracked change set. [VERIFIED: /home/samuel/TSC_CYCLE/.planning/phases/15-safe-cleanup-execution/15-CONTEXT.md] [ASSUMED]
 
 2. **Should `reality.log` and the v1 baseline be archived in Phase 15?**
    - What we know: Both are obsolete/not-v4-target in Phase 14, but Phase 13 marks them manual-review rather than archive-only. [VERIFIED: /home/samuel/TSC_CYCLE/reproduction/v4.0-qwen3-4b-9k-manifest.json] [VERIFIED: /home/samuel/TSC_CYCLE/.planning/phases/13-inventory-cleanup-boundaries/inventory/inventory.json]
-   - What's unclear: No explicit maintainer approval exists for automatic action on manual-review entries. [VERIFIED: /home/samuel/TSC_CYCLE/.planning/phases/15-safe-cleanup-execution/15-CONTEXT.md]
-   - Recommendation: Defer both and list them in cleanup notes as manual-review items. [VERIFIED: /home/samuel/TSC_CYCLE/.planning/phases/15-safe-cleanup-execution/15-CONTEXT.md]
+   - RESOLVED decision: Defer both and list them in cleanup notes as manual-review items. Phase 15 automatic actions remain restricted to Phase 13 `archive_only` entries. [VERIFIED: /home/samuel/TSC_CYCLE/.planning/phases/15-safe-cleanup-execution/15-CONTEXT.md]
 
 3. **Should optional v4 tokenized caches be removed later?**
    - What we know: They are optional rebuild cache in the Phase 14 manifest but not Phase 13 archive-only/remove candidates. [VERIFIED: /home/samuel/TSC_CYCLE/reproduction/v4.0-qwen3-4b-9k-manifest.json]
-   - What's unclear: No Phase 15 approval exists to update the manifest/guide around cache removal. [VERIFIED: /home/samuel/TSC_CYCLE/.planning/phases/15-safe-cleanup-execution/15-CONTEXT.md]
-   - Recommendation: Preserve them in Phase 15. [VERIFIED: /home/samuel/TSC_CYCLE/.planning/phases/15-safe-cleanup-execution/15-CONTEXT.md]
+   - RESOLVED decision: Preserve them in Phase 15. Any later cache removal would require a separate approved plan that updates the reproduction manifest/guide expectations. [VERIFIED: /home/samuel/TSC_CYCLE/.planning/phases/15-safe-cleanup-execution/15-CONTEXT.md]
 
 ## Environment Availability
 

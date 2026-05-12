@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v4.1
 milestone_name: 项目清理 / v4 最小复现包
-status: verifying
-stopped_at: Completed 13-02-PLAN.md
-last_updated: "2026-05-12T04:15:40.063Z"
-last_activity: 2026-05-12
+status: executing
+stopped_at: Completed Phase 14 verification and human UAT
+last_updated: "2026-05-12T05:25:22.463Z"
+last_activity: 2026-05-12 -- Phase 15 planning complete
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 3
+  total_plans: 5
   completed_plans: 3
-  percent: 100
+  percent: 60
 ---
 
 # TSC-CYCLE State
@@ -21,16 +21,16 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-05-12)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近 GPT-5.5 high 教师 — 不过拟合到 reality.log。
-**Current focus:** Phase 14 — Canonical v4 Reproduction Package
+**Current focus:** Phase 15 — Safe Cleanup Execution
 
 ## Current Position
 
-Phase: 14 (Canonical v4 Reproduction Package) — EXECUTING
-Plan: 1 of 1
-Status: Phase complete — ready for verification
-Last activity: 2026-05-12
+Phase: 15 (Safe Cleanup Execution) — READY TO EXECUTE
+Plan: 0 of 2
+Status: Ready to execute
+Last activity: 2026-05-12 -- Phase 15 planning complete
 
-Progress: [██████████] 100%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
@@ -70,6 +70,8 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase 14]: Repo-level reproduction/ manifest and guide are the v4.0 Qwen3-4B 9k reproducer-facing source of truth; .planning/phases remains provenance only.
 - [Phase 14]: Tokenized Arrow files are optional rebuild cache; labeled JSONL and split manifest/index JSONL files are required source inputs.
 - [Phase 14]: Local environment, cache, and agent paths are serialized as metadata only without file payloads or local secret contents.
+- [Phase 14]: Reproduction guide clarity human UAT approved; Phase 14 verification passed with 8/8 automated must-haves plus 1/1 human UAT.
+- [Phase 15]: Planning complete with two waves: archive-only Phase 13 allowlist cleanup, then cleanup notes/final validation/human scope review.
 
 ### Preserved v4.0 Context
 
@@ -98,7 +100,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-12T04:14:38.891Z
-Stopped at: Completed 13-02-PLAN.md
+Last session: 2026-05-12T05:25:22Z
+Stopped at: Phase 15 planning complete
 Resume file: None
-Next action: /gsd-verify-phase 13
+Next action: /gsd-execute-phase 15
