@@ -431,16 +431,134 @@ def write_inventory_json(inventory: dict[str, Any], output_path: Path | str) -> 
     path.write_text(json.dumps(inventory, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _md_cell(value: Any) -> str:
+    if isinstance(value, list):
+        text = ", ".join(str(item) for item in value)
+    else:
+        text = str(value)
+    return text.translate({ord("|"): "\\|", ord("\n"): " "})
+
+
+def _entry_row(entry: dict[str, Any]) -> str:
+    fields = [
+        "path",
+        "group",
+        "classification",
+        "recommended_action",
+        "phase15_allowed",
+        "rationale",
+        "risk_if_deleted",
+        "evidence_paths",
+    ]
+    return "| " + " | ".join(_md_cell(entry.get(field, "")) for field in fields) + " |"
+
+
+def _entry_table(entries: list[dict[str, Any]]) -> list[str]:
+    lines = [
+        "| path | group | classification | recommended_action | phase15_allowed | rationale | risk_if_deleted | evidence_paths |",
+        "|------|-------|----------------|--------------------|-----------------|-----------|-----------------|----------------|",
+    ]
+    lines.extend(_entry_row(entry) for entry in entries)
+    return lines
+
+
+def write_inventory_markdown(inventory: dict[str, Any], output_path: Path | str) -> None:
+    entries = list(inventory.get("entries", []))
+    groups = dict(inventory.get("groups", {}))
+    canonical_entries = [
+        entry
+        for entry in entries
+        if entry.get("recommended_action") == "keep" and entry.get("phase15_allowed") == "no_delete"
+    ]
+    high_impact_entries = [entry for entry in entries if entry.get("high_impact")]
+    legacy_or_temporary_entries = [
+        entry
+        for entry in entries
+        if entry.get("classification") in {"archived legacy", "temporary", "removable"}
+        or entry.get("recommended_action") in {"archive_candidate", "manual_review_before_remove", "remove_candidate"}
+    ]
+
+    lines: list[str] = [
+        "# Phase 13 Inventory & Cleanup Boundaries",
+        "",
+        f"Generated from inventory schema version `{inventory.get('schema_version')}` on `{inventory.get('generated_at')}`.",
+        f"Repository root: `{inventory.get('repo_root')}`.",
+        "",
+        "## Scope and Non-Destructive Guarantee",
+        "",
+        "Phase 13 is non-destructive: this report only mirrors the JSON inventory and does not delete, move, archive, or rewrite repository assets.",
+        "Phase 15 must consume this inventory before any archive or deletion action, and no entry below expands beyond its JSON `recommended_action` or `phase15_allowed` values.",
+        "",
+        "## Required Group Summary",
+        "",
+        "| group | entries | high_impact | size_bytes |",
+        "|-------|---------|-------------|------------|",
+    ]
+
+    for group in sorted(groups):
+        summary = groups[group]
+        lines.append(
+            f"| {_md_cell(group)} | {_md_cell(summary.get('entries', 0))} | {_md_cell(summary.get('high_impact', 0))} | {_md_cell(summary.get('size_bytes', 0))} |"
+        )
+
+    lines.extend([
+        "",
+        "## Canonical v4.0 No-Delete Assets",
+        "",
+        "The entries in this section are rendered directly from JSON rows whose action is `keep` and Phase 15 allowance is `no_delete`.",
+        "",
+    ])
+    lines.extend(_entry_table(canonical_entries))
+
+    lines.extend([
+        "",
+        "## High-Impact Cleanup Boundaries",
+        "",
+        "Every high-impact entry exposes `classification`, `recommended_action`, `phase15_allowed`, `rationale`, `risk_if_deleted`, and `evidence_paths` before Phase 15 cleanup planning.",
+        "",
+    ])
+    lines.extend(_entry_table(high_impact_entries))
+
+    lines.extend([
+        "",
+        "## Legacy / Temporary / Removable Candidates",
+        "",
+        "These entries are candidates for later archive or manual review only as allowed by their JSON fields; ambiguous v1/v3/raw/model-output groups remain archive or manual-review candidates, not immediate deletion instructions.",
+        "",
+    ])
+    lines.extend(_entry_table(legacy_or_temporary_entries))
+
+    lines.extend([
+        "",
+        "## Phase 15 Preconditions",
+        "",
+        "- Maintainer approval is required before Phase 15 acts on any `manual_review_required` entry.",
+        "- `no_delete` entries must stay preserved unless a later approved plan changes the inventory contract.",
+        "- `archive_candidate` entries should be archived before any later deletion is considered.",
+        "- `remove_candidate` is reserved for cache or local temporary groups already classified that way in JSON; this report performs no such action.",
+        "- Phase 14 must define the canonical v4 reproduction package before Phase 15 cleanup execution.",
+        "",
+    ])
+
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Build a read-only TSC-CYCLE cleanup inventory JSON.")
+    parser = argparse.ArgumentParser(description="Build a read-only TSC-CYCLE cleanup inventory.")
     parser.add_argument("--repo-root", default=str(Path.cwd()), help="Repository root to inventory")
     parser.add_argument("--output-json", required=True, help="Phase 13 inventory JSON output path")
+    parser.add_argument("--output-md", help="Phase 13 inventory Markdown output path")
     args = parser.parse_args(argv)
 
     repo_root = Path(args.repo_root).resolve()
-    output_path = resolve_repo_path(args.output_json, repo_root)
+    output_path = Path(args.output_json)
+    markdown_path = Path(args.output_md) if args.output_md else None
     inventory = build_inventory(repo_root)
     write_inventory_json(inventory, output_path)
+    if markdown_path is not None:
+        write_inventory_markdown(inventory, markdown_path)
     return 0
 
 
