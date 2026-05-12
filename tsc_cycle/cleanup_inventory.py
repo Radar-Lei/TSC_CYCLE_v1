@@ -460,11 +460,20 @@ def _ensure_local_entries(repo_root: Path, statuses: dict[str, str]) -> list[dic
 
 def _groups_summary(entries: list[dict[str, Any]]) -> dict[str, dict[str, int]]:
     summary: dict[str, dict[str, int]] = {}
+    paths_by_group = {
+        group: sorted(entry["path"].rstrip("/") for entry in entries if entry["group"] == group)
+        for group in {entry["group"] for entry in entries}
+    }
     for entry in entries:
         group = entry["group"]
         group_summary = summary.setdefault(group, {"entries": 0, "high_impact": 0, "size_bytes": 0})
         group_summary["entries"] += 1
-        group_summary["size_bytes"] += int(entry.get("size_bytes", 0))
+        path = entry["path"].rstrip("/")
+        has_counted_ancestor = any(
+            path != other and path.startswith(other + "/") for other in paths_by_group[group]
+        )
+        if not has_counted_ancestor:
+            group_summary["size_bytes"] += int(entry.get("size_bytes", 0))
         if entry.get("high_impact"):
             group_summary["high_impact"] += 1
     return summary

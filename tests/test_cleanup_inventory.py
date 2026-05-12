@@ -157,6 +157,23 @@ def test_status_for_propagates_ancestor_status_to_nested_local_paths():
     assert _status_for(".claude/worktrees", {}) == "clean"
 
 
+def test_groups_summary_counts_non_overlapping_group_size_only():
+    from tsc_cycle.cleanup_inventory import _groups_summary
+
+    entries = [
+        {"path": "runs", "group": "runs", "size_bytes": 100, "high_impact": True},
+        {"path": "runs/v4", "group": "runs", "size_bytes": 60, "high_impact": True},
+        {"path": "runs/v4/report.json", "group": "runs", "size_bytes": 10, "high_impact": False},
+        {"path": "raw_responses", "group": "root", "size_bytes": 40, "high_impact": True},
+        {"path": "reality.log", "group": "root", "size_bytes": 5, "high_impact": False},
+    ]
+
+    summary = _groups_summary(entries)
+
+    assert summary["runs"] == {"entries": 3, "high_impact": 2, "size_bytes": 100}
+    assert summary["root"] == {"entries": 2, "high_impact": 1, "size_bytes": 45}
+
+
 REQUIRED_MARKDOWN_HEADINGS = [
     "# Phase 13 Inventory & Cleanup Boundaries",
     "## Scope and Non-Destructive Guarantee",
