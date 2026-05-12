@@ -43,7 +43,7 @@
         ".planning/phases/13-inventory-cleanup-boundaries/13-RESEARCH.md"
       ],
       "exists": true,
-      "git_status": "clean",
+      "git_status": "ignored",
       "group": "local",
       "high_impact": true,
       "is_dir": false,
@@ -87,7 +87,7 @@
       "rationale": "Planning state records v4.1 cleanup boundaries and v4.0 preservation context; old phases should be inventoried before archive decisions.",
       "recommended_action": "keep_or_archive",
       "risk_if_deleted": "Deleting planning history or state could remove decisions needed to justify cleanup boundaries.",
-      "size_bytes": 2076310
+      "size_bytes": 2088660
     },
     {
       "classification": "temporary",
@@ -96,7 +96,7 @@
         ".planning/phases/13-inventory-cleanup-boundaries/13-RESEARCH.md"
       ],
       "exists": true,
-      "git_status": "clean",
+      "git_status": "ignored",
       "group": "local",
       "high_impact": true,
       "is_dir": true,
@@ -114,7 +114,7 @@
         ".planning/phases/13-inventory-cleanup-boundaries/13-RESEARCH.md"
       ],
       "exists": true,
-      "git_status": "clean",
+      "git_status": "ignored",
       "group": "local",
       "high_impact": true,
       "is_dir": true,
@@ -149,7 +149,7 @@
         ".planning/phases/13-inventory-cleanup-boundaries/13-RESEARCH.md"
       ],
       "exists": true,
-      "git_status": "??,M",
+      "git_status": "??,M,ignored",
       "group": "artifacts",
       "high_impact": true,
       "is_dir": true,
@@ -280,7 +280,7 @@
         ".planning/phases/13-inventory-cleanup-boundaries/13-RESEARCH.md"
       ],
       "exists": true,
-      "git_status": "??,M",
+      "git_status": "??,M,ignored",
       "group": "data",
       "high_impact": true,
       "is_dir": true,
@@ -350,7 +350,24 @@
         ".planning/phases/13-inventory-cleanup-boundaries/13-RESEARCH.md"
       ],
       "exists": true,
-      "git_status": "clean",
+      "git_status": "ignored",
+      "group": "root",
+      "high_impact": true,
+      "is_dir": true,
+      "path": "raw_responses",
+      "phase15_allowed": "archive_only",
+      "rationale": "Raw teacher/API response outputs are legacy evidence and must be archived before any later deletion is considered.",
+      "recommended_action": "archive_candidate",
+      "risk_if_deleted": "Deleting this directory without review may remove audit evidence, generated outputs, or local workflow state.",
+      "size_bytes": 23305364
+    },
+    {
+      "classification": "archived legacy",
+      "evidence_paths": [
+        ".planning/phases/13-inventory-cleanup-boundaries/13-RESEARCH.md"
+      ],
+      "exists": true,
+      "git_status": "ignored",
       "group": "root",
       "high_impact": true,
       "is_dir": false,
@@ -387,7 +404,7 @@
         ".planning/phases/13-inventory-cleanup-boundaries/13-RESEARCH.md"
       ],
       "exists": true,
-      "git_status": "clean",
+      "git_status": "ignored",
       "group": "runs",
       "high_impact": true,
       "is_dir": true,
@@ -405,7 +422,7 @@
         ".planning/STATE.md"
       ],
       "exists": true,
-      "git_status": "clean",
+      "git_status": "ignored",
       "group": "runs",
       "high_impact": true,
       "is_dir": true,
@@ -423,7 +440,7 @@
         ".planning/STATE.md"
       ],
       "exists": true,
-      "git_status": "clean",
+      "git_status": "ignored",
       "group": "runs",
       "high_impact": true,
       "is_dir": true,
@@ -441,7 +458,7 @@
         ".planning/STATE.md"
       ],
       "exists": true,
-      "git_status": "clean",
+      "git_status": "ignored",
       "group": "runs",
       "high_impact": true,
       "is_dir": true,
@@ -479,7 +496,7 @@
         ".planning/phases/13-inventory-cleanup-boundaries/13-RESEARCH.md"
       ],
       "exists": true,
-      "git_status": "clean",
+      "git_status": "ignored",
       "group": "runs",
       "high_impact": true,
       "is_dir": false,
@@ -498,7 +515,7 @@
         ".planning/phases/13-inventory-cleanup-boundaries/13-RESEARCH.md"
       ],
       "exists": true,
-      "git_status": "clean",
+      "git_status": "ignored",
       "group": "runs",
       "high_impact": true,
       "is_dir": false,
@@ -534,7 +551,7 @@
         ".planning/phases/13-inventory-cleanup-boundaries/13-VALIDATION.md"
       ],
       "exists": true,
-      "git_status": "??,M",
+      "git_status": "??,M,ignored",
       "group": "tests",
       "high_impact": true,
       "is_dir": true,
@@ -552,7 +569,7 @@
         ".planning/phases/13-inventory-cleanup-boundaries/13-RESEARCH.md"
       ],
       "exists": true,
-      "git_status": "??,M",
+      "git_status": "??,M,ignored",
       "group": "source",
       "high_impact": true,
       "is_dir": true,
@@ -570,7 +587,7 @@
         ".planning/phases/13-inventory-cleanup-boundaries/13-RESEARCH.md"
       ],
       "exists": true,
-      "git_status": "clean",
+      "git_status": "ignored",
       "group": "local",
       "high_impact": true,
       "is_dir": true,
@@ -602,12 +619,12 @@
     "planning": {
       "entries": 1,
       "high_impact": 1,
-      "size_bytes": 2076310
+      "size_bytes": 2088660
     },
     "root": {
-      "entries": 5,
-      "high_impact": 4,
-      "size_bytes": 3158220
+      "entries": 6,
+      "high_impact": 5,
+      "size_bytes": 26463584
     },
     "runs": {
       "entries": 7,
