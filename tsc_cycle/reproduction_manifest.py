@@ -306,6 +306,8 @@ def write_guide_markdown(manifest: dict[str, Any], output_path: Path | str) -> N
     final_path = manifest["final_artifacts"]["q4_K_M"]
     entries = {asset["path"]: asset for category in manifest["assets"].values() for asset in category}
     final_hash = entries[final_path]["sha256"]
+    phase12_outputs = entries["artifacts/v4/phase12/per_sample.jsonl"].get("counts", {}).get("phase12_outputs")
+    labeled_rows = entries["data/v4/phase8/labeled_merged.jsonl"].get("counts", {}).get("labeled_rows")
     lines: list[str] = [
         "# v4.0 Qwen3-4B 9k Reproduction Package",
         "",
@@ -320,8 +322,8 @@ def write_guide_markdown(manifest: dict[str, Any], output_path: Path | str) -> N
         f"- Final q4_K_M GGUF: `{final_path}`",
         f"- SHA-256: `{final_hash}`",
         "- Final replay output: `reality_test.log`",
-        "- Phase 12 replay outputs: `426`",
-        "- v4 labeled merged rows: `9501`",
+        f"- Phase 12 replay outputs: `{phase12_outputs}`",
+        f"- v4 labeled merged rows: `{labeled_rows}`",
         "- v1/v3/raw outputs are not the v4 target; the v1 q4_K_M file is historical only.",
         "",
         "## Verification Commands",

@@ -164,14 +164,17 @@ def test_guide_exposes_hashes_counts_and_commands(tmp_path):
     write_guide_markdown(manifest, guide_path)
     guide = guide_path.read_text(encoding="utf-8")
 
-    final_asset = _entries_by_path(manifest)["runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf"]
+    entries = _entries_by_path(manifest)
+    final_asset = entries["runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf"]
+    phase12_outputs = entries["artifacts/v4/phase12/per_sample.jsonl"]["counts"]["phase12_outputs"]
+    labeled_rows = entries["data/v4/phase8/labeled_merged.jsonl"]["counts"]["labeled_rows"]
     required_text = [
         "v4.0-qwen3-4b-9k-manifest.json",
         "runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf",
         final_asset["sha256"],
         "reality_test.log",
-        "426",
-        "9501",
+        f"Phase 12 replay outputs: `{phase12_outputs}`",
+        f"v4 labeled merged rows: `{labeled_rows}`",
         "python -m tsc_cycle.reproduction_manifest --check",
         "tests/test_v4_reproduction_package.py",
     ]
