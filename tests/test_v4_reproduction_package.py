@@ -217,6 +217,39 @@ def test_reproduction_manifest_is_non_destructive_and_secret_safe(tmp_path):
     assert "content" not in serialized
 
 
+def test_manifest_check_rejects_empty_assets():
+    from tsc_cycle.reproduction_manifest import validate_manifest_against_disk
+
+    errors = validate_manifest_against_disk({"package_id": "v4.0-qwen3-4b-9k", "assets": {}}, REPO_ROOT)
+
+    assert any("assets.required_evidence must be a list" in error for error in errors)
+    assert any("assets.required_source must be a list" in error for error in errors)
+
+
+def test_manifest_check_rejects_missing_required_assets():
+    from tsc_cycle.reproduction_manifest import validate_manifest_against_disk
+
+    manifest = _build_manifest()
+    manifest["assets"]["required_evidence"] = [
+        asset
+        for asset in manifest["assets"]["required_evidence"]
+        if asset["path"] != "reality_test.log"
+    ]
+    manifest["assets"]["required_source"] = [
+        asset
+        for asset in manifest["assets"]["required_source"]
+        if asset["path"] != "data/v4/phase8/splits/train.index.jsonl"
+    ]
+
+    errors = validate_manifest_against_disk(manifest, REPO_ROOT)
+
+    assert any("reality_test.log: missing from assets.required_evidence" in error for error in errors)
+    assert any(
+        "data/v4/phase8/splits/train.index.jsonl: missing from assets.required_source" in error
+        for error in errors
+    )
+
+
 def test_manifest_check_rejects_tampered_semantic_counts():
     from tsc_cycle.reproduction_manifest import validate_manifest_against_disk
 

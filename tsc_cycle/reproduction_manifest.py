@@ -421,15 +421,51 @@ def write_guide_markdown(manifest: dict[str, Any], output_path: Path | str) -> N
 
 
 def _manifest_assets(manifest: dict[str, Any]) -> list[dict[str, Any]]:
-    return [asset for category in manifest.get("assets", {}).values() for asset in category]
+    assets = manifest.get("assets")
+    if not isinstance(assets, dict):
+        return []
+    return [asset for category_assets in assets.values() if isinstance(category_assets, list) for asset in category_assets]
+
+
+def _validate_manifest_structure(manifest: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    if manifest.get("package_id") != PACKAGE_ID:
+        errors.append(f"package_id mismatch manifest={manifest.get('package_id')} expected={PACKAGE_ID}")
+
+    assets = manifest.get("assets")
+    if not isinstance(assets, dict):
+        errors.append("assets must be a JSON object")
+        return errors
+
+    required_categories = {
+        "required_evidence": set(CANONICAL_V4_ASSETS),
+        "required_source": set(REQUIRED_SOURCE_PATHS),
+    }
+    for category, required_paths in required_categories.items():
+        category_assets = assets.get(category)
+        if not isinstance(category_assets, list):
+            errors.append(f"assets.{category} must be a list")
+            continue
+        category_paths = {asset.get("path") for asset in category_assets if isinstance(asset, dict)}
+        for rel_path in sorted(required_paths - category_paths):
+            errors.append(f"{rel_path}: missing from assets.{category}")
+    return errors
 
 
 def validate_manifest_against_disk(manifest: dict[str, Any], repo_root: Path | str) -> list[str]:
     root = Path(repo_root).resolve()
     errors: list[str] = []
+    errors.extend(_validate_manifest_structure(manifest))
     required_categories = {"required_evidence", "required_source"}
-    for category, assets in manifest.get("assets", {}).items():
+    assets_by_category = manifest.get("assets") if isinstance(manifest.get("assets"), dict) else {}
+    for category, assets in assets_by_category.items():
+        if not isinstance(assets, list):
+            errors.append(f"assets.{category} must be a list")
+            continue
         for asset in assets:
+            if not isinstance(asset, dict):
+                errors.append(f"invalid asset in {category}: expected JSON object")
+                continue
             rel_path = asset.get("path")
             if not isinstance(rel_path, str):
                 errors.append(f"missing path in {category}")
