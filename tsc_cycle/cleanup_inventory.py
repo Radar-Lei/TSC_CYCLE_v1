@@ -515,11 +515,7 @@ def _entry_table(entries: list[dict[str, Any]]) -> list[str]:
 def write_inventory_markdown(inventory: dict[str, Any], output_path: Path | str) -> None:
     entries = list(inventory.get("entries", []))
     groups = dict(inventory.get("groups", {}))
-    canonical_entries = [
-        entry
-        for entry in entries
-        if entry.get("recommended_action") == "keep" and entry.get("phase15_allowed") == "no_delete"
-    ]
+    canonical_entries = [entry for entry in entries if entry.get("path") in CANONICAL_V4_ASSETS]
     high_impact_entries = [entry for entry in entries if entry.get("high_impact")]
     legacy_or_temporary_entries = [
         entry
@@ -555,7 +551,7 @@ def write_inventory_markdown(inventory: dict[str, Any], output_path: Path | str)
         "",
         "## Canonical v4.0 No-Delete Assets",
         "",
-        "The entries in this section are rendered directly from JSON rows whose action is `keep` and Phase 15 allowance is `no_delete`.",
+        "The entries in this section are rendered directly from the JSON rows named by `CANONICAL_V4_ASSETS`.",
         "",
     ])
     lines.extend(_entry_table(canonical_entries))
