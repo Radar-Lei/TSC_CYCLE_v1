@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v4.1
 milestone_name: 项目清理 / v4 最小复现包
-status: executing
-stopped_at: Phase 16 not started
-last_updated: "2026-05-12T06:20:00Z"
-last_activity: 2026-05-12 -- Phase 15 completed and verified
+status: ready_to_complete
+stopped_at: Phase 16 completed
+last_updated: "2026-05-12T07:58:00Z"
+last_activity: 2026-05-12 -- Phase 16 completed and v4.1 ready for milestone close
 progress:
   total_phases: 4
-  completed_phases: 3
-  total_plans: 5
-  completed_plans: 5
-  percent: 75
+  completed_phases: 4
+  total_plans: 6
+  completed_plans: 6
+  percent: 100
 ---
 
 # TSC-CYCLE State
@@ -21,23 +21,23 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-05-12)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近 GPT-5.5 high 教师 — 不过拟合到 reality.log。
-**Current focus:** Phase 16 — Verification & Handoff
+**Current focus:** v4.1 milestone completion
 
 ## Current Position
 
-Phase: 16 (Verification & Handoff) — NOT STARTED
-Plan: 0 of TBD
-Status: Ready to plan
-Last activity: 2026-05-12 -- Phase 15 completed and verified
+Phase: 16 (Verification & Handoff) — COMPLETE
+Plan: 1 of 1
+Status: Ready to complete milestone
+Last activity: 2026-05-12 -- Phase 16 completed and v4.1 ready for milestone close
 
-Progress: [████████░░] 75%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- v4.1 phases completed: 3 of 4
-- v4.1 plans completed: 5
+- v4.1 phases completed: 4 of 4
+- v4.1 plans completed: 6
 - Average duration: N/A
 - Total execution time: N/A
 
@@ -48,7 +48,7 @@ Progress: [████████░░] 75%
 | 13. Inventory & Cleanup Boundaries | 2/2 | Complete | 2026-05-12 |
 | 14. Canonical v4 Reproduction Package | 1/1 | Complete | 2026-05-12 |
 | 15. Safe Cleanup Execution | 2/2 | Complete | 2026-05-12 |
-| 16. Verification & Handoff | 0/TBD | Not started | - |
+| 16. Verification & Handoff | 1/1 | Complete | 2026-05-12 |
 
 ## Accumulated Context
 
@@ -57,20 +57,19 @@ Progress: [████████░░] 75%
 Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecting current work:
 
 - v4.1 is cleanup/reproduction packaging only: no retraining, no new model capability, no imatrix/q5_K_M, no thinking ablation, no EvoProgTSC deployment.
-- Research was explicitly skipped for this milestone.
-- Destructive cleanup must not start until Phase 13 inventory defines keep/archive/remove boundaries.
-- Phase numbering continues after v4.0 Phase 12; v4.1 starts at Phase 13.
+- Destructive cleanup started only after Phase 13 inventory defined keep/archive/remove boundaries.
 - [Phase 13]: Phase 13 Plan 01 inventory is read-only and writes only the explicit inventory JSON artifact.
 - [Phase 13]: Canonical v4.0 evidence paths are classified as v4 evidence with keep/no_delete.
 - [Phase 13]: Local secret, virtualenv, cache, and agent/worktree paths are recorded as metadata-only entries requiring manual review.
-- [Phase 13]: Plan 02 cleanup boundary report approved by maintainer; Phase 13 remains non-destructive and Phase 15 must consume inventory before archive/remove actions.
+- [Phase 13]: Plan 02 cleanup boundary report approved by maintainer; Phase 13 remains non-destructive and Phase 15 consumes inventory before cleanup actions.
 - [Phase 14]: Repo-level reproduction/ manifest and guide are the v4.0 Qwen3-4B 9k reproducer-facing source of truth; .planning/phases remains provenance only.
 - [Phase 14]: Tokenized Arrow files are optional rebuild cache; labeled JSONL and split manifest/index JSONL files are required source inputs.
 - [Phase 14]: Local environment, cache, and agent paths are serialized as metadata only without file payloads or local secret contents.
 - [Phase 14]: Reproduction guide clarity human UAT approved; Phase 14 verification passed with 8/8 automated must-haves plus 1/1 human UAT.
-- [Phase 15]: Safe cleanup completed with archive-only handling for four Phase 13 allowlist paths and no hard deletion.
-- [Phase 15]: Legacy cleanup notes document v1 deferred/manual-review, v2 archived under `.planning/milestones/v2.0-abandoned/`, and v3/raw paths archived under `runs/_legacy_archive/phase15-safe-cleanup/`.
-- [Phase 15]: Final verification passed with 8/8 must-haves; manifest check passed and cleanup/reproduction pytest subset passed with 21 tests.
+- [Phase 15]: Safe cleanup ultimately uses direct deletion for non-v4 legacy/cache paths per maintainer clarification, not in-project archive retention.
+- [Phase 15]: Deleted clutter includes v1 baseline, v3/raw legacy paths, in-project legacy archive root, optional tokenized caches, and local test/bytecode caches.
+- [Phase 15]: Final direct cleanup verification passed with 8/8 must-haves; manifest check passed and cleanup/reproduction pytest subset passed with 21 tests.
+- [Phase 16]: Final no-cache verification and handoff completed; manifest check passed, no-cache pytest subset passed with 21 tests, required v4 assets exist, and deleted clutter remains absent.
 
 ### Preserved v4.0 Context
 
@@ -78,16 +77,15 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - v4.0 recommended deployment artifact: `runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf`.
 - v4.0 final replay output: `reality_test.log`, generated by the Phase 11 GO q4_K_M model with 426/426 parse, lint, and protocol gates passing.
 - v4.0 key reports include `artifacts/v4/phase8/phase8_gate_report.json`, `runs/v4.0-4B-20260509T184844Z/phase9_sft_report.json`, `runs/v4.0-4B-20260509T184844Z/phase10_gguf_report.json`, `artifacts/v4/phase11/phase11_gate_report.json`, and `artifacts/v4/phase12/phase12_report.json`.
-- v1.0 q4_K_M baseline remains a read-only historical reference at `runs/20260507T032419Z/gguf/model.q4_K_M.gguf`; it should not be treated as the v4.1 reproduction target.
+- v1.0 q4_K_M baseline was removed from this project directory during v4.1 cleanup because it is not part of the v4.0 Qwen3-4B 9k reproduction target.
 
 ### Pending Todos
 
-- Plan Phase 16: Verification & Handoff.
+- Complete and archive v4.1 milestone.
 
 ### Blockers/Concerns
 
-- `.planning/phases/` still contains old/uncommitted phase files from prior milestones; Phase 15 intentionally did not clean manual-review paths beyond the four archive-only candidates.
-- Phase 16 must prove the cleaned repository still reproduces the shipped v4.0 evidence path and leaves no active cleanup blockers.
+- Open artifact audit currently flags Phase 14 UAT despite `status: passed` and 0 pending scenarios; treat as audit tooling noise unless a fresh audit reports actual pending scenarios.
 
 ## Deferred Items
 
@@ -99,7 +97,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 
 ## Session Continuity
 
-Last session: 2026-05-12T06:20:00Z
-Stopped at: Phase 16 not started
+Last session: 2026-05-12T07:58:00Z
+Stopped at: Phase 16 completed
 Resume file: None
-Next action: /gsd-plan-phase 16
+Next action: /gsd-complete-milestone

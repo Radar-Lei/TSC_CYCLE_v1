@@ -13,13 +13,13 @@
 ### Reproduction Package
 
 - [x] **REPRO-01**: Reproducer can identify the canonical v4.0 Qwen3-4B 9k inputs, manifests, reports, final q4_K_M GGUF artifact, and `reality_test.log` without inspecting historical phase directories.
-- [ ] **REPRO-02**: Reproducer can run or follow a documented minimal verification path that confirms the retained v4 package still matches the shipped v4.0 result gates.
+- [x] **REPRO-02**: Reproducer can run or follow a documented minimal verification path that confirms the retained v4 package still matches the shipped v4.0 result gates.
 - [x] **REPRO-03**: Reproducer can distinguish required reproduction assets from optional audit artifacts and from obsolete v1/v2/v3/v4 intermediate files.
 
 ### Cleanup Execution
 
 - [x] **CLEAN-01**: Maintainer can safely archive or remove files unrelated to v4.0 Qwen3-4B reproduction without deleting canonical v4 assets or breaking source code imports.
-- [ ] **CLEAN-02**: Maintainer can rerun the relevant test and validation subset after cleanup and see that the repository remains internally consistent.
+- [x] **CLEAN-02**: Maintainer can rerun the relevant test and validation subset after cleanup and see that the repository remains internally consistent.
 - [x] **CLEAN-03**: Maintainer can inspect git status after cleanup and see a reviewable, intentionally scoped change set rather than mixed historical clutter.
 
 ### Documentation
@@ -57,10 +57,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INV-01 | Phase 13 | Complete |
 | INV-02 | Phase 13 | Complete |
 | REPRO-01 | Phase 14 | Complete |
-| REPRO-02 | Phase 16 | Pending |
+| REPRO-02 | Phase 16 | Complete |
 | REPRO-03 | Phase 14 | Complete |
 | CLEAN-01 | Phase 15 | Complete |
-| CLEAN-02 | Phase 16 | Pending |
+| CLEAN-02 | Phase 16 | Complete |
 | CLEAN-03 | Phase 15 | Complete |
 | DOC-01 | Phase 14 | Complete |
 | DOC-02 | Phase 15 | Complete |
@@ -72,4 +72,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-05-12*
-*Last updated: 2026-05-12 after Phase 15 safe cleanup completion*
+*Last updated: 2026-05-12 after Phase 16 verification handoff completion*
