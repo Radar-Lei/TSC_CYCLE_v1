@@ -322,7 +322,7 @@ def test_tokenize_record_checks_native_think_ids_before_truncation(tmp_path: Pat
     contract = _dataset_contract()
     tokenizer = FakeTokenizer()
     record = _sample(
-        "native-leak-after-boundary",
+        "native-leak-0abc",
         lineage="v3.0",
         split_hint="same_dist",
         reasoning="<LONG_2050><think>",

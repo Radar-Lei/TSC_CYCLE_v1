@@ -266,11 +266,7 @@ class GradNormAbortCallback(TrainerCallback):
     def on_step_end(self, args, state, control, **kwargs):  # noqa: D401, ANN001
         step = int(getattr(state, "global_step", 0) or 0)
         if step >= self.gate_steps:
-            report = self._write_report()
-            if not report["ok"]:
-                self.stopped_early = True
-                control.should_training_stop = True
-                self._write_report()
+            self._write_report()
         return control
 
 

@@ -42,7 +42,7 @@ def _hf_generate(model, tokenizer, user_prompt: str, n_predict: int) -> str:
         pad_token_id=tokenizer.eos_token_id,
     )
     new_ids = out[0][enc.input_ids.shape[1]:]
-    return build_assistant_prefill() + tokenizer.decode(new_ids, skip_special_tokens=False)
+    return build_assistant_prefill() + tokenizer.decode(new_ids, skip_special_tokens=True)
 
 
 def main() -> int:

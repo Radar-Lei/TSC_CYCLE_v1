@@ -227,7 +227,7 @@ def _write_per_sample(outputs: list[dict[str, Any]], path: Path) -> None:
 def _write_manifest(manifest: dict[str, Any], path: Path) -> None:
     reject_unsafe_phase12_output_path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
 
 
 def _load_cache(path: Path) -> dict[str, Any] | None:

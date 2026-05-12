@@ -40,6 +40,22 @@ def _validate_model_id(model_id: str) -> list[dict[str, str]]:
 
 def evaluate_tokenizer_audit(tokenizer=None, model_id: str = EXPECTED_MODEL_ID) -> dict[str, Any]:
     fatal_failures = _validate_model_id(model_id)
+    if fatal_failures and tokenizer is None:
+        return {
+            "ok": False,
+            "model_id": model_id,
+            "custom_tags": {},
+            "native_think": {},
+            "native_think_token_ids": [],
+            "min_custom_subtokens": 3,
+            "bad_custom_tags": [],
+            "bad_native_think": [],
+            "vocab_size": None,
+            "chat_template_used": False,
+            "fatal_failures": fatal_failures,
+            "warnings": [],
+            "requirements_covered": REQUIREMENTS_COVERED,
+        }
     if tokenizer is None:
         tokenizer = _load_tokenizer(model_id)
 

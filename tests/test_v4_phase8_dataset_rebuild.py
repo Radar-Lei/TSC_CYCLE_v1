@@ -331,9 +331,17 @@ class FakeQwen4BTokenizer:
         return ids
 
 
+def _row_lineage(row: dict[str, Any]) -> str:
+    lineage = row.get("lineage")
+    if lineage is not None:
+        return str(lineage)
+    input_obj = row.get("input") if isinstance(row.get("input"), dict) else {}
+    return str(input_obj.get("lineage", "v1.0"))
+
+
 def _phase8_ready_source(tmp_path: Path, rows: list[dict[str, Any]]) -> tuple[Any, Path]:
-    v1_path = _write_jsonl(tmp_path / "src" / "v1.jsonl", [row for row in rows if row["lineage"] == "v1.0"])
-    v3_path = _write_jsonl(tmp_path / "src" / "v3.jsonl", [row for row in rows if row["lineage"] == "v3.0"])
+    v1_path = _write_jsonl(tmp_path / "src" / "v1.jsonl", [row for row in rows if _row_lineage(row) == "v1.0"])
+    v3_path = _write_jsonl(tmp_path / "src" / "v3.jsonl", [row for row in rows if _row_lineage(row) == "v3.0"])
     config = _phase8_config(tmp_path, v1_path, v3_path, expected_train=6, expected_val=1, expected_ood_val=3)
     source_report = _dataset_contract()["build_v4_source_dataset"](config)
     assert source_report["ok"] is True, "DATA4B-01 source preparation must be green before split/tokenize contracts run"
@@ -341,9 +349,9 @@ def _phase8_ready_source(tmp_path: Path, rows: list[dict[str, Any]]) -> tuple[An
 
 
 def _ten_row_source_rows() -> list[dict[str, Any]]:
-    return [
-        _sample("v1-ood-comparable-0000", lineage="v1.0", split_hint="ood"),
-        _sample("v1-ood-comparable-0001", lineage="v1.0", split_hint="ood"),
+    rows = [
+        _sample("real-ood-comparable-0000", lineage="v1.0", split_hint="ood"),
+        _sample("real-ood-comparable-0001", lineage="v1.0", split_hint="ood"),
         _sample("v3-extended-ood-0000", lineage="v3.0", split_hint="ood"),
         _sample("v3-same-0001", lineage="v3.0", split_hint="same_dist"),
         _sample("v3-same-0002", lineage="v3.0", split_hint="same_dist"),
@@ -353,6 +361,10 @@ def _ten_row_source_rows() -> list[dict[str, Any]]:
         _sample("v3-same-0006", lineage="v3.0", split_hint="same_dist"),
         _sample("v3-same-0007", lineage="v3.0", split_hint="same_dist"),
     ]
+    for row in rows[:2]:
+        row.pop("lineage", None)
+        row["input"].pop("lineage", None)
+    return rows
 
 
 def _open_arrow(path: Path):
@@ -390,7 +402,7 @@ def test_split_tokenize_keeps_v1_ood_and_v3_extended_ood_without_overlap(tmp_pat
     assert report["split_counts"] == {"train": 6, "val": 1, "ood_val": 3}
     assert report["seed"] == 42
     assert report["v1_ood_alignment"]["all_v1_ood_in_ood_val"] is True
-    assert set(report["v1_ood_alignment"]["v1_ood_sample_ids"]) == {"v1-ood-comparable-0000", "v1-ood-comparable-0001"}
+    assert set(report["v1_ood_alignment"]["v1_ood_sample_ids"]) == {"real-ood-comparable-0000", "real-ood-comparable-0001"}
     assert report["v3_extended_ood"]["selected_count"] == 1
     assert set(report["v3_extended_ood"]["sample_ids"]) == {"v3-extended-ood-0000"}
 
@@ -400,6 +412,11 @@ def test_split_tokenize_keeps_v1_ood_and_v3_extended_ood_without_overlap(tmp_pat
     assert split_ids["val"].isdisjoint(split_ids["ood_val"])
     assert tokenizer.chat_template_used is False
     assert all(call["add_special_tokens"] is False for call in tokenizer.calls)
+    ood_index = _read_jsonl(tmp_path / V4_SPLIT_DIR / "ood_val.index.jsonl")
+    comparable_rows = [row for row in ood_index if row["sample_id"].startswith("real-ood-comparable-")]
+    assert len(comparable_rows) == 2
+    assert {row["source_origin"] for row in comparable_rows} == {"v1_valid"}
+    assert all(row["lineage"] == "v1.0" and row["is_v1_ood"] is True for row in comparable_rows)
 
     for split_name, expected_count in {"train": 6, "val": 1, "ood_val": 3}.items():
         arrow_path = tmp_path / V4_TOKENIZED_DIR / f"{split_name}.arrow"
@@ -413,8 +430,8 @@ def test_split_tokenize_keeps_v1_ood_and_v3_extended_ood_without_overlap(tmp_pat
 def test_tokenization_checks_native_think_ids_before_truncation_and_blocks_leaks(tmp_path: Path) -> None:
     rows = _ten_row_source_rows()
     rows[-1]["result"]["reasoning"] = "<LONG_2050><think>"
-    v1_path = _write_jsonl(tmp_path / "native" / "v1.jsonl", [row for row in rows if row["lineage"] == "v1.0"])
-    v3_path = _write_jsonl(tmp_path / "native" / "v3.jsonl", [row for row in rows if row["lineage"] == "v3.0"])
+    v1_path = _write_jsonl(tmp_path / "native" / "v1.jsonl", [row for row in rows if _row_lineage(row) == "v1.0"])
+    v3_path = _write_jsonl(tmp_path / "native" / "v3.jsonl", [row for row in rows if _row_lineage(row) == "v3.0"])
     config = _phase8_config(tmp_path / "native", v1_path, v3_path, expected_train=6, expected_val=1, expected_ood_val=3)
     tokenizer = FakeQwen4BTokenizer()
 
@@ -470,6 +487,8 @@ def _green_phase8_gate_files(tmp_path: Path, *, include_dataset_card_v4: bool = 
             "ok": True,
             "requirements_covered": ["DATA4B-02", "DATA4B-03", "DATA4B-04", "DATA4B-05"],
             "split_counts": {"train": 6, "val": 1, "ood_val": 3},
+            "v1_ood_alignment": {"all_v1_ood_in_ood_val": True, "v1_ood_count": 2, "ood_val_v1_ood_count": 2},
+            "v3_extended_ood": {"selected_count": 1},
             "native_think_token_ids": [151667, 151668],
             "truncation": {"over_length_rate": 0.0, "max_allowed_rate": 0.05},
         },
@@ -529,3 +548,18 @@ def test_aggregate_phase8_report_blocks_when_phase7_handoff_is_not_allowed(tmp_p
     assert report["next_phase_allowed"] is False
     assert report["gates"]["phase7_next_phase_allowed"]["ok"] is False
     assert set(report["requirements_expected"]) == {"DATA4B-01", "DATA4B-02", "DATA4B-03", "DATA4B-04", "DATA4B-05"}
+
+
+def test_aggregate_phase8_report_blocks_false_green_empty_v1_ood_alignment(tmp_path: Path) -> None:
+    paths = _green_phase8_gate_files(tmp_path)
+    rebuild = _read_json(paths["rebuild_report"])
+    rebuild["v1_ood_alignment"] = {"all_v1_ood_in_ood_val": True, "v1_ood_count": 0, "ood_val_v1_ood_count": 0}
+    _write_json(paths["rebuild_report"], rebuild)
+    evaluate_phase8_report = _phase8_report_contract()
+
+    report = evaluate_phase8_report(**paths, out_path=tmp_path / V4_ARTIFACTS_DIR / "phase8_gate_report.json")
+
+    assert report["ok"] is False
+    assert report["next_phase_allowed"] is False
+    assert report["gates"]["rebuild_invariants"]["ok"] is False
+    assert any("v1 OOD alignment evidence is empty" in failure["reason"] for failure in report["fatal_failures"])

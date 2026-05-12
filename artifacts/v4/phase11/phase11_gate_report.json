@@ -1,0 +1,128 @@
+{
+  "decision": {
+    "checks": [
+      {
+        "description": "v4 q4_K_M OOD hard-constraint pass rate",
+        "gate": "v4_q4_hard_constraint_pass",
+        "metric": "v4_q4_hard_pass_ood",
+        "ok": true,
+        "operator": ">=",
+        "reason": null,
+        "threshold": 0.98,
+        "value": 1.0
+      },
+      {
+        "description": "q4 hard-pass ratio versus v4 HF",
+        "gate": "q4_vs_hf_hard_pass_ratio",
+        "metric": "v4_q4_vs_v4_hf_hard_pass_ratio",
+        "ok": true,
+        "operator": ">=",
+        "reason": null,
+        "threshold": 0.95,
+        "value": 1.0
+      },
+      {
+        "description": "v4 q4 minus frozen v1 q4 hard-pass CI95 lower bound",
+        "gate": "hard_pass_delta_ci_lower",
+        "metric": "v4_vs_v1_hard_pass_delta_ci95_lower",
+        "ok": true,
+        "operator": ">=",
+        "reason": null,
+        "threshold": -0.01,
+        "value": 0.0033333333333333335
+      },
+      {
+        "description": "v4 q4 minus frozen v1 q4 teacher-MAE CI95 upper bound in seconds",
+        "gate": "teacher_mae_delta_ci_upper",
+        "metric": "v4_vs_v1_teacher_mae_delta_ci95_upper",
+        "ok": true,
+        "operator": "<=",
+        "reason": null,
+        "threshold": 0.5,
+        "value": -3.194186507936508
+      }
+    ],
+    "comparison_artifact": "/home/samuel/TSC_CYCLE/runs/20260507T032419Z/gguf/model.q4_K_M.gguf",
+    "decision_policy": "GO only when all locked U-01 hard gates, Phase 10 handoff, artifacts, and finite inputs pass; hard failures remain NO_GO.",
+    "fallback_artifact": "/home/samuel/TSC_CYCLE/runs/20260507T032419Z/gguf/model.q4_K_M.gguf",
+    "fatal_failures": [],
+    "next_phase_allowed": true,
+    "ok": true,
+    "recommended_artifact": "/home/samuel/TSC_CYCLE/runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf",
+    "requirements_covered": [
+      "EVAL4B-03",
+      "EVAL4B-04"
+    ],
+    "thresholds": {
+      "hard_pass_delta_ci_lower_min": -0.01,
+      "q4_vs_hf_hard_pass_ratio_min": 0.95,
+      "teacher_mae_delta_ci_upper_max_sec": 0.5,
+      "v4_q4_hard_constraint_pass_min": 0.98
+    },
+    "verdict": "GO",
+    "warnings": []
+  },
+  "fallback_artifact": "/home/samuel/TSC_CYCLE/runs/20260507T032419Z/gguf/model.q4_K_M.gguf",
+  "fatal_failures": [],
+  "gates": {
+    "decision": {
+      "data": {
+        "verdict": "GO"
+      },
+      "ok": true,
+      "reason": null
+    },
+    "frozen_v1_read_only": {
+      "data": {
+        "root": "/home/samuel/TSC_CYCLE/runs/20260507T032419Z"
+      },
+      "ok": true,
+      "reason": null
+    },
+    "matrix_manifest": {
+      "data": {
+        "path": "/home/samuel/TSC_CYCLE/runs/v4.0-4B-20260509T184844Z/eval_phase11/matrix_manifest.json"
+      },
+      "ok": true,
+      "reason": null
+    },
+    "metrics_json": {
+      "data": {
+        "path": "/home/samuel/TSC_CYCLE/runs/v4.0-4B-20260509T184844Z/eval_phase11/metrics.json"
+      },
+      "ok": true,
+      "reason": null
+    },
+    "phase10_handoff": {
+      "data": {
+        "path": "/home/samuel/TSC_CYCLE/runs/v4.0-4B-20260509T184844Z/phase10_gguf_report.json"
+      },
+      "ok": true,
+      "reason": null
+    }
+  },
+  "next_phase_allowed": true,
+  "ok": true,
+  "phase11_handoff": {
+    "allowed": true,
+    "report_path": "/home/samuel/TSC_CYCLE/artifacts/v4/phase11/phase11_gate_report.json",
+    "status": "GO"
+  },
+  "recommended_artifact": "/home/samuel/TSC_CYCLE/runs/v4.0-4B-20260509T184844Z/gguf/model.q4_K_M.gguf",
+  "reports": {
+    "decision_md": "/home/samuel/TSC_CYCLE/runs/v4.0-4B-20260509T184844Z/eval_phase11/decision.md",
+    "gate_report": "/home/samuel/TSC_CYCLE/artifacts/v4/phase11/phase11_gate_report.json",
+    "matrix_manifest": "/home/samuel/TSC_CYCLE/runs/v4.0-4B-20260509T184844Z/eval_phase11/matrix_manifest.json",
+    "metrics_json": "/home/samuel/TSC_CYCLE/runs/v4.0-4B-20260509T184844Z/eval_phase11/metrics.json",
+    "metrics_report_md": "/home/samuel/TSC_CYCLE/runs/v4.0-4B-20260509T184844Z/eval_phase11/report.md",
+    "per_sample": "/home/samuel/TSC_CYCLE/runs/v4.0-4B-20260509T184844Z/eval_phase11/per_sample.jsonl",
+    "phase10_handoff": "/home/samuel/TSC_CYCLE/runs/v4.0-4B-20260509T184844Z/phase10_gguf_report.json"
+  },
+  "requirements_covered": [
+    "EVAL4B-01",
+    "EVAL4B-02",
+    "EVAL4B-03",
+    "EVAL4B-04"
+  ],
+  "warnings": []
+}

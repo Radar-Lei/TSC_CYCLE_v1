@@ -157,8 +157,14 @@ def _rebuild_invariants(payload: dict[str, Any] | None, fatal_failures: list[dic
     if not payload.get("native_think_token_ids"):
         reasons.append("native think token IDs missing")
     v1_ood = payload.get("v1_ood_alignment") if isinstance(payload.get("v1_ood_alignment"), dict) else {}
-    if v1_ood and v1_ood.get("all_v1_ood_in_ood_val") is not True:
+    if not v1_ood:
+        reasons.append("v1 OOD alignment evidence is missing")
+    elif v1_ood.get("all_v1_ood_in_ood_val") is not True:
         reasons.append("v1 OOD alignment is false")
+    elif int(v1_ood.get("v1_ood_count") or 0) <= 0:
+        reasons.append("v1 OOD alignment evidence is empty")
+    elif int(v1_ood.get("ood_val_v1_ood_count") or 0) != int(v1_ood.get("v1_ood_count") or 0):
+        reasons.append("v1 OOD alignment count mismatch")
     v3_ood = payload.get("v3_extended_ood") if isinstance(payload.get("v3_extended_ood"), dict) else {}
     if v3_ood and "selected_count" in v3_ood and int(v3_ood.get("selected_count") or 0) <= 0:
         reasons.append("v3 extended OOD alignment is empty")

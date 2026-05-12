@@ -155,6 +155,8 @@ def _baseline_payload() -> dict[str, Any]:
     fatal_failures: list[dict[str, str]] = []
     if not before["exists"]:
         fatal_failures.append({"gate": "baseline_root", "reason": f"missing {FROZEN_BASELINE_ROOT}"})
+    if before["write_bits"]:
+        fatal_failures.append({"gate": "baseline_readonly", "reason": f"frozen baseline root has write bits: {before['mode']}"})
     if not before["q4_artifact"]["exists"]:
         fatal_failures.append({"gate": "q4_artifact", "reason": "missing gguf/model.q4_K_M.gguf"})
     if not unchanged:

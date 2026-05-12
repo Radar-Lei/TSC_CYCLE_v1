@@ -105,6 +105,8 @@ def test_workers_capped_and_effort_high_defaults():
 
     assert args.model == "gpt-5.5"
     assert args.effort == "high"
+    assert args.labeled == "data/v3/phase2/labeled_new.jsonl"
+    assert args.rejected == "data/v3/phase2/rejected_new.jsonl"
 
     with pytest.raises(SystemExit) as excinfo:
         parser.parse_args(["--workers", "11"])

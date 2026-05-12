@@ -206,7 +206,22 @@ def _record_sample_id(record: dict[str, Any]) -> str:
     return sha256_hex(canonical_json(_record_input(record)))
 
 
+def _record_source_origin(record: dict[str, Any]) -> str:
+    for container in (record, record.get("metadata") if isinstance(record.get("metadata"), dict) else {}, _record_input(record)):
+        if not isinstance(container, dict):
+            continue
+        value = container.get("source_origin")
+        if value:
+            return str(value)
+    return "unknown"
+
+
 def _record_lineage(record: dict[str, Any]) -> str:
+    origin = _record_source_origin(record)
+    if origin == "v1_valid":
+        return "v1.0"
+    if origin == "v3_new_lint_pass":
+        return "v3.0"
     for container in (record, _record_input(record), record.get("metadata") if isinstance(record.get("metadata"), dict) else {}):
         if not isinstance(container, dict):
             continue
@@ -248,6 +263,11 @@ def _record_solution(record: dict[str, Any]) -> dict[str, int]:
 
 
 def _is_v1(record: dict[str, Any]) -> bool:
+    origin = _record_source_origin(record)
+    if origin == "v1_valid":
+        return True
+    if origin == "v3_new_lint_pass":
+        return False
     lineage = _record_lineage(record).lower()
     sample_id = _record_sample_id(record)
     if "v1" in lineage or sample_id.startswith("v1-"):
@@ -286,7 +306,7 @@ def _normalize_value(value: Any) -> tuple[Any, int]:
 
 def _without_lineage(value: Any) -> Any:
     if isinstance(value, dict):
-        return {str(k): _without_lineage(v) for k, v in value.items() if k not in {"lineage", "milestone", "version"}}
+        return {str(k): _without_lineage(v) for k, v in value.items() if k not in {"lineage", "milestone", "version", "source_origin"}}
     if isinstance(value, list):
         return [_without_lineage(item) for item in value]
     return value
@@ -364,6 +384,8 @@ def _prepare_source(config: Phase8DatasetConfig) -> _PreparedSource:
         for row in rows:
             normalized, count = _normalize_value(row)
             assert isinstance(normalized, dict)
+            normalized = dict(normalized)
+            normalized["source_origin"] = _source_label(source_name)
             malformed_replacements += count
             text = json.dumps(normalized, ensure_ascii=False, sort_keys=True)
             sample_id = _record_sample_id(normalized)
@@ -546,6 +568,7 @@ def _index_row(record: dict[str, Any], split: str, raw_index: int, seed: int) ->
         "sample_id": _record_sample_id(record),
         "split": split,
         "lineage": _record_lineage(record),
+        "source_origin": _record_source_origin(record),
         "source": _record_source(record),
         "record_hash": _manifest_hash(record),
         "input_hash": sha256_hex(canonical_json(input_obj)),

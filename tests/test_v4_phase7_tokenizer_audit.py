@@ -67,6 +67,17 @@ def test_rejects_qwen35_model_id():
     assert payload["fatal_failures"]
 
 
+def test_rejects_qwen35_model_id_without_loading_tokenizer(monkeypatch):
+    def fail_loader(model_id):
+        raise AssertionError(f"should not load {model_id}")
+
+    monkeypatch.setattr("tsc_cycle.v4_gates.phase7_tokenizer._load_tokenizer", fail_loader)
+    payload = evaluate_tokenizer_audit(model_id="Qwen/Qwen3.5-9B")
+    assert payload["ok"] is False
+    assert payload["fatal_failures"]
+    assert payload["native_think_token_ids"] == []
+
+
 def test_main_writes_json_with_fake_loader(tmp_path, monkeypatch):
     out = tmp_path / "tokenizer_audit.json"
 

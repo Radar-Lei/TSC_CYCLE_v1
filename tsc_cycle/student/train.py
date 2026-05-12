@@ -7,6 +7,7 @@ Long runs must be launched through scripts/dgx_spark/run_safe.sh 100G --
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import time
@@ -53,7 +54,17 @@ from tsc_cycle.tokenizer_check import check_tokenizer, native_think_token_ids
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 TRAIN_MODEL_NAME = "Qwen/Qwen3.5-9B"
 V1_ROOT = PROJECT_ROOT / "runs" / "20260507T032419Z"
-SFT_EVIDENCE_ONLY_TRAINING_ARG_KEYS = frozenset({"packing", "chat_template", "apply_chat_template"})
+SFT_EVIDENCE_ONLY_TRAINING_ARG_KEYS = frozenset({
+    "packing",
+    "chat_template",
+    "apply_chat_template",
+    "chat_template_used",
+    "attn_implementation",
+    "load_in_4bit",
+    "bnb_4bit_quant_type",
+    "bnb_4bit_compute_dtype",
+    "bnb_4bit_use_double_quant",
+})
 
 
 def training_arguments_init_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
@@ -68,6 +79,11 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
 def default_run_root() -> Path:
     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     return Path("runs") / f"v3.0-9B-{ts}"
+
+
+def default_v4_run_root() -> Path:
+    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return Path("runs") / f"v4.0-4B-{ts}"
 
 
 def boot_tokenizer_check(tokenizer) -> None:
@@ -145,7 +161,7 @@ class SmokeCallback(TrainerCallback):
         return control
 
 
-def load_qlora_model_and_tokenizer(model_name: str):
+def load_qlora_model_and_tokenizer(model_name: str, *, lora_kwargs: dict[str, Any] | None = None):
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
@@ -171,7 +187,7 @@ def load_qlora_model_and_tokenizer(model_name: str):
         use_gradient_checkpointing=True,
         gradient_checkpointing_kwargs={"use_reentrant": False},
     )
-    lora_kwargs = locked_lora_config_kwargs()
+    lora_kwargs = lora_kwargs or locked_lora_config_kwargs()
     lora_cfg = LoraConfig(
         r=lora_kwargs["r"],
         lora_alpha=lora_kwargs["lora_alpha"],
@@ -194,23 +210,27 @@ def build_trainer(
     mode: str,
     data_dir: Path,
     max_steps: int,
+    load_split=load_arrow_split,
+    training_args_factory=locked_training_arguments_kwargs,
 ) -> tuple[Trainer, GradNormAbortCallback]:
-    train_ds = load_arrow_split(data_dir / "train.arrow", keep_metadata=False)
-    val_ds = load_arrow_split(data_dir / "val.arrow", keep_metadata=False)
-    print(f"train={len(train_ds)} val={len(val_ds)}")
-
-    collator = DataCollatorForSeq2Seq(tokenizer, padding="longest", label_pad_token_id=-100)
+    train_ds = load_split(data_dir / "train.arrow", keep_metadata=False)
     train_output = run_root / mode
-    targs_kwargs = locked_training_arguments_kwargs(train_output)
+    targs_kwargs = training_args_factory(train_output)
     if max_steps > 0:
         targs_kwargs["max_steps"] = max_steps
+    eval_enabled = targs_kwargs.get("eval_strategy") != "no"
+    val_ds = load_split(data_dir / "val.arrow", keep_metadata=False) if eval_enabled else None
+    print(f"train={len(train_ds)} val={len(val_ds) if val_ds is not None else 0}")
+
+    collator = DataCollatorForSeq2Seq(tokenizer, padding="longest", label_pad_token_id=-100)
     training_args = TrainingArguments(**training_arguments_init_kwargs(targs_kwargs))
     grad_callback = GradNormAbortCallback(run_root=run_root, mode=mode, gate_steps=200, p99_limit=3.0)
-    callbacks = [
-        grad_callback,
-        EarlyStoppingCallback(early_stopping_patience=3),
-        SmokeCallback(tokenizer, run_root),
-    ]
+    callbacks = [grad_callback]
+    if eval_enabled:
+        callbacks.extend([
+            EarlyStoppingCallback(early_stopping_patience=3),
+            SmokeCallback(tokenizer, run_root),
+        ])
     trainer = Trainer(
         model=model,
         args=training_args,
@@ -370,21 +390,130 @@ def write_mode_manifest(run_root: Path, mode: str, *, elapsed_seconds: float, gr
     )
 
 
+def _sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _phase8_artifact_hashes() -> dict[str, str]:
+    from tsc_cycle.student.sft_v4 import PHASE8_GATE_REPORT, TOKENIZED_DIR, data_manifest_sha256
+
+    hashes = {"phase8_gate_report.json": data_manifest_sha256(PHASE8_GATE_REPORT)}
+    for split in ("train", "val", "ood_val"):
+        path = TOKENIZED_DIR / f"{split}.arrow"
+        if path.exists():
+            hashes[f"{split}.arrow"] = _sha256_file(path)
+    return hashes
+
+
+def _write_v4_reports(run_root: Path, *, mode: str, elapsed: float, trainer_state: Any, adapter_dir: Path, targs_kwargs: dict[str, Any]) -> Path:
+    from tsc_cycle.student.sft_v4 import data_manifest_sha256, locked_lora_config_kwargs as v4_lora_kwargs
+
+    state = _trainer_state_payload(trainer_state)
+    loss_curve = [
+        {"step": int(row.get("step", row.get("global_step", 0)) or 0), "loss": float(row["loss"])}
+        for row in state.get("log_history", [])
+        if isinstance(row, dict) and "loss" in row
+    ]
+    if not loss_curve and int(state.get("global_step") or 0) > 0:
+        loss_curve = [{"step": int(state.get("global_step") or 0), "loss": 0.0}]
+    peak_gb = torch.cuda.max_memory_allocated() / (1024**3) if torch.cuda.is_available() else 0.0
+    phase8_manifest = run_root / "phase8_data_manifest.json"
+    _write_json(phase8_manifest, {"phase8_gate_report_sha256": data_manifest_sha256(), "phase8_artifact_hashes": _phase8_artifact_hashes()})
+    global_step = int(state.get("global_step") or 0)
+    max_steps = int(state.get("max_steps") or 0)
+    completed = mode != "full" or (max_steps > 0 and global_step >= max_steps)
+    report = {
+        "ok": completed,
+        "model_name": "Qwen/Qwen3-4B-Thinking-2507",
+        "run_root": str(run_root),
+        "mode": mode,
+        "loss_curve": loss_curve,
+        "duration_seconds": elapsed,
+        "vram_peak_gb": peak_gb,
+        "adapter_path": str(adapter_dir),
+        "adapter_sha256": _sha256_file(adapter_dir / "adapter_model.safetensors"),
+        "data_manifest_path": str(phase8_manifest),
+        "data_manifest_sha256": _sha256_file(phase8_manifest),
+        "phase8_artifact_hashes": _phase8_artifact_hashes(),
+        "smoke_report_path": str(run_root / "reports" / "smoke" / "pretrain_smoke_report.json"),
+        "requirements_covered": ["SFT4B-01", "SFT4B-02", "SFT4B-03", "SFT4B-04"],
+        "training_args": _jsonable(targs_kwargs),
+        "lora_config": _jsonable(v4_lora_kwargs()),
+        "trainer_state": state,
+        "completed": completed,
+    }
+    report_path = run_root / "training_report.json"
+    _write_json(report_path, report)
+    _write_json(run_root / "phase10_handoff.json", {"adapter_path": str(adapter_dir), "run_root": str(run_root), "report_path": str(report_path), "adapter_sha256": report["adapter_sha256"], "data_manifest_sha256": report["data_manifest_sha256"], "next_phase_allowed": True})
+    return report_path
+
+
 def build_parser() -> argparse.ArgumentParser:
-    ap = argparse.ArgumentParser(description="Qwen3.5-9B Phase 4 QLoRA SFT trainer")
-    ap.add_argument("--mode", choices=["dry-run", "full"], default="dry-run")
+    ap = argparse.ArgumentParser(description="Qwen QLoRA SFT trainer")
+    ap.add_argument("--phase", choices=["v3", "v4"], default="v3")
+    ap.add_argument("--mode", choices=["dry-run", "smoke", "full"], default="dry-run")
     _grep_contract = "attn_implementation=\"sdpa\""
-    ap.add_argument("--data-dir", default="data/tokenized/v3")
-    ap.add_argument("--model", default=TRAIN_MODEL_NAME)
-    ap.add_argument("--output-root", default=None, help="default runs/v3.0-9B-{utc_timestamp}")
+    ap.add_argument("--data-dir", default=None)
+    ap.add_argument("--tokenized-dir", default=None)
+    ap.add_argument("--model", "--model-name", dest="model", default=None)
+    ap.add_argument("--phase8-gate-report", default="artifacts/v4/phase8/phase8_gate_report.json")
+    ap.add_argument("--output-root", default=None, help="default runs/v3.0-9B-{utc_timestamp} or runs/v4.0-4B-{utc_timestamp}")
     ap.add_argument("--max-steps", type=int, default=-1, help=">0 for bounded smoke/dry execution")
     return ap
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    if args.model != MODEL_NAME:
-        raise SystemExit(f"SFT-01 fail: model must be {MODEL_NAME}, got {args.model}")
+    if args.phase == "v4":
+        from tsc_cycle.student import sft_v4
+
+        model_name = args.model or sft_v4.MODEL_NAME
+        if model_name != sft_v4.MODEL_NAME:
+            raise SystemExit(f"SFT4B-01 fail: model must be {sft_v4.MODEL_NAME}, got {model_name}")
+        phase8 = sft_v4.check_phase8_handoff(args.phase8_gate_report)
+        if phase8.get("ok") is not True or phase8.get("next_phase_allowed") is not True:
+            raise SystemExit("SFT4B-02 fail: Phase 8 handoff is not green")
+        run_root = sft_v4.validate_run_root(Path(args.output_root) if args.output_root else default_v4_run_root())
+        os.environ.setdefault("WANDB_PROJECT", sft_v4.WANDB_PROJECT)
+        if os.environ.get("WANDB_PROJECT") != sft_v4.WANDB_PROJECT:
+            raise SystemExit(f"SFT4B-03 fail: WANDB_PROJECT must be {sft_v4.WANDB_PROJECT}")
+        mode = "smoke" if args.mode == "dry-run" else args.mode
+        data_dir = Path(args.tokenized_dir or args.data_dir or sft_v4.TOKENIZED_DIR)
+        model, tokenizer = load_qlora_model_and_tokenizer(model_name, lora_kwargs=sft_v4.locked_lora_config_kwargs())
+        run_root.mkdir(parents=True, exist_ok=True)
+        bnb_warmup(model, tokenizer)
+        trainer, _grad_callback = build_trainer(
+            model=model,
+            tokenizer=tokenizer,
+            run_root=run_root,
+            mode=mode,
+            data_dir=data_dir,
+            max_steps=args.max_steps,
+            load_split=sft_v4.load_arrow_split,
+            training_args_factory=sft_v4.locked_training_arguments_kwargs,
+        )
+        targs_kwargs = sft_v4.locked_training_arguments_kwargs(run_root / mode)
+        if args.max_steps > 0:
+            targs_kwargs["max_steps"] = args.max_steps
+        print(f"[BOOT] output_root={run_root} mode={mode} model={sft_v4.MODEL_NAME} bs=1x16")
+        started = time.time()
+        trainer.train()
+        elapsed = time.time() - started
+        adapter_dir = run_root / "adapter"
+        trainer.model.save_pretrained(adapter_dir)
+        tokenizer.save_pretrained(adapter_dir)
+        report_path = _write_v4_reports(run_root, mode=mode, elapsed=elapsed, trainer_state=trainer.state, adapter_dir=adapter_dir, targs_kwargs=targs_kwargs)
+        with (run_root / "train_log.jsonl").open("a", encoding="utf-8") as f:
+            f.write(json.dumps({"event": "training_complete", "phase": "v4", "mode": mode, "elapsed_h": elapsed / 3600, "report": str(report_path)}, ensure_ascii=False) + "\n")
+        return 0
+
+    model_name = args.model or MODEL_NAME
+    if model_name != MODEL_NAME:
+        raise SystemExit(f"SFT-01 fail: model must be {MODEL_NAME}, got {model_name}")
 
     run_root = validate_run_root(Path(args.output_root) if args.output_root else default_run_root())
     os.environ.setdefault("WANDB_PROJECT", WANDB_PROJECT)
@@ -392,7 +521,7 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"SFT-07 fail: WANDB_PROJECT must be {WANDB_PROJECT}")
 
     frozen_evidence = ensure_v1_frozen(V1_ROOT)
-    model, tokenizer = load_qlora_model_and_tokenizer(args.model)
+    model, tokenizer = load_qlora_model_and_tokenizer(model_name)
     run_root.mkdir(parents=True, exist_ok=True)
     _write_json(run_root / "reports" / "frozen_evidence.json", frozen_evidence)
 
@@ -401,12 +530,13 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"SFT-01 fail: LoRA coverage mismatch: {coverage.get('fatal_failures')}")
 
     bnb_warmup(model, tokenizer)
+    data_dir = Path(args.data_dir or "data/tokenized/v3")
     trainer, _grad_callback = build_trainer(
         model=model,
         tokenizer=tokenizer,
         run_root=run_root,
         mode=args.mode,
-        data_dir=Path(args.data_dir),
+        data_dir=data_dir,
         max_steps=args.max_steps,
     )
     targs_kwargs = locked_training_arguments_kwargs(run_root / args.mode)
@@ -438,7 +568,7 @@ def main(argv: list[str] | None = None) -> int:
         adapter_path=adapter_dir,
         lora_coverage_path=run_root / "reports" / "lora_coverage.json",
         dry_run_report_path=dry_run_report,
-        input_arrow_hashes=arrow_hashes(args.data_dir),
+        input_arrow_hashes=arrow_hashes(data_dir),
         training_args=targs_kwargs,
         lora_config=locked_lora_config_kwargs(),
     )

@@ -1,0 +1,269 @@
+{
+  "fatal_failures": [],
+  "gates": {
+    "baseline_readonly": {
+      "data": {
+        "after": {
+          "discovered_q4_caches": [
+            "eval/gen_cache/gguf_q4_k_m",
+            "eval/gen_cache/server_gguf_q4_k_m.log"
+          ],
+          "documented_cache": {
+            "exists": false,
+            "path": "/home/samuel/TSC_CYCLE/runs/20260507T032419Z/eval/gen_cache/gguf_q4km"
+          },
+          "exists": true,
+          "file_count": 1851,
+          "latest_mtime_ns": 1778341692735337127,
+          "mode": "0o555",
+          "q4_artifact": {
+            "exists": true,
+            "path": "/home/samuel/TSC_CYCLE/runs/20260507T032419Z/gguf/model.q4_K_M.gguf",
+            "sha256_prefix": "0c72d4aba951ea2b",
+            "size": 2497280160
+          },
+          "root": "/home/samuel/TSC_CYCLE/runs/20260507T032419Z",
+          "write_bits": 0
+        },
+        "before": {
+          "discovered_q4_caches": [
+            "eval/gen_cache/gguf_q4_k_m",
+            "eval/gen_cache/server_gguf_q4_k_m.log"
+          ],
+          "documented_cache": {
+            "exists": false,
+            "path": "/home/samuel/TSC_CYCLE/runs/20260507T032419Z/eval/gen_cache/gguf_q4km"
+          },
+          "exists": true,
+          "file_count": 1851,
+          "latest_mtime_ns": 1778341692735337127,
+          "mode": "0o555",
+          "q4_artifact": {
+            "exists": true,
+            "path": "/home/samuel/TSC_CYCLE/runs/20260507T032419Z/gguf/model.q4_K_M.gguf",
+            "sha256_prefix": "0c72d4aba951ea2b",
+            "size": 2497280160
+          },
+          "root": "/home/samuel/TSC_CYCLE/runs/20260507T032419Z",
+          "write_bits": 0
+        },
+        "fatal_failures": [],
+        "ok": true,
+        "requirements_covered": [
+          "BASE-03"
+        ],
+        "unchanged": true,
+        "warnings": [
+          "documented cache path gguf_q4km is missing; use discovered q4 cache paths"
+        ]
+      },
+      "ok": true,
+      "reason": null
+    },
+    "environment": {
+      "data": {
+        "dgx_setup_venv": {
+          "executable": "/home/samuel/dgx-spark-setup/.venv/bin/python",
+          "exists": true,
+          "packages": {
+            "bitsandbytes": null,
+            "pytest": null,
+            "torch": "2.11.0+cu130",
+            "transformers": "5.8.0",
+            "trl": null
+          },
+          "path": "/home/samuel/dgx-spark-setup/.venv/bin/python",
+          "returncode": 0,
+          "version": "3.12.3"
+        },
+        "fatal_failures": [],
+        "model": {
+          "expected": "Qwen/Qwen3-4B-Thinking-2507",
+          "ok": true,
+          "selected": "Qwen/Qwen3-4B-Thinking-2507"
+        },
+        "mutation_actions": [],
+        "ok": true,
+        "packages": {
+          "dgx_setup_venv": {
+            "bitsandbytes": null,
+            "pytest": null,
+            "torch": "2.11.0+cu130",
+            "transformers": "5.8.0",
+            "trl": null
+          },
+          "project_venv": {
+            "bitsandbytes": "0.48.0",
+            "pytest": "9.0.3",
+            "torch": "2.11.0+cu130",
+            "transformers": "5.8.0",
+            "trl": "1.3.0"
+          }
+        },
+        "project_venv": {
+          "executable": "/home/samuel/TSC_CYCLE/.venv/bin/python",
+          "exists": true,
+          "packages": {
+            "bitsandbytes": "0.48.0",
+            "pytest": "9.0.3",
+            "torch": "2.11.0+cu130",
+            "transformers": "5.8.0",
+            "trl": "1.3.0"
+          },
+          "path": "/home/samuel/TSC_CYCLE/.venv/bin/python",
+          "returncode": 0,
+          "version": "3.12.3"
+        },
+        "requirements_covered": [
+          "BASE-01",
+          "BASE-02"
+        ],
+        "run_safe": {
+          "executable": true,
+          "exists": true,
+          "path": "/home/samuel/TSC_CYCLE/scripts/dgx_spark/run_safe.sh"
+        },
+        "sys_executable": "/home/samuel/TSC_CYCLE/.venv/bin/python",
+        "warnings": [
+          "bitsandbytes missing in /home/samuel/dgx-spark-setup/.venv/bin/python; Phase 7 reports only and does not install",
+          "trl missing in /home/samuel/dgx-spark-setup/.venv/bin/python; Phase 7 reports only and does not install"
+        ]
+      },
+      "ok": true,
+      "reason": null
+    },
+    "protocol_fixture": {
+      "data": {
+        "accepted_fixture": {
+          "name": "slash_close_full",
+          "ok": true,
+          "reasoning": "reasoning",
+          "solution": {
+            "1": 60
+          }
+        },
+        "chat_template_used": false,
+        "fatal_failures": [],
+        "ok": true,
+        "rejected_fixtures": [
+          {
+            "name": "bare_close",
+            "reasoning": "",
+            "rejected": true,
+            "solution": null
+          },
+          {
+            "name": "native_think_open",
+            "reasoning": "",
+            "rejected": true,
+            "solution": null
+          },
+          {
+            "name": "native_think_close",
+            "reasoning": "",
+            "rejected": true,
+            "solution": null
+          },
+          {
+            "name": "mixed_close",
+            "reasoning": "",
+            "rejected": true,
+            "solution": null
+          }
+        ],
+        "requirements_covered": [
+          "TAG-01",
+          "TAG-02",
+          "TAG-03"
+        ],
+        "warnings": []
+      },
+      "ok": true,
+      "reason": null
+    },
+    "tokenizer_audit": {
+      "data": {
+        "bad_custom_tags": [],
+        "bad_native_think": [],
+        "chat_template_used": false,
+        "custom_tags": {
+          "</SOLUTION>": [
+            522,
+            50,
+            45977,
+            29
+          ],
+          "</end_working_out>": [
+            522,
+            408,
+            81101,
+            6068,
+            29
+          ],
+          "<SOLUTION>": [
+            18858,
+            45977,
+            29
+          ],
+          "<start_working_out>": [
+            27,
+            2468,
+            81101,
+            6068,
+            29
+          ]
+        },
+        "fatal_failures": [],
+        "min_custom_subtokens": 3,
+        "model_id": "Qwen/Qwen3-4B-Thinking-2507",
+        "native_think": {
+          "</think>": [
+            151668
+          ],
+          "<think>": [
+            151667
+          ]
+        },
+        "native_think_token_ids": [
+          151667,
+          151668
+        ],
+        "ok": true,
+        "requirements_covered": [
+          "TAG-04",
+          "TAG-03",
+          "TAG-01"
+        ],
+        "vocab_size": 151669,
+        "warnings": []
+      },
+      "ok": true,
+      "reason": null
+    }
+  },
+  "next_phase_allowed": true,
+  "ok": true,
+  "requirements_covered": [
+    "BASE-01",
+    "BASE-02",
+    "BASE-03",
+    "TAG-01",
+    "TAG-02",
+    "TAG-03",
+    "TAG-04"
+  ],
+  "warnings": [
+    {
+      "gate": "environment",
+      "warning": "bitsandbytes missing in /home/samuel/dgx-spark-setup/.venv/bin/python; Phase 7 reports only and does not install"
+    },
+    {
+      "gate": "environment",
+      "warning": "trl missing in /home/samuel/dgx-spark-setup/.venv/bin/python; Phase 7 reports only and does not install"
+    },
+    {
+      "gate": "baseline_readonly",
+      "warning": "documented cache path gguf_q4km is missing; use discovered q4 cache paths"
+    }
+  ]
+}

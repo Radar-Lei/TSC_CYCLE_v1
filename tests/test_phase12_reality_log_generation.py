@@ -335,6 +335,18 @@ def test_report_evaluation_fails_closed_on_parse_lint_count_or_hash_failures(tmp
         assert report["fatal_failures"], name
 
 
+def test_manifest_round_trip_preserves_canonical_render_order() -> None:
+    reality_mod = _phase12_reality_contract()
+    records = [_record()]
+    outputs = [_good_output()]
+    canonical_log = reality_mod.render_reality_test_log(records, outputs)
+    manifest_text = json.dumps({"records": records}, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
+
+    reloaded = json.loads(manifest_text)
+
+    assert reality_mod.render_reality_test_log(reloaded["records"], outputs) == canonical_log
+
+
 def test_report_requires_canonical_final_log_content_even_when_hash_matches(tmp_path: Path) -> None:
     mod = _phase12_report_contract()
     records = [_record()]

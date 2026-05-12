@@ -1,0 +1,85 @@
+{
+  "artifact_hashes": {
+    "ood_val_arrow": "0adf10098cf0765e96f01e56fa5286a03fd2fb6cba45671fd24a17456cffd896",
+    "ood_val_index": "c934f776f1dc0f6cd8a5d3da990bfc67fe4cd3a084a5c23a80431fbac5b164a3",
+    "rebuild_report": "9e5f26bfa8ea04e16ea8bff77cd6c3de4baa83e09134148ae4885fdbe65ec8f9",
+    "train_arrow": "68c42a08f59883a05fb8caa355107cd85a4cf8dce8b0627fa3e241e4916b37e1",
+    "train_index": "b75dc735dc983fcd4f4253c7220661652764271fa17da4150d582b64bd26f606",
+    "v1_ood_alignment": "9b5241837bfc9733e0ab30b100f3ecc9871ad96817d5b1aa01a44da1f478a8a8",
+    "val_arrow": "eb17829b4562b1b4b8bff0a70ab1dbb8a6ca60684bb4317609121fe906116b04",
+    "val_index": "d263b372db4019f729f9f15515e4222096edace0bb32dfa30da8c17e6c023a2f"
+  },
+  "gates": {
+    "new_ood_pool": {
+      "data": {
+        "new_ood_count": 1906
+      },
+      "ok": true,
+      "reason": null
+    },
+    "sample_ids_present": {
+      "data": {},
+      "ok": true,
+      "reason": null
+    },
+    "split_overlap": {
+      "data": {},
+      "ok": true,
+      "reason": null
+    },
+    "split_sizes": {
+      "data": {},
+      "ok": true,
+      "reason": null
+    },
+    "unique_sample_ids": {
+      "data": {
+        "duplicate_ids_sample": []
+      },
+      "ok": true,
+      "reason": null
+    },
+    "v1_ood_count": {
+      "data": {
+        "v1_ood_count": 300
+      },
+      "ok": true,
+      "reason": null
+    }
+  },
+  "input_sha256": "b203dd5adb3a018e385189ea529bb808a47c9bda4a7e0c979429cb99ac0775f4",
+  "ok": true,
+  "paths": {
+    "ood_val_index": "data/splits/v3/ood_val.index.jsonl",
+    "train_index": "data/splits/v3/train.index.jsonl",
+    "v1_ood_alignment": "data/splits/v3/v1_ood_alignment.json",
+    "val_index": "data/splits/v3/val.index.jsonl"
+  },
+  "requirements_covered": [
+    "DATA-01",
+    "DATA-02",
+    "DATA-03",
+    "DATA-04"
+  ],
+  "seed": 42,
+  "split_sizes": {
+    "ood_val": 950,
+    "train": 7601,
+    "val": 950
+  },
+  "tokenized_outputs": {
+    "ood_val": "data/tokenized/v3/ood_val.arrow",
+    "train": "data/tokenized/v3/train.arrow",
+    "val": "data/tokenized/v3/val.arrow"
+  },
+  "v1_ood_alignment": {
+    "all_v1_ood_in_ood_val": true,
+    "expected_v1_ood_count": 300,
+    "missing_v1_ood_ids": [],
+    "new_ood_count": 650,
+    "observed_v1_ood_count": 300,
+    "ood_val_v1_ood_count": 300,
+    "v1_ood_count": 300,
+    "v1_ood_sample_ids_sha256": "ff8f1df819b5401d0ea80eca8ed64b30734253f071a4ce6067c0ba88592056c0"
+  }
+}

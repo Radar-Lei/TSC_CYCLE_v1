@@ -36,10 +36,10 @@ This section is the DATA4B-05 human-auditable provenance record for the v4.0 Pha
 
 | Artifact | Path | SHA256 |
 |---|---|---|
-| v4 source manifest | `artifacts/v4/phase8/source_manifest.json` | `ddd30b83034e57a96ba0b053150ccd0a7a8b6c7a07f7756e6d4402af426baac5` |
+| v4 source manifest | `artifacts/v4/phase8/source_manifest.json` | `3e418ea7fc63f354802d96c63104910c2d59d9cbf1bd72882540643d387913bd` |
 | cleaning report | `artifacts/v4/phase8/cleaning_report.json` | `7984e2a34d7bfd266a288901e69d34af34b56b0ef906d63e6b8b5fe2a5569a80` |
-| split manifest | `data/v4/phase8/splits/manifest.json` | `1be9f885dba7f939a0b4cdb1bffe57d9b5ee973a02e2c9c7889da2449ab80ce0` |
-| rebuild report | `artifacts/v4/phase8/rebuild_report.json` | `af2b8fe7d0e875f71253d175a374e8a09b53de7f8bc2ed3f42b3d19cc0983b5b` |
+| split manifest | `data/v4/phase8/splits/manifest.json` | `10b3a305a16931a7cd3dc56a69b58be1a904bbd9727b272dc018c8a534c37698` |
+| rebuild report | `artifacts/v4/phase8/rebuild_report.json` | `2902d658e109a4185296410eea6472bd4e862eb5b0c31c2a13b37cc6a5c87ad2` |
 
 ### Input sources and source hashes
 
@@ -52,7 +52,7 @@ Source merge evidence from `artifacts/v4/phase8/source_manifest.json`:
 
 - Deduped v4 source rows: `9501`.
 - Duplicate counts: total `0`, v1 duplicate rows `0`, v3 duplicate rows `0`.
-- Sample hash digest: `6d31e22788d5b89b0cc57b9f1baf2c3d5c6204ab5e57173c342242399ff80f9b` over `9501` sample hashes.
+- Sample hash digest: `809f332ac5a42036c99f4021ef9c1b40cabd15e80224078a3e2b1ba0ea8364ed` over `9501` sample hashes.
 
 ### Label normalization and native-think safety
 
@@ -76,9 +76,9 @@ Split evidence from `data/v4/phase8/splits/manifest.json`:
 
 | Split | Rows | Split ID SHA256 |
 |---|---:|---|
-| train | 7601 | `e1dc2723d8ee41af5247b5cb2e06d476062e05ad2e6e1c5090f8905631ea0b1b` |
-| val | 950 | `504fa9b030898a4574afd86a4166a008e018a668e17f41d2c6427f59a22fba95` |
-| ood_val | 950 | `bb2f785fa139d7d9044ae73a56d89b1027d87f2d88ecf8dc8e9758ddac49ce5e` |
+| train | 7601 | `49eb92f2c697bc71ae5c4b8fa14ddbc5ef89921e5ad4864d191ebfa374751954` |
+| val | 950 | `79066623fb23adddf37f611ee96d5db6dd564cead9d782cff5b5b02f4d57edda` |
+| ood_val | 950 | `83684eace85bedf13a3f902959194a502c7dda6067492ee841c158c090b356da` |
 
 Split index paths:
 
@@ -88,8 +88,8 @@ Split index paths:
 
 OOD boundary evidence:
 
-- v1 OOD alignment: `all_v1_ood_in_ood_val=true`, `v1_ood_count=0`, `ood_val_v1_ood_count=0`, sample ID digest `4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`.
-- v3 extended OOD selected count: `950`.
+- v1 OOD alignment: `all_v1_ood_in_ood_val=true`, `v1_ood_count=300`, `ood_val_v1_ood_count=300`, sample ID digest `ff8f1df819b5401d0ea80eca8ed64b30734253f071a4ce6067c0ba88592056c0`.
+- v3 extended OOD selected count: `650`.
 
 Tokenization and truncation evidence from `artifacts/v4/phase8/rebuild_report.json`:
 

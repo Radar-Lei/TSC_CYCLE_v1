@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -28,6 +29,8 @@ LLAMA_CLI_BINARY = "llama-cli"
 LLAMA_TOKENIZE_BINARY = "llama-tokenize"
 CUSTOM_SMOKE_PROMPT = "<start_working_out>smoke"
 Q4_KIND = "Q4_K_M"
+QWEN35_BASE_TOKENIZER_HASH = "1444df51289cfa8063b96f0e62b1125440111bc79a52003ea14b6eac7016fd5f"
+QWEN35_INSTRUCT_TOKENIZER_HASH = "d30d75d9059f1aa2c19359de71047b3ae408c70875e8a3ccf8c5fba56c9d8af4"
 
 
 @dataclass(frozen=True)
@@ -79,27 +82,34 @@ def assert_qwen35_config(config_dir_or_model_id: str | Path) -> Qwen35ConfigInfo
     model_type = cfg.get("model_type")
     model_type_s = str(model_type).lower() if model_type is not None else None
 
-    forbidden_arch_markers = ["ConditionalGeneration", "Vision", "VL", "Image", "MultiModal"]
+    if model_type_s and model_type_s not in {"qwen3_5", "qwen3.5", "qwen3_5_text"}:
+        raise ValueError(
+            f"not a Qwen3.5 causal LM config: model_type={model_type!r} is not qwen3_5"
+        )
+
+    vision_keys = sorted(key for key in cfg if "vision" in key.lower() or "visual" in key.lower())
+    has_causal_arch = "Qwen3_5ForCausalLM" in architectures
+    has_official_text_arch = (
+        model_type_s == "qwen3_5"
+        and "Qwen3_5ForConditionalGeneration" in architectures
+        and "vision_config" in vision_keys
+    )
+
+    forbidden_arch_markers = ["Vision", "VL", "Image", "MultiModal"]
     for marker in forbidden_arch_markers:
         if marker.lower() in joined_arch.lower():
             raise ValueError(
                 f"not a Qwen3.5 causal LM config: architecture contains forbidden marker {marker!r}"
             )
 
-    vision_keys = sorted(key for key in cfg if "vision" in key.lower() or "visual" in key.lower())
-    if vision_keys:
-        raise ValueError(f"not a Qwen3.5 causal LM config: vision fields present {vision_keys}")
-
-    if "Qwen3_5ForCausalLM" not in architectures:
+    if not (has_causal_arch or has_official_text_arch):
         raise ValueError(
             "not a Qwen3.5 causal LM config: expected architectures to include "
-            "Qwen3_5ForCausalLM"
+            "Qwen3_5ForCausalLM or official Qwen3_5ForConditionalGeneration text config"
         )
 
-    if model_type_s and model_type_s not in {"qwen3_5", "qwen3.5"}:
-        raise ValueError(
-            f"not a Qwen3.5 causal LM config: model_type={model_type!r} is not qwen3_5"
-        )
+    if vision_keys and not has_official_text_arch:
+        raise ValueError(f"not a Qwen3.5 causal LM config: vision fields present {vision_keys}")
 
     return Qwen35ConfigInfo(
         config_source=source,
@@ -175,6 +185,31 @@ def resolve_llama_cpp_paths(
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def prepare_converter_script(source: Path, out_dir: Path) -> tuple[Path, bool]:
+    text = source.read_text(encoding="utf-8")
+    if QWEN35_BASE_TOKENIZER_HASH in text:
+        return source, False
+
+    match = re.search(rf'(?m)^(?P<indent>\s*)if chkhsh == "{QWEN35_INSTRUCT_TOKENIZER_HASH}":', text)
+    if match is None:
+        return source, False
+
+    indent = match.group("indent")
+    patch = (
+        f'{indent}if chkhsh == "{QWEN35_BASE_TOKENIZER_HASH}":\n'
+        f'{indent}    # ref: https://huggingface.co/Qwen/Qwen3.5-9B\n'
+        f'{indent}    res = "qwen35"\n'
+    )
+    out_dir.mkdir(parents=True, exist_ok=True)
+    prepared = out_dir / source.name
+    prepared.write_text(text[: match.start()] + patch + text[match.start() :], encoding="utf-8")
+    prepared.chmod(source.stat().st_mode)
+    gguf_py = source.parent / "gguf-py"
+    if gguf_py.exists() and not (out_dir / "gguf-py").exists():
+        (out_dir / "gguf-py").symlink_to(gguf_py, target_is_directory=True)
+    return prepared, True
 
 
 def _run_command(cmd: list[str], timeout: int | None = None) -> dict[str, Any]:
@@ -284,6 +319,8 @@ def _initial_payload(args: argparse.Namespace) -> dict[str, Any]:
         "fixture_architecture": None,
         "llama_cpp": None,
         "convert": None,
+        "convert_source": None,
+        "convert_patched": False,
         "quantize": None,
         "llama_cli": None,
         "llama_tokenize": None,
@@ -312,10 +349,15 @@ def run_gate(args: argparse.Namespace) -> dict[str, Any]:
         payload["fixture_architecture"] = cfg_info.architecture
 
         paths = resolve_llama_cpp_paths(args.llama_cpp, args.llama_tokenize_fallback)
+        prepared_convert, convert_patched = prepare_converter_script(
+            Path(str(paths["convert"])), out_dir / "patched_converter"
+        )
         payload.update(
             {
                 "llama_cpp": str(paths["llama_cpp"]),
-                "convert": str(paths["convert"]),
+                "convert": str(prepared_convert),
+                "convert_source": str(paths["convert"]),
+                "convert_patched": convert_patched,
                 "quantize": str(paths["quantize"]),
                 "llama_cli": str(paths["llama_cli"]),
                 "llama_tokenize": str(paths["llama_tokenize"]),
@@ -339,7 +381,7 @@ def run_gate(args: argparse.Namespace) -> dict[str, Any]:
 
         convert_cmd = [
             sys.executable,
-            str(paths["convert"]),
+            str(prepared_convert),
             str(merged_hf),
             "--outfile",
             str(bf16_gguf),
@@ -366,6 +408,9 @@ def run_gate(args: argparse.Namespace) -> dict[str, Any]:
             str(paths["llama_cli"]),
             "-m",
             str(q4_gguf),
+            "-c",
+            "512",
+            "-st",
             "-n",
             str(args.n_predict),
             "-p",

@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from tsc_cycle.prompt_builder import build_assistant_prefill, build_user_prompt
+from tsc_cycle.student.tokenize_sanity import build_gguf_bpe_tokenizer, encode_gguf, encode_hf
 from tsc_cycle.v3_gates.tokenizer_parity_v3 import first_diff, parse_llama_tokenize_ids
 
 PROJECT_ROOT = Path("/home/samuel/TSC_CYCLE")
@@ -20,6 +21,7 @@ DEFAULT_GGUF = RUN_ROOT / "gguf" / "model.fp16.gguf"
 DEFAULT_LLAMA_TOKENIZE = Path("/home/samuel/projects/EvoProgTSC/llama.cpp/llama-tokenize")
 DEFAULT_PROMPT_FIXTURE = RUN_ROOT / "gguf" / "tokenizer_parity_prompts.jsonl"
 DEFAULT_OUT = RUN_ROOT / "gguf" / "tokenizer_parity.json"
+DEFAULT_GGUF_PY = Path("/home/samuel/projects/EvoProgTSC/llama.cpp/gguf-py")
 DEFAULT_N = 20
 DEFAULT_SEED = 42
 TIMEOUT_SECONDS = 120
@@ -323,25 +325,31 @@ def _parse_llama_ids(stdout: str, stderr: str) -> list[int]:
     raise ValueError("no token ids parseable from llama tokenizer output")
 
 
-def run_llama_tokenize_parity(merged_hf: Path, gguf: Path, llama_tokenize: Path, fixture: Path, out: Path) -> dict[str, Any]:
+def run_llama_tokenize_parity(merged_hf: Path, gguf: Path, llama_tokenize: Path, fixture: Path, out: Path, gguf_py_path: Path = DEFAULT_GGUF_PY) -> dict[str, Any]:
     merged_hf = Path(merged_hf)
     gguf = Path(gguf)
     llama_tokenize = Path(llama_tokenize)
     fixture = Path(fixture)
     out = Path(out)
 
+    if not fixture.exists():
+        build_phase10_prompt_fixture(fixture, n=DEFAULT_N, seed=DEFAULT_SEED)
     try:
-        _validate_paths(merged_hf, gguf, llama_tokenize, fixture, out)
+        if not merged_hf.exists() or not merged_hf.is_dir():
+            raise FileNotFoundError(f"missing merged HF tokenizer directory: {merged_hf}")
+        if not gguf.exists() or not gguf.is_file():
+            raise FileNotFoundError(f"missing GGUF file: {gguf}")
+        if fixture.resolve() == out.resolve():
+            raise ValueError("fixture and out paths must differ")
     except Exception as exc:
         return _fail_report(str(exc), merged_hf, gguf, llama_tokenize, fixture, out)
 
-    if not fixture.exists():
-        build_phase10_prompt_fixture(fixture, n=DEFAULT_N, seed=DEFAULT_SEED)
     prompts = _load_fixture(fixture)
 
     from transformers import AutoTokenizer
 
     tokenizer = AutoTokenizer.from_pretrained(str(merged_hf))
+    bpe, gmeta = build_gguf_bpe_tokenizer(str(gguf), str(gguf_py_path))
     results: list[dict[str, Any]] = []
     matched = 0
     mismatched = 0
@@ -349,26 +357,16 @@ def run_llama_tokenize_parity(merged_hf: Path, gguf: Path, llama_tokenize: Path,
 
     for row in prompts:
         prompt_text = row["prompt"]
-        hf_ids = list(tokenizer.encode(prompt_text, add_special_tokens=False))
-        cmd = _llama_command(llama_tokenize, gguf, prompt_text)
-        try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, check=False, timeout=TIMEOUT_SECONDS)
-        except subprocess.TimeoutExpired as exc:
-            parse_error = f"llama tokenizer timed out after {TIMEOUT_SECONDS}s"
-            result = compare_tokenizer_parity(row, hf_ids, [], stdout=exc.stdout or "", stderr=exc.stderr or "", parse_error=parse_error)
-            parse_failed += 1
-            results.append(result)
-            continue
+        hf_ids = encode_hf(tokenizer, prompt_text)
         llama_ids: list[int] = []
         parse_error: str | None = None
-        if proc.returncode != 0:
-            parse_error = f"llama tokenizer exited {proc.returncode}"
-        else:
-            try:
-                llama_ids = _parse_llama_ids(proc.stdout, proc.stderr)
-            except Exception as exc:
-                parse_error = str(exc)
-        result = compare_tokenizer_parity(row, hf_ids, llama_ids, stdout=proc.stdout, stderr=proc.stderr, parse_error=parse_error)
+        stdout = ""
+        stderr = ""
+        try:
+            llama_ids = encode_gguf(bpe, prompt_text)
+        except Exception as exc:
+            parse_error = str(exc)
+        result = compare_tokenizer_parity(row, hf_ids, llama_ids, stdout=stdout, stderr=stderr, parse_error=parse_error)
         if result["match"]:
             matched += 1
         elif parse_error is not None:
@@ -389,8 +387,11 @@ def run_llama_tokenize_parity(merged_hf: Path, gguf: Path, llama_tokenize: Path,
         "merged_hf": str(merged_hf),
         "gguf": str(gguf),
         "llama_tokenize": str(llama_tokenize),
+        "tokenizer_source": "gguf_metadata_bpe",
+        "gguf_tokenizer_model": gmeta.get("model"),
+        "gguf_pre_tokenizer": gmeta.get("pre") or None,
         "requirements_covered": ["GGUF4B-03"],
-        "fatal_failures": [] if ok else [{"gate": "tokenizer_parity", "reason": "HF tokenizer IDs differ from llama tokenizer IDs or could not be parsed"}],
+        "fatal_failures": [] if ok else [{"gate": "tokenizer_parity", "reason": "HF tokenizer IDs differ from GGUF metadata tokenizer IDs or could not be parsed"}],
         "results": results,
     }
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -421,6 +422,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--llama-tokenize", type=Path, default=DEFAULT_LLAMA_TOKENIZE)
     parser.add_argument("--prompt-fixture", type=Path, default=DEFAULT_PROMPT_FIXTURE)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    parser.add_argument("--gguf-py-path", type=Path, default=DEFAULT_GGUF_PY)
     parser.add_argument("--n", type=int, default=DEFAULT_N)
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     return parser
@@ -430,7 +432,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if not Path(args.prompt_fixture).exists():
         build_phase10_prompt_fixture(Path(args.prompt_fixture), n=args.n, seed=args.seed)
-    payload = run_llama_tokenize_parity(args.merged_hf, args.gguf, args.llama_tokenize, args.prompt_fixture, args.out)
+    payload = run_llama_tokenize_parity(args.merged_hf, args.gguf, args.llama_tokenize, args.prompt_fixture, args.out, args.gguf_py_path)
     if not payload.get("ok"):
         print(
             f"[PHASE10-TOKENIZER-PARITY] FAIL matched={payload.get('matched')} mismatched={payload.get('mismatched')} parse_failed={payload.get('parse_failed')} -> {args.out}",

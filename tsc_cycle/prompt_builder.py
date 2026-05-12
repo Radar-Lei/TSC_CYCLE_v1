@@ -17,6 +17,7 @@ model only learns to emit content (no leading whitespace, no native <think>).
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 # Tags. Each is multi-token under Qwen3 BPE tokenizer (verified by tokenizer_check).
@@ -27,6 +28,16 @@ TAG_SOLUTION_CLOSE = "</SOLUTION>"
 
 MALFORMED_THINK_CLOSE = "<end_working_out>"
 NATIVE_THINK_TAGS = ("<think>", "</think>")
+FULL_OUTPUT_RE = re.compile(
+    rf"^{re.escape(TAG_THINK_OPEN)}(?P<reasoning>.*?){re.escape(TAG_THINK_CLOSE)}"
+    rf"{re.escape(TAG_SOLUTION_OPEN)}(?P<solution>.*?){re.escape(TAG_SOLUTION_CLOSE)}$",
+    re.DOTALL,
+)
+PREFILL_OUTPUT_RE = re.compile(
+    rf"^(?P<reasoning>.*?){re.escape(TAG_THINK_CLOSE)}"
+    rf"{re.escape(TAG_SOLUTION_OPEN)}(?P<solution>.*?){re.escape(TAG_SOLUTION_CLOSE)}$",
+    re.DOTALL,
+)
 
 SYSTEM_PROMPT = "你是交通信号配时优化专家。"
 
@@ -88,36 +99,25 @@ def build_full_assistant(reasoning: str, solution: dict[str, int]) -> str:
 
 
 def parse_assistant_output(text: str) -> tuple[str, dict[str, int] | None]:
-    """Parse model output into (reasoning, solution_dict).
-
-    Returns (reasoning, None) if SOLUTION block missing or unparseable.
-    """
-    reasoning = ""
-    solution: dict[str, int] | None = None
-
+    """Parse model output into (reasoning, solution_dict)."""
     if MALFORMED_THINK_CLOSE in text or any(tag in text for tag in NATIVE_THINK_TAGS):
         return "", None
 
-    # Reasoning: between <start_working_out> and </end_working_out>
-    if TAG_THINK_OPEN in text and TAG_THINK_CLOSE in text:
-        a = text.index(TAG_THINK_OPEN) + len(TAG_THINK_OPEN)
-        b = text.index(TAG_THINK_CLOSE, a)
-        reasoning = text[a:b].strip()
-    elif TAG_THINK_CLOSE in text:
-        # Pre-filled tag was already injected; reasoning is everything before close
-        b = text.index(TAG_THINK_CLOSE)
-        reasoning = text[:b].strip()
+    stripped = text.strip()
+    match = FULL_OUTPUT_RE.fullmatch(stripped)
+    if match is None and TAG_THINK_OPEN not in stripped:
+        match = PREFILL_OUTPUT_RE.fullmatch(stripped)
+    if match is None:
+        return "", None
 
-    # Solution: between <SOLUTION> and </SOLUTION>
-    if TAG_SOLUTION_OPEN in text and TAG_SOLUTION_CLOSE in text:
-        a = text.index(TAG_SOLUTION_OPEN) + len(TAG_SOLUTION_OPEN)
-        b = text.index(TAG_SOLUTION_CLOSE, a)
-        try:
-            parsed = json.loads(text[a:b].strip())
-            if isinstance(parsed, dict):
-                # Coerce values to int if possible
-                solution = {str(k): int(v) for k, v in parsed.items()}
-        except (json.JSONDecodeError, ValueError, TypeError):
-            solution = None
+    try:
+        parsed = json.loads(match.group("solution").strip())
+    except json.JSONDecodeError:
+        return "", None
 
-    return reasoning, solution
+    if not isinstance(parsed, dict):
+        return "", None
+    if any(isinstance(value, bool) or not isinstance(value, int) for value in parsed.values()):
+        return "", None
+
+    return match.group("reasoning").strip(), {str(key): value for key, value in parsed.items()}

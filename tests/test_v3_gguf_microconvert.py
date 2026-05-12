@@ -8,7 +8,9 @@ import pytest
 
 from tsc_cycle.v3_gates.gguf_microconvert_v3 import (
     DEFAULT_LLAMA_CPP,
+    QWEN35_BASE_TOKENIZER_HASH,
     assert_qwen35_config,
+    prepare_converter_script,
     resolve_llama_cpp_paths,
     resolve_llama_tokenize,
     run_gate,
@@ -39,6 +41,23 @@ def test_assert_qwen35_config_accepts_qwen35_causal_lm(tmp_path: Path) -> None:
 
     assert result.architecture == "Qwen3_5ForCausalLM"
     assert result.model_type == "qwen3_5"
+
+
+def test_assert_qwen35_config_accepts_official_text_config_shape(tmp_path: Path) -> None:
+    cfg = _write_config(
+        tmp_path,
+        architectures=["Qwen3_5ForConditionalGeneration"],
+        model_type="qwen3_5",
+        vision_config={"hidden_size": 128},
+        vision_start_token_id=151652,
+        vision_end_token_id=151653,
+    )
+
+    result = assert_qwen35_config(cfg)
+
+    assert result.architecture == "Qwen3_5ForCausalLM"
+    assert result.model_type == "qwen3_5"
+    assert result.architectures == ["Qwen3_5ForConditionalGeneration"]
 
 
 @pytest.mark.parametrize(
@@ -129,6 +148,24 @@ def test_resolve_llama_cpp_paths_fails_when_tokenize_missing(tmp_path: Path) -> 
 
 def test_default_llama_cpp_path_is_evoprogtsc_path() -> None:
     assert DEFAULT_LLAMA_CPP == Path("/home/samuel/projects/EvoProgTSC/llama.cpp")
+
+
+def test_prepare_converter_script_patches_qwen35_base_hash_without_mutating_source(tmp_path: Path) -> None:
+    source = tmp_path / "convert_hf_to_gguf.py"
+    source.write_text(
+        "#!/usr/bin/env python3\n"
+        "if chkhsh == \"d30d75d9059f1aa2c19359de71047b3ae408c70875e8a3ccf8c5fba56c9d8af4\":\n"
+        "    # ref: https://huggingface.co/Qwen/Qwen3.5-9B-Instruct\n"
+        "    res = \"qwen35\"\n",
+        encoding="utf-8",
+    )
+
+    prepared, patched = prepare_converter_script(source, tmp_path / "prepared")
+
+    assert patched is True
+    assert prepared != source
+    assert QWEN35_BASE_TOKENIZER_HASH in prepared.read_text(encoding="utf-8")
+    assert QWEN35_BASE_TOKENIZER_HASH not in source.read_text(encoding="utf-8")
 
 
 def test_run_gate_fails_when_q4_tokenizer_or_dummy_lora_outputs_missing(
@@ -244,6 +281,9 @@ def test_run_gate_records_success_artifact_with_required_keys(
         "llama-quantize",
         "llama-cli",
     ]
+    infer_argv = payload["commands"][2]["argv"]
+    assert "-st" in infer_argv
+    assert infer_argv[infer_argv.index("-c") + 1] == "512"
     saved = json.loads((Path(args.out) / "gguf_microconvert.json").read_text(encoding="utf-8"))
     assert saved["commands"][1]["argv"][-1] == "Q4_K_M"
     assert saved["inference_tail"] == "tail"

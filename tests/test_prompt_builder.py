@@ -70,10 +70,20 @@ def test_parse_missing_solution_returns_none():
     assert s is None
 
 
-def test_parse_int_coercion():
+def test_parse_rejects_non_integer_solution_value():
     body = TAG_THINK_OPEN + "x" + TAG_THINK_CLOSE + TAG_SOLUTION_OPEN + '{"1": 60.0}' + TAG_SOLUTION_CLOSE
-    _, s = parse_assistant_output(body)
-    assert s == {"1": 60}
+    r, s = parse_assistant_output(body)
+    assert r == ""
+    assert s is None
+
+
+def test_parse_rejects_extra_text_and_out_of_order_tags():
+    extra = "prefix" + TAG_THINK_OPEN + "x" + TAG_THINK_CLOSE + TAG_SOLUTION_OPEN + '{"1": 60}' + TAG_SOLUTION_CLOSE
+    out_of_order = TAG_SOLUTION_OPEN + '{"1": 60}' + TAG_SOLUTION_CLOSE + TAG_THINK_OPEN + "x" + TAG_THINK_CLOSE
+    for body in (extra, out_of_order):
+        r, s = parse_assistant_output(body)
+        assert r == ""
+        assert s is None
 
 
 # --- Phase 07-01 new tests (D-02 / D-03 / D-04 / D-07 / D-08) ---

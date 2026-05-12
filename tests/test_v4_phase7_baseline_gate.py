@@ -35,6 +35,7 @@ def test_snapshot_baseline_root_records_q4_artifact_and_cache():
     assert snapshot["root"].endswith("runs/20260507T032419Z")
     assert snapshot["exists"] is True
     assert snapshot["file_count"] > 0
+    assert snapshot["write_bits"] == 0
     assert snapshot["q4_artifact"]["path"].endswith("gguf/model.q4_K_M.gguf")
     assert snapshot["q4_artifact"]["exists"] is True
     assert snapshot["documented_cache"]["path"].endswith("eval/gen_cache/gguf_q4km")
