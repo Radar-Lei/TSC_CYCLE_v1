@@ -129,7 +129,15 @@ def _path_group(rel_path: str) -> str:
 def _git_status(repo_root: Path) -> dict[str, str]:
     try:
         result = subprocess.run(
-            ["git", "-C", str(repo_root), "status", "--porcelain", "--untracked-files=normal"],
+            [
+                "git",
+                "-C",
+                str(repo_root),
+                "status",
+                "--porcelain",
+                "--untracked-files=normal",
+                "--ignored=matching",
+            ],
             check=False,
             capture_output=True,
             text=True,
@@ -140,12 +148,13 @@ def _git_status(repo_root: Path) -> dict[str, str]:
     for line in result.stdout.splitlines():
         if not line:
             continue
-        status = line[:2].strip() or "clean"
+        raw_status = line[:2]
+        status = "ignored" if raw_status == "!!" else raw_status.strip() or "clean"
         raw_path = line[3:] if len(line) > 3 else ""
         if " -> " in raw_path:
             raw_path = raw_path.split(" -> ", 1)[1]
         if raw_path:
-            statuses[raw_path] = status
+            statuses[raw_path.rstrip("/")] = status
     return statuses
 
 
