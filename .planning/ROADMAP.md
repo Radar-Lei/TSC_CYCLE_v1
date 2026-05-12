@@ -77,7 +77,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 **Wave 1**
-- [ ] 15-01-PLAN.md — Capture preflight status, enforce Phase 13 archive allowlist, and archive exactly four legacy directories.
+- [x] 15-01-PLAN.md — Capture preflight status, enforce Phase 13 archive allowlist, and archive exactly four legacy directories.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 15-02-PLAN.md — Write cleanup notes, run final validation, and complete maintainer scope review checkpoint.
@@ -105,5 +105,5 @@ Plans:
 | 12. reality.log → reality_test.log replay | 3/3 | Complete | 2026-05-11 |
 | 13. Inventory & Cleanup Boundaries | 2/2 | Complete    | 2026-05-12 |
 | 14. Canonical v4 Reproduction Package | 1/1 | Complete   | 2026-05-12 |
-| 15. Safe Cleanup Execution | 0/2 | Planned | - |
+| 15. Safe Cleanup Execution | 1/2 | In Progress|  |
 | 16. Verification & Handoff | 0/TBD | Not started | - |
