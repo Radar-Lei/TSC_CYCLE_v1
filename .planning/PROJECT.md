@@ -37,7 +37,7 @@ See `milestones/v4.0-ROADMAP.md` and `milestones/v4.0-REQUIREMENTS.md` for shipp
 **Target features:**
 - 盘点当前根目录、data/artifacts/runs/planning/tests 中哪些文件属于 v4.0 复现权威源，哪些是旧里程碑、临时文件或重复产物。— Validated in Phase 13 via `inventory.json` and `inventory.md`
 - 建立 v4 最小复现包边界：代码、配置、数据 manifest/必要数据、最终报告、最终 q4_K_M GGUF、`reality_test.log` 及必要验证证据。— Validated in Phase 14 via `reproduction/v4.0-qwen3-4b-9k-manifest.json` and `reproduction/v4.0-qwen3-4b-9k-guide.md`
-- 将与 v4 无关或非必要的文件安全归档/移除，并保证清理后测试与复现入口仍可运行。
+- 将与 v4 无关或非必要的文件安全归档/移除，并保证清理后测试与复现入口仍可运行。— Validated in Phase 15 via archive-only cleanup, cleanup notes, manifest check, and cleanup/reproduction pytest subset
 - 补齐复现说明或清单，让外部人员知道从哪里开始、哪些产物是最终产物、如何验证 v4 结果。
 
 ## Next Milestone Goals
@@ -76,7 +76,7 @@ See `milestones/v4.0-ROADMAP.md` and `milestones/v4.0-REQUIREMENTS.md` for shipp
 
 ### Active
 
-- [ ] v4.1 清理当前项目目录中与 v4.0 Qwen3-4B 9k 训练复现无关的文件，形成最小复现包。
+- [x] v4.1 清理当前项目目录中与 v4.0 Qwen3-4B 9k 训练复现无关的文件，形成最小复现包。— Validated in Phase 15
 - [ ] v4.1 保留并标注 v4.0 复现权威源：代码、配置、必要数据/manifest、最终模型、最终报告和验证证据。
 - [ ] v4.1 清理后仍能运行关键测试、报告生成或验证入口，证明复现链路没有被破坏。
 
@@ -163,4 +163,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-12 after Phase 14 reproduction package completion*
+*Last updated: 2026-05-12 after Phase 15 safe cleanup completion*

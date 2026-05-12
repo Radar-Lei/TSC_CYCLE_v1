@@ -18,14 +18,14 @@
 
 ### Cleanup Execution
 
-- [ ] **CLEAN-01**: Maintainer can safely archive or remove files unrelated to v4.0 Qwen3-4B reproduction without deleting canonical v4 assets or breaking source code imports.
+- [x] **CLEAN-01**: Maintainer can safely archive or remove files unrelated to v4.0 Qwen3-4B reproduction without deleting canonical v4 assets or breaking source code imports.
 - [ ] **CLEAN-02**: Maintainer can rerun the relevant test and validation subset after cleanup and see that the repository remains internally consistent.
-- [ ] **CLEAN-03**: Maintainer can inspect git status after cleanup and see a reviewable, intentionally scoped change set rather than mixed historical clutter.
+- [x] **CLEAN-03**: Maintainer can inspect git status after cleanup and see a reviewable, intentionally scoped change set rather than mixed historical clutter.
 
 ### Documentation
 
 - [x] **DOC-01**: Reproducer can start from a concise repo-level reproduction guide or manifest that names the canonical artifacts, expected hashes/counts, and verification commands.
-- [ ] **DOC-02**: Maintainer can understand where legacy v1/v2/v3 artifacts went and why they are no longer part of the main v4 reproduction path.
+- [x] **DOC-02**: Maintainer can understand where legacy v1/v2/v3 artifacts went and why they are no longer part of the main v4 reproduction path.
 
 ## Future Requirements
 
@@ -59,11 +59,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | REPRO-01 | Phase 14 | Complete |
 | REPRO-02 | Phase 16 | Pending |
 | REPRO-03 | Phase 14 | Complete |
-| CLEAN-01 | Phase 15 | Pending |
+| CLEAN-01 | Phase 15 | Complete |
 | CLEAN-02 | Phase 16 | Pending |
-| CLEAN-03 | Phase 15 | Pending |
+| CLEAN-03 | Phase 15 | Complete |
 | DOC-01 | Phase 14 | Complete |
-| DOC-02 | Phase 15 | Pending |
+| DOC-02 | Phase 15 | Complete |
 
 **Coverage:**
 - v4.1 requirements: 10 total
@@ -72,4 +72,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-05-12*
-*Last updated: 2026-05-12 after v4.1 roadmap creation*
+*Last updated: 2026-05-12 after Phase 15 safe cleanup completion*
