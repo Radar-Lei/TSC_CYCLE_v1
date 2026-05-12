@@ -97,6 +97,12 @@ Plan 15-01 verified the reproduction package before and after archive moves. Pla
 - `/home/samuel/TSC_CYCLE/.venv/bin/python -m tsc_cycle.reproduction_manifest --check /home/samuel/TSC_CYCLE/reproduction/v4.0-qwen3-4b-9k-manifest.json`
 - `/home/samuel/TSC_CYCLE/.venv/bin/pytest /home/samuel/TSC_CYCLE/tests/test_v4_reproduction_package.py /home/samuel/TSC_CYCLE/tests/test_cleanup_inventory.py -q`
 
+Final Plan 15-02 validation results:
+
+- Manifest check: PASS (`OK: /home/samuel/TSC_CYCLE/reproduction/v4.0-qwen3-4b-9k-manifest.json`).
+- Pytest subset: PASS (`21 passed`).
+- Status snapshot: captured in `post_cleanup_git_status.txt` for maintainer comparison.
+
 The expected review outcome is that the manifest check passes, the pytest subset passes, and the cleanup scope remains limited to archive-only legacy paths plus Phase 15 notes/status snapshots.
 
 ## Git Status Snapshots
