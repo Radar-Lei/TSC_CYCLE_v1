@@ -191,7 +191,17 @@ def _expected_counts_for_asset(repo_root: Path, rel_path: str) -> dict[str, int]
         path = _resolve_repo_path(repo_root, rel_path)
         return {"labeled_rows": _line_count(path)} if path.is_file() else {}
     if rel_path == "data/v4/phase8/splits/manifest.json":
-        return _split_counts(repo_root)
+        counts = _split_counts(repo_root)
+        split_index_paths = {
+            "train_rows": "data/v4/phase8/splits/train.index.jsonl",
+            "val_rows": "data/v4/phase8/splits/val.index.jsonl",
+            "ood_val_rows": "data/v4/phase8/splits/ood_val.index.jsonl",
+        }
+        for key, split_path in split_index_paths.items():
+            path = _resolve_repo_path(repo_root, split_path)
+            if path.is_file():
+                counts[key] = _line_count(path)
+        return counts
     if rel_path == "artifacts/v4/phase12/per_sample.jsonl":
         path = _resolve_repo_path(repo_root, rel_path)
         counts = _phase12_counts(repo_root)
@@ -333,6 +343,14 @@ def _asset_table(title: str, assets: list[dict[str, Any]]) -> list[str]:
     return lines
 
 
+def _local_temporary_asset_table(title: str, assets: list[dict[str, Any]]) -> list[str]:
+    lines = [f"### {title}", "", "| path | category | exists |", "|------|----------|--------|"]
+    for asset in assets:
+        lines.append(f"| {_md_cell(asset['path'])} | {_md_cell(asset.get('category'))} | {_md_cell(asset.get('exists'))} |")
+    lines.append("")
+    return lines
+
+
 def write_guide_markdown(manifest: dict[str, Any], output_path: Path | str) -> None:
     final_path = manifest["final_artifacts"]["q4_K_M"]
     entries = {asset["path"]: asset for category in manifest["assets"].values() for asset in category}
@@ -384,7 +402,11 @@ def write_guide_markdown(manifest: dict[str, Any], output_path: Path | str) -> N
         "local_temporary": "Local Temporary Metadata Only",
     }
     for category, title in category_titles.items():
-        lines.extend(_asset_table(title, manifest["assets"].get(category, [])))
+        assets = manifest["assets"].get(category, [])
+        if category == "local_temporary":
+            lines.extend(_local_temporary_asset_table(title, assets))
+        else:
+            lines.extend(_asset_table(title, assets))
     lines.extend([
         "## Scope",
         "",
@@ -419,6 +441,11 @@ def validate_manifest_against_disk(manifest: dict[str, Any], repo_root: Path | s
                 continue
             if category in required_categories and not path.exists():
                 errors.append(f"{rel_path}: required asset missing")
+                continue
+            if category == "local_temporary":
+                forbidden_keys = sorted({"line_count", "sha256", "size_bytes"} & set(asset))
+                if forbidden_keys:
+                    errors.append(f"{rel_path}: local_temporary must omit {', '.join(forbidden_keys)}")
                 continue
             if not path.is_file():
                 continue

@@ -3,73 +3,28 @@
     "local_temporary": [
       {
         "category": "local_temporary",
-        "description": "Local agent state; not part of reproduction package.",
         "exists": true,
-        "path": ".claude",
-        "phase13_classification": "temporary",
-        "phase15_allowed": "manual_review_required",
-        "recommended_action": "manual_review_before_remove",
-        "required": false,
-        "role": "metadata_only_local_state",
-        "sha256": null,
-        "size_bytes": 4096,
-        "source": "disk_metadata"
+        "path": ".claude"
       },
       {
         "category": "local_temporary",
-        "description": "Local environment file; metadata only, payload omitted.",
         "exists": true,
-        "path": ".env",
-        "phase13_classification": "temporary",
-        "phase15_allowed": "manual_review_required",
-        "recommended_action": "manual_review_before_remove",
-        "required": false,
-        "role": "metadata_only_local_state",
-        "sha256": "9ab88ceb9e651ab873e5937ca232bf310d6266dd0e50a3f99c1560451ecf1895",
-        "size_bytes": 171,
-        "source": "disk_metadata"
+        "path": ".env"
       },
       {
         "category": "local_temporary",
-        "description": "Local pytest cache; not part of reproduction package.",
         "exists": true,
-        "path": ".pytest_cache",
-        "phase13_classification": "temporary",
-        "phase15_allowed": "manual_review_required",
-        "recommended_action": "manual_review_before_remove",
-        "required": false,
-        "role": "metadata_only_local_state",
-        "sha256": null,
-        "size_bytes": 4096,
-        "source": "disk_metadata"
+        "path": ".pytest_cache"
       },
       {
         "category": "local_temporary",
-        "description": "Local virtual environment; not part of reproduction package.",
         "exists": true,
-        "path": ".venv",
-        "phase13_classification": "temporary",
-        "phase15_allowed": "manual_review_required",
-        "recommended_action": "manual_review_before_remove",
-        "required": false,
-        "role": "metadata_only_local_state",
-        "sha256": null,
-        "size_bytes": 4096,
-        "source": "disk_metadata"
+        "path": ".venv"
       },
       {
         "category": "local_temporary",
-        "description": "Local Python bytecode cache; not part of reproduction package.",
         "exists": true,
-        "path": "tsc_cycle/__pycache__",
-        "phase13_classification": "temporary",
-        "phase15_allowed": "manual_review_required",
-        "recommended_action": "manual_review_before_remove",
-        "required": false,
-        "role": "metadata_only_local_state",
-        "sha256": null,
-        "size_bytes": 4096,
-        "source": "disk_metadata"
+        "path": "tsc_cycle/__pycache__"
       }
     ],
     "obsolete_legacy": [
@@ -435,6 +390,11 @@
       },
       {
         "category": "required_source",
+        "counts": {
+          "ood_val_rows": 950,
+          "train_rows": 7601,
+          "val_rows": 950
+        },
         "description": "v4 Phase 8 split manifest with train/val/OOD counts.",
         "exists": true,
         "path": "data/v4/phase8/splits/manifest.json",
@@ -510,7 +470,7 @@
     "note": "Repo-level reproduction files are the reproducer-facing source of truth; .planning/phases is provenance input only."
   },
   "verification_commands": [
-    "python -m tsc_cycle.reproduction_manifest --repo-root /home/samuel/TSC_CYCLE --check /home/samuel/TSC_CYCLE/reproduction/v4.0-qwen3-4b-9k-manifest.json",
-    "pytest /home/samuel/TSC_CYCLE/tests/test_v4_reproduction_package.py /home/samuel/TSC_CYCLE/tests/test_cleanup_inventory.py -q"
+    "python -m tsc_cycle.reproduction_manifest --check reproduction/v4.0-qwen3-4b-9k-manifest.json",
+    "pytest tests/test_v4_reproduction_package.py tests/test_cleanup_inventory.py -q"
   ]
 }
