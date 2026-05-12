@@ -263,8 +263,8 @@ def build_package_manifest(repo_root: Path | str, inventory_path: Path | str | N
         "final_artifacts": _final_artifacts(root),
         "assets": assets,
         "verification_commands": [
-            "python -m tsc_cycle.reproduction_manifest --repo-root /home/samuel/TSC_CYCLE --check /home/samuel/TSC_CYCLE/reproduction/v4.0-qwen3-4b-9k-manifest.json",
-            "pytest /home/samuel/TSC_CYCLE/tests/test_v4_reproduction_package.py /home/samuel/TSC_CYCLE/tests/test_cleanup_inventory.py -q",
+            "python -m tsc_cycle.reproduction_manifest --check reproduction/v4.0-qwen3-4b-9k-manifest.json",
+            "pytest tests/test_v4_reproduction_package.py tests/test_cleanup_inventory.py -q",
         ],
         "provenance_inputs": [
             DEFAULT_INVENTORY_PATH,

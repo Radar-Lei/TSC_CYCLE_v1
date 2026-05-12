@@ -178,6 +178,8 @@ def test_guide_exposes_hashes_counts_and_commands(tmp_path):
     for text in required_text:
         assert text in guide
 
+    assert "/home/samuel/TSC_CYCLE" not in guide
+    assert all("/home/samuel/TSC_CYCLE" not in command for command in manifest["verification_commands"])
     assert "not the v4 target" in guide
     assert "do not use `.planning/phases/` as the source of truth" in guide
 
