@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v4.1
 milestone_name: 项目清理 / v4 最小复现包
-status: executing
+status: verifying
 stopped_at: Completed 13-02-PLAN.md
-last_updated: "2026-05-12T04:06:10.422Z"
-last_activity: 2026-05-12 -- Phase 14 planning complete
+last_updated: "2026-05-12T04:15:40.063Z"
+last_activity: 2026-05-12
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 3
-  completed_plans: 2
-  percent: 67
+  completed_plans: 3
+  percent: 100
 ---
 
 # TSC-CYCLE State
@@ -21,14 +21,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-05-12)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近 GPT-5.5 high 教师 — 不过拟合到 reality.log。
-**Current focus:** Phase 13 — Inventory & Cleanup Boundaries
+**Current focus:** Phase 14 — Canonical v4 Reproduction Package
 
 ## Current Position
 
-Phase: 14
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-05-12 -- Phase 14 planning complete
+Phase: 14 (Canonical v4 Reproduction Package) — EXECUTING
+Plan: 1 of 1
+Status: Phase complete — ready for verification
+Last activity: 2026-05-12
 
 Progress: [██████████] 100%
 
@@ -51,6 +51,7 @@ Progress: [██████████] 100%
 | Phase 13 P01 | 4min3s | 3 tasks | 3 files |
 | Phase 13 P02 | 9min | 3 tasks | 5 files |
 | 13 | 2 | - | - |
+| Phase 14 P01 | 6min23s | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,9 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase 13]: Canonical v4.0 evidence paths are classified as v4 evidence with keep/no_delete.
 - [Phase 13]: Local secret, virtualenv, cache, and agent/worktree paths are recorded as metadata-only entries requiring manual review.
 - [Phase 13]: Plan 02 cleanup boundary report approved by maintainer; Phase 13 remains non-destructive and Phase 15 must consume inventory before archive/remove actions.
+- [Phase 14]: Repo-level reproduction/ manifest and guide are the v4.0 Qwen3-4B 9k reproducer-facing source of truth; .planning/phases remains provenance only.
+- [Phase 14]: Tokenized Arrow files are optional rebuild cache; labeled JSONL and split manifest/index JSONL files are required source inputs.
+- [Phase 14]: Local environment, cache, and agent paths are serialized as metadata only without file payloads or local secret contents.
 
 ### Preserved v4.0 Context
 
@@ -94,7 +98,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-12T03:18:04.388Z
+Last session: 2026-05-12T04:14:38.891Z
 Stopped at: Completed 13-02-PLAN.md
 Resume file: None
 Next action: /gsd-verify-phase 13

@@ -12,9 +12,9 @@
 
 ### Reproduction Package
 
-- [ ] **REPRO-01**: Reproducer can identify the canonical v4.0 Qwen3-4B 9k inputs, manifests, reports, final q4_K_M GGUF artifact, and `reality_test.log` without inspecting historical phase directories.
+- [x] **REPRO-01**: Reproducer can identify the canonical v4.0 Qwen3-4B 9k inputs, manifests, reports, final q4_K_M GGUF artifact, and `reality_test.log` without inspecting historical phase directories.
 - [ ] **REPRO-02**: Reproducer can run or follow a documented minimal verification path that confirms the retained v4 package still matches the shipped v4.0 result gates.
-- [ ] **REPRO-03**: Reproducer can distinguish required reproduction assets from optional audit artifacts and from obsolete v1/v2/v3/v4 intermediate files.
+- [x] **REPRO-03**: Reproducer can distinguish required reproduction assets from optional audit artifacts and from obsolete v1/v2/v3/v4 intermediate files.
 
 ### Cleanup Execution
 
@@ -24,7 +24,7 @@
 
 ### Documentation
 
-- [ ] **DOC-01**: Reproducer can start from a concise repo-level reproduction guide or manifest that names the canonical artifacts, expected hashes/counts, and verification commands.
+- [x] **DOC-01**: Reproducer can start from a concise repo-level reproduction guide or manifest that names the canonical artifacts, expected hashes/counts, and verification commands.
 - [ ] **DOC-02**: Maintainer can understand where legacy v1/v2/v3 artifacts went and why they are no longer part of the main v4 reproduction path.
 
 ## Future Requirements
@@ -56,13 +56,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | INV-01 | Phase 13 | Complete |
 | INV-02 | Phase 13 | Complete |
-| REPRO-01 | Phase 14 | Pending |
+| REPRO-01 | Phase 14 | Complete |
 | REPRO-02 | Phase 16 | Pending |
-| REPRO-03 | Phase 14 | Pending |
+| REPRO-03 | Phase 14 | Complete |
 | CLEAN-01 | Phase 15 | Pending |
 | CLEAN-02 | Phase 16 | Pending |
 | CLEAN-03 | Phase 15 | Pending |
-| DOC-01 | Phase 14 | Pending |
+| DOC-01 | Phase 14 | Complete |
 | DOC-02 | Phase 15 | Pending |
 
 **Coverage:**

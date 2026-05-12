@@ -29,7 +29,7 @@ Full details: `milestones/v4.0-ROADMAP.md`
 </details>
 
 - [x] **Phase 13: Inventory & Cleanup Boundaries** - Non-destructively classify current files and define keep/archive/remove rationale before cleanup. (completed 2026-05-12)
-- [ ] **Phase 14: Canonical v4 Reproduction Package** - Make the v4.0 reproduction assets identifiable without historical phase archaeology.
+- [x] **Phase 14: Canonical v4 Reproduction Package** - Make the v4.0 reproduction assets identifiable without historical phase archaeology. (completed 2026-05-12)
 - [ ] **Phase 15: Safe Cleanup Execution** - Archive or remove unrelated clutter while preserving canonical v4 assets and a reviewable change set.
 - [ ] **Phase 16: Verification & Handoff** - Prove the cleaned package still matches shipped v4 gates and is ready for the next milestone.
 
@@ -63,7 +63,7 @@ Plans:
 **Plans**: 1 plan
 Plans:
 **Wave 1**
-- [ ] 14-01-PLAN.md — Build and validate the repo-level v4.0 Qwen3-4B 9k reproduction manifest and guide.
+- [x] 14-01-PLAN.md — Build and validate the repo-level v4.0 Qwen3-4B 9k reproduction manifest and guide.
 
 ### Phase 15: Safe Cleanup Execution
 **Goal**: Maintainer can safely archive or remove non-v4 clutter while preserving canonical v4 reproduction assets and reviewability.
@@ -98,6 +98,6 @@ Plans:
 | 11. eval matrix + decision | 4/4 | Complete | 2026-05-11 |
 | 12. reality.log → reality_test.log replay | 3/3 | Complete | 2026-05-11 |
 | 13. Inventory & Cleanup Boundaries | 2/2 | Complete    | 2026-05-12 |
-| 14. Canonical v4 Reproduction Package | 0/1 | Not started | - |
+| 14. Canonical v4 Reproduction Package | 1/1 | Complete   | 2026-05-12 |
 | 15. Safe Cleanup Execution | 0/TBD | Not started | - |
 | 16. Verification & Handoff | 0/TBD | Not started | - |
