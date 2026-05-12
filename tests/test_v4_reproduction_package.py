@@ -111,10 +111,12 @@ def test_manifest_hashes_and_counts_match_disk():
 
     phase12 = by_path["artifacts/v4/phase12/per_sample.jsonl"]
     labeled = by_path["data/v4/phase8/labeled_merged.jsonl"]
+    split_manifest = by_path["data/v4/phase8/splits/manifest.json"]
     assert phase12["line_count"] == 426
     assert phase12["counts"]["phase12_outputs"] == 426
     assert labeled["line_count"] == 9501
     assert labeled["counts"]["labeled_rows"] == 9501
+    assert split_manifest["counts"] == {"ood_val_rows": 950, "train_rows": 7601, "val_rows": 950}
 
 
 def test_manifest_classifies_required_optional_and_obsolete_assets():

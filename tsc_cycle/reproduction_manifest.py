@@ -152,6 +152,12 @@ def _split_counts(repo_root: Path) -> dict[str, int]:
     manifest = _load_json(repo_root / "data/v4/phase8/splits/manifest.json")
     counts: dict[str, int] = {}
     if isinstance(manifest, dict):
+        split_counts = manifest.get("split_counts")
+        if isinstance(split_counts, dict):
+            for key in ("train", "val", "ood_val"):
+                value = split_counts.get(key)
+                if isinstance(value, int):
+                    counts[f"{key}_rows"] = value
         splits = manifest.get("splits")
         if isinstance(splits, dict):
             for key in ("train", "val", "ood_val"):
@@ -159,9 +165,9 @@ def _split_counts(repo_root: Path) -> dict[str, int]:
                 if isinstance(value, dict):
                     count = value.get("count") or value.get("rows") or value.get("n")
                     if isinstance(count, int):
-                        counts[f"{key}_rows"] = count
+                        counts.setdefault(f"{key}_rows", count)
                 elif isinstance(value, int):
-                    counts[f"{key}_rows"] = value
+                    counts.setdefault(f"{key}_rows", value)
         for key in ("train_count", "val_count", "ood_val_count", "total", "total_rows"):
             if isinstance(manifest.get(key), int):
                 counts[key] = manifest[key]
