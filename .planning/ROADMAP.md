@@ -74,7 +74,13 @@ Plans:
   2. Maintainer can inspect legacy archive/removal notes explaining where v1/v2/v3 artifacts and obsolete v4 intermediate files went and why.
   3. Maintainer can inspect git status and see an intentionally scoped cleanup change set rather than mixed historical clutter.
   4. Maintainer can confirm retained source paths needed by the v4 reproduction package were not broken by cleanup.
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+**Wave 1**
+- [ ] 15-01-PLAN.md — Capture preflight status, enforce Phase 13 archive allowlist, and archive exactly four legacy directories.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 15-02-PLAN.md — Write cleanup notes, run final validation, and complete maintainer scope review checkpoint.
 
 ### Phase 16: Verification & Handoff
 **Goal**: Reproducer and maintainer can verify the cleaned repository still reproduces the shipped v4.0 evidence path.
@@ -99,5 +105,5 @@ Plans:
 | 12. reality.log → reality_test.log replay | 3/3 | Complete | 2026-05-11 |
 | 13. Inventory & Cleanup Boundaries | 2/2 | Complete    | 2026-05-12 |
 | 14. Canonical v4 Reproduction Package | 1/1 | Complete   | 2026-05-12 |
-| 15. Safe Cleanup Execution | 0/TBD | Not started | - |
+| 15. Safe Cleanup Execution | 0/2 | Planned | - |
 | 16. Verification & Handoff | 0/TBD | Not started | - |
