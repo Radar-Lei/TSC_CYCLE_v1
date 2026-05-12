@@ -46,7 +46,7 @@ Full details: `milestones/v4.0-ROADMAP.md`
 **Plans**: 2 plans
 Plans:
 **Wave 1**
-- [ ] 13-01-PLAN.md — Create read-only inventory tests, generator, and machine-readable inventory JSON.
+- [x] 13-01-PLAN.md — Create read-only inventory tests, generator, and machine-readable inventory JSON.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 13-02-PLAN.md — Generate maintainer-facing Markdown cleanup boundary report and checkpoint rationale review.
@@ -94,7 +94,7 @@ Plans:
 | 10. merge + GGUF export | 4/4 | Complete | 2026-05-11 |
 | 11. eval matrix + decision | 4/4 | Complete | 2026-05-11 |
 | 12. reality.log → reality_test.log replay | 3/3 | Complete | 2026-05-11 |
-| 13. Inventory & Cleanup Boundaries | 0/2 | Not started | - |
+| 13. Inventory & Cleanup Boundaries | 1/2 | In Progress|  |
 | 14. Canonical v4 Reproduction Package | 0/TBD | Not started | - |
 | 15. Safe Cleanup Execution | 0/TBD | Not started | - |
 | 16. Verification & Handoff | 0/TBD | Not started | - |

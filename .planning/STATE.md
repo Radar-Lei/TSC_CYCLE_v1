@@ -4,14 +4,14 @@ milestone: v4.1
 milestone_name: 项目清理 / v4 最小复现包
 status: executing
 stopped_at: v4.1 roadmap and state initialized
-last_updated: "2026-05-12T03:00:47.897Z"
-last_activity: 2026-05-12 -- Phase 13 planning complete
+last_updated: "2026-05-12T03:07:53.060Z"
+last_activity: 2026-05-12
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 2
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 50
 ---
 
 # TSC-CYCLE State
@@ -21,16 +21,16 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-05-12)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近 GPT-5.5 high 教师 — 不过拟合到 reality.log。
-**Current focus:** v4.1 Phase 13 — Inventory & Cleanup Boundaries
+**Current focus:** Phase 13 — Inventory & Cleanup Boundaries
 
 ## Current Position
 
-Phase: 13 of 16 overall; 1 of 4 for v4.1 (Inventory & Cleanup Boundaries)
-Plan: TBD in current phase
+Phase: 13 (Inventory & Cleanup Boundaries) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-05-12 -- Phase 13 planning complete
+Last activity: 2026-05-12
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ Progress: [░░░░░░░░░░] 0%
 | 14. Canonical v4 Reproduction Package | 0 | TBD | - |
 | 15. Safe Cleanup Execution | 0 | TBD | - |
 | 16. Verification & Handoff | 0 | TBD | - |
+| Phase 13 P01 | 4min3s | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -59,6 +60,9 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - Research was explicitly skipped for this milestone.
 - Destructive cleanup must not start until Phase 13 inventory defines keep/archive/remove boundaries.
 - Phase numbering continues after v4.0 Phase 12; v4.1 starts at Phase 13.
+- [Phase 13]: Phase 13 Plan 01 inventory is read-only and writes only the explicit inventory JSON artifact.
+- [Phase 13]: Canonical v4.0 evidence paths are classified as v4 evidence with keep/no_delete.
+- [Phase 13]: Local secret, virtualenv, cache, and agent/worktree paths are recorded as metadata-only entries requiring manual review.
 
 ### Preserved v4.0 Context
 
@@ -87,7 +91,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-12
+Last session: 2026-05-12T03:07:09.578Z
 Stopped at: v4.1 roadmap and state initialized
 Resume file: None
 Next action: `/gsd-plan-phase 13`

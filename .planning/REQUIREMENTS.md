@@ -7,8 +7,8 @@
 
 ### Inventory
 
-- [ ] **INV-01**: Maintainer can view a generated inventory that classifies current root, data, artifacts, runs, planning, and tests files as v4 reproduction source, v4 evidence, archived legacy, temporary, or removable.
-- [ ] **INV-02**: Maintainer can see explicit keep/archive/remove rationale for every high-impact file group before destructive cleanup is applied.
+- [x] **INV-01**: Maintainer can view a generated inventory that classifies current root, data, artifacts, runs, planning, and tests files as v4 reproduction source, v4 evidence, archived legacy, temporary, or removable.
+- [x] **INV-02**: Maintainer can see explicit keep/archive/remove rationale for every high-impact file group before destructive cleanup is applied.
 
 ### Reproduction Package
 
@@ -54,8 +54,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INV-01 | Phase 13 | Pending |
-| INV-02 | Phase 13 | Pending |
+| INV-01 | Phase 13 | Complete |
+| INV-02 | Phase 13 | Complete |
 | REPRO-01 | Phase 14 | Pending |
 | REPRO-02 | Phase 16 | Pending |
 | REPRO-03 | Phase 14 | Pending |
