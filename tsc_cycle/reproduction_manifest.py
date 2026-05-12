@@ -123,6 +123,13 @@ def _asset(
         "exists": exists,
         "source": "disk_metadata",
     }
+    if category == "local_temporary":
+        return {
+            "path": rel_path,
+            "category": category,
+            "exists": exists,
+        }
+
     inv_entry = _inventory_entry(inventory, rel_path)
     if inv_entry is not None:
         entry["phase13_classification"] = inv_entry.get("classification")

@@ -146,6 +146,13 @@ def test_manifest_classifies_required_optional_and_obsolete_assets():
     local_paths = {asset["path"] for asset in assets["local_temporary"]}
     assert {".env", ".venv", ".claude"} <= local_paths
 
+    for asset in assets["local_temporary"]:
+        assert set(asset) == {"path", "category", "exists"}
+        assert asset["category"] == "local_temporary"
+        assert "sha256" not in asset
+        assert "line_count" not in asset
+        assert "size_bytes" not in asset
+
 
 def test_guide_exposes_hashes_counts_and_commands(tmp_path):
     from tsc_cycle.reproduction_manifest import write_guide_markdown
@@ -185,6 +192,13 @@ def test_reproduction_manifest_is_non_destructive_and_secret_safe(tmp_path):
     guide_path = tmp_path / "guide.md"
     reproduction_manifest.write_guide_markdown(manifest, guide_path)
     serialized = json.dumps(manifest, ensure_ascii=False) + guide_path.read_text(encoding="utf-8")
+
+    for asset in manifest["assets"]["local_temporary"]:
+        assert set(asset) == {"path", "category", "exists"}
+        assert asset["category"] == "local_temporary"
+        assert "sha256" not in asset
+        assert "line_count" not in asset
+        assert "size_bytes" not in asset
 
     for forbidden in FORBIDDEN_SERIALIZED_TEXT:
         assert forbidden not in serialized
