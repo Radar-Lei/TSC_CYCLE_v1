@@ -294,22 +294,19 @@ artifacts/v4/phase12/per_sample.jsonl lines=426 sha256=ae244958dd8fb955d1635de25
 | A3 | Manifest categories `required`, `required_source`, `optional_audit`, `obsolete_legacy`, and `local_temporary` are acceptable names. | Architecture Patterns | Tests/guide may need renaming if user expects Phase 13 labels verbatim. |
 | A4 | Markdown-only is insufficient as the authoritative package source. | Anti-Patterns | If the user wants no new machine-readable file, implementation scope changes. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **What exact repo-level path should host the manifest/guide?**
+1. **RESOLVED — repo-level manifest/guide live under `reproduction/`.**
    - What we know: It must be outside `.planning/phases/`. [VERIFIED: /home/samuel/TSC_CYCLE/.planning/phases/14-canonical-v4-reproduction-package/14-CONTEXT.md]
-   - What's unclear: No existing repo convention names a `reproduction/` directory or root manifest file. [VERIFIED: codebase inspection]
-   - Recommendation: Use `reproduction/v4.0-qwen3-4b-9k-manifest.json` and `reproduction/v4.0-qwen3-4b-9k-guide.md` unless planner/user overrides. [ASSUMED]
+   - Decision: Use `reproduction/v4.0-qwen3-4b-9k-manifest.json` and `reproduction/v4.0-qwen3-4b-9k-guide.md` as the reproducer-facing source-of-truth artifacts. [RESOLVED: planner decision]
 
-2. **Should tokenized Arrow files be required or optional?**
+2. **RESOLVED — tokenized Arrow files are rebuildable cache, not minimal required source.**
    - What we know: `data/v4/phase8/tokenized/{train,val,ood_val}.arrow` are listed by the Phase 8 gate report and dataset split outputs. [VERIFIED: /home/samuel/TSC_CYCLE/artifacts/v4/phase8/phase8_gate_report.json]
-   - What's unclear: The Phase 14 requirement says canonical inputs/manifests/reports/final artifact, but not whether tokenized Arrow files are minimal required assets or rebuildable intermediates. [VERIFIED: /home/samuel/TSC_CYCLE/.planning/REQUIREMENTS.md]
-   - Recommendation: Mark split manifest/index/labeled merged data as `required_source`; mark tokenized Arrow files as `required_if_skipping_tokenization` or `optional_rebuild_cache` only if the guide clearly explains the distinction. [ASSUMED]
+   - Decision: Mark split manifest/index/labeled merged data as `required_source`; mark tokenized Arrow files as `optional_rebuild_cache` or `required_if_skipping_tokenization` with explicit guide wording. [RESOLVED: planner decision]
 
-3. **Should Phase 14 include a builder CLI or only checked-in generated files and tests?**
+3. **RESOLVED — Phase 14 includes a small builder/validator CLI.**
    - What we know: Existing pattern favors generated artifacts with source modules and tests. [VERIFIED: /home/samuel/TSC_CYCLE/tsc_cycle/cleanup_inventory.py]
-   - What's unclear: The success criteria require a manifest/guide and validation around it, not necessarily regeneration CLI. [VERIFIED: /home/samuel/TSC_CYCLE/.planning/phases/14-canonical-v4-reproduction-package/14-CONTEXT.md]
-   - Recommendation: Add a small CLI anyway so hash/count refresh is reproducible before Phase 15. [ASSUMED]
+   - Decision: Add `tsc_cycle/reproduction_manifest.py` so hashes/counts/guide can be regenerated reproducibly before Phase 15. [RESOLVED: planner decision]
 
 ## Environment Availability
 
