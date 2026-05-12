@@ -36,6 +36,8 @@ OPTIONAL_REBUILD_CACHE_PATHS = {
     "data/v4/phase8/tokenized/ood_val.arrow",
 }
 
+LOCAL_TEMPORARY_METADATA_KEYS = {"path", "category", "exists"}
+
 FORBIDDEN_SERIALIZED_TEXT = [
     "OPENAI_API_KEY=",
     "sk-",
@@ -149,7 +151,7 @@ def test_manifest_classifies_required_optional_and_obsolete_assets():
     assert {".env", ".venv", ".claude"} <= local_paths
 
     for asset in assets["local_temporary"]:
-        assert set(asset) == {"path", "category", "exists"}
+        assert set(asset) == LOCAL_TEMPORARY_METADATA_KEYS
         assert asset["category"] == "local_temporary"
         assert "sha256" not in asset
         assert "line_count" not in asset
@@ -201,7 +203,7 @@ def test_reproduction_manifest_is_non_destructive_and_secret_safe(tmp_path):
     serialized = json.dumps(manifest, ensure_ascii=False) + guide_path.read_text(encoding="utf-8")
 
     for asset in manifest["assets"]["local_temporary"]:
-        assert set(asset) == {"path", "category", "exists"}
+        assert set(asset) == LOCAL_TEMPORARY_METADATA_KEYS
         assert asset["category"] == "local_temporary"
         assert "sha256" not in asset
         assert "line_count" not in asset
