@@ -213,6 +213,22 @@ def test_reproduction_manifest_is_non_destructive_and_secret_safe(tmp_path):
     assert "content" not in serialized
 
 
+def test_manifest_check_rejects_tampered_semantic_counts():
+    from tsc_cycle.reproduction_manifest import validate_manifest_against_disk
+
+    manifest = _build_manifest()
+    by_path = _entries_by_path(manifest)
+    by_path["artifacts/v4/phase12/per_sample.jsonl"]["counts"]["phase12_outputs"] = -1
+    by_path["data/v4/phase8/labeled_merged.jsonl"]["counts"]["labeled_rows"] = -1
+    by_path["data/v4/phase8/splits/manifest.json"]["counts"]["train_rows"] = -1
+
+    errors = validate_manifest_against_disk(manifest, REPO_ROOT)
+
+    assert any("phase12_outputs mismatch" in error for error in errors)
+    assert any("labeled_rows mismatch" in error for error in errors)
+    assert any("train_rows mismatch" in error for error in errors)
+
+
 def test_repo_relative_path_guard_rejects_outside_root():
     from tsc_cycle.reproduction_manifest import _resolve_repo_path
 

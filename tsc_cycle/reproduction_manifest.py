@@ -186,6 +186,37 @@ def _phase12_counts(repo_root: Path) -> dict[str, int]:
     return counts
 
 
+def _expected_counts_for_asset(repo_root: Path, rel_path: str) -> dict[str, int]:
+    if rel_path == "data/v4/phase8/labeled_merged.jsonl":
+        path = _resolve_repo_path(repo_root, rel_path)
+        return {"labeled_rows": _line_count(path)} if path.is_file() else {}
+    if rel_path == "data/v4/phase8/splits/manifest.json":
+        return _split_counts(repo_root)
+    if rel_path == "artifacts/v4/phase12/per_sample.jsonl":
+        path = _resolve_repo_path(repo_root, rel_path)
+        counts = _phase12_counts(repo_root)
+        if path.is_file():
+            counts["phase12_outputs"] = _line_count(path)
+        return counts
+    if rel_path in {"artifacts/v4/phase12/phase12_report.json", "artifacts/v4/phase12/manifest.json", "reality_test.log"}:
+        return _phase12_counts(repo_root)
+    return {}
+
+
+def _validate_asset_counts(repo_root: Path, rel_path: str, asset_counts: Any) -> list[str]:
+    expected = _expected_counts_for_asset(repo_root, rel_path)
+    if not expected:
+        return []
+    if not isinstance(asset_counts, dict):
+        return [f"{rel_path}: missing counts metadata"]
+    errors: list[str] = []
+    for key, expected_value in expected.items():
+        actual_value = asset_counts.get(key)
+        if actual_value != expected_value:
+            errors.append(f"{rel_path}: counts.{key} mismatch manifest={actual_value} disk={expected_value}")
+    return errors
+
+
 def _final_artifacts(repo_root: Path) -> dict[str, Any]:
     phase10 = _load_json(repo_root / "runs/v4.0-4B-20260509T184844Z/phase10_gguf_report.json")
     phase11 = _load_json(repo_root / "artifacts/v4/phase11/phase11_gate_report.json")
@@ -401,6 +432,7 @@ def validate_manifest_against_disk(manifest: dict[str, Any], repo_root: Path | s
                 actual_lines = _line_count(path)
                 if asset.get("line_count") != actual_lines:
                     errors.append(f"{rel_path}: line_count mismatch manifest={asset.get('line_count')} disk={actual_lines}")
+            errors.extend(_validate_asset_counts(root, rel_path, asset.get("counts")))
     return errors
 
 
