@@ -12,15 +12,15 @@ Phase 15 must consume this inventory before any archive or deletion action, and 
 
 | group | entries | high_impact | size_bytes |
 |-------|---------|-------------|------------|
-| artifacts | 7 | 7 | 10179479 |
-| data | 3 | 3 | 910378857 |
-| local | 6 | 6 | 10173549526 |
-| planning | 1 | 1 | 2088660 |
+| artifacts | 7 | 7 | 6223812 |
+| data | 3 | 3 | 585527206 |
+| local | 6 | 6 | 9185039821 |
+| planning | 1 | 1 | 2086438 |
 | root | 6 | 5 | 26463584 |
-| runs | 7 | 7 | 203360070662 |
+| runs | 7 | 7 | 100431984454 |
 | scripts | 1 | 1 | 67864 |
-| source | 1 | 1 | 1578135 |
-| tests | 1 | 1 | 1384947 |
+| source | 1 | 1 | 1581283 |
+| tests | 1 | 1 | 1418442 |
 
 ## Canonical v4.0 No-Delete Assets
 
