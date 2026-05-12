@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 
-REPO_ROOT = Path("/home/samuel/TSC_CYCLE")
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 ALLOWED_CLASSIFICATIONS = {
     "v4 reproduction source",
