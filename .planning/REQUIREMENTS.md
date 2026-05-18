@@ -67,8 +67,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | POLICY-03 | Phase 17 | Complete in 17-02 |
 | DATA-01 | Phase 18 | Complete in 18-01 |
 | DATA-02 | Phase 18 | Complete in 18-01 |
-| TRAIN-01 | Phase 19 | Pending |
-| TRAIN-02 | Phase 19 | Pending |
+| TRAIN-01 | Phase 19 | Complete in 19-01 |
+| TRAIN-02 | Phase 19 | Complete in 19-02 |
 | EVAL-01 | Phase 20 | Pending |
 | EVAL-02 | Phase 20 | Pending |
 | EVAL-03 | Phase 20 | Pending |
@@ -76,9 +76,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 **Coverage:**
 - v4.2 requirements: 12 total
 - Mapped to phases: 12
-- Completed: 5
+- Completed: 7
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-18*
-*Last updated: 2026-05-18 after Phase 17 Plan 02 execution*
+*Last updated: 2026-05-19 after Phase 19 execution*

@@ -106,7 +106,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 19-02-PLAN.md — Add v4.2 export plan/report contracts, then export real merged HF, GGUF fp16, and GGUF q4_K_M artifacts with accepted TRAIN-02 hashes.
+- [x] 19-02-PLAN.md — Add v4.2 export plan/report contracts, then export real merged HF, GGUF fp16, and GGUF q4_K_M artifacts with accepted TRAIN-02 hashes.
 
 ### Phase 20: Evaluation & Reality Replay Handoff
 
@@ -141,5 +141,5 @@ Phases execute in numeric order: 17 → 18 → 19 → 20
 | 16. Verification & Handoff | v4.1 | 1/1 | Complete | 2026-05-12 |
 | 17. Audit & Saturation Policy Gate | v4.2 | 3/3 | Complete    | 2026-05-18 |
 | 18. Calibrated Dataset Rebuild | v4.2 | 1/1 | Complete | 2026-05-18 |
-| 19. 4B QLoRA Retrain & Export | v4.2 | 1/2 | In Progress|  |
+| 19. 4B QLoRA Retrain & Export | v4.2 | 2/2 | Executed | - |
 | 20. Evaluation & Reality Replay Handoff | v4.2 | 0/TBD | Not started | - |
