@@ -501,6 +501,19 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     assert outside_report_rejected["ok"] is False
     assert any(failure["gate"] == "report_path" for failure in outside_report_rejected["fatal_failures"])
 
+    report_dir = run_root / "phase19_sft_report_dir.json"
+    report_dir.mkdir()
+    report_dir_rejected = validate_phase19_training_report(run_root, report_path=report_dir)
+    assert report_dir_rejected["ok"] is False
+    assert any(failure["gate"] == "model_config" for failure in report_dir_rejected["fatal_failures"])
+
+    bad_steps = _read_json(report)
+    bad_steps["trainer_state"] = {"global_step": "abc", "max_steps": "def"}
+    bad_steps_report = _write_json(run_root / "bad_steps.json", bad_steps)
+    bad_steps_rejected = validate_phase19_training_report(run_root, report_path=bad_steps_report)
+    assert bad_steps_rejected["ok"] is False
+    assert any(failure["gate"] == "completed" and "must be an integer" in failure["reason"] for failure in bad_steps_rejected["fatal_failures"])
+
     smoke = _read_json(report)
     smoke["mode"] = "smoke"
     smoke["trainer_state"] = {"global_step": 1, "max_steps": 1}

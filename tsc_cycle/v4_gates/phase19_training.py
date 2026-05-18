@@ -44,11 +44,11 @@ def _sha256_file(path: Path) -> str:
 
 
 def _read_json(path: Path) -> dict[str, Any]:
-    if not path.exists():
+    if not path.is_file():
         return {}
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError):
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
         return {}
     return payload if isinstance(payload, dict) else {}
 
@@ -429,6 +429,14 @@ def _expected_full_steps(data_manifest: dict[str, Any]) -> int:
     total_items = train_rows * int(args["num_train_epochs"])
     effective_batch = int(args["per_device_train_batch_size"]) * int(args["gradient_accumulation_steps"])
     return (total_items + effective_batch - 1) // effective_batch
+
+
+def _safe_int(value: Any, *, gate: str, field: str, failures: list[dict[str, str]]) -> int:
+    try:
+        return int(value or 0)
+    except (TypeError, ValueError):
+        failures.append({"gate": gate, "reason": f"{field} must be an integer"})
+        return 0
 
 
 def _state_value(trainer_state: Any, key: str, default: Any = None) -> Any:
@@ -847,8 +855,8 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
         _fail(failures, "requirements_covered", "TRAIN-01 coverage missing")
 
     state = training.get("trainer_state") if isinstance(training.get("trainer_state"), dict) else {}
-    global_step = int(state.get("global_step") or 0)
-    max_steps = int(state.get("max_steps") or 0)
+    global_step = _safe_int(state.get("global_step"), gate="completed", field="global_step", failures=failures)
+    max_steps = _safe_int(state.get("max_steps"), gate="completed", field="max_steps", failures=failures)
     expected_full_steps = _expected_full_steps(data_manifest_payload)
     completed_ok = training.get("mode") == "full" and training.get("completed") is True and training.get("ok") is True and global_step > 0 and expected_full_steps > 0 and global_step >= expected_full_steps and (max_steps <= 0 or max_steps >= expected_full_steps)
     gates["completed"] = _gate(completed_ok, None if completed_ok else "training report lacks completed full-run evidence", {"completed": training.get("completed"), "ok": training.get("ok"), "mode": training.get("mode"), "global_step": global_step, "max_steps": max_steps, "expected_full_steps": expected_full_steps})
@@ -858,7 +866,7 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
     ok = not failures
     artifact_manifest = {
         "paths": {"run_root": str(root), "adapter": str(adapter), "report": str(report_path), "data_manifest": str(data_manifest)},
-        "sha256": {"adapter_sha256": adapter_hash, "data_manifest_sha256": data_hash, "training_report": _sha256_file(report_path) if report_path.exists() else None},
+        "sha256": {"adapter_sha256": adapter_hash, "data_manifest_sha256": data_hash, "training_report": _sha256_file(report_path) if report_path.is_file() else None},
     }
     report = {
         "ok": ok,
