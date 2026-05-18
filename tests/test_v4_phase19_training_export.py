@@ -442,6 +442,11 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     assert outside_lineage_rejected["ok"] is False
     assert any(failure["gate"] == "phase18_lineage_path" for failure in outside_lineage_rejected["fatal_failures"])
 
+    from tsc_cycle.v4_gates.phase19_training import write_phase19_training_reports  # noqa: PLC0415
+
+    with pytest.raises(ValueError, match="tokenized_dir must be canonical"):
+        write_phase19_training_reports(run_root, mode="full", elapsed=1.0, trainer_state={"global_step": 1, "max_steps": 1}, adapter_dir=adapter_dir, targs_kwargs={"bf16": True}, tokenized_dir=tmp_path / "outside-tokenized")
+
     outside_adapter = tmp_path / "runs" / "v4.0-4B-20260509T184844Z" / "adapter"
     outside_adapter_sha = _make_adapter(outside_adapter)
     outside = _read_json(report)
