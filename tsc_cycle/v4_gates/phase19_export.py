@@ -313,13 +313,17 @@ def write_export_report(run_root: Path, export_plan: dict[str, Any], out: Path) 
 def validate_phase19_export_report(run_root: Path, report_path: Path | None = None, out: Path | None = None) -> dict[str, Any]:
     root = _require_v42_run_root(Path(run_root))
     path = Path(report_path) if report_path is not None else root / "phase19_export_report.json"
-    report = _read_json(path)
-    failures = list(report.get("fatal_failures", [])) if isinstance(report.get("fatal_failures"), list) else []
     gates: dict[str, Any] = {}
     try:
         path.resolve().relative_to(root.resolve())
     except ValueError:
-        failures.append({"gate": "report_path", "reason": f"export report must stay under run root: {path}"})
+        failures = [{"gate": "report_path", "reason": f"export report must stay under run root: {path}"}]
+        result = {"ok": False, "next_phase_allowed": False, "requirements_covered": [], "gates": gates, "fatal_failures": failures, "report_path": str(path)}
+        if out is not None:
+            _write_json(Path(out), result)
+        return result
+    report = _read_json(path)
+    failures = list(report.get("fatal_failures", [])) if isinstance(report.get("fatal_failures"), list) else []
 
     report_run_root_ok = str(report.get("run_root")) == str(root)
     gates["run_root"] = {"ok": report_run_root_ok, "data": {"run_root": report.get("run_root")}}
