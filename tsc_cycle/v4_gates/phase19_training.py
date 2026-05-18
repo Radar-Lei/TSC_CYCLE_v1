@@ -499,8 +499,19 @@ def _tokenized_content_failures(run_root: Path) -> list[dict[str, str]]:
     rows_by_id = {_record_sample_id(row): row for row in rows}
     split_dir = _canonical_lineage_path(run_root, DEFAULT_SPLIT_DIR)
     split_indexes = _load_phase18_split_indexes(split_dir)
-    split_manifest = _read_json(split_dir / "manifest.json")
+    split_manifest_path = split_dir / "manifest.json"
+    split_manifest = _read_json(split_manifest_path)
+    tokenized_manifest = _read_json(_canonical_lineage_path(run_root, DEFAULT_TOKENIZED_DIR / "manifest.json"))
+    tokenized_phase18 = tokenized_manifest.get("phase18") if isinstance(tokenized_manifest.get("phase18"), dict) else {}
+    expected_split_manifest_hash = str(tokenized_phase18.get("split_manifest_sha256", ""))
+    actual_split_manifest_hash = _manifest_file_hash(split_manifest_path)
+    if not expected_split_manifest_hash or actual_split_manifest_hash != expected_split_manifest_hash:
+        failures.append({"gate": "tokenized_content", "reason": "split manifest hash mismatch against tokenized manifest"})
+    phase18_report = _read_json(_canonical_lineage_path(run_root, DEFAULT_PHASE18_REPORT))
+    report_split_ids = phase18_report.get("splits", {}).get("split_ids_sha256") if isinstance(phase18_report.get("splits"), dict) else {}
     split_ids = split_manifest.get("split_ids_sha256") if isinstance(split_manifest.get("split_ids_sha256"), dict) else {}
+    if split_ids != report_split_ids:
+        failures.append({"gate": "tokenized_content", "reason": "split ids hash mismatch against Phase18 report"})
     for split, rows in split_indexes.items():
         actual_ids_hash = sha256_hex(canonical_json([str(row.get("sample_id") or "") for row in rows]))
         if split_ids.get(split) != actual_ids_hash:

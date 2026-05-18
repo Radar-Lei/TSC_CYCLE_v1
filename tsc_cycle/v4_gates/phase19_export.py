@@ -316,6 +316,10 @@ def validate_phase19_export_report(run_root: Path, report_path: Path | None = No
     report = _read_json(path)
     failures = list(report.get("fatal_failures", [])) if isinstance(report.get("fatal_failures"), list) else []
     gates: dict[str, Any] = {}
+    try:
+        path.resolve().relative_to(root.resolve())
+    except ValueError:
+        failures.append({"gate": "report_path", "reason": f"export report must stay under run root: {path}"})
 
     report_run_root_ok = str(report.get("run_root")) == str(root)
     gates["run_root"] = {"ok": report_run_root_ok, "data": {"run_root": report.get("run_root")}}

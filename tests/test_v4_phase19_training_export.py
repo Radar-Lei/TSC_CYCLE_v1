@@ -503,6 +503,18 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     finally:
         train_arrow.write_bytes(original_arrow)
 
+    split_manifest = PROJECT_ROOT / "data/v4_2/phase18/splits/manifest.json"
+    original_split_manifest = split_manifest.read_text(encoding="utf-8")
+    try:
+        split_payload = json.loads(original_split_manifest)
+        split_payload["split_ids_sha256"]["train"] = "x" * 64
+        split_manifest.write_text(json.dumps(split_payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        split_manifest_rejected = validate_phase19_training_report(run_root, report_path=report)
+        assert split_manifest_rejected["ok"] is False
+        assert any(failure["gate"] == "tokenized_content" for failure in split_manifest_rejected["fatal_failures"])
+    finally:
+        split_manifest.write_text(original_split_manifest, encoding="utf-8")
+
     wrapper = (PROJECT_ROOT / "scripts/run_v4_phase19_train.sh").read_text(encoding="utf-8")
     assert "<<'PY'" in wrapper
     assert 'Path("$RUN_ROOT")' not in wrapper
@@ -614,6 +626,11 @@ def test_v42_export_plan_and_report_require_merged_hf_and_gguf_hashes(tmp_path: 
     rejected_train02 = validate_phase19_export_report(run_root=run_root, report_path=missing_train02_path)
     assert rejected_train02["ok"] is False
     assert any(failure["gate"] == "requirements_covered" for failure in rejected_train02["fatal_failures"])
+
+    outside_export_report = _write_json(tmp_path / "outside_phase19_export_report.json", _read_json(run_root / "phase19_export_report.json"))
+    rejected_outside_export = validate_phase19_export_report(run_root=run_root, report_path=outside_export_report)
+    assert rejected_outside_export["ok"] is False
+    assert any(failure["gate"] == "report_path" for failure in rejected_outside_export["fatal_failures"])
 
     missing_hash = _read_json(run_root / "phase19_export_report.json")
     missing_hash["artifacts"]["gguf_q4_K_M"].pop("sha256")
