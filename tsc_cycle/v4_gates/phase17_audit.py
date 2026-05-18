@@ -5,11 +5,16 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Any
 
 from tsc_cycle.v4_gates.saturation_policy import (
+    BAND_ALLOWED_MAX,
+    BAND_HIGH_NOT_MAX,
+    BAND_INTERPOLATED,
+    BAND_NEAR_MIN,
     PHASE12_MANIFEST_PATH,
     PHASE12_PER_SAMPLE_PATH,
     DATASET_PATH,
@@ -26,6 +31,18 @@ POLICY_GATE_PATH = ARTIFACT_ROOT / "saturation_policy_gate.json"
 PROMPT_PROTOCOL_REPORT_PATH = ARTIFACT_ROOT / "prompt_protocol_report.json"
 FROZEN_V1_ROOT = PROJECT_ROOT / "runs" / "20260507T032419Z"
 REQUIREMENTS_COVERED = ["AUDIT-01", "AUDIT-02", "POLICY-01", "POLICY-02", "POLICY-03"]
+DEFAULT_THRESHOLDS = {
+    "sat_lt_0.2_max_green_rate": 0.0,
+    "sat_0.2_0.6_max_green_rate": 0.02,
+    "sat_0.6_1.0_max_green_rate": 0.10,
+    "malformed_row_rate": 0.0,
+    "missing_output_rate": 0.0,
+}
+BAND_THRESHOLD_KEYS = {
+    BAND_NEAR_MIN: "sat_lt_0.2_max_green_rate",
+    BAND_INTERPOLATED: "sat_0.2_0.6_max_green_rate",
+    BAND_HIGH_NOT_MAX: "sat_0.6_1.0_max_green_rate",
+}
 
 
 def _is_under(path: Path, root: Path) -> bool:
@@ -61,6 +78,125 @@ def sha256_file(path: str | Path) -> str:
         for chunk in iter(lambda: fh.read(1024 * 1024), b""):
             hasher.update(chunk)
     return hasher.hexdigest()
+
+
+def _read_jsonl(path: str | Path) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    path = Path(path)
+    with path.open("r", encoding="utf-8") as fh:
+        for line_no, line in enumerate(fh, start=1):
+            if not line.strip():
+                continue
+            try:
+                payload = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"malformed JSONL at {path}:{line_no}: {exc.msg}") from exc
+            if not isinstance(payload, dict):
+                raise ValueError(f"JSONL row is not an object at {path}:{line_no}")
+            rows.append(payload)
+    return rows
+
+
+def _finite_thresholds(thresholds: dict[str, Any] | None) -> tuple[dict[str, float], list[dict[str, str]]]:
+    merged: dict[str, Any] = dict(DEFAULT_THRESHOLDS)
+    if thresholds:
+        merged.update(thresholds)
+    failures: list[dict[str, str]] = []
+    out: dict[str, float] = {}
+    for key in DEFAULT_THRESHOLDS:
+        try:
+            value = float(merged[key])
+        except (KeyError, TypeError, ValueError) as exc:
+            failures.append({"gate": "threshold_config", "reason": f"{key} is missing or non-numeric"})
+            continue
+        if not math.isfinite(value) or value < 0.0 or value > 1.0:
+            failures.append({"gate": "threshold_config", "reason": f"{key} must be finite between 0 and 1"})
+            continue
+        out[key] = value
+    return out, failures
+
+
+def _coerce_rows_or_audit(rows_or_audit: Any) -> tuple[dict[str, Any] | None, list[dict[str, str]]]:
+    try:
+        if isinstance(rows_or_audit, (str, Path)):
+            return compute_saturation_audit(_read_jsonl(rows_or_audit)), []
+        if isinstance(rows_or_audit, dict) and "bands" in rows_or_audit:
+            return rows_or_audit, []
+        if isinstance(rows_or_audit, dict) and "rows" in rows_or_audit:
+            return compute_saturation_audit(list(rows_or_audit.get("rows") or []), excluded_counts=rows_or_audit.get("excluded_counts") or {}), []
+        if isinstance(rows_or_audit, list):
+            return compute_saturation_audit(rows_or_audit), []
+    except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+        return None, [{"gate": "malformed_evidence", "reason": str(exc)}]
+    return None, [{"gate": "malformed_evidence", "reason": f"unsupported evidence type: {type(rows_or_audit).__name__}"}]
+
+
+def _finite_rate_metric(audit: dict[str, Any], band: str) -> tuple[dict[str, Any] | None, str | None]:
+    bands = audit.get("bands")
+    if not isinstance(bands, dict) or band not in bands:
+        return None, f"missing band statistics for {band}"
+    metric = (bands[band] or {}).get("final_equals_max_when_unsaturated")
+    if not isinstance(metric, dict):
+        return None, f"missing final_equals_max_when_unsaturated metric for {band}"
+    for field in ("count", "denominator", "rate"):
+        if field not in metric:
+            return None, f"missing {field} for {band}"
+    try:
+        count = int(metric["count"])
+        denominator = int(metric["denominator"])
+        rate = float(metric["rate"])
+    except (TypeError, ValueError) as exc:
+        return None, f"non-numeric metric for {band}: {exc}"
+    if denominator < 0 or count < 0 or count > denominator or not math.isfinite(rate):
+        return None, f"invalid denominator/count/rate for {band}"
+    if denominator > 0 and abs((count / denominator) - rate) > 1e-12:
+        return None, f"rate does not match count/denominator for {band}"
+    return {"count": count, "denominator": denominator, "rate": rate}, None
+
+
+def evaluate_saturation_policy_gate(
+    rows_or_audit: Any,
+    thresholds: dict[str, Any] | None = None,
+    source_type: str = "data",
+) -> dict[str, Any]:
+    """Apply the reusable POLICY-02 low-saturation max-green threshold gate."""
+    active_thresholds, fatal_failures = _finite_thresholds(thresholds)
+    source = str(source_type or "unknown")
+    audit, evidence_failures = _coerce_rows_or_audit(rows_or_audit)
+    for failure in evidence_failures:
+        fatal_failures.append({"gate": f"{source}_malformed_evidence", "reason": failure["reason"]})
+
+    gates: dict[str, Any] = {}
+    if audit is not None:
+        for band, threshold_key in BAND_THRESHOLD_KEYS.items():
+            metric, reason = _finite_rate_metric(audit, band)
+            gate_name = f"{source}_{threshold_key}"
+            if metric is None:
+                gates[gate_name] = {"ok": False, "reason": reason}
+                fatal_failures.append({"gate": f"{gate_name}_denominator", "reason": reason or "invalid denominator"})
+                continue
+            threshold = active_thresholds.get(threshold_key)
+            ok = threshold is not None and metric["rate"] <= threshold
+            gates[gate_name] = {"ok": ok, "threshold": threshold, **metric}
+            if not ok:
+                fatal_failures.append({
+                    "gate": f"{source}_threshold_excess_{threshold_key}",
+                    "reason": f"{metric['rate']} > {threshold}",
+                })
+        gates[f"{source}_{BAND_ALLOWED_MAX}"] = {"ok": True, "reason": "no max-green failure threshold; max-green is allowed for saturated rows"}
+
+    ok = not fatal_failures
+    return {
+        "ok": ok,
+        "next_phase_allowed": ok,
+        "source_type": source,
+        "thresholds": active_thresholds,
+        "gates": gates,
+        "fatal_failures": fatal_failures,
+        "warnings": [],
+        "audit": audit,
+        "requirements_covered": ["POLICY-02"],
+    }
 
 
 def evaluate_phase17_audit(
@@ -106,6 +242,14 @@ def evaluate_phase17_audit(
     except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
         fatal_failures.append({"gate": "replay_audit", "reason": str(exc)})
 
+    if phase_decisions_jsonl is not None:
+        try:
+            eval_rows = _read_jsonl(phase_decisions_jsonl)
+            projections["eval"] = {"ok": True, "rows": eval_rows, "origin_artifact": "eval:phase-decisions"}
+            rows.extend(eval_rows)
+        except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+            fatal_failures.append({"gate": "eval_malformed_evidence", "reason": str(exc)})
+
     audit = {
         "ok": False,
         "requirements_covered": ["AUDIT-01", "AUDIT-02", "POLICY-01"],
@@ -122,6 +266,16 @@ def evaluate_phase17_audit(
         except (ValueError, TypeError) as exc:
             fatal_failures.append({"gate": "audit_compute", "reason": str(exc)})
 
+    threshold_reports: dict[str, Any] = {}
+    if "dataset" in projections:
+        threshold_reports["data"] = evaluate_saturation_policy_gate(projections["dataset"], thresholds=thresholds, source_type="data")
+    if "replay" in projections:
+        threshold_reports["replay"] = evaluate_saturation_policy_gate(projections["replay"], thresholds=thresholds, source_type="replay")
+    if "eval" in projections:
+        threshold_reports["eval"] = evaluate_saturation_policy_gate(projections["eval"], thresholds=thresholds, source_type="eval")
+    for threshold_report in threshold_reports.values():
+        fatal_failures.extend(threshold_report.get("fatal_failures") or [])
+
     for label, path in {
         "dataset": dataset_path,
         "phase12_manifest": phase12_manifest_path,
@@ -136,11 +290,13 @@ def evaluate_phase17_audit(
         "ok": ok,
         "next_phase_allowed": ok,
         "requirements_covered": list(REQUIREMENTS_COVERED),
-        "thresholds": thresholds or {},
+        "thresholds": _finite_thresholds(thresholds)[0],
         "gates": {
             "dataset_audit": {"ok": "dataset" in projections},
             "replay_audit": {"ok": "replay" in projections},
+            "eval_audit": {"ok": phase_decisions_jsonl is None or "eval" in projections},
             "audit_compute": {"ok": bool(audit.get("ok", False))},
+            "policy_thresholds": threshold_reports,
         },
         "fatal_failures": fatal_failures,
         "warnings": warnings,
@@ -176,6 +332,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--audit-out", type=Path, default=AUDIT_REPORT_PATH)
     parser.add_argument("--prompt-protocol-out", type=Path, default=PROMPT_PROTOCOL_REPORT_PATH)
     parser.add_argument("--example-limit", type=int, default=10)
+    parser.add_argument("--sat-lt-0-2-max-green-rate", type=float, default=DEFAULT_THRESHOLDS["sat_lt_0.2_max_green_rate"])
+    parser.add_argument("--sat-0-2-0-6-max-green-rate", type=float, default=DEFAULT_THRESHOLDS["sat_0.2_0.6_max_green_rate"])
+    parser.add_argument("--sat-0-6-1-0-max-green-rate", type=float, default=DEFAULT_THRESHOLDS["sat_0.6_1.0_max_green_rate"])
+    parser.add_argument("--malformed-row-rate", type=float, default=DEFAULT_THRESHOLDS["malformed_row_rate"])
+    parser.add_argument("--missing-output-rate", type=float, default=DEFAULT_THRESHOLDS["missing_output_rate"])
     return parser
 
 
@@ -183,6 +344,13 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     global ARTIFACT_ROOT
     ARTIFACT_ROOT = Path(args.artifact_root)
+    thresholds = {
+        "sat_lt_0.2_max_green_rate": args.sat_lt_0_2_max_green_rate,
+        "sat_0.2_0.6_max_green_rate": args.sat_0_2_0_6_max_green_rate,
+        "sat_0.6_1.0_max_green_rate": args.sat_0_6_1_0_max_green_rate,
+        "malformed_row_rate": args.malformed_row_rate,
+        "missing_output_rate": args.missing_output_rate,
+    }
     report = evaluate_phase17_audit(
         dataset_path=args.dataset,
         split_dir=args.split_dir,
@@ -193,6 +361,7 @@ def main(argv: list[str] | None = None) -> int:
         audit_out_path=args.audit_out,
         prompt_protocol_out_path=args.prompt_protocol_out,
         example_limit=args.example_limit,
+        thresholds=thresholds,
     )
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False))
     return 0 if report.get("ok") is True else 1
