@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import builtins
 import importlib
+import json
 import math
 from pathlib import Path
 
@@ -86,3 +87,118 @@ def test_saturation_band_boundaries() -> None:
     normal = {**low_max, "final_green": 20}
     assert mod.classify_violation(normal) == mod.VIOLATION_NONE
     assert "POLICY-01" in mod.REQUIREMENTS_COVERED
+
+
+def _write_jsonl(path: Path, rows: list[dict] | list[object]) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as fh:
+        for row in rows:
+            if isinstance(row, str):
+                fh.write(row + "\n")
+            else:
+                fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+    return path
+
+
+def _dataset_row(sample_id: str, solution: dict[str, int] | None = None) -> dict:
+    return {
+        "sample_id": sample_id,
+        "source": "ambiguous-source-hint",
+        "source_origin": "v1_valid",
+        "split_hint": "id",
+        "input": {
+            "prediction": {
+                "phase_waits": [
+                    {"phase_id": 1, "pred_saturation": 0.1, "min_green": 10, "max_green": 50, "pred_wait": 1.0, "capacity": 10},
+                    {"phase_id": 2, "pred_saturation": 1.1, "min_green": 20, "max_green": 60, "pred_wait": 2.0, "capacity": 10},
+                ]
+            }
+        },
+        "result": {"success": True, "solution": solution or {"1": 50, "2": 60}},
+    }
+
+
+def test_dataset_audit_bands_by_split_and_source(tmp_path: Path) -> None:
+    mod = _policy_contract()
+    dataset = _write_jsonl(tmp_path / "labeled_merged.jsonl", [_dataset_row("sample-a")])
+    split_dir = tmp_path / "splits"
+    _write_jsonl(split_dir / "train.index.jsonl", [{"sample_id": "sample-a", "split": "train", "source": "phase8-source", "source_origin": "v1_valid"}])
+
+    projection = mod.project_dataset_phase_decisions(dataset, split_dir=split_dir)
+
+    assert projection["ok"] is True
+    assert projection["input_count"] == 1
+    assert projection["phase_row_count"] == 2
+    assert projection["excluded_counts"] == {}
+    rows = projection["rows"]
+    required = {
+        "origin_artifact",
+        "sample_id",
+        "phase_id",
+        "pred_saturation",
+        "saturation_band",
+        "min_green",
+        "max_green",
+        "final_green",
+        "split",
+        "source",
+        "violation_category",
+        "trivial_range",
+    }
+    assert all(required <= set(row) for row in rows)
+    assert rows[0]["split"] == "train"
+    assert rows[0]["source"] == "phase8-source"
+    assert rows[0]["origin_artifact"] == "dataset:labeled_merged.jsonl"
+    assert rows[0]["saturation_band"] == mod.BAND_NEAR_MIN
+    assert rows[0]["violation_category"] == mod.VIOLATION_UNSATURATED_MAX_GREEN
+    assert rows[1]["saturation_band"] == mod.BAND_ALLOWED_MAX
+    assert rows[1]["violation_category"] == mod.VIOLATION_ALLOWED_SATURATED_MAX_GREEN
+
+    audit = mod.compute_saturation_audit(rows)
+    assert audit["by_split"]["train"]["total_rows"] == 2
+    assert audit["by_source"]["phase8-source"]["total_rows"] == 2
+    assert audit["bands"][mod.BAND_NEAR_MIN]["final_equals_max_when_unsaturated"]["count"] == 1
+
+
+def test_dataset_projection_surfaces_malformed_and_hard_constraint_invalid_rows(tmp_path: Path) -> None:
+    mod = _policy_contract()
+    malformed = tmp_path / "malformed.jsonl"
+    malformed.write_text('{"sample_id":"ok"}\nnot-json\n', encoding="utf-8")
+    with pytest.raises(ValueError, match="malformed JSONL"):
+        mod.project_dataset_phase_decisions(malformed)
+
+    dataset = _write_jsonl(tmp_path / "bad_lint.jsonl", [_dataset_row("bad", {"1": 999, "2": 60})])
+    projection = mod.project_dataset_phase_decisions(dataset)
+    assert projection["ok"] is True
+    assert projection["rows"] == []
+    assert projection["excluded_counts"]["hard_constraint_invalid"] == 1
+    assert projection["excluded_samples"][0]["sample_id"] == "bad"
+
+
+def test_replay_projection_uses_structured_phase12_evidence_and_fails_on_mismatch(tmp_path: Path) -> None:
+    mod = _policy_contract()
+    records = [
+        {
+            "sample_id": "reality-0001",
+            "input": _dataset_row("unused")["input"],
+            "input_sha256": "hash-1",
+        }
+    ]
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(json.dumps({"records": records}, ensure_ascii=False), encoding="utf-8")
+    per_sample = _write_jsonl(tmp_path / "per_sample.jsonl", [{"sample_id": "reality-0001", "solution": {"1": 50, "2": 60}, "lint_ok": True}])
+
+    projection = mod.project_replay_phase_decisions(manifest, per_sample)
+
+    assert projection["ok"] is True
+    assert projection["phase_row_count"] == 2
+    assert projection["rows"][0]["origin_artifact"] == "replay:phase12"
+    assert projection["rows"][0]["sample_id"] == "reality-0001"
+
+    mismatched = _write_jsonl(tmp_path / "mismatched.jsonl", [{"sample_id": "reality-9999", "solution": {"1": 50, "2": 60}}])
+    with pytest.raises(ValueError, match="sample_id order"):
+        mod.project_replay_phase_decisions(manifest, mismatched)
+
+    non_object = _write_jsonl(tmp_path / "non_object.jsonl", ['["not", "object"]'])
+    with pytest.raises(ValueError, match="JSONL row is not an object"):
+        mod.project_replay_phase_decisions(manifest, non_object)
