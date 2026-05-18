@@ -123,6 +123,7 @@ def test_v42_training_defaults_lock_phase18_data_and_qwen4b_stack(tmp_path: Path
     assert "AutoTokenizer.from_pretrained(config.model_name, trust_remote_code=False, local_files_only=True)" in phase19_source
 
     train_source = (PROJECT_ROOT / "tsc_cycle/student/train.py").read_text(encoding="utf-8")
+    assert "full v4.2 training must not use --max-steps" in train_source
     tree = ast.parse(train_source)
     phase_choices = []
     for node in ast.walk(tree):
@@ -466,6 +467,14 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     assert wrong_args_rejected["ok"] is False
     assert any(failure["gate"] == "training_args" for failure in wrong_args_rejected["fatal_failures"])
 
+    bounded_args = _read_json(report)
+    bounded_args["training_args"]["max_steps"] = 1
+    bounded_args["trainer_state"] = {"global_step": 1, "max_steps": 1}
+    bounded_args_report = _write_json(run_root / "bounded_args.json", bounded_args)
+    bounded_args_rejected = validate_phase19_training_report(run_root, report_path=bounded_args_report)
+    assert bounded_args_rejected["ok"] is False
+    assert any(failure["gate"] in {"training_args", "completed"} for failure in bounded_args_rejected["fatal_failures"])
+
     wrong_model = _read_json(report)
     wrong_model["model_name"] = "Qwen/Qwen3.5-9B"
     wrong_report = _write_json(run_root / "wrong_model.json", wrong_model)
@@ -598,6 +607,10 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     tampered_arrow_rejected = validate_phase19_training_report(run_root, report_path=report)
     assert tampered_arrow_rejected["ok"] is False
     assert any(failure["gate"] == "tokenized_content" for failure in tampered_arrow_rejected["fatal_failures"])
+    train_arrow.write_bytes(b"not arrow")
+    corrupt_arrow_rejected = validate_phase19_training_report(run_root, report_path=report)
+    assert corrupt_arrow_rejected["ok"] is False
+    assert any("invalid tokenized split" in failure["reason"] for failure in corrupt_arrow_rejected["fatal_failures"])
     train_arrow.write_bytes(original_arrow)
 
     calibrated = lineage_root / "data/v4_2/phase18/labeled_calibrated.jsonl"

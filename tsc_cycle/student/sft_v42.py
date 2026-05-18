@@ -149,7 +149,10 @@ def check_phase18_handoff(phase18_report: str | os.PathLike[str] = PHASE18_RECON
     path = Path(phase18_report)
     if not path.exists():
         return {"ok": False, "next_phase_allowed": False, "fatal_failures": [{"gate": "phase18_handoff", "reason": f"missing {path}"}]}
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return {"ok": False, "next_phase_allowed": False, "fatal_failures": [{"gate": "phase18_handoff", "reason": f"invalid Phase 18 report JSON: {exc}"}]}
     required = {"DATA-01", "DATA-02"}
     covered = set(payload.get("requirements_covered", []))
     ok = payload.get("ok") is True and payload.get("next_phase_allowed") is True and required <= covered

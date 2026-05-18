@@ -413,9 +413,22 @@ def _expected_training_args(run_root: Path) -> dict[str, Any]:
 
 
 def _training_args_match(actual: dict[str, Any], expected: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
+    ignored = {"output_dir", "report_to"}
     mismatches = {key: {"expected": expected_value, "actual": actual.get(key)} for key, expected_value in expected.items() if actual.get(key) != expected_value}
     forbidden = {key: actual.get(key) for key in ("chat_template_used", "apply_chat_template") if actual.get(key, False) is not False}
-    return not mismatches and not forbidden, {"expected": expected, "actual": actual, "mismatches": mismatches, "forbidden": forbidden}
+    extra = {key: actual.get(key) for key in sorted(set(actual) - set(expected) - ignored - {"chat_template_used", "apply_chat_template"})}
+    return not mismatches and not forbidden and not extra, {"expected": expected, "actual": actual, "mismatches": mismatches, "forbidden": forbidden, "extra": extra}
+
+
+def _expected_full_steps(data_manifest: dict[str, Any]) -> int:
+    split_counts = data_manifest.get("split_counts") if isinstance(data_manifest.get("split_counts"), dict) else {}
+    train_rows = int(split_counts.get("train") or 0)
+    if train_rows <= 0:
+        return 0
+    args = _expected_training_args(Path("runs") / "v4.2-4B-placeholder")
+    total_items = train_rows * int(args["num_train_epochs"])
+    effective_batch = int(args["per_device_train_batch_size"]) * int(args["gradient_accumulation_steps"])
+    return (total_items + effective_batch - 1) // effective_batch
 
 
 def _state_value(trainer_state: Any, key: str, default: Any = None) -> Any:
@@ -532,7 +545,10 @@ def _tokenized_content_failures(run_root: Path) -> list[dict[str, str]]:
     rows = _read_jsonl(_canonical_lineage_path(run_root, DEFAULT_CALIBRATED_JSONL))
     rows_by_id = {_record_sample_id(row): row for row in rows}
     split_dir = _canonical_lineage_path(run_root, DEFAULT_SPLIT_DIR)
-    split_indexes = _load_phase18_split_indexes(split_dir)
+    try:
+        split_indexes = _load_phase18_split_indexes(split_dir)
+    except (FileNotFoundError, OSError, ValueError) as exc:
+        return [{"gate": "tokenized_content", "reason": f"split index audit failed: {exc}"}]
     split_manifest_path = split_dir / "manifest.json"
     tokenized_manifest = _read_json(_canonical_lineage_path(run_root, DEFAULT_TOKENIZED_DIR / "manifest.json"))
     tokenized_phase18 = tokenized_manifest.get("phase18") if isinstance(tokenized_manifest.get("phase18"), dict) else {}
@@ -554,9 +570,13 @@ def _tokenized_content_failures(run_root: Path) -> list[dict[str, str]]:
         if not path.is_file():
             failures.append({"gate": "tokenized_content", "reason": f"missing tokenized split: {path}"})
             continue
-        with pa.memory_map(str(path), "r") as source:
-            table = pa.ipc.open_file(source).read_all()
-        actual = table.to_pylist()
+        try:
+            with pa.memory_map(str(path), "r") as source:
+                table = pa.ipc.open_file(source).read_all()
+            actual = table.to_pylist()
+        except Exception as exc:
+            failures.append({"gate": "tokenized_content", "reason": f"invalid tokenized split {path}: {exc}"})
+            continue
         if len(actual) != len(index_rows):
             failures.append({"gate": "tokenized_content", "reason": f"{split} row count mismatch: {len(actual)} != {len(index_rows)}"})
             continue
@@ -829,8 +849,9 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
     state = training.get("trainer_state") if isinstance(training.get("trainer_state"), dict) else {}
     global_step = int(state.get("global_step") or 0)
     max_steps = int(state.get("max_steps") or 0)
-    completed_ok = training.get("mode") == "full" and training.get("completed") is True and training.get("ok") is True and global_step > 0 and (max_steps <= 0 or global_step >= max_steps)
-    gates["completed"] = _gate(completed_ok, None if completed_ok else "training report lacks completed full-run evidence", {"completed": training.get("completed"), "ok": training.get("ok"), "mode": training.get("mode"), "global_step": global_step, "max_steps": max_steps})
+    expected_full_steps = _expected_full_steps(data_manifest_payload)
+    completed_ok = training.get("mode") == "full" and training.get("completed") is True and training.get("ok") is True and global_step > 0 and expected_full_steps > 0 and global_step >= expected_full_steps and (max_steps <= 0 or max_steps >= expected_full_steps)
+    gates["completed"] = _gate(completed_ok, None if completed_ok else "training report lacks completed full-run evidence", {"completed": training.get("completed"), "ok": training.get("ok"), "mode": training.get("mode"), "global_step": global_step, "max_steps": max_steps, "expected_full_steps": expected_full_steps})
     if not completed_ok:
         _fail(failures, "completed", "training report lacks completed full-run evidence")
 

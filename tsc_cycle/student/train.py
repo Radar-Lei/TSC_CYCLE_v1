@@ -531,6 +531,8 @@ def main(argv: list[str] | None = None) -> int:
         if os.environ.get("WANDB_PROJECT") != sft_v42.WANDB_PROJECT:
             raise SystemExit(f"TRAIN-01 fail: WANDB_PROJECT must be {sft_v42.WANDB_PROJECT}")
         mode = "smoke" if args.mode == "dry-run" else args.mode
+        if mode == "full" and args.max_steps > 0:
+            raise SystemExit("TRAIN-01 fail: full v4.2 training must not use --max-steps")
         data_dir = Path(args.tokenized_dir or args.data_dir or sft_v42.TOKENIZED_DIR)
         from tsc_cycle.v4_gates.phase19_training import require_canonical_tokenized_dir, validate_phase19_pretrain_inputs
 
