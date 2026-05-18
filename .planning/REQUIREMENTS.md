@@ -23,8 +23,8 @@
 
 ### Training
 
-- [ ] **TRAIN-01**: Maintainer can retrain `Qwen/Qwen3-4B-Thinking-2507` with the calibrated v4.2 dataset using the existing DGX Spark-safe QLoRA stack and without introducing a new base model or training framework.
-- [ ] **TRAIN-02**: Maintainer can export the calibrated model to merged HF plus GGUF fp16 and q4_K_M artifacts with reproducible paths, hashes, and export reports.
+- [x] **TRAIN-01**: Maintainer can retrain `Qwen/Qwen3-4B-Thinking-2507` with the calibrated v4.2 dataset using the existing DGX Spark-safe QLoRA stack and without introducing a new base model or training framework.
+- [x] **TRAIN-02**: Maintainer can export the calibrated model to merged HF plus GGUF fp16 and q4_K_M artifacts with reproducible paths, hashes, and export reports.
 
 ### Evaluation
 

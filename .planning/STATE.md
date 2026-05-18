@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v4.2
 milestone_name: 饱和度-绿灯策略校准 / 教师标签重建
-status: verifying
-stopped_at: Phase 19 executed (2/2) — ready for verification
-last_updated: "2026-05-19T00:05:00.000Z"
+status: ready_to_plan
+stopped_at: Phase 19 complete (2/2) — ready to discuss Phase 20
+last_updated: 2026-05-18T23:32:14.887Z
 last_activity: 2026-05-19 -- Phase 19 execution completed
 progress:
   total_phases: 4
@@ -21,14 +21,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-05-18)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近正确的饱和度-绿灯策略，不是过拟合旧教师标签或 reality.log。
-**Current focus:** Phase 19 — 4b-qlora-retrain-export
+**Current focus:** Phase 20 — evaluation & reality replay handoff
 
 ## Current Position
 
-Phase: 19 (4b-qlora-retrain-export) — EXECUTING
-Plan: 2 of 2 complete
-Status: Verifying Phase 19
-Last activity: 2026-05-19 -- Phase 19 execution completed
+Phase: 20
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-05-18
 
 Progress: [██████████] 100%
 
