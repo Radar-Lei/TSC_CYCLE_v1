@@ -1,0 +1,297 @@
+{
+  "bands": {
+    "sat_0.2_0.6_interpolated": {
+      "final_equals_max_when_unsaturated": {
+        "count": 4101,
+        "denominator": 14317,
+        "rate": 0.2864426905077879
+      },
+      "included_rows": 14317,
+      "low_saturation_rows": 14317,
+      "total_rows": 14412,
+      "trivial_rows": 95
+    },
+    "sat_0.6_1.0_high_not_max": {
+      "final_equals_max_when_unsaturated": {
+        "count": 695,
+        "denominator": 2645,
+        "rate": 0.2627599243856333
+      },
+      "included_rows": 2645,
+      "low_saturation_rows": 2645,
+      "total_rows": 2664,
+      "trivial_rows": 19
+    },
+    "sat_ge_1.0_allowed_max": {
+      "final_equals_max_when_unsaturated": {
+        "count": 0,
+        "denominator": 0,
+        "rate": 0.0
+      },
+      "included_rows": 44,
+      "low_saturation_rows": 0,
+      "total_rows": 44,
+      "trivial_rows": 0
+    },
+    "sat_lt_0.2_near_min": {
+      "final_equals_max_when_unsaturated": {
+        "count": 734,
+        "denominator": 22365,
+        "rate": 0.03281913704448916
+      },
+      "included_rows": 22365,
+      "low_saturation_rows": 22365,
+      "total_rows": 22506,
+      "trivial_rows": 141
+    }
+  },
+  "by_origin": {
+    "dataset:labeled_merged.jsonl": {
+      "final_equals_max_when_unsaturated": {
+        "count": 5356,
+        "denominator": 37973,
+        "rate": 0.14104758644299897
+      },
+      "included_rows": 38017,
+      "low_saturation_rows": 37973,
+      "total_rows": 38272,
+      "trivial_rows": 255
+    },
+    "replay:phase12": {
+      "final_equals_max_when_unsaturated": {
+        "count": 174,
+        "denominator": 1354,
+        "rate": 0.12850812407680945
+      },
+      "included_rows": 1354,
+      "low_saturation_rows": 1354,
+      "total_rows": 1354,
+      "trivial_rows": 0
+    }
+  },
+  "by_source": {
+    "id": {
+      "final_equals_max_when_unsaturated": {
+        "count": 4279,
+        "denominator": 28742,
+        "rate": 0.1488762090320785
+      },
+      "included_rows": 28784,
+      "low_saturation_rows": 28742,
+      "total_rows": 28784,
+      "trivial_rows": 0
+    },
+    "ood": {
+      "final_equals_max_when_unsaturated": {
+        "count": 1077,
+        "denominator": 9231,
+        "rate": 0.11667208319792005
+      },
+      "included_rows": 9233,
+      "low_saturation_rows": 9231,
+      "total_rows": 9488,
+      "trivial_rows": 255
+    },
+    "tsc-cycle-v4-q4_K_M": {
+      "final_equals_max_when_unsaturated": {
+        "count": 174,
+        "denominator": 1354,
+        "rate": 0.12850812407680945
+      },
+      "included_rows": 1354,
+      "low_saturation_rows": 1354,
+      "total_rows": 1354,
+      "trivial_rows": 0
+    }
+  },
+  "by_split": {
+    "ood_val": {
+      "final_equals_max_when_unsaturated": {
+        "count": 487,
+        "denominator": 3958,
+        "rate": 0.12304194037392623
+      },
+      "included_rows": 3959,
+      "low_saturation_rows": 3958,
+      "total_rows": 4072,
+      "trivial_rows": 113
+    },
+    "replay": {
+      "final_equals_max_when_unsaturated": {
+        "count": 174,
+        "denominator": 1354,
+        "rate": 0.12850812407680945
+      },
+      "included_rows": 1354,
+      "low_saturation_rows": 1354,
+      "total_rows": 1354,
+      "trivial_rows": 0
+    },
+    "train": {
+      "final_equals_max_when_unsaturated": {
+        "count": 4348,
+        "denominator": 30219,
+        "rate": 0.14388298752440518
+      },
+      "included_rows": 30257,
+      "low_saturation_rows": 30219,
+      "total_rows": 30386,
+      "trivial_rows": 129
+    },
+    "val": {
+      "final_equals_max_when_unsaturated": {
+        "count": 521,
+        "denominator": 3796,
+        "rate": 0.13724973656480505
+      },
+      "included_rows": 3801,
+      "low_saturation_rows": 3796,
+      "total_rows": 3814,
+      "trivial_rows": 13
+    }
+  },
+  "excluded_counts": {
+    "hard_constraint_invalid": 65
+  },
+  "included_rows": 39371,
+  "ok": true,
+  "representative_examples": [
+    {
+      "final_green": 45,
+      "max_green": 45,
+      "min_green": 20,
+      "origin_artifact": "dataset:labeled_merged.jsonl",
+      "phase_id": "5",
+      "pred_saturation": 0.55,
+      "sample_id": "0018963da29b0bd24933bdf903d6f4ee721aef698bc10909f8e41e1fcb660b89",
+      "saturation_band": "sat_0.2_0.6_interpolated",
+      "source": "id",
+      "split": "train",
+      "violation_category": "final_equals_max_when_unsaturated"
+    },
+    {
+      "final_green": 45,
+      "max_green": 45,
+      "min_green": 20,
+      "origin_artifact": "dataset:labeled_merged.jsonl",
+      "phase_id": "3",
+      "pred_saturation": 0.6273,
+      "sample_id": "0019b8c5440cfa534cbdbf5b724cd9d33e2764dcf3ac618a5553d7ba77fb27ae",
+      "saturation_band": "sat_0.6_1.0_high_not_max",
+      "source": "id",
+      "split": "train",
+      "violation_category": "final_equals_max_when_unsaturated"
+    },
+    {
+      "final_green": 18,
+      "max_green": 18,
+      "min_green": 17,
+      "origin_artifact": "dataset:labeled_merged.jsonl",
+      "phase_id": "3",
+      "pred_saturation": 0.2447,
+      "sample_id": "001da62cba2d74c55b81d3f2afdc2b1a07dc95bc31fe4322738070f269917b30",
+      "saturation_band": "sat_0.2_0.6_interpolated",
+      "source": "ood",
+      "split": "ood_val",
+      "violation_category": "final_equals_max_when_unsaturated"
+    },
+    {
+      "final_green": 49,
+      "max_green": 49,
+      "min_green": 47,
+      "origin_artifact": "dataset:labeled_merged.jsonl",
+      "phase_id": "5",
+      "pred_saturation": 0.6625,
+      "sample_id": "001da62cba2d74c55b81d3f2afdc2b1a07dc95bc31fe4322738070f269917b30",
+      "saturation_band": "sat_0.6_1.0_high_not_max",
+      "source": "ood",
+      "split": "ood_val",
+      "violation_category": "final_equals_max_when_unsaturated"
+    },
+    {
+      "final_green": 60,
+      "max_green": 60,
+      "min_green": 58,
+      "origin_artifact": "dataset:labeled_merged.jsonl",
+      "phase_id": "6",
+      "pred_saturation": 0.6625,
+      "sample_id": "001da62cba2d74c55b81d3f2afdc2b1a07dc95bc31fe4322738070f269917b30",
+      "saturation_band": "sat_0.6_1.0_high_not_max",
+      "source": "ood",
+      "split": "ood_val",
+      "violation_category": "final_equals_max_when_unsaturated"
+    },
+    {
+      "final_green": 80,
+      "max_green": 80,
+      "min_green": 45,
+      "origin_artifact": "dataset:labeled_merged.jsonl",
+      "phase_id": "1",
+      "pred_saturation": 0.4319,
+      "sample_id": "0022b39a32807e8dc1625e5b52c1b15b571f704d6e8b7abe27e9900f8e5875a1",
+      "saturation_band": "sat_0.2_0.6_interpolated",
+      "source": "id",
+      "split": "train",
+      "violation_category": "final_equals_max_when_unsaturated"
+    },
+    {
+      "final_green": 45,
+      "max_green": 45,
+      "min_green": 20,
+      "origin_artifact": "dataset:labeled_merged.jsonl",
+      "phase_id": "4",
+      "pred_saturation": 0.5703,
+      "sample_id": "00256688081bf9002aad52087a68d80809b7918b20caccb5969f36dc9bfcde16",
+      "saturation_band": "sat_0.2_0.6_interpolated",
+      "source": "id",
+      "split": "train",
+      "violation_category": "final_equals_max_when_unsaturated"
+    },
+    {
+      "final_green": 80,
+      "max_green": 80,
+      "min_green": 50,
+      "origin_artifact": "dataset:labeled_merged.jsonl",
+      "phase_id": "4",
+      "pred_saturation": 0.3531,
+      "sample_id": "0030a8eeec75aad1a4e8559141805a31bd234ecbe2311b39525aa3290569cd61",
+      "saturation_band": "sat_0.2_0.6_interpolated",
+      "source": "id",
+      "split": "train",
+      "violation_category": "final_equals_max_when_unsaturated"
+    },
+    {
+      "final_green": 40,
+      "max_green": 40,
+      "min_green": 25,
+      "origin_artifact": "dataset:labeled_merged.jsonl",
+      "phase_id": "4",
+      "pred_saturation": 0.4587,
+      "sample_id": "004403ad119dbfb35403723ffee955b032527d366e91c4dde193cd860e0f6cc6",
+      "saturation_band": "sat_0.2_0.6_interpolated",
+      "source": "id",
+      "split": "train",
+      "violation_category": "final_equals_max_when_unsaturated"
+    },
+    {
+      "final_green": 40,
+      "max_green": 40,
+      "min_green": 20,
+      "origin_artifact": "dataset:labeled_merged.jsonl",
+      "phase_id": "2",
+      "pred_saturation": 0.4883,
+      "sample_id": "004b1cd64035a89c929c892ba6d7626f36186b9c6c71151daf6a7ecac8f8115d",
+      "saturation_band": "sat_0.2_0.6_interpolated",
+      "source": "id",
+      "split": "train",
+      "violation_category": "final_equals_max_when_unsaturated"
+    }
+  ],
+  "requirements_covered": [
+    "AUDIT-01",
+    "AUDIT-02",
+    "POLICY-01"
+  ],
+  "total_rows": 39626,
+  "trivial_rows": 255
+}

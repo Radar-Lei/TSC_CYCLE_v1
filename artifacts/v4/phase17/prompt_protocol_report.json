@@ -1,0 +1,75 @@
+{
+  "expected_prompt_sha256": "8b35073bb8835f95ee5315c514dc41e301b10f02094da5a929c3ac8e04020af2",
+  "fatal_failures": [],
+  "forbidden_snippets_present": [],
+  "next_phase_allowed": true,
+  "ok": true,
+  "prompt_sha256": "8b35073bb8835f95ee5315c514dc41e301b10f02094da5a929c3ac8e04020af2",
+  "prompt_text": "你是交通信号配时优化专家。\n【cycle_predict_input_json】{\n  \"prediction\": {\n    \"as_of\": \"2026-05-18T00:00:00Z\",\n    \"phase_waits\": [\n      {\n        \"phase_id\": 1,\n        \"pred_wait\": 1.0,\n        \"pred_saturation\": 0.05,\n        \"min_green\": 20,\n        \"max_green\": 45,\n        \"capacity\": 30\n      },\n      {\n        \"phase_id\": 2,\n        \"pred_wait\": 12.0,\n        \"pred_saturation\": 0.75,\n        \"min_green\": 25,\n        \"max_green\": 60,\n        \"capacity\": 40\n      }\n    ]\n  }\n}【/cycle_predict_input_json】\n\n任务（必须完成）：\n基于 prediction.phase_waits 的 pred_saturation，在满足全部硬约束前提下，输出下一周期各相位最终绿灯时间 final（单位：秒）。\n\n输入字段说明：\n- prediction.phase_waits[*].min_green / max_green：绿灯时长上下限，单位秒。\n- prediction.phase_waits[*].pred_wait：预测等待车辆数。\n- prediction.phase_waits[*].pred_saturation：预测饱和度（pred_wait / capacity）。\n- prediction.phase_waits[*].capacity：相位容量，仅供参考。\n\n硬约束（必须满足）：\n1) 相位顺序固定：严格按 prediction.phase_waits 的顺序考虑并输出；不可跳相、不可重排。\n2) 每相位约束：final 必须满足 prediction.phase_waits[*].min_green ≤ final ≤ prediction.phase_waits[*].max_green。\n3) final 必须为整数秒。\n\n决策提示（非硬约束）：\n- 最终决策以 pred_saturation 为主，capacity 仅供参考。\n\n输出要求（必须严格遵守）：\n1) 必须先输出 <start_working_out>...</end_working_out>，其中只写思考分析过程，不要输出最终 JSON。\n2) 随后输出 <SOLUTION>...</SOLUTION>；<SOLUTION> 内只允许最终 JSON，不允许其它文本。\n3) JSON 顶层必须是对象(dict)，键为相位ID的字符串，值为整数秒，键必须使用双引号。\n4) 必须覆盖 prediction.phase_waits 中所有相位ID，不能缺少或多余。\n5) 除 <start_working_out>...</end_working_out> 与 <SOLUTION>...</SOLUTION> 外，不允许输出任何其它文本。\n",
+  "requirements_covered": [
+    "POLICY-03"
+  ],
+  "scanned_prompt_surfaces": [
+    {
+      "forbidden_snippets_present": [],
+      "path": "/home/samuel/TSC_CYCLE/tsc_cycle/eval/generate_gguf.py",
+      "sha256": "5c3b3c46b755218dabfe069e1b1fe6eef5caf91e8f643ba30d8801848de9f887"
+    },
+    {
+      "forbidden_snippets_present": [],
+      "path": "/home/samuel/TSC_CYCLE/tsc_cycle/eval/generate_hf.py",
+      "sha256": "a5313ce4501ef861440d50a192d61b9600220aeeee7d8c62c3d356ad767d3295"
+    },
+    {
+      "forbidden_snippets_present": [],
+      "path": "/home/samuel/TSC_CYCLE/tsc_cycle/eval/parity.py",
+      "sha256": "bab4e75b99d05a338dbaec6a68a9e29d45306c7880cbacaea339c565f283be69"
+    },
+    {
+      "forbidden_snippets_present": [],
+      "path": "/home/samuel/TSC_CYCLE/tsc_cycle/eval/run_eval.py",
+      "sha256": "1ab116b8ab136cea9cbf5e9362b4e52823fdcb75af4383d8124d47c0ee213da5"
+    },
+    {
+      "forbidden_snippets_present": [],
+      "path": "/home/samuel/TSC_CYCLE/tsc_cycle/prompt_builder.py",
+      "sha256": "8a087502f6853ce02cc2faa98431c7d9fb3c482de15b6481bc0ca33462ef1b23"
+    },
+    {
+      "forbidden_snippets_present": [],
+      "path": "/home/samuel/TSC_CYCLE/tsc_cycle/student/dataset.py",
+      "sha256": "901d7e44c628f6b5af7a0b779ae6e511883e41f78061ed6c929ad6af836173d1"
+    },
+    {
+      "forbidden_snippets_present": [],
+      "path": "/home/samuel/TSC_CYCLE/tsc_cycle/student/parity_gguf.py",
+      "sha256": "7605a6fc87f340601aee4f89deb91bdd79179a1a8831b1e29b07277e0375a5d5"
+    },
+    {
+      "forbidden_snippets_present": [],
+      "path": "/home/samuel/TSC_CYCLE/tsc_cycle/student/parity_hf.py",
+      "sha256": "ba34ddd5ee451623c5f4c89f025ac4513386e4de7b1cf69ed59be0b20938abb4"
+    },
+    {
+      "forbidden_snippets_present": [],
+      "path": "/home/samuel/TSC_CYCLE/tsc_cycle/student/train.py",
+      "sha256": "a0b924345e78b6a8fc6494cd116583838aa8c121a06c743c06ffd43e95738282"
+    },
+    {
+      "forbidden_snippets_present": [],
+      "path": "/home/samuel/TSC_CYCLE/tsc_cycle/teacher/labeler.py",
+      "sha256": "2aa9ccd33d04031ee920179caf5fb952d3ad0a294bfc3aeaa5fcd10b7e270637"
+    },
+    {
+      "forbidden_snippets_present": [],
+      "path": "/home/samuel/TSC_CYCLE/tsc_cycle/v4_gates/phase12_log_render.py",
+      "sha256": "28c37f1966fde6d92fba00f1cefaa5384bc417ca468cb7d428fe120f95c57205"
+    },
+    {
+      "forbidden_snippets_present": [],
+      "path": "/home/samuel/TSC_CYCLE/tsc_cycle/v4_gates/phase12_reality_test.py",
+      "sha256": "d550e045c52072f3b1f60f973b35c519c974a1ab6b7001c3265e698e64ae88e5"
+    }
+  ],
+  "warnings": []
+}
