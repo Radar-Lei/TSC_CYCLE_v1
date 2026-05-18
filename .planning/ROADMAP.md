@@ -42,7 +42,7 @@ Full details: `milestones/v4.1-ROADMAP.md`
 </details>
 
 - [x] **Phase 17: Audit & Saturation Policy Gate** - Quantify existing low-saturation max-green failures and establish the offline saturation gate without changing deployment prompts.
-- [ ] **Phase 18: Calibrated Dataset Rebuild** - Filter or relabel v4 examples into a calibrated v4.2 training dataset with reproducible reports and splits.
+- [x] **Phase 18: Calibrated Dataset Rebuild** - Filter or relabel v4 examples into a calibrated v4.2 training dataset with reproducible reports and splits.
 - [ ] **Phase 19: 4B QLoRA Retrain & Export** - Retrain the existing Qwen3-4B QLoRA route and export merged HF plus fp16/q4_K_M GGUF artifacts.
 - [ ] **Phase 20: Evaluation & Reality Replay Handoff** - Evaluate v4.2 against hard constraints, output protocol, saturation policy, and produce a new gated `reality_test.log`.
 
@@ -81,7 +81,11 @@ Plans:
   2. Maintainer can confirm rebuilt examples preserve the required `<start_working_out>...</end_working_out><SOLUTION>...</SOLUTION>` protocol and all hard constraints.
   3. Maintainer can review a reconstruction report showing source counts, rejected/relabelled counts, policy-pass rates, hard-constraint pass rates, dataset hashes, and split artifacts.
 
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+**Wave 1**
+
+- [x] 18-01-PLAN.md — Build filter-mode calibrated v4.2 dataset, deterministic split indexes, and reconstruction report.
 
 ### Phase 19: 4B QLoRA Retrain & Export
 
@@ -128,6 +132,6 @@ Phases execute in numeric order: 17 → 18 → 19 → 20
 | 15. Safe Cleanup Execution | v4.1 | 2/2 | Complete | 2026-05-12 |
 | 16. Verification & Handoff | v4.1 | 1/1 | Complete | 2026-05-12 |
 | 17. Audit & Saturation Policy Gate | v4.2 | 3/3 | Complete    | 2026-05-18 |
-| 18. Calibrated Dataset Rebuild | v4.2 | 0/TBD | Not started | - |
+| 18. Calibrated Dataset Rebuild | v4.2 | 1/1 | Complete | 2026-05-18 |
 | 19. 4B QLoRA Retrain & Export | v4.2 | 0/TBD | Not started | - |
 | 20. Evaluation & Reality Replay Handoff | v4.2 | 0/TBD | Not started | - |

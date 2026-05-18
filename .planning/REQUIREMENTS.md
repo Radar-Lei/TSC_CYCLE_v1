@@ -65,8 +65,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | POLICY-01 | Phase 17 | Complete in 17-01 |
 | POLICY-02 | Phase 17 | Complete in 17-02 |
 | POLICY-03 | Phase 17 | Complete in 17-02 |
-| DATA-01 | Phase 18 | Pending |
-| DATA-02 | Phase 18 | Pending |
+| DATA-01 | Phase 18 | Complete in 18-01 |
+| DATA-02 | Phase 18 | Complete in 18-01 |
 | TRAIN-01 | Phase 19 | Pending |
 | TRAIN-02 | Phase 19 | Pending |
 | EVAL-01 | Phase 20 | Pending |
