@@ -334,9 +334,9 @@ def test_build_parser_exposes_phase17_defaults() -> None:
     assert Path(args.phase12_manifest) == PROJECT_ROOT / "artifacts" / "v4" / "phase12" / "manifest.json"
     assert Path(args.phase12_per_sample) == PROJECT_ROOT / "artifacts" / "v4" / "phase12" / "per_sample.jsonl"
     assert Path(args.artifact_root) == PROJECT_ROOT / "artifacts" / "v4" / "phase17"
-    assert Path(args.out) == PROJECT_ROOT / "artifacts" / "v4" / "phase17" / "saturation_policy_gate.json"
-    assert Path(args.audit_out) == PROJECT_ROOT / "artifacts" / "v4" / "phase17" / "saturation_audit_report.json"
-    assert Path(args.prompt_protocol_out) == PROJECT_ROOT / "artifacts" / "v4" / "phase17" / "prompt_protocol_report.json"
+    assert args.out is None
+    assert args.audit_out is None
+    assert args.prompt_protocol_out is None
 
 
 def test_phase17_report_paths_are_constrained_to_artifact_root(tmp_path: Path) -> None:
@@ -367,6 +367,27 @@ def test_phase17_report_paths_are_constrained_to_artifact_root(tmp_path: Path) -
             mod._write_json(out_path, {"bad": float("nan")})
     finally:
         mod.ARTIFACT_ROOT = original_root
+
+
+def test_phase17_cli_artifact_root_derives_default_output_paths(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    mod = _audit_contract()
+    seen: dict[str, object] = {}
+
+    def fake_evaluate_phase17_audit(**kwargs):
+        seen.update(kwargs)
+        return {"ok": True, "next_phase_allowed": True, "fatal_failures": []}
+
+    monkeypatch.setattr(mod, "evaluate_phase17_audit", fake_evaluate_phase17_audit)
+    artifact_root = tmp_path / "artifacts" / "v4" / "phase17"
+    original_root = mod.ARTIFACT_ROOT
+    try:
+        assert mod.main(["--artifact-root", str(artifact_root)]) == 0
+    finally:
+        mod.ARTIFACT_ROOT = original_root
+
+    assert seen["out_path"] == artifact_root / "saturation_policy_gate.json"
+    assert seen["audit_out_path"] == artifact_root / "saturation_audit_report.json"
+    assert seen["prompt_protocol_out_path"] == artifact_root / "prompt_protocol_report.json"
 
 
 def test_phase17_cli_exit_reflects_report_status(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:

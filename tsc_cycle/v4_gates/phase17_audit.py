@@ -462,9 +462,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--phase12-per-sample", type=Path, default=PHASE12_PER_SAMPLE_PATH)
     parser.add_argument("--phase-decisions-jsonl", "--eval-outputs", dest="phase_decisions_jsonl", type=Path, default=None)
     parser.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
-    parser.add_argument("--out", type=Path, default=POLICY_GATE_PATH)
-    parser.add_argument("--audit-out", type=Path, default=AUDIT_REPORT_PATH)
-    parser.add_argument("--prompt-protocol-out", type=Path, default=PROMPT_PROTOCOL_REPORT_PATH)
+    parser.add_argument("--out", type=Path, default=None)
+    parser.add_argument("--audit-out", type=Path, default=None)
+    parser.add_argument("--prompt-protocol-out", type=Path, default=None)
     parser.add_argument("--example-limit", type=int, default=10)
     parser.add_argument("--sat-lt-0-2-max-green-rate", type=float, default=DEFAULT_THRESHOLDS["sat_lt_0.2_max_green_rate"])
     parser.add_argument("--sat-0-2-0-6-max-green-rate", type=float, default=DEFAULT_THRESHOLDS["sat_0.2_0.6_max_green_rate"])
@@ -478,6 +478,9 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     global ARTIFACT_ROOT
     ARTIFACT_ROOT = Path(args.artifact_root)
+    out_path = args.out or ARTIFACT_ROOT / "saturation_policy_gate.json"
+    audit_out_path = args.audit_out or ARTIFACT_ROOT / "saturation_audit_report.json"
+    prompt_protocol_out_path = args.prompt_protocol_out or ARTIFACT_ROOT / "prompt_protocol_report.json"
     thresholds = {
         "sat_lt_0.2_max_green_rate": args.sat_lt_0_2_max_green_rate,
         "sat_0.2_0.6_max_green_rate": args.sat_0_2_0_6_max_green_rate,
@@ -491,9 +494,9 @@ def main(argv: list[str] | None = None) -> int:
         phase12_manifest_path=args.phase12_manifest,
         phase12_per_sample_path=args.phase12_per_sample,
         phase_decisions_jsonl=args.phase_decisions_jsonl,
-        out_path=args.out,
-        audit_out_path=args.audit_out,
-        prompt_protocol_out_path=args.prompt_protocol_out,
+        out_path=out_path,
+        audit_out_path=audit_out_path,
+        prompt_protocol_out_path=prompt_protocol_out_path,
         example_limit=args.example_limit,
         thresholds=thresholds,
     )
