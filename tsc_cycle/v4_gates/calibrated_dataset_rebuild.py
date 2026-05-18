@@ -121,6 +121,11 @@ def _record_source_origin(record: dict[str, Any]) -> str:
 
 
 def _record_lineage(record: dict[str, Any]) -> str:
+    origin = _record_source_origin(record)
+    if origin == "v1_valid":
+        return "v1.0"
+    if origin == "v3_new_lint_pass":
+        return "v3.0"
     for container in (record, _record_input(record), record.get("metadata") if isinstance(record.get("metadata"), dict) else {}):
         if not isinstance(container, dict):
             continue
@@ -150,8 +155,12 @@ def _record_reasoning(record: dict[str, Any]) -> str:
     return "" if value is None else str(value)
 
 
+def _record_raw_solution(record: dict[str, Any]) -> Any:
+    return _record_result(record).get("solution", {})
+
+
 def _record_solution(record: dict[str, Any]) -> dict[str, int]:
-    value = _record_result(record).get("solution", {})
+    value = _record_raw_solution(record)
     if not isinstance(value, dict):
         return {}
     return {str(key): int(val) for key, val in value.items()}
@@ -216,17 +225,21 @@ def _phase_rows_for_record(record: dict[str, Any], split_index: dict[str, dict[s
     return rows
 
 
-def _index_row(record: dict[str, Any], split: str, raw_index: int, seed: int) -> dict[str, Any]:
+def _index_row(record: dict[str, Any], split: str, raw_index: int, seed: int, split_meta: dict[str, Any] | None = None) -> dict[str, Any]:
+    split_meta = split_meta or {}
     input_obj = _record_input(record)
     solution = _record_solution(record)
     prompt = build_user_prompt(input_obj)
     assistant = build_full_assistant(_record_reasoning(record), solution)
+    source_origin = str(split_meta.get("source_origin") or _record_source_origin(record))
+    source = str(split_meta.get("source") or _record_source(record))
+    lineage = str(split_meta.get("lineage") or _record_lineage({**record, "source_origin": source_origin}))
     return {
         "sample_id": _record_sample_id(record),
         "split": split,
-        "lineage": _record_lineage(record),
-        "source_origin": _record_source_origin(record),
-        "source": _record_source(record),
+        "lineage": lineage,
+        "source_origin": source_origin,
+        "source": source,
         "record_hash": _manifest_hash(record),
         "input_hash": sha256_hex(canonical_json(input_obj)),
         "solution_hash": sha256_hex(canonical_json(solution)),
@@ -247,7 +260,7 @@ def _split_rows(retained: list[tuple[int, dict[str, Any]]], split_index: dict[st
             split = "ood_val"
         if split not in output:
             split = "train"
-        output[split].append(_index_row(record, split, raw_index, seed))
+        output[split].append(_index_row(record, split, raw_index, seed, split_index.get(sample_id)))
     for rows in output.values():
         rows.sort(key=lambda row: str(row["sample_id"]))
     return output
@@ -307,9 +320,9 @@ def build_calibrated_dataset(config: Phase18DatasetConfig) -> dict[str, Any]:
     for raw_index, record in enumerate(source_rows):
         try:
             input_obj = _record_input(record)
-            solution = _record_solution(record)
-            lint = validate(input_obj, solution)
-            phase_rows = _phase_rows_for_record(record, split_index)
+            raw_solution = _record_raw_solution(record)
+            lint = validate(input_obj, raw_solution)
+            phase_rows = _phase_rows_for_record(record, split_index) if lint.ok else []
         except (KeyError, TypeError, ValueError) as exc:
             rejected_counts["malformed_rejected_rows"] += 1
             representative_rejections.append({"sample_id": _record_sample_id(record), "reason": "malformed_row", "error": str(exc)})
@@ -335,12 +348,16 @@ def build_calibrated_dataset(config: Phase18DatasetConfig) -> dict[str, Any]:
     split_rows = _split_rows(retained, split_index, config.seed)
     split_manifest = _write_split_indexes(config, split_rows)
 
-    pre_audit = compute_saturation_audit(source_policy_rows, excluded_counts=dict(rejected_counts)) if source_policy_rows else {"ok": True, "total_rows": 0, "excluded_counts": dict(rejected_counts)}
-    post_audit = compute_saturation_audit(retained_policy_rows, excluded_counts={}) if retained_policy_rows else {"ok": True, "total_rows": 0, "excluded_counts": {}}
-    post_gate = evaluate_saturation_policy_gate(retained_policy_rows, thresholds=DEFAULT_THRESHOLDS, source_type="data")
     sample_hashes = sorted(_manifest_hash(row) for row in retained_rows)
     source_count = len(source_rows)
     retained_count = len(retained_rows)
+    pre_audit = compute_saturation_audit(source_policy_rows, excluded_counts=dict(rejected_counts)) if source_policy_rows else {"ok": True, "total_rows": 0, "excluded_counts": dict(rejected_counts)}
+    post_audit = compute_saturation_audit(retained_policy_rows, excluded_counts={}) if retained_policy_rows else {"ok": True, "total_rows": 0, "excluded_counts": {}}
+    post_gate = evaluate_saturation_policy_gate(
+        {"input_count": retained_count, "rows": retained_policy_rows, "excluded_counts": {}},
+        thresholds=DEFAULT_THRESHOLDS,
+        source_type="data",
+    )
     report = {
         "ok": post_gate.get("ok") is True,
         "next_phase_allowed": post_gate.get("ok") is True,

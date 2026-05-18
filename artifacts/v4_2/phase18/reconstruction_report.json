@@ -4841,14 +4841,14 @@
       "gates": {
         "data_malformed_row_rate": {
           "count": 0,
-          "denominator": 18026,
+          "denominator": 4532,
           "ok": true,
           "rate": 0.0,
           "threshold": 0.0
         },
         "data_missing_output_rate": {
           "count": 0,
-          "denominator": 18026,
+          "denominator": 4532,
           "ok": true,
           "rate": 0.0,
           "threshold": 0.0

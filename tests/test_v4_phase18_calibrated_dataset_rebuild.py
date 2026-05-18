@@ -81,14 +81,22 @@ def _sample(
                         "min_green": min_green,
                         "max_green": max_green,
                         "capacity": 40,
-                    }
+                    },
+                    {
+                        "phase_id": 2,
+                        "pred_wait": 4.0,
+                        "pred_saturation": 0.30,
+                        "min_green": 10,
+                        "max_green": 90,
+                        "capacity": 40,
+                    },
                 ],
             },
         },
         "result": {
             "success": True,
             "reasoning": f"Reasoning for {sample_id}.",
-            "solution": {"1": final},
+            "solution": {"1": final, "2": 30},
         },
     }
 
@@ -100,14 +108,18 @@ def _fixture_paths(tmp_path: Path) -> tuple[Path, Path, list[dict[str, Any]]]:
         _sample("keep-saturated-max", split="val", sat=1.00, final=90, source="same_dist"),
         _sample("keep-forced-trivial", split="ood_val", sat=0.05, final=40, min_green=40, max_green=40, source="ood", lineage="v1.0"),
         _sample("reject-hard-invalid", split="ood_val", sat=0.80, final=100, source="ood", lineage="v1.0"),
+        _sample("reject-float-label", split="val", sat=0.30, final=30.9, source="same_dist"),
     ]
+    rows[3].pop("lineage")
+    rows[3]["input"].pop("lineage")
     dataset_path = _write_jsonl(tmp_path / "data" / "v4" / "phase8" / "labeled_merged.jsonl", rows)
     split_dir = tmp_path / "data" / "v4" / "phase8" / "splits"
     for split in ("train", "val", "ood_val"):
         split_rows = []
         for raw_index, row in enumerate(rows):
             if split == row["split"]:
-                split_rows.append({"sample_id": row["sample_id"], "split": split, "source": row["source"], "source_origin": "fixture", "raw_index": raw_index})
+                source_origin = "v1_valid" if row["sample_id"] == "keep-forced-trivial" else "fixture"
+                split_rows.append({"sample_id": row["sample_id"], "split": split, "source": row["source"], "source_origin": source_origin, "raw_index": raw_index})
         _write_jsonl(split_dir / f"{split}.index.jsonl", split_rows)
     return dataset_path, split_dir, rows
 
@@ -134,8 +146,9 @@ def test_filter_mode_removes_unsaturated_max_green_violations(tmp_path: Path) ->
     retained_ids = {row["sample_id"] for row in retained_rows}
     assert "reject-low-max" not in retained_ids
     assert "reject-hard-invalid" not in retained_ids
+    assert "reject-float-label" not in retained_ids
     assert {"keep-low-not-max", "keep-saturated-max", "keep-forced-trivial"} <= retained_ids
-    assert report["counts"]["rejected_rows"] == 2
+    assert report["counts"]["rejected_rows"] == 3
     assert report["counts"]["relabelled_rows"] == 0
     assert any(item["sample_id"] == "reject-low-max" and item["reason"] == "saturation_policy_violation" for item in report["representative_rejections"])
 
@@ -170,6 +183,8 @@ def test_split_indexes_preserve_retained_membership_and_hashes(tmp_path: Path) -
     assert [row["sample_id"] for row in ood] == ["keep-forced-trivial"]
     for row in [*train, *val, *ood]:
         assert {"record_hash", "input_hash", "solution_hash", "prompt_hash", "assistant_hash", "source", "source_origin"} <= set(row)
+    assert ood[0]["source_origin"] == "v1_valid"
+    assert ood[0]["lineage"] == "v1.0"
     manifest = _read_json(tmp_path / "data" / "v4_2" / "phase18" / "splits" / "manifest.json")
     assert manifest["split_counts"] == {"train": 1, "val": 1, "ood_val": 1}
     assert set(manifest["split_ids_sha256"]) == {"train", "val", "ood_val"}
@@ -185,15 +200,17 @@ def test_reconstruction_report_contains_counts_hashes_and_policy_pass_rates(tmp_
     assert report["ok"] is True
     assert report["next_phase_allowed"] is True
     assert report["counts"] == {
-        "source_rows": 5,
+        "source_rows": 6,
         "retained_rows": 3,
-        "rejected_rows": 2,
+        "rejected_rows": 3,
         "relabelled_rows": 0,
         "policy_rejected_rows": 1,
-        "hard_constraint_rejected_rows": 1,
+        "hard_constraint_rejected_rows": 2,
         "malformed_rejected_rows": 0,
     }
     assert report["policy"]["post_gate"]["ok"] is True
+    assert report["policy"]["post_gate"]["gates"]["data_malformed_row_rate"]["denominator"] == 3
+    assert report["policy"]["post_gate"]["gates"]["data_missing_output_rate"]["denominator"] == 3
     assert report["hard_constraints"]["retained_pass_rate"] == 1.0
     assert len(report["dataset_hashes"]["calibrated_jsonl_sha256"]) == 64
     assert len(report["dataset_hashes"]["sample_hash_digest"]) == 64
