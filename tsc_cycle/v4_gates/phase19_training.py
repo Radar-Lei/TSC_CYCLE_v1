@@ -20,6 +20,7 @@ DEFAULT_SPLIT_DIR = Path("data/v4_2/phase18/splits")
 DEFAULT_TOKENIZED_DIR = Path("data/v4_2/phase18/tokenized")
 DEFAULT_PHASE18_REPORT = Path("artifacts/v4_2/phase18/reconstruction_report.json")
 DEFAULT_ARTIFACTS_DIR = Path("artifacts/v4_2/phase19")
+DEFAULT_TOKENIZATION_REPORT = DEFAULT_ARTIFACTS_DIR / "tokenization_report.json"
 REQUIREMENTS_COVERED = ["TRAIN-01"]
 
 
@@ -353,9 +354,24 @@ def _fail(failures: list[dict[str, str]], gate: str, reason: str) -> None:
     failures.append({"gate": gate, "reason": reason})
 
 
+def _directory_hash(root: Path) -> str | None:
+    if not root.is_dir():
+        return None
+    files = sorted(path for path in root.rglob("*") if path.is_file())
+    if not files:
+        return None
+    h = hashlib.sha256()
+    for path in files:
+        h.update(path.relative_to(root).as_posix().encode("utf-8"))
+        h.update(b"\0")
+        with path.open("rb") as fh:
+            for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+                h.update(chunk)
+    return h.hexdigest()
+
+
 def _adapter_hash(adapter: Path) -> str | None:
-    path = adapter / "adapter_model.safetensors"
-    return _sha256_file(path) if path.exists() else None
+    return _directory_hash(adapter)
 
 
 def _jsonable(value: Any) -> Any:
@@ -422,6 +438,19 @@ def _expected_phase18_hashes_from_manifest(manifest: dict[str, Any]) -> dict[str
     }
 
 
+def _expected_phase18_hashes_from_tokenization_report() -> dict[str, str]:
+    report = _read_json(PROJECT_ROOT / DEFAULT_TOKENIZATION_REPORT)
+    phase18 = report.get("phase18") if isinstance(report.get("phase18"), dict) else {}
+    tokenized = report.get("tokenized_sha256") if isinstance(report.get("tokenized_sha256"), dict) else {}
+    return {
+        "calibrated_jsonl_sha256": str(phase18.get("calibrated_jsonl_sha256", "")),
+        "phase18_report_sha256": str(phase18.get("phase18_report_sha256", "")),
+        "train.arrow": str(tokenized.get("train", "")),
+        "val.arrow": str(tokenized.get("val", "")),
+        "ood_val.arrow": str(tokenized.get("ood_val", "")),
+    }
+
+
 def _manifest_file_hash(path: Path) -> str:
     return _sha256_file(path) if path.is_file() else ""
 
@@ -462,6 +491,44 @@ def _actual_phase18_hashes_from_manifest(manifest: dict[str, Any], run_root: Pat
         "val.arrow": _manifest_file_hash(tokenized["val"]),
         "ood_val.arrow": _manifest_file_hash(tokenized["ood_val"]),
     }, failures
+
+
+def _tokenized_content_failures(run_root: Path) -> list[dict[str, str]]:
+    failures: list[dict[str, str]] = []
+    rows = _read_jsonl(_canonical_lineage_path(run_root, DEFAULT_CALIBRATED_JSONL))
+    rows_by_id = {_record_sample_id(row): row for row in rows}
+    split_indexes = _load_phase18_split_indexes(_canonical_lineage_path(run_root, DEFAULT_SPLIT_DIR))
+    try:
+        import pyarrow as pa
+    except ImportError as exc:
+        return [{"gate": "tokenized_content", "reason": f"pyarrow unavailable for tokenized content audit: {exc}"}]
+    for split, index_rows in split_indexes.items():
+        path = _canonical_lineage_path(run_root, DEFAULT_TOKENIZED_DIR / f"{split}.arrow")
+        if not path.is_file():
+            failures.append({"gate": "tokenized_content", "reason": f"missing tokenized split: {path}"})
+            continue
+        with pa.memory_map(str(path), "r") as source:
+            table = pa.ipc.open_file(source).read_all()
+        actual = table.select(["sample_id", "prompt_hash", "assistant_hash"]).to_pylist()
+        if len(actual) != len(index_rows):
+            failures.append({"gate": "tokenized_content", "reason": f"{split} row count mismatch: {len(actual)} != {len(index_rows)}"})
+            continue
+        for row, index_row in zip(actual, index_rows):
+            sample_id = str(index_row.get("sample_id") or "")
+            record = rows_by_id.get(sample_id)
+            if record is None:
+                failures.append({"gate": "tokenized_content", "reason": f"{split} sample missing from calibrated JSONL: {sample_id}"})
+                continue
+            try:
+                assistant = build_full_assistant(_record_reasoning(record), _record_solution(record))
+            except ValueError as exc:
+                failures.append({"gate": "tokenized_content", "reason": f"{split} malformed solution for {sample_id}: {exc}"})
+                continue
+            prompt = build_user_prompt(_record_input(record))
+            if row.get("sample_id") != sample_id or row.get("prompt_hash") != sha256_hex(prompt) or row.get("assistant_hash") != sha256_hex(assistant):
+                failures.append({"gate": "tokenized_content", "reason": f"{split} tokenized row does not match canonical Phase18 record: {sample_id}"})
+                break
+    return failures
 
 
 def write_phase19_training_reports(run_root: Path, *, mode: str, elapsed: float, trainer_state: Any, adapter_dir: Path, targs_kwargs: dict[str, Any], tokenized_dir: Path = DEFAULT_TOKENIZED_DIR) -> Path:
@@ -506,7 +573,7 @@ def write_phase19_training_reports(run_root: Path, *, mode: str, elapsed: float,
         "duration_seconds": elapsed,
         "vram_peak_gb": peak_gb,
         "adapter_path": str(adapter_dir),
-        "adapter_sha256": _sha256_file(adapter_dir / "adapter_model.safetensors"),
+        "adapter_sha256": _adapter_hash(adapter_dir),
         "data_manifest_path": str(data_manifest),
         "data_manifest_sha256": _sha256_file(data_manifest),
         "phase18_artifact_hashes": phase18_hashes,
@@ -616,12 +683,15 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
 
     phase18_hashes = training.get("phase18_artifact_hashes") if isinstance(training.get("phase18_artifact_hashes"), dict) else {}
     expected_phase18_hashes = _expected_phase18_hashes_from_manifest(data_manifest_payload)
+    tokenization_report_hashes = _expected_phase18_hashes_from_tokenization_report()
     actual_phase18_hashes, lineage_path_failures = _actual_phase18_hashes_from_manifest(data_manifest_payload, root)
+    tokenized_content_failures = _tokenized_content_failures(root)
     failures.extend(lineage_path_failures)
-    phase18_ok = not lineage_path_failures and phase18_hashes == expected_phase18_hashes and expected_phase18_hashes == actual_phase18_hashes and all(actual_phase18_hashes.values())
-    gates["phase18_artifact_hashes"] = _gate(phase18_ok, None if phase18_ok else "Phase 18/tokenized artifact hashes do not match data manifest and on-disk artifacts", {"expected": expected_phase18_hashes, "actual": phase18_hashes, "on_disk": actual_phase18_hashes})
+    failures.extend(tokenized_content_failures)
+    phase18_ok = not lineage_path_failures and not tokenized_content_failures and phase18_hashes == expected_phase18_hashes and expected_phase18_hashes == actual_phase18_hashes and actual_phase18_hashes == tokenization_report_hashes and all(actual_phase18_hashes.values())
+    gates["phase18_artifact_hashes"] = _gate(phase18_ok, None if phase18_ok else "Phase 18/tokenized artifact hashes do not match data manifest, tokenization report, and on-disk artifacts", {"expected": expected_phase18_hashes, "actual": phase18_hashes, "on_disk": actual_phase18_hashes, "tokenization_report": tokenization_report_hashes})
     if not phase18_ok:
-        _fail(failures, "phase18_artifact_hashes", "Phase 18/tokenized artifact hashes do not match data manifest and on-disk artifacts")
+        _fail(failures, "phase18_artifact_hashes", "Phase 18/tokenized artifact hashes do not match data manifest, tokenization report, and on-disk artifacts")
 
     lora = training.get("lora_config") if isinstance(training.get("lora_config"), dict) else {}
     lora_ok = lora.get("r") == 64 and lora.get("lora_alpha") == 64 and float(lora.get("lora_dropout", -1)) == 0.0

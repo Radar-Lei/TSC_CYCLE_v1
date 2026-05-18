@@ -390,13 +390,17 @@ def validate_phase19_export_report(run_root: Path, report_path: Path | None = No
         failures.append({"gate": "artifact_hash", "reason": "missing merged HF tokenizer/materializer evidence"})
     else:
         actual_tokenizer_by_path = {record.get("path"): record for record in actual_tokenizer_records}
+        reported_tokenizer_paths: set[Any] = set()
         for reported in tokenizer_records:
             if not isinstance(reported, dict):
                 failures.append({"gate": "artifact_hash", "reason": "malformed tokenizer evidence record"})
                 continue
+            reported_tokenizer_paths.add(reported.get("path"))
             actual = actual_tokenizer_by_path.get(reported.get("path"))
             if actual is None or reported.get("sha256") != actual.get("sha256"):
                 failures.append({"gate": "artifact_hash", "reason": f"sha256 mismatch for tokenizer artifact: {reported.get('path')}"})
+        if reported_tokenizer_paths != set(actual_tokenizer_by_path):
+            failures.append({"gate": "artifact_hash", "reason": "tokenizer evidence report does not match on-disk artifacts"})
 
     result = dict(report)
     result.update({

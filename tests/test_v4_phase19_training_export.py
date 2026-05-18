@@ -294,12 +294,21 @@ def test_phase18_handoff_tokenizes_calibrated_splits_with_protocol_hashes(tmp_pa
     assert not (leak_config.tokenized_dir / "train.arrow").exists()
 
 
+def _hash_directory(root: Path) -> str:
+    h = __import__("hashlib").sha256()
+    for path in sorted(item for item in root.rglob("*") if item.is_file()):
+        h.update(path.relative_to(root).as_posix().encode("utf-8"))
+        h.update(b"\0")
+        h.update(path.read_bytes())
+    return h.hexdigest()
+
+
 def _make_adapter(adapter_dir: Path) -> str:
     adapter_dir.mkdir(parents=True, exist_ok=True)
     (adapter_dir / "adapter_config.json").write_text('{"base_model_name_or_path":"Qwen/Qwen3-4B-Thinking-2507"}\n', encoding="utf-8")
     weights = adapter_dir / "adapter_model.safetensors"
     weights.write_bytes(b"phase19 adapter bytes")
-    return __import__("hashlib").sha256(weights.read_bytes()).hexdigest()
+    return _hash_directory(adapter_dir)
 
 
 def _make_phase19_lineage(root: Path) -> tuple[dict, dict, dict, dict]:
@@ -459,7 +468,18 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     wrong_adapter_rejected = validate_phase19_training_report(run_root, report_path=wrong_adapter_report)
     assert wrong_adapter_rejected["ok"] is False
     assert any(failure["gate"] == "adapter_config" for failure in wrong_adapter_rejected["fatal_failures"])
+    assert any(failure["gate"] == "adapter_hash" for failure in wrong_adapter_rejected["fatal_failures"])
     (adapter_dir / "adapter_config.json").write_text('{"base_model_name_or_path":"Qwen/Qwen3-4B-Thinking-2507"}\n', encoding="utf-8")
+
+    token_report = PROJECT_ROOT / "artifacts/v4_2/phase19/tokenization_report.json"
+    original_token_report = token_report.read_text(encoding="utf-8")
+    token_payload = json.loads(original_token_report)
+    token_payload["tokenized_sha256"]["train"] = "z" * 64
+    token_report.write_text(json.dumps(token_payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    token_report_rejected = validate_phase19_training_report(run_root, report_path=report)
+    assert token_report_rejected["ok"] is False
+    assert any(failure["gate"] == "phase18_artifact_hashes" for failure in token_report_rejected["fatal_failures"])
+    token_report.write_text(original_token_report, encoding="utf-8")
 
     wrapper = (PROJECT_ROOT / "scripts/run_v4_phase19_train.sh").read_text(encoding="utf-8")
     assert "<<'PY'" in wrapper
@@ -575,6 +595,14 @@ def test_v42_export_plan_and_report_require_merged_hf_and_gguf_hashes(tmp_path: 
     rejected_hash = validate_phase19_export_report(run_root=run_root, report_path=missing_hash_path)
     assert rejected_hash["ok"] is False
     assert any(failure["gate"] == "artifact_hash" for failure in rejected_hash["fatal_failures"])
+
+    (merged / "tokenizer_config.json").write_text('{"tokenizer_class":"Qwen2Tokenizer"}\n', encoding="utf-8")
+    missing_tokenizer = _read_json(run_root / "phase19_export_report.json")
+    missing_tokenizer_path = _write_json(run_root / "missing_tokenizer.json", missing_tokenizer)
+    rejected_tokenizer = validate_phase19_export_report(run_root=run_root, report_path=missing_tokenizer_path)
+    assert rejected_tokenizer["ok"] is False
+    assert any("tokenizer evidence" in failure["reason"] for failure in rejected_tokenizer["fatal_failures"])
+    (merged / "tokenizer_config.json").unlink()
 
     forged = _read_json(run_root / "phase19_export_report.json")
     (run_root / "gguf" / "model.q4_K_M.gguf").unlink()
