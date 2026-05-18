@@ -46,20 +46,26 @@ def _sha256_file(path: Path) -> str:
 def _read_json(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return {}
     return payload if isinstance(payload, dict) else {}
 
 
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    with path.open("r", encoding="utf-8") as fh:
-        for line_no, line in enumerate(fh, start=1):
-            if not line.strip():
-                continue
-            payload = json.loads(line)
-            if not isinstance(payload, dict):
-                raise ValueError(f"JSONL row must be an object {path}:{line_no}")
-            rows.append(payload)
+    try:
+        with path.open("r", encoding="utf-8") as fh:
+            for line_no, line in enumerate(fh, start=1):
+                if not line.strip():
+                    continue
+                payload = json.loads(line)
+                if not isinstance(payload, dict):
+                    raise ValueError(f"JSONL row must be an object {path}:{line_no}")
+                rows.append(payload)
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError):
+        return []
     return rows
 
 
@@ -397,6 +403,19 @@ def _jsonable(value: Any) -> Any:
     if isinstance(value, (list, tuple)):
         return [_jsonable(item) for item in value]
     return value
+
+
+def _expected_training_args(run_root: Path) -> dict[str, Any]:
+    args = _jsonable(locked_training_arguments_kwargs(run_root / "full"))
+    args.pop("output_dir", None)
+    args.pop("report_to", None)
+    return args
+
+
+def _training_args_match(actual: dict[str, Any], expected: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
+    mismatches = {key: {"expected": expected_value, "actual": actual.get(key)} for key, expected_value in expected.items() if actual.get(key) != expected_value}
+    forbidden = {key: actual.get(key) for key in ("chat_template_used", "apply_chat_template") if actual.get(key, False) is not False}
+    return not mismatches and not forbidden, {"expected": expected, "actual": actual, "mismatches": mismatches, "forbidden": forbidden}
 
 
 def _state_value(trainer_state: Any, key: str, default: Any = None) -> Any:
@@ -788,14 +807,16 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
         _fail(failures, "phase18_artifact_hashes", "Phase 18/tokenized artifact hashes do not match data manifest, tokenization report, and on-disk artifacts")
 
     lora = training.get("lora_config") if isinstance(training.get("lora_config"), dict) else {}
-    lora_ok = lora.get("r") == 64 and lora.get("lora_alpha") == 64 and float(lora.get("lora_dropout", -1)) == 0.0
-    gates["qlora_settings"] = _gate(lora_ok, None if lora_ok else "QLoRA r/alpha/dropout are not locked", lora)
+    expected_lora = _jsonable(locked_lora_config_kwargs())
+    lora_ok = lora == expected_lora
+    gates["qlora_settings"] = _gate(lora_ok, None if lora_ok else "QLoRA config is not fully locked", {"expected": expected_lora, "actual": lora})
     if not lora_ok:
-        _fail(failures, "qlora_settings", "QLoRA r/alpha/dropout are not locked")
+        _fail(failures, "qlora_settings", "QLoRA config is not fully locked")
 
     args = training.get("training_args") if isinstance(training.get("training_args"), dict) else {}
-    args_ok = args.get("bf16") is True and args.get("attn_implementation") == "sdpa" and args.get("load_in_4bit") is True and args.get("bnb_4bit_quant_type") == "nf4" and args.get("packing") is False
-    gates["training_args"] = _gate(args_ok, None if args_ok else "training args are not locked to DGX-safe v4.2 QLoRA", args)
+    expected_args = _expected_training_args(root)
+    args_ok, args_data = _training_args_match(args, expected_args)
+    gates["training_args"] = _gate(args_ok, None if args_ok else "training args are not locked to DGX-safe v4.2 QLoRA", args_data)
     if not args_ok:
         _fail(failures, "training_args", "training args are not locked to DGX-safe v4.2 QLoRA")
 

@@ -326,6 +326,42 @@ def _make_adapter(adapter_dir: Path) -> str:
     return _hash_directory(adapter_dir)
 
 
+def _locked_phase19_training_args() -> dict:
+    return {
+        "num_train_epochs": 3,
+        "per_device_train_batch_size": 1,
+        "gradient_accumulation_steps": 16,
+        "learning_rate": 1e-4,
+        "lr_scheduler_type": "cosine",
+        "warmup_ratio": 0.03,
+        "optim": "adamw_torch_fused",
+        "max_grad_norm": 0.5,
+        "bf16": True,
+        "gradient_checkpointing": True,
+        "gradient_checkpointing_kwargs": {"use_reentrant": False},
+        "logging_steps": 1,
+        "eval_strategy": "no",
+        "save_strategy": "no",
+        "load_best_model_at_end": False,
+        "save_total_limit": 1,
+        "dataloader_num_workers": 1,
+        "remove_unused_columns": False,
+        "weight_decay": 0.0,
+        "packing": False,
+        "attn_implementation": "sdpa",
+        "load_in_4bit": True,
+        "bnb_4bit_quant_type": "nf4",
+        "bnb_4bit_compute_dtype": "bfloat16",
+        "bnb_4bit_use_double_quant": True,
+        "chat_template_used": False,
+        "apply_chat_template": False,
+    }
+
+
+def _locked_phase19_lora_config() -> dict:
+    return {"r": 64, "lora_alpha": 64, "lora_dropout": 0.0, "target_modules": "all-linear", "bias": "none", "task_type": "CAUSAL_LM"}
+
+
 def _copy_phase19_lineage(root: Path) -> Path:
     import shutil
 
@@ -398,8 +434,8 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
             "data_manifest_path": str(data_manifest),
             "data_manifest_sha256": data_sha,
             "phase18_artifact_hashes": phase18_artifact_hashes,
-            "training_args": {"bf16": True, "attn_implementation": "sdpa", "load_in_4bit": True, "bnb_4bit_quant_type": "nf4", "packing": False},
-            "lora_config": {"r": 64, "lora_alpha": 64, "lora_dropout": 0.0, "target_modules": "all-linear"},
+            "training_args": _locked_phase19_training_args(),
+            "lora_config": _locked_phase19_lora_config(),
             "trainer_state": {"global_step": 657, "max_steps": 657},
             "requirements_covered": ["TRAIN-01"],
             "completed": True,
@@ -414,6 +450,21 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     assert accepted["artifact_manifest"]["sha256"]["adapter_sha256"] == adapter_sha
     assert accepted["artifact_manifest"]["sha256"]["data_manifest_sha256"] == data_sha
     assert accepted["gates"]["phase18_artifact_hashes"]["ok"] is True
+
+    wrong_lora = _read_json(report)
+    wrong_lora["lora_config"]["target_modules"] = ["q_proj"]
+    wrong_lora_report = _write_json(run_root / "wrong_lora.json", wrong_lora)
+    wrong_lora_rejected = validate_phase19_training_report(run_root, report_path=wrong_lora_report)
+    assert wrong_lora_rejected["ok"] is False
+    assert any(failure["gate"] == "qlora_settings" for failure in wrong_lora_rejected["fatal_failures"])
+
+    wrong_args = _read_json(report)
+    wrong_args["training_args"]["bnb_4bit_use_double_quant"] = False
+    wrong_args["training_args"]["chat_template_used"] = True
+    wrong_args_report = _write_json(run_root / "wrong_args.json", wrong_args)
+    wrong_args_rejected = validate_phase19_training_report(run_root, report_path=wrong_args_report)
+    assert wrong_args_rejected["ok"] is False
+    assert any(failure["gate"] == "training_args" for failure in wrong_args_rejected["fatal_failures"])
 
     wrong_model = _read_json(report)
     wrong_model["model_name"] = "Qwen/Qwen3.5-9B"
@@ -615,8 +666,8 @@ def _make_phase19_training_handoff(run_root: Path) -> Path:
             "data_manifest_path": str(data_manifest),
             "data_manifest_sha256": data_sha,
             "phase18_artifact_hashes": phase18_artifact_hashes,
-            "training_args": {"bf16": True, "attn_implementation": "sdpa", "load_in_4bit": True, "bnb_4bit_quant_type": "nf4", "packing": False},
-            "lora_config": {"r": 64, "lora_alpha": 64, "lora_dropout": 0.0, "target_modules": "all-linear"},
+            "training_args": _locked_phase19_training_args(),
+            "lora_config": _locked_phase19_lora_config(),
             "trainer_state": {"global_step": 657, "max_steps": 657},
             "requirements_covered": ["TRAIN-01"],
             "completed": True,
@@ -662,6 +713,8 @@ def test_v42_export_plan_and_report_require_merged_hf_and_gguf_hashes(tmp_path: 
     config_only_report = write_export_report(run_root=run_root, export_plan=plan, out=run_root / "config_only_export_report.json")
     assert config_only_report["ok"] is False
     assert any("tokenizer materializer" in failure["reason"] for failure in config_only_report["fatal_failures"])
+    assert any("config.json" in failure["reason"] for failure in config_only_report["fatal_failures"])
+    (merged / "config.json").write_text('{"model_type":"qwen2"}\n', encoding="utf-8")
     (merged / "tokenizer.json").write_text('{"tokenizer":"qwen"}\n', encoding="utf-8")
     (run_root / "gguf").mkdir(parents=True)
     (run_root / "gguf" / "model.fp16.gguf").write_bytes(b"fp16 gguf")
@@ -676,6 +729,14 @@ def test_v42_export_plan_and_report_require_merged_hf_and_gguf_hashes(tmp_path: 
     assert accepted["artifacts"]["gguf_fp16"]["sha256"] == __import__("hashlib").sha256(b"fp16 gguf").hexdigest()
     assert accepted["artifacts"]["gguf_q4_K_M"]["sha256"] == __import__("hashlib").sha256(b"q4 gguf").hexdigest()
     assert accepted["artifacts"]["merged_hf_safetensors"][0]["sha256"] == __import__("hashlib").sha256(b"merged hf weights").hexdigest()
+    assert accepted["artifacts"]["merged_hf_materializer"][0]["sha256"] == __import__("hashlib").sha256(b'{"model_type":"qwen2"}\n').hexdigest()
+
+    forged_materializer = _read_json(run_root / "phase19_export_report.json")
+    forged_materializer["artifacts"]["merged_hf_materializer"] = []
+    forged_materializer_path = _write_json(run_root / "forged_materializer.json", forged_materializer)
+    rejected_materializer = validate_phase19_export_report(run_root=run_root, report_path=forged_materializer_path)
+    assert rejected_materializer["ok"] is False
+    assert any("merged HF materializer" in failure["reason"] for failure in rejected_materializer["fatal_failures"])
 
     missing_train02 = _read_json(run_root / "phase19_export_report.json")
     missing_train02["requirements_covered"] = []
@@ -741,6 +802,13 @@ def test_v42_export_plan_and_report_require_merged_hf_and_gguf_hashes(tmp_path: 
     assert rejected_forged["ok"] is False
     assert any(failure["gate"] in {"artifact_exists", "artifact_hash"} for failure in rejected_forged["fatal_failures"])
     (run_root / "gguf" / "model.q4_K_M.gguf").write_bytes(b"q4 gguf")
+
+    forged_handoff_mismatch = _read_json(run_root / "phase19_export_report.json")
+    forged_handoff_mismatch["phase19_handoff"]["adapter_sha256"] = "0" * 64
+    forged_handoff_mismatch_path = _write_json(run_root / "forged_handoff_mismatch_export_report.json", forged_handoff_mismatch)
+    rejected_handoff_mismatch = validate_phase19_export_report(run_root=run_root, report_path=forged_handoff_mismatch_path)
+    assert rejected_handoff_mismatch["ok"] is False
+    assert any(failure["gate"] == "phase19_handoff" for failure in rejected_handoff_mismatch["fatal_failures"])
 
     forged_handoff = _read_json(run_root / "phase19_export_report.json")
     bad_training = _read_json(training_report)

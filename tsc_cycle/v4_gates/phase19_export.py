@@ -18,6 +18,8 @@ DEFAULT_LLAMA_CPP = Path("/home/samuel/projects/EvoProgTSC/llama.cpp")
 FROZEN_BASELINE_ROOT = PROJECT_ROOT / "runs" / "20260507T032419Z"
 REQUIREMENTS_COVERED = ["TRAIN-02"]
 FORBIDDEN_ROOT_NAMES = {"20260507T032419Z"}
+MERGED_HF_REQUIRED_FILES = ("config.json",)
+MERGED_HF_OPTIONAL_FILES = ("generation_config.json", "model.safetensors.index.json")
 
 
 class Phase19ExportError(RuntimeError):
@@ -35,7 +37,10 @@ def sha256_file(path: Path) -> str:
 def _read_json(path: Path) -> dict[str, Any]:
     if not Path(path).is_file():
         return {}
-    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    try:
+        payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return {}
     return payload if isinstance(payload, dict) else {}
 
 
@@ -95,6 +100,13 @@ def _tool(path: Path, name: str, failures: list[dict[str, str]], *, required: bo
     if required and not ok:
         failures.append({"gate": name, "reason": f"missing or non-executable llama.cpp tool: {path}"})
     return str(path)
+
+
+def _same_path(left: Any, right: Any) -> bool:
+    try:
+        return Path(str(left)).resolve() == Path(str(right)).resolve()
+    except (OSError, RuntimeError):
+        return str(left) == str(right)
 
 
 def load_phase19_handoff(run_root: Path, phase19_report: Path | None = None) -> dict[str, Any]:
@@ -258,6 +270,43 @@ def _directory_manifest(root: Path, patterns: tuple[str, ...]) -> tuple[list[dic
     return records, failures
 
 
+def _hf_materializer_manifest(root: Path) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
+    records: list[dict[str, Any]] = []
+    failures: list[dict[str, str]] = []
+    if not Path(root).is_dir():
+        return records, [{"gate": "merged_hf_materializer", "reason": f"missing merged HF directory: {root}"}]
+    for name in MERGED_HF_REQUIRED_FILES:
+        path = Path(root) / name
+        record, record_failures = _artifact_record(path)
+        records.append(record)
+        failures.extend(record_failures)
+    for name in MERGED_HF_OPTIONAL_FILES:
+        path = Path(root) / name
+        if path.exists():
+            record, record_failures = _artifact_record(path, required=False)
+            records.append(record)
+            failures.extend(record_failures)
+    return records, failures
+
+
+def _records_match(reported_records: Any, actual_records: list[dict[str, Any]], gate: str, label: str) -> list[dict[str, str]]:
+    failures: list[dict[str, str]] = []
+    reported = reported_records if isinstance(reported_records, list) else []
+    actual_by_path = {record.get("path"): record for record in actual_records}
+    reported_paths: set[Any] = set()
+    for item in reported:
+        if not isinstance(item, dict):
+            failures.append({"gate": gate, "reason": f"malformed {label} record"})
+            continue
+        reported_paths.add(item.get("path"))
+        actual = actual_by_path.get(item.get("path"))
+        if actual is None or item.get("sha256") != actual.get("sha256"):
+            failures.append({"gate": gate, "reason": f"sha256 mismatch for {label}: {item.get('path')}"})
+    if reported_paths != set(actual_by_path):
+        failures.append({"gate": gate, "reason": f"{label} report does not match on-disk artifacts"})
+    return failures
+
+
 def write_export_report(run_root: Path, export_plan: dict[str, Any], out: Path) -> dict[str, Any]:
     root = _require_v42_run_root(Path(run_root))
     paths = export_plan.get("paths") if isinstance(export_plan.get("paths"), dict) else {}
@@ -270,7 +319,9 @@ def write_export_report(run_root: Path, export_plan: dict[str, Any], out: Path) 
 
     fatal_failures = list(export_plan.get("fatal_failures", [])) if isinstance(export_plan.get("fatal_failures"), list) else []
     merged_records, merged_failures = _directory_manifest(merged_hf, ("*.safetensors",))
+    hf_materializer_records, hf_materializer_failures = _hf_materializer_manifest(merged_hf)
     fatal_failures.extend(merged_failures)
+    fatal_failures.extend(hf_materializer_failures)
     fp16_record, fp16_failures = _artifact_record(fp16)
     q4_record, q4_failures = _artifact_record(q4)
     fatal_failures.extend(fp16_failures)
@@ -301,6 +352,7 @@ def write_export_report(run_root: Path, export_plan: dict[str, Any], out: Path) 
         "wrapper_commands": export_plan.get("wrapper_commands"),
         "artifacts": {
             "merged_hf_safetensors": merged_records,
+            "merged_hf_materializer": hf_materializer_records,
             "merged_hf_tokenizer": tokenizer_files,
             "gguf_fp16": fp16_record,
             "gguf_q4_K_M": q4_record,
@@ -340,10 +392,18 @@ def validate_phase19_export_report(run_root: Path, report_path: Path | None = No
     phase19_report = Path(report.get("phase19_report")) if isinstance(report.get("phase19_report"), str) else root / "phase19_sft_report.json"
     training_validation = validate_phase19_training_report(root, report_path=phase19_report)
     handoff = report.get("phase19_handoff") if isinstance(report.get("phase19_handoff"), dict) else {}
-    handoff_ok = training_validation.get("ok") is True and "TRAIN-01" in training_validation.get("requirements_covered", [])
-    gates["phase19_handoff"] = {"ok": handoff_ok, "data": {"report_path": str(phase19_report), "requirements_covered": training_validation.get("requirements_covered", []), "reported_requirements_covered": handoff.get("requirements_covered", [])}}
+    training_sha = training_validation.get("artifact_manifest", {}).get("sha256", {}) if isinstance(training_validation.get("artifact_manifest"), dict) else {}
+    expected_handoff = {
+        "adapter_path": training_validation.get("adapter_path"),
+        "adapter_sha256": training_sha.get("adapter_sha256"),
+        "training_report_sha256": training_sha.get("training_report"),
+        "data_manifest_sha256": training_sha.get("data_manifest_sha256"),
+    }
+    handoff_matches = _same_path(handoff.get("adapter_path"), expected_handoff["adapter_path"]) and handoff.get("adapter_sha256") == expected_handoff["adapter_sha256"] and handoff.get("training_report_sha256") == expected_handoff["training_report_sha256"] and handoff.get("data_manifest_sha256") == expected_handoff["data_manifest_sha256"]
+    handoff_ok = training_validation.get("ok") is True and "TRAIN-01" in training_validation.get("requirements_covered", []) and handoff_matches
+    gates["phase19_handoff"] = {"ok": handoff_ok, "data": {"report_path": str(phase19_report), "requirements_covered": training_validation.get("requirements_covered", []), "reported_requirements_covered": handoff.get("requirements_covered", []), "expected_handoff": expected_handoff, "reported_handoff": {key: handoff.get(key) for key in expected_handoff}}}
     if not handoff_ok:
-        failures.append({"gate": "phase19_handoff", "reason": "accepted export report must revalidate green TRAIN-01 training handoff"})
+        failures.append({"gate": "phase19_handoff", "reason": "accepted export report must revalidate green TRAIN-01 training handoff and matching artifact evidence"})
 
     paths = report.get("paths") if isinstance(report.get("paths"), dict) else {}
     validated_paths: dict[str, Path] = {}
@@ -370,18 +430,11 @@ def validate_phase19_export_report(run_root: Path, report_path: Path | None = No
     artifacts = report.get("artifacts") if isinstance(report.get("artifacts"), dict) else {}
     merged_path = validated_paths.get("merged_hf")
     actual_merged, merged_failures = _directory_manifest(merged_path, ("*.safetensors",)) if merged_path is not None else ([], [{"gate": "paths", "reason": "invalid merged_hf path; skipped artifact reads"}])
+    actual_hf_materializer, hf_materializer_failures = _hf_materializer_manifest(merged_path) if merged_path is not None else ([], [])
     failures.extend(merged_failures)
-    reported_merged = artifacts.get("merged_hf_safetensors") if isinstance(artifacts.get("merged_hf_safetensors"), list) else []
-    actual_merged_by_path = {record.get("path"): record for record in actual_merged}
-    for reported in reported_merged:
-        if not isinstance(reported, dict):
-            failures.append({"gate": "artifact_hash", "reason": "malformed merged HF safetensors record"})
-            continue
-        actual = actual_merged_by_path.get(reported.get("path"))
-        if actual is None or reported.get("sha256") != actual.get("sha256"):
-            failures.append({"gate": "artifact_hash", "reason": f"sha256 mismatch for merged HF artifact: {reported.get('path')}"})
-    if not reported_merged or len(reported_merged) != len(actual_merged):
-        failures.append({"gate": "artifact_hash", "reason": "merged HF safetensors report does not match on-disk artifacts"})
+    failures.extend(hf_materializer_failures)
+    failures.extend(_records_match(artifacts.get("merged_hf_safetensors"), actual_merged, "artifact_hash", "merged HF safetensors"))
+    failures.extend(_records_match(artifacts.get("merged_hf_materializer"), actual_hf_materializer, "artifact_hash", "merged HF materializer"))
 
     for key, path_key in (("gguf_fp16", "gguf_fp16"), ("gguf_q4_K_M", "gguf_q4_K_M")):
         artifact_path = validated_paths.get(path_key)
@@ -415,18 +468,7 @@ def validate_phase19_export_report(run_root: Path, report_path: Path | None = No
     if not tokenizer_records or not actual_tokenizer_records:
         failures.append({"gate": "artifact_hash", "reason": "missing merged HF tokenizer/materializer evidence"})
     else:
-        actual_tokenizer_by_path = {record.get("path"): record for record in actual_tokenizer_records}
-        reported_tokenizer_paths: set[Any] = set()
-        for reported in tokenizer_records:
-            if not isinstance(reported, dict):
-                failures.append({"gate": "artifact_hash", "reason": "malformed tokenizer evidence record"})
-                continue
-            reported_tokenizer_paths.add(reported.get("path"))
-            actual = actual_tokenizer_by_path.get(reported.get("path"))
-            if actual is None or reported.get("sha256") != actual.get("sha256"):
-                failures.append({"gate": "artifact_hash", "reason": f"sha256 mismatch for tokenizer artifact: {reported.get('path')}"})
-        if reported_tokenizer_paths != set(actual_tokenizer_by_path):
-            failures.append({"gate": "artifact_hash", "reason": "tokenizer evidence report does not match on-disk artifacts"})
+        failures.extend(_records_match(tokenizer_records, actual_tokenizer_records, "artifact_hash", "tokenizer evidence"))
 
     result = dict(report)
     result.update({
