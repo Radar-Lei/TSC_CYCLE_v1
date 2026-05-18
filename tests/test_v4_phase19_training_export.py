@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_MODEL = "Qwen/Qwen3-4B-Thinking-2507"
 V42_TOKENIZED_DIR = Path("data/v4_2/phase18/tokenized")
 PHASE18_REPORT = Path("artifacts/v4_2/phase18/reconstruction_report.json")
@@ -96,7 +97,7 @@ def test_v42_training_defaults_lock_phase18_data_and_qwen4b_stack(tmp_path: Path
 
     assert "TRAIN-01" in sft_v42.REQUIREMENTS_COVERED
 
-    train_source = Path("tsc_cycle/student/train.py").read_text(encoding="utf-8")
+    train_source = (PROJECT_ROOT / "tsc_cycle/student/train.py").read_text(encoding="utf-8")
     tree = ast.parse(train_source)
     phase_choices = []
     for node in ast.walk(tree):

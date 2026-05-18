@@ -86,6 +86,11 @@ def default_v4_run_root() -> Path:
     return Path("runs") / f"v4.0-4B-{ts}"
 
 
+def default_v42_run_root() -> Path:
+    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return Path("runs") / f"v4.2-4B-{ts}"
+
+
 def boot_tokenizer_check(tokenizer) -> None:
     res = check_tokenizer(tokenizer)
     if not res.ok:
@@ -454,14 +459,15 @@ def _write_v4_reports(run_root: Path, *, mode: str, elapsed: float, trainer_stat
 
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description="Qwen QLoRA SFT trainer")
-    ap.add_argument("--phase", choices=["v3", "v4"], default="v3")
+    ap.add_argument("--phase", choices=["v3", "v4", "v4_2"], default="v3")
     ap.add_argument("--mode", choices=["dry-run", "smoke", "full"], default="dry-run")
     _grep_contract = "attn_implementation=\"sdpa\""
     ap.add_argument("--data-dir", default=None)
     ap.add_argument("--tokenized-dir", default=None)
     ap.add_argument("--model", "--model-name", dest="model", default=None)
     ap.add_argument("--phase8-gate-report", default="artifacts/v4/phase8/phase8_gate_report.json")
-    ap.add_argument("--output-root", default=None, help="default runs/v3.0-9B-{utc_timestamp} or runs/v4.0-4B-{utc_timestamp}")
+    ap.add_argument("--phase18-report", default="artifacts/v4_2/phase18/reconstruction_report.json")
+    ap.add_argument("--output-root", default=None, help="default runs/v3.0-9B-{utc_timestamp}, runs/v4.0-4B-{utc_timestamp}, or runs/v4.2-4B-{utc_timestamp}")
     ap.add_argument("--max-steps", type=int, default=-1, help=">0 for bounded smoke/dry execution")
     return ap
 
@@ -509,6 +515,51 @@ def main(argv: list[str] | None = None) -> int:
         report_path = _write_v4_reports(run_root, mode=mode, elapsed=elapsed, trainer_state=trainer.state, adapter_dir=adapter_dir, targs_kwargs=targs_kwargs)
         with (run_root / "train_log.jsonl").open("a", encoding="utf-8") as f:
             f.write(json.dumps({"event": "training_complete", "phase": "v4", "mode": mode, "elapsed_h": elapsed / 3600, "report": str(report_path)}, ensure_ascii=False) + "\n")
+        return 0
+
+    if args.phase == "v4_2":
+        from tsc_cycle.student import sft_v42
+
+        model_name = args.model or sft_v42.MODEL_NAME
+        if model_name != sft_v42.MODEL_NAME:
+            raise SystemExit(f"TRAIN-01 fail: model must be {sft_v42.MODEL_NAME}, got {model_name}")
+        phase18 = sft_v42.check_phase18_handoff(args.phase18_report)
+        if phase18.get("ok") is not True or phase18.get("next_phase_allowed") is not True:
+            raise SystemExit("TRAIN-01 fail: Phase 18 handoff is not green")
+        run_root = sft_v42.validate_run_root(Path(args.output_root) if args.output_root else default_v42_run_root())
+        os.environ.setdefault("WANDB_PROJECT", sft_v42.WANDB_PROJECT)
+        if os.environ.get("WANDB_PROJECT") != sft_v42.WANDB_PROJECT:
+            raise SystemExit(f"TRAIN-01 fail: WANDB_PROJECT must be {sft_v42.WANDB_PROJECT}")
+        mode = "smoke" if args.mode == "dry-run" else args.mode
+        data_dir = Path(args.tokenized_dir or args.data_dir or sft_v42.TOKENIZED_DIR)
+        model, tokenizer = load_qlora_model_and_tokenizer(model_name, lora_kwargs=sft_v42.locked_lora_config_kwargs())
+        run_root.mkdir(parents=True, exist_ok=True)
+        bnb_warmup(model, tokenizer)
+        trainer, _grad_callback = build_trainer(
+            model=model,
+            tokenizer=tokenizer,
+            run_root=run_root,
+            mode=mode,
+            data_dir=data_dir,
+            max_steps=args.max_steps,
+            load_split=sft_v42.load_arrow_split,
+            training_args_factory=sft_v42.locked_training_arguments_kwargs,
+        )
+        targs_kwargs = sft_v42.locked_training_arguments_kwargs(run_root / mode)
+        if args.max_steps > 0:
+            targs_kwargs["max_steps"] = args.max_steps
+        print(f"[BOOT] output_root={run_root} mode={mode} model={sft_v42.MODEL_NAME} bs=1x16")
+        started = time.time()
+        trainer.train()
+        elapsed = time.time() - started
+        adapter_dir = run_root / "adapter"
+        trainer.model.save_pretrained(adapter_dir)
+        tokenizer.save_pretrained(adapter_dir)
+        from tsc_cycle.v4_gates.phase19_training import write_phase19_training_reports
+
+        report_path = write_phase19_training_reports(run_root, mode=mode, elapsed=elapsed, trainer_state=trainer.state, adapter_dir=adapter_dir, targs_kwargs=targs_kwargs)
+        with (run_root / "train_log.jsonl").open("a", encoding="utf-8") as f:
+            f.write(json.dumps({"event": "training_complete", "phase": "v4_2", "mode": mode, "elapsed_h": elapsed / 3600, "report": str(report_path)}, ensure_ascii=False) + "\n")
         return 0
 
     model_name = args.model or MODEL_NAME
