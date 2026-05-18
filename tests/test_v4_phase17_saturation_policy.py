@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import ast
 import builtins
+import hashlib
 import importlib
 import json
 import math
+import sys
 from pathlib import Path
 
 import pytest
@@ -619,6 +621,11 @@ def test_prompt_protocol_unchanged_and_no_band_rule() -> None:
     mod = _audit_contract()
     report = mod.evaluate_prompt_protocol_guard()
 
+    fixture_path = PROJECT_ROOT / "tsc_cycle" / "v4_gates" / "fixtures" / "v4_prompt_protocol_golden.json"
+    fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+    assert fixture["prompt_sha256"] == hashlib.sha256(fixture["prompt_text"].encode("utf-8")).hexdigest()
+    assert fixture["prompt_text"] == mod.EXPECTED_V4_PROMPT
+
     assert report["ok"] is True
     assert report["prompt_text"] == mod.EXPECTED_V4_PROMPT
     assert report["prompt_sha256"] == mod.EXPECTED_V4_PROMPT_SHA256
@@ -627,6 +634,27 @@ def test_prompt_protocol_unchanged_and_no_band_rule() -> None:
     scanned = {Path(item["path"]).name for item in report["scanned_prompt_surfaces"]}
     assert "prompt_builder.py" in scanned
     assert "phase12_reality_test.py" in scanned
+
+
+def test_prompt_protocol_guard_fails_on_preimport_prompt_drift(monkeypatch: pytest.MonkeyPatch) -> None:
+    original = _audit_contract()
+    prompt_builder = importlib.import_module("tsc_cycle.prompt_builder")
+    drifted_prompt = original.EXPECTED_V4_PROMPT + "\nDRIFTED DEPLOYMENT PROMPT"
+
+    monkeypatch.setattr(prompt_builder, "build_user_prompt", lambda prediction_input: drifted_prompt)
+    sys.modules.pop("tsc_cycle.v4_gates.phase17_audit", None)
+    try:
+        drifted_mod = importlib.import_module("tsc_cycle.v4_gates.phase17_audit")
+        report = drifted_mod.evaluate_prompt_protocol_guard()
+    finally:
+        sys.modules.pop("tsc_cycle.v4_gates.phase17_audit", None)
+        importlib.import_module("tsc_cycle.v4_gates.phase17_audit")
+
+    assert drifted_mod.EXPECTED_V4_PROMPT == original.EXPECTED_V4_PROMPT
+    assert report["ok"] is False
+    assert report["prompt_text"] == drifted_prompt
+    assert report["expected_prompt_sha256"] == original.EXPECTED_V4_PROMPT_SHA256
+    assert any(failure["gate"] == "prompt_byte_for_byte" for failure in report["fatal_failures"])
 
 
 @pytest.mark.parametrize(
