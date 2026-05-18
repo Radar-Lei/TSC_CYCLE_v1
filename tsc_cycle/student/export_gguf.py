@@ -71,7 +71,8 @@ def merge_to_fp16(adapter_dir: Path, out_merged: Path, base_model: str | None = 
     merged = peft_model.merge_and_unload()
     out_merged.mkdir(parents=True, exist_ok=True)
     merged.save_pretrained(out_merged, safe_serialization=True)
-    tokenizer = AutoTokenizer.from_pretrained(adapter_dir, trust_remote_code=True)
+    tokenizer_source = model_name if enforce_base_model else adapter_dir
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_source, trust_remote_code=not enforce_base_model)
     tokenizer.save_pretrained(out_merged)
     print(f"[MERGE] done: {out_merged}", flush=True)
 

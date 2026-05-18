@@ -299,17 +299,48 @@ def _make_adapter(adapter_dir: Path) -> str:
     return __import__("hashlib").sha256(weights.read_bytes()).hexdigest()
 
 
+def _make_phase19_lineage(root: Path) -> tuple[dict, dict, dict, dict]:
+    phase18_root = root / "data/v4_2/phase18"
+    calibrated = phase18_root / "labeled_calibrated.jsonl"
+    calibrated.parent.mkdir(parents=True, exist_ok=True)
+    calibrated.write_bytes(b"calibrated jsonl\n")
+    phase18_report = root / "artifacts/v4_2/phase18/reconstruction_report.json"
+    _write_json(phase18_report, {"ok": True, "next_phase_allowed": True, "requirements_covered": ["DATA-01", "DATA-02"]})
+    tokenized_dir = phase18_root / "tokenized"
+    tokenized_dir.mkdir(parents=True, exist_ok=True)
+    for split in ("train", "val", "ood_val"):
+        (tokenized_dir / f"{split}.arrow").write_bytes(f"{split} arrow\n".encode("utf-8"))
+    phase18 = {
+        "calibrated_jsonl": str(calibrated),
+        "calibrated_jsonl_sha256": __import__("hashlib").sha256(calibrated.read_bytes()).hexdigest(),
+        "phase18_report": str(phase18_report),
+        "phase18_report_sha256": __import__("hashlib").sha256(phase18_report.read_bytes()).hexdigest(),
+    }
+    tokenized_paths = {split: str(tokenized_dir / f"{split}.arrow") for split in ("train", "val", "ood_val")}
+    tokenized_sha256 = {split: __import__("hashlib").sha256((tokenized_dir / f"{split}.arrow").read_bytes()).hexdigest() for split in ("train", "val", "ood_val")}
+    phase18_artifact_hashes = {
+        "calibrated_jsonl_sha256": phase18["calibrated_jsonl_sha256"],
+        "phase18_report_sha256": phase18["phase18_report_sha256"],
+        "train.arrow": tokenized_sha256["train"],
+        "val.arrow": tokenized_sha256["val"],
+        "ood_val.arrow": tokenized_sha256["ood_val"],
+    }
+    return phase18, tokenized_paths, tokenized_sha256, phase18_artifact_hashes
+
+
 def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Path) -> None:
     from tsc_cycle.v4_gates.phase19_training import validate_phase19_training_report  # noqa: PLC0415
 
     run_root = tmp_path / "runs" / "v4.2-4B-20260518T120000Z"
     adapter_dir = run_root / "adapter"
     adapter_sha = _make_adapter(adapter_dir)
+    phase18, tokenized_paths, tokenized_sha256, phase18_artifact_hashes = _make_phase19_lineage(tmp_path)
     data_manifest = _write_json(
         run_root / "phase19_data_manifest.json",
         {
-            "phase18": {"calibrated_jsonl_sha256": "c" * 64, "phase18_report_sha256": "r" * 64},
-            "tokenized_sha256": {"train": "t" * 64, "val": "v" * 64, "ood_val": "o" * 64},
+            "phase18": phase18,
+            "tokenized_paths": tokenized_paths,
+            "tokenized_sha256": tokenized_sha256,
             "split_counts": {"train": 3500, "val": 452, "ood_val": 580},
             "requirements_covered": ["TRAIN-01"],
         },
@@ -330,7 +361,7 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
             "adapter_sha256": adapter_sha,
             "data_manifest_path": str(data_manifest),
             "data_manifest_sha256": data_sha,
-            "phase18_artifact_hashes": {"calibrated_jsonl_sha256": "c" * 64, "phase18_report_sha256": "r" * 64, "train.arrow": "t" * 64, "val.arrow": "v" * 64, "ood_val.arrow": "o" * 64},
+            "phase18_artifact_hashes": phase18_artifact_hashes,
             "training_args": {"bf16": True, "attn_implementation": "sdpa", "load_in_4bit": True, "bnb_4bit_quant_type": "nf4", "packing": False},
             "lora_config": {"r": 64, "lora_alpha": 64, "lora_dropout": 0.0, "target_modules": "all-linear"},
             "trainer_state": {"global_step": 657, "max_steps": 657},
@@ -384,8 +415,14 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     assert incomplete_rejected["ok"] is False
     assert any(failure["gate"] == "completed" for failure in incomplete_rejected["fatal_failures"])
 
+    forged_manifest_payload = _read_json(data_manifest)
+    forged_manifest_payload["phase18"]["calibrated_jsonl_sha256"] = "x" * 64
+    forged_manifest_payload["tokenized_sha256"]["train"] = "y" * 64
+    forged_manifest_path = _write_json(run_root / "forged_data_manifest.json", forged_manifest_payload)
     forged_manifest = _read_json(report)
-    forged_manifest["phase18_artifact_hashes"] = {"calibrated_jsonl_sha256": "x" * 64, "phase18_report_sha256": "r" * 64, "train.arrow": "t" * 64, "val.arrow": "v" * 64, "ood_val.arrow": "o" * 64}
+    forged_manifest["data_manifest_path"] = str(forged_manifest_path)
+    forged_manifest["data_manifest_sha256"] = __import__("hashlib").sha256(forged_manifest_path.read_bytes()).hexdigest()
+    forged_manifest["phase18_artifact_hashes"] = {"calibrated_jsonl_sha256": "x" * 64, "phase18_report_sha256": phase18_artifact_hashes["phase18_report_sha256"], "train.arrow": "y" * 64, "val.arrow": phase18_artifact_hashes["val.arrow"], "ood_val.arrow": phase18_artifact_hashes["ood_val.arrow"]}
     forged_manifest_report = _write_json(run_root / "forged_manifest_report.json", forged_manifest)
     forged_manifest_rejected = validate_phase19_training_report(run_root, report_path=forged_manifest_report)
     assert forged_manifest_rejected["ok"] is False
@@ -424,11 +461,13 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
 def _make_phase19_training_handoff(run_root: Path) -> Path:
     adapter_dir = run_root / "adapter"
     adapter_sha = _make_adapter(adapter_dir)
+    phase18, tokenized_paths, tokenized_sha256, phase18_artifact_hashes = _make_phase19_lineage(run_root.parents[1])
     data_manifest = _write_json(
         run_root / "phase19_data_manifest.json",
         {
-            "phase18": {"calibrated_jsonl_sha256": "c" * 64, "phase18_report_sha256": "r" * 64},
-            "tokenized_sha256": {"train": "t" * 64, "val": "v" * 64, "ood_val": "o" * 64},
+            "phase18": phase18,
+            "tokenized_paths": tokenized_paths,
+            "tokenized_sha256": tokenized_sha256,
             "split_counts": {"train": 3500, "val": 452, "ood_val": 580},
             "requirements_covered": ["TRAIN-01"],
         },
@@ -449,7 +488,7 @@ def _make_phase19_training_handoff(run_root: Path) -> Path:
             "adapter_sha256": adapter_sha,
             "data_manifest_path": str(data_manifest),
             "data_manifest_sha256": data_sha,
-            "phase18_artifact_hashes": {"calibrated_jsonl_sha256": "c" * 64, "phase18_report_sha256": "r" * 64, "train.arrow": "t" * 64, "val.arrow": "v" * 64, "ood_val.arrow": "o" * 64},
+            "phase18_artifact_hashes": phase18_artifact_hashes,
             "training_args": {"bf16": True, "attn_implementation": "sdpa", "load_in_4bit": True, "bnb_4bit_quant_type": "nf4", "packing": False},
             "lora_config": {"r": 64, "lora_alpha": 64, "lora_dropout": 0.0, "target_modules": "all-linear"},
             "trainer_state": {"global_step": 657, "max_steps": 657},
@@ -570,6 +609,10 @@ def test_v42_wrappers_forbid_dependency_installs_unsupported_runtimes_and_frozen
     phase10_defaults = parser.parse_args([])
     assert phase10_defaults.phase9_report.endswith("phase9_sft_report.json")
     assert "v4.0-4B-20260509T184844Z" in phase10_defaults.run_root
+
+    export_source = (PROJECT_ROOT / "tsc_cycle/student/export_gguf.py").read_text(encoding="utf-8")
+    assert "trust_remote_code=not enforce_base_model" in export_source
+    assert "tokenizer_source = model_name if enforce_base_model else adapter_dir" in export_source
 
     phase19_args = parser.parse_args(["--export-phase", "phase19", "--run-root", str(run_root), "--phase19-report", str(training_report), "--llama-cpp", str(llama_cpp)])
     assert phase19_args.export_phase == "phase19"

@@ -421,6 +421,24 @@ def _expected_phase18_hashes_from_manifest(manifest: dict[str, Any]) -> dict[str
     }
 
 
+def _manifest_file_hash(path: Path) -> str:
+    return _sha256_file(path) if path.is_file() else ""
+
+
+def _actual_phase18_hashes_from_manifest(manifest: dict[str, Any]) -> dict[str, str]:
+    phase18 = manifest.get("phase18") if isinstance(manifest.get("phase18"), dict) else {}
+    tokenized_paths = manifest.get("tokenized_paths") if isinstance(manifest.get("tokenized_paths"), dict) else {}
+    calibrated_jsonl = Path(str(phase18.get("calibrated_jsonl") or DEFAULT_CALIBRATED_JSONL))
+    phase18_report = Path(str(phase18.get("phase18_report") or DEFAULT_PHASE18_REPORT))
+    return {
+        "calibrated_jsonl_sha256": _manifest_file_hash(calibrated_jsonl),
+        "phase18_report_sha256": _manifest_file_hash(phase18_report),
+        "train.arrow": _manifest_file_hash(Path(str(tokenized_paths.get("train") or DEFAULT_TOKENIZED_DIR / "train.arrow"))),
+        "val.arrow": _manifest_file_hash(Path(str(tokenized_paths.get("val") or DEFAULT_TOKENIZED_DIR / "val.arrow"))),
+        "ood_val.arrow": _manifest_file_hash(Path(str(tokenized_paths.get("ood_val") or DEFAULT_TOKENIZED_DIR / "ood_val.arrow"))),
+    }
+
+
 def write_phase19_training_reports(run_root: Path, *, mode: str, elapsed: float, trainer_state: Any, adapter_dir: Path, targs_kwargs: dict[str, Any], tokenized_dir: Path = DEFAULT_TOKENIZED_DIR) -> Path:
     state = _trainer_state_payload(trainer_state)
     loss_curve = [
@@ -443,6 +461,7 @@ def write_phase19_training_reports(run_root: Path, *, mode: str, elapsed: float,
         data_manifest,
         {
             "phase18": tokenized["phase18"],
+            "tokenized_paths": tokenized["manifest"].get("tokenized_paths", {}),
             "tokenized_sha256": tokenized["tokenized_sha256"],
             "split_counts": tokenized["split_counts"],
             "requirements_covered": list(REQUIREMENTS_COVERED),
@@ -566,10 +585,11 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
 
     phase18_hashes = training.get("phase18_artifact_hashes") if isinstance(training.get("phase18_artifact_hashes"), dict) else {}
     expected_phase18_hashes = _expected_phase18_hashes_from_manifest(data_manifest_payload)
-    phase18_ok = phase18_hashes == expected_phase18_hashes and all(expected_phase18_hashes.values())
-    gates["phase18_artifact_hashes"] = _gate(phase18_ok, None if phase18_ok else "Phase 18/tokenized artifact hashes do not match data manifest", {"expected": expected_phase18_hashes, "actual": phase18_hashes})
+    actual_phase18_hashes = _actual_phase18_hashes_from_manifest(data_manifest_payload)
+    phase18_ok = phase18_hashes == expected_phase18_hashes and expected_phase18_hashes == actual_phase18_hashes and all(actual_phase18_hashes.values())
+    gates["phase18_artifact_hashes"] = _gate(phase18_ok, None if phase18_ok else "Phase 18/tokenized artifact hashes do not match data manifest and on-disk artifacts", {"expected": expected_phase18_hashes, "actual": phase18_hashes, "on_disk": actual_phase18_hashes})
     if not phase18_ok:
-        _fail(failures, "phase18_artifact_hashes", "Phase 18/tokenized artifact hashes do not match data manifest")
+        _fail(failures, "phase18_artifact_hashes", "Phase 18/tokenized artifact hashes do not match data manifest and on-disk artifacts")
 
     lora = training.get("lora_config") if isinstance(training.get("lora_config"), dict) else {}
     lora_ok = lora.get("r") == 64 and lora.get("lora_alpha") == 64 and float(lora.get("lora_dropout", -1)) == 0.0
