@@ -2,7 +2,7 @@
 
 ## Overview
 
-v4.1 has shipped as a clean, minimal reproduction package for the v4.0 Qwen3-4B 9k result. The repository now preserves the canonical v4 inputs, manifests, reports, final q4_K_M GGUF artifact, and `reality_test.log`, while non-v4 legacy/cache clutter has been removed from the active project tree.
+v4.2 repairs the low-saturation max-green failure observed in the latest v4.0 4B model outputs. The milestone first makes the failure measurable and gates it offline, then rebuilds calibrated training data without changing the final deployment system/inference prompt, retrains the existing Qwen3-4B QLoRA route, exports merged HF and GGUF artifacts, and finishes with a new gated `reality_test.log` replay.
 
 ## Milestones
 
@@ -11,6 +11,7 @@ v4.1 has shipped as a clean, minimal reproduction package for the v4.0 Qwen3-4B 
 - Stopped: **v3.0 Qwen3.5-9B Route** — stopped 2026-05-10 after Phase 1–3; 9B local training was too slow
 - Shipped: **v4.0 4B 回退 + 扩展数据重训 + 标签协议修复** — Phases 7–12 shipped 2026-05-11; archived in `milestones/v4.0-ROADMAP.md`
 - Shipped: **v4.1 项目清理 / v4 最小复现包** — Phases 13–16 shipped 2026-05-12; archived in `milestones/v4.1-ROADMAP.md`
+- Planned: **v4.2 饱和度-绿灯策略校准 / 教师标签重建** — Phases 17–20
 
 ## Phases
 
@@ -40,7 +41,59 @@ Full details: `milestones/v4.1-ROADMAP.md`
 
 </details>
 
+- [ ] **Phase 17: Audit & Saturation Policy Gate** - Quantify existing low-saturation max-green failures and establish the offline saturation gate without changing deployment prompts.
+- [ ] **Phase 18: Calibrated Dataset Rebuild** - Filter or relabel v4 examples into a calibrated v4.2 training dataset with reproducible reports and splits.
+- [ ] **Phase 19: 4B QLoRA Retrain & Export** - Retrain the existing Qwen3-4B QLoRA route and export merged HF plus fp16/q4_K_M GGUF artifacts.
+- [ ] **Phase 20: Evaluation & Reality Replay Handoff** - Evaluate v4.2 against hard constraints, protocol, saturation policy, and produce a new gated `reality_test.log`.
+
+## Phase Details
+
+### Phase 17: Audit & Saturation Policy Gate
+**Goal**: Maintainer can measure the saturation/green mismatch, inspect representative failures, and run an offline policy gate that protects data, evaluation, and replay outputs while preserving the unchanged v4 deployment prompt protocol.
+**Depends on**: Phase 16
+**Requirements**: AUDIT-01, AUDIT-02, POLICY-01, POLICY-02, POLICY-03
+**Success Criteria** (what must be TRUE):
+  1. Maintainer can generate banded statistics showing how often v4 teacher labels set `final == max_green` when `pred_saturation < 1.0`, broken down by saturation band, split, and source.
+  2. Maintainer can inspect representative failure examples from both `data/v4/phase8/labeled_merged.jsonl` and `reality_test.log` with sample id, phase id, saturation, min/max green, final green, and violation category.
+  3. Maintainer can run a saturation policy gate that classifies phase decisions into the intended saturation bands and fails outputs that exceed configured low-saturation max-green thresholds.
+  4. Maintainer can verify that final deployment system/inference prompts remain byte-for-byte aligned with the v4 inference protocol and do not explicitly include the saturation band rule.
+**Plans**: TBD
+
+### Phase 18: Calibrated Dataset Rebuild
+**Goal**: Maintainer can build and review a calibrated v4.2 dataset that removes or repairs saturation-policy violations while preserving protocol format, hard constraints, provenance, hashes, and deterministic splits.
+**Depends on**: Phase 17
+**Requirements**: DATA-01, DATA-02
+**Success Criteria** (what must be TRUE):
+  1. Maintainer can rebuild the v4.2 training dataset from v4 sources with violating examples either rejected or relabelled according to the offline saturation policy gate.
+  2. Maintainer can confirm rebuilt examples preserve the required `<start_working_out>...</end_working_out><SOLUTION>...</SOLUTION>` protocol and all hard constraints.
+  3. Maintainer can review a reconstruction report showing source counts, rejected/relabelled counts, policy-pass rates, hard-constraint pass rates, dataset hashes, and split artifacts.
+**Plans**: TBD
+
+### Phase 19: 4B QLoRA Retrain & Export
+**Goal**: Maintainer can retrain the latest 4B student on the calibrated v4.2 dataset using the existing DGX Spark-safe QLoRA stack, then export reproducible merged HF and GGUF artifacts.
+**Depends on**: Phase 18
+**Requirements**: TRAIN-01, TRAIN-02
+**Success Criteria** (what must be TRUE):
+  1. Maintainer can launch v4.2 QLoRA SFT for `Qwen/Qwen3-4B-Thinking-2507` through the existing DGX Spark-safe stack without introducing a new base model or training framework.
+  2. Maintainer can inspect the training report and confirm it references the calibrated v4.2 dataset, expected protocol, and reproducible run paths.
+  3. Maintainer can export the calibrated adapter into merged HF, GGUF fp16, and GGUF q4_K_M artifacts with recorded paths, hashes, and export reports.
+**Plans**: TBD
+
+### Phase 20: Evaluation & Reality Replay Handoff
+**Goal**: Maintainer can decide whether v4.2 is better than v4.0 by evaluating hard constraints, output protocol, saturation policy behavior, and a new `reality.log` replay without rewarding reproduction of bad teacher labels.
+**Depends on**: Phase 19
+**Requirements**: EVAL-01, EVAL-02, EVAL-03
+**Success Criteria** (what must be TRUE):
+  1. Maintainer can evaluate the calibrated model with hard-constraint, parse/lint, protocol, and saturation policy gates while the old teacher-MAE metric is demoted or replaced.
+  2. Maintainer can replay `reality.log` with the calibrated q4_K_M GGUF model and generate a new `reality_test.log` that passes parse, lint, protocol, and saturation policy gates.
+  3. Maintainer can compare v4.0 and v4.2 outputs and confirm low-saturation max-green failures are removed or reduced to the approved threshold without regressing hard-constraint validity.
+  4. Maintainer can hand off the accepted v4.2 HF/GGUF artifacts, reports, and new replay log as the latest reproducible calibration result.
+**Plans**: TBD
+
 ## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 17 → 18 → 19 → 20
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -54,3 +107,7 @@ Full details: `milestones/v4.1-ROADMAP.md`
 | 14. Canonical v4 Reproduction Package | v4.1 | 1/1 | Complete | 2026-05-12 |
 | 15. Safe Cleanup Execution | v4.1 | 2/2 | Complete | 2026-05-12 |
 | 16. Verification & Handoff | v4.1 | 1/1 | Complete | 2026-05-12 |
+| 17. Audit & Saturation Policy Gate | v4.2 | 0/TBD | Not started | - |
+| 18. Calibrated Dataset Rebuild | v4.2 | 0/TBD | Not started | - |
+| 19. 4B QLoRA Retrain & Export | v4.2 | 0/TBD | Not started | - |
+| 20. Evaluation & Reality Replay Handoff | v4.2 | 0/TBD | Not started | - |

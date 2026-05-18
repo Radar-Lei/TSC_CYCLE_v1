@@ -60,24 +60,24 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUDIT-01 | TBD | Pending |
-| AUDIT-02 | TBD | Pending |
-| POLICY-01 | TBD | Pending |
-| POLICY-02 | TBD | Pending |
-| POLICY-03 | TBD | Pending |
-| DATA-01 | TBD | Pending |
-| DATA-02 | TBD | Pending |
-| TRAIN-01 | TBD | Pending |
-| TRAIN-02 | TBD | Pending |
-| EVAL-01 | TBD | Pending |
-| EVAL-02 | TBD | Pending |
-| EVAL-03 | TBD | Pending |
+| AUDIT-01 | Phase 17 | Pending |
+| AUDIT-02 | Phase 17 | Pending |
+| POLICY-01 | Phase 17 | Pending |
+| POLICY-02 | Phase 17 | Pending |
+| POLICY-03 | Phase 17 | Pending |
+| DATA-01 | Phase 18 | Pending |
+| DATA-02 | Phase 18 | Pending |
+| TRAIN-01 | Phase 19 | Pending |
+| TRAIN-02 | Phase 19 | Pending |
+| EVAL-01 | Phase 20 | Pending |
+| EVAL-02 | Phase 20 | Pending |
+| EVAL-03 | Phase 20 | Pending |
 
 **Coverage:**
 - v4.2 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12 ⚠️
+- Mapped to phases: 12
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-18*
-*Last updated: 2026-05-18 after v4.2 milestone requirements definition*
+*Last updated: 2026-05-18 after v4.2 roadmap creation*
