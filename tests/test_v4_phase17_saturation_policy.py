@@ -362,7 +362,9 @@ def test_phase17_report_paths_are_constrained_to_artifact_root(tmp_path: Path) -
         Path("/tmp/phase17-report.json"),
         PROJECT_ROOT / "runs" / "20260507T032419Z" / "report.json",
         mod.ARTIFACT_ROOT / ".." / "phase12" / "stolen.json",
+        PROJECT_ROOT / "data" / "v4" / "phase8" / "labeled_merged.jsonl",
         PROJECT_ROOT / "tsc_cycle" / "prompt_builder.py",
+        PROJECT_ROOT / "artifacts" / "v4" / "stolen.json",
     ]
     for blocked in blocked_paths:
         with pytest.raises(ValueError, match="Phase 17 report output path is not allowed"):
@@ -402,6 +404,28 @@ def test_phase17_cli_artifact_root_derives_default_output_paths(monkeypatch: pyt
     assert seen["out_path"] == artifact_root / "saturation_policy_gate.json"
     assert seen["audit_out_path"] == artifact_root / "saturation_audit_report.json"
     assert seen["prompt_protocol_out_path"] == artifact_root / "prompt_protocol_report.json"
+
+
+@pytest.mark.parametrize(
+    "root",
+    [
+        PROJECT_ROOT,
+        PROJECT_ROOT / "data",
+        PROJECT_ROOT / "tsc_cycle",
+        PROJECT_ROOT / "artifacts",
+        PROJECT_ROOT / "artifacts" / "v4",
+        PROJECT_ROOT / "artifacts" / "v4" / "phase17" / "..",
+    ],
+)
+def test_phase17_cli_rejects_broad_artifact_root(monkeypatch: pytest.MonkeyPatch, root: Path) -> None:
+    mod = _audit_contract()
+    monkeypatch.setattr(mod, "evaluate_phase17_audit", lambda **kwargs: {"ok": True})
+    original_root = mod.ARTIFACT_ROOT
+    try:
+        with pytest.raises(ValueError, match="Phase 17 artifact root is not allowed"):
+            mod.main(["--artifact-root", str(root)])
+    finally:
+        mod.ARTIFACT_ROOT = original_root
 
 
 def test_phase17_cli_exit_reflects_report_status(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
