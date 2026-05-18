@@ -89,7 +89,7 @@ def _require_output_path(path: Path, *, run_root: Path) -> None:
 
 
 def _tool(path: Path, name: str, failures: list[dict[str, str]], *, required: bool = True) -> str:
-    ok = Path(path).is_file() and (name.endswith(".py") or Path(path).stat().st_size > 0)
+    ok = Path(path).is_file() and Path(path).stat().st_size > 0
     if required and not ok:
         failures.append({"gate": name, "reason": f"missing llama.cpp tool: {path}"})
     return str(path)

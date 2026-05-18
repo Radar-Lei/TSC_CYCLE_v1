@@ -724,10 +724,24 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
     tokenization_report_hashes = _expected_phase18_hashes_from_tokenization_report()
     actual_phase18_hashes, lineage_path_failures = _actual_phase18_hashes_from_manifest(data_manifest_payload, root)
     tokenized_content_failures = _tokenized_content_failures(root)
+    phase18_ok, phase18_handoff, phase18_handoff_failures = validate_phase18_handoff(
+        Phase19TrainingConfig(
+            calibrated_jsonl=_canonical_lineage_path(root, DEFAULT_CALIBRATED_JSONL),
+            split_dir=_canonical_lineage_path(root, DEFAULT_SPLIT_DIR),
+            tokenized_dir=_canonical_lineage_path(root, DEFAULT_TOKENIZED_DIR),
+            phase18_report=_canonical_lineage_path(root, DEFAULT_PHASE18_REPORT),
+            artifacts_dir=_canonical_lineage_path(root, DEFAULT_ARTIFACTS_DIR),
+        )
+    )
     failures.extend(lineage_path_failures)
     failures.extend(tokenized_content_failures)
-    phase18_ok = not lineage_path_failures and not tokenized_content_failures and phase18_hashes == expected_phase18_hashes and expected_phase18_hashes == actual_phase18_hashes and actual_phase18_hashes == tokenization_report_hashes and all(actual_phase18_hashes.values())
-    gates["phase18_artifact_hashes"] = _gate(phase18_ok, None if phase18_ok else "Phase 18/tokenized artifact hashes do not match data manifest, tokenization report, and on-disk artifacts", {"expected": expected_phase18_hashes, "actual": phase18_hashes, "on_disk": actual_phase18_hashes, "tokenization_report": tokenization_report_hashes})
+    failures.extend(phase18_handoff_failures)
+    phase18_anchor_hashes = {
+        "calibrated_jsonl_sha256": str(phase18_handoff.get("expected_hash", "")),
+        "phase18_report_sha256": _manifest_file_hash(_canonical_lineage_path(root, DEFAULT_PHASE18_REPORT)),
+    }
+    phase18_ok = phase18_ok and not lineage_path_failures and not tokenized_content_failures and phase18_hashes == expected_phase18_hashes and expected_phase18_hashes == actual_phase18_hashes and actual_phase18_hashes == tokenization_report_hashes and all(actual_phase18_hashes.values()) and actual_phase18_hashes["calibrated_jsonl_sha256"] == phase18_anchor_hashes["calibrated_jsonl_sha256"]
+    gates["phase18_artifact_hashes"] = _gate(phase18_ok, None if phase18_ok else "Phase 18/tokenized artifact hashes do not match data manifest, tokenization report, Phase 18 report, and on-disk artifacts", {"expected": expected_phase18_hashes, "actual": phase18_hashes, "on_disk": actual_phase18_hashes, "tokenization_report": tokenization_report_hashes, "phase18_report_anchor": phase18_anchor_hashes})
     if not phase18_ok:
         _fail(failures, "phase18_artifact_hashes", "Phase 18/tokenized artifact hashes do not match data manifest, tokenization report, and on-disk artifacts")
 

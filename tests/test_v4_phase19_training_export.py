@@ -311,10 +311,30 @@ def _make_adapter(adapter_dir: Path) -> str:
     return _hash_directory(adapter_dir)
 
 
+def _copy_phase19_lineage(root: Path) -> Path:
+    import shutil
+
+    for relative in [
+        "data/v4_2/phase18/labeled_calibrated.jsonl",
+        "artifacts/v4_2/phase18/reconstruction_report.json",
+        "artifacts/v4_2/phase19/tokenization_report.json",
+    ]:
+        source = PROJECT_ROOT / relative
+        target = root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+    for relative in ["data/v4_2/phase18/splits", "data/v4_2/phase18/tokenized"]:
+        shutil.copytree(PROJECT_ROOT / relative, root / relative, dirs_exist_ok=True)
+    return root
+
+
 def _make_phase19_lineage(root: Path) -> tuple[dict, dict, dict, dict]:
-    manifest = _read_json(PROJECT_ROOT / "data/v4_2/phase18/tokenized/manifest.json")
-    phase18 = manifest["phase18"]
-    tokenized_paths = manifest["tokenized_paths"]
+    manifest = _read_json(root / "data/v4_2/phase18/tokenized/manifest.json")
+    phase18 = dict(manifest["phase18"])
+    phase18["calibrated_jsonl"] = str(root / "data/v4_2/phase18/labeled_calibrated.jsonl")
+    phase18["phase18_report"] = str(root / "artifacts/v4_2/phase18/reconstruction_report.json")
+    phase18["split_manifest"] = str(root / "data/v4_2/phase18/splits/manifest.json")
+    tokenized_paths = {split: str(root / f"data/v4_2/phase18/tokenized/{split}.arrow") for split in ("train", "val", "ood_val")}
     tokenized_sha256 = manifest["tokenized_sha256"]
     phase18_artifact_hashes = {
         "calibrated_jsonl_sha256": phase18["calibrated_jsonl_sha256"],
@@ -326,13 +346,16 @@ def _make_phase19_lineage(root: Path) -> tuple[dict, dict, dict, dict]:
     return phase18, tokenized_paths, tokenized_sha256, phase18_artifact_hashes
 
 
-def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Path) -> None:
-    from tsc_cycle.v4_gates.phase19_training import validate_phase19_training_report  # noqa: PLC0415
+def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from tsc_cycle.v4_gates import phase19_training as phase19_gate  # noqa: PLC0415
 
+    lineage_root = _copy_phase19_lineage(tmp_path / "lineage")
+    monkeypatch.setattr(phase19_gate, "PROJECT_ROOT", lineage_root)
+    validate_phase19_training_report = phase19_gate.validate_phase19_training_report
     run_root = tmp_path / "runs" / "v4.2-4B-20260518T120000Z"
     adapter_dir = run_root / "adapter"
     adapter_sha = _make_adapter(adapter_dir)
-    phase18, tokenized_paths, tokenized_sha256, phase18_artifact_hashes = _make_phase19_lineage(tmp_path)
+    phase18, tokenized_paths, tokenized_sha256, phase18_artifact_hashes = _make_phase19_lineage(lineage_root)
     data_manifest = _write_json(
         run_root / "phase19_data_manifest.json",
         {
@@ -471,49 +494,55 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     assert any(failure["gate"] == "adapter_hash" for failure in wrong_adapter_rejected["fatal_failures"])
     (adapter_dir / "adapter_config.json").write_text('{"base_model_name_or_path":"Qwen/Qwen3-4B-Thinking-2507"}\n', encoding="utf-8")
 
-    token_report = PROJECT_ROOT / "artifacts/v4_2/phase19/tokenization_report.json"
-    original_token_report = token_report.read_text(encoding="utf-8")
-    try:
-        token_payload = json.loads(original_token_report)
-        token_payload["tokenized_sha256"]["train"] = "z" * 64
-        token_report.write_text(json.dumps(token_payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        token_report_rejected = validate_phase19_training_report(run_root, report_path=report)
-        assert token_report_rejected["ok"] is False
-        assert any(failure["gate"] == "phase18_artifact_hashes" for failure in token_report_rejected["fatal_failures"])
-    finally:
-        token_report.write_text(original_token_report, encoding="utf-8")
+    token_report = lineage_root / "artifacts/v4_2/phase19/tokenization_report.json"
+    token_payload = _read_json(token_report)
+    token_payload["tokenized_sha256"]["train"] = "z" * 64
+    token_report.write_text(json.dumps(token_payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    token_report_rejected = validate_phase19_training_report(run_root, report_path=report)
+    assert token_report_rejected["ok"] is False
+    assert any(failure["gate"] == "phase18_artifact_hashes" for failure in token_report_rejected["fatal_failures"])
+    token_payload["tokenized_sha256"]["train"] = phase18_artifact_hashes["train.arrow"]
+    token_report.write_text(json.dumps(token_payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     import pyarrow as pa  # noqa: PLC0415
 
-    train_arrow = PROJECT_ROOT / "data/v4_2/phase18/tokenized/train.arrow"
+    train_arrow = lineage_root / "data/v4_2/phase18/tokenized/train.arrow"
     original_arrow = train_arrow.read_bytes()
-    try:
-        with pa.memory_map(str(train_arrow), "r") as source:
-            table = pa.ipc.open_file(source).read_all()
-        rows = table.to_pylist()
-        rows[0]["input_ids"] = list(rows[0]["input_ids"])
-        rows[0]["input_ids"][0] = 999999
-        tampered = pa.Table.from_pylist(rows, schema=table.schema)
-        with pa.OSFile(str(train_arrow), "wb") as sink:
-            with pa.ipc.new_file(sink, tampered.schema) as writer:
-                writer.write_table(tampered)
-        tampered_arrow_rejected = validate_phase19_training_report(run_root, report_path=report)
-        assert tampered_arrow_rejected["ok"] is False
-        assert any(failure["gate"] == "tokenized_content" for failure in tampered_arrow_rejected["fatal_failures"])
-    finally:
-        train_arrow.write_bytes(original_arrow)
+    with pa.memory_map(str(train_arrow), "r") as source:
+        table = pa.ipc.open_file(source).read_all()
+    rows = table.to_pylist()
+    rows[0]["input_ids"] = list(rows[0]["input_ids"])
+    rows[0]["input_ids"][0] = 999999
+    tampered = pa.Table.from_pylist(rows, schema=table.schema)
+    with pa.OSFile(str(train_arrow), "wb") as sink:
+        with pa.ipc.new_file(sink, tampered.schema) as writer:
+            writer.write_table(tampered)
+    tampered_arrow_rejected = validate_phase19_training_report(run_root, report_path=report)
+    assert tampered_arrow_rejected["ok"] is False
+    assert any(failure["gate"] == "tokenized_content" for failure in tampered_arrow_rejected["fatal_failures"])
+    train_arrow.write_bytes(original_arrow)
 
-    split_manifest = PROJECT_ROOT / "data/v4_2/phase18/splits/manifest.json"
-    original_split_manifest = split_manifest.read_text(encoding="utf-8")
-    try:
-        split_payload = json.loads(original_split_manifest)
-        split_payload["split_ids_sha256"]["train"] = "x" * 64
-        split_manifest.write_text(json.dumps(split_payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        split_manifest_rejected = validate_phase19_training_report(run_root, report_path=report)
-        assert split_manifest_rejected["ok"] is False
-        assert any(failure["gate"] == "tokenized_content" for failure in split_manifest_rejected["fatal_failures"])
-    finally:
-        split_manifest.write_text(original_split_manifest, encoding="utf-8")
+    calibrated = lineage_root / "data/v4_2/phase18/labeled_calibrated.jsonl"
+    calibrated.write_text(calibrated.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+    forged_anchor_manifest = _read_json(data_manifest)
+    forged_anchor_manifest["phase18"]["calibrated_jsonl_sha256"] = __import__("hashlib").sha256(calibrated.read_bytes()).hexdigest()
+    forged_anchor_manifest_path = _write_json(run_root / "forged_anchor_manifest.json", forged_anchor_manifest)
+    forged_anchor_report = _read_json(report)
+    forged_anchor_report["data_manifest_path"] = str(forged_anchor_manifest_path)
+    forged_anchor_report["data_manifest_sha256"] = __import__("hashlib").sha256(forged_anchor_manifest_path.read_bytes()).hexdigest()
+    forged_anchor_report["phase18_artifact_hashes"] = dict(phase18_artifact_hashes, calibrated_jsonl_sha256=forged_anchor_manifest["phase18"]["calibrated_jsonl_sha256"])
+    forged_anchor_report_path = _write_json(run_root / "forged_anchor_report.json", forged_anchor_report)
+    forged_anchor_rejected = validate_phase19_training_report(run_root, report_path=forged_anchor_report_path)
+    assert forged_anchor_rejected["ok"] is False
+    assert any(failure["gate"] == "calibrated_jsonl_sha256" for failure in forged_anchor_rejected["fatal_failures"])
+
+    split_manifest = lineage_root / "data/v4_2/phase18/splits/manifest.json"
+    split_payload = _read_json(split_manifest)
+    split_payload["split_ids_sha256"]["train"] = "x" * 64
+    split_manifest.write_text(json.dumps(split_payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    split_manifest_rejected = validate_phase19_training_report(run_root, report_path=report)
+    assert split_manifest_rejected["ok"] is False
+    assert any(failure["gate"] == "tokenized_content" for failure in split_manifest_rejected["fatal_failures"])
 
     wrapper = (PROJECT_ROOT / "scripts/run_v4_phase19_train.sh").read_text(encoding="utf-8")
     assert "<<'PY'" in wrapper
@@ -530,7 +559,7 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
 def _make_phase19_training_handoff(run_root: Path) -> Path:
     adapter_dir = run_root / "adapter"
     adapter_sha = _make_adapter(adapter_dir)
-    phase18, tokenized_paths, tokenized_sha256, phase18_artifact_hashes = _make_phase19_lineage(run_root.parents[1])
+    phase18, tokenized_paths, tokenized_sha256, phase18_artifact_hashes = _make_phase19_lineage(PROJECT_ROOT)
     data_manifest = _write_json(
         run_root / "phase19_data_manifest.json",
         {
