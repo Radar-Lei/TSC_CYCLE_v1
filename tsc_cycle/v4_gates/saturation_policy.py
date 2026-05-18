@@ -352,7 +352,6 @@ def compute_saturation_audit(rows: list[dict[str, Any]], *, example_limit: int =
     by_split: dict[str, dict[str, Any]] = {}
     by_source: dict[str, dict[str, Any]] = {}
     by_origin: dict[str, dict[str, Any]] = {}
-    examples: list[dict[str, Any]] = []
     required_example_fields = [
         "origin_artifact",
         "sample_id",
@@ -366,14 +365,37 @@ def compute_saturation_audit(rows: list[dict[str, Any]], *, example_limit: int =
         "source",
         "violation_category",
     ]
-    for row in sorted(normalised_rows, key=lambda r: (str(r.get("origin_artifact")), str(r.get("sample_id")), str(r.get("phase_id")))):
+    sorted_rows = sorted(normalised_rows, key=lambda r: (str(r.get("origin_artifact")), str(r.get("sample_id")), str(r.get("phase_id"))))
+    violation_rows: list[dict[str, Any]] = []
+    for row in sorted_rows:
         band = str(row["saturation_band"])
         _add_to_slice(bands.setdefault(band, _empty_slice()), row)
         _add_to_slice(by_split.setdefault(str(row.get("split") or "unknown"), _empty_slice()), row)
         _add_to_slice(by_source.setdefault(str(row.get("source") or "unknown"), _empty_slice()), row)
         _add_to_slice(by_origin.setdefault(str(row.get("origin_artifact") or "unknown"), _empty_slice()), row)
-        if row.get("violation_category") == VIOLATION_UNSATURATED_MAX_GREEN and len(examples) < example_limit:
-            examples.append({field: row.get(field) for field in required_example_fields})
+        if row.get("violation_category") == VIOLATION_UNSATURATED_MAX_GREEN:
+            violation_rows.append(row)
+
+    examples: list[dict[str, Any]] = []
+    selected_keys: set[tuple[str, str, str]] = set()
+
+    def add_example(row: dict[str, Any]) -> None:
+        key = (str(row.get("origin_artifact")), str(row.get("sample_id")), str(row.get("phase_id")))
+        if key in selected_keys or len(examples) >= example_limit:
+            return
+        selected_keys.add(key)
+        examples.append({field: row.get(field) for field in required_example_fields})
+
+    if example_limit > 0:
+        seen_origins: set[str] = set()
+        for row in violation_rows:
+            origin = str(row.get("origin_artifact") or "unknown")
+            if origin in seen_origins:
+                continue
+            add_example(row)
+            seen_origins.add(origin)
+        for row in violation_rows:
+            add_example(row)
     return {
         "ok": True,
         "requirements_covered": list(REQUIREMENTS_COVERED),
