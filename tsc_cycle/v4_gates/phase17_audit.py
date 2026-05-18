@@ -109,9 +109,18 @@ def _is_under(path: Path, root: Path) -> bool:
     return candidate == root or root in candidate.parents
 
 
+def validate_phase17_artifact_root(path: str | Path) -> Path:
+    candidate = Path(path).expanduser().resolve(strict=False)
+    if candidate.name != "phase17" or candidate.parent.name != "v4" or candidate.parent.parent.name != "artifacts":
+        raise ValueError(f"Phase 17 artifact root is not allowed: {candidate}")
+    if _is_under(PROJECT_ROOT, candidate) or _is_under(candidate, FROZEN_V1_ROOT):
+        raise ValueError(f"Phase 17 artifact root is not allowed: {candidate}")
+    return candidate
+
+
 def reject_unsafe_phase17_output_path(path: str | Path) -> Path:
     candidate = Path(path).expanduser().resolve(strict=False)
-    artifact_root = ARTIFACT_ROOT.resolve(strict=False)
+    artifact_root = validate_phase17_artifact_root(ARTIFACT_ROOT)
     if _is_under(candidate, FROZEN_V1_ROOT):
         raise ValueError(f"Phase 17 report output path is not allowed: {candidate}")
     if _is_under(candidate, artifact_root):
@@ -527,7 +536,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     global ARTIFACT_ROOT
-    ARTIFACT_ROOT = Path(args.artifact_root)
+    ARTIFACT_ROOT = validate_phase17_artifact_root(args.artifact_root)
     out_path = args.out or ARTIFACT_ROOT / "saturation_policy_gate.json"
     audit_out_path = args.audit_out or ARTIFACT_ROOT / "saturation_audit_report.json"
     prompt_protocol_out_path = args.prompt_protocol_out or ARTIFACT_ROOT / "prompt_protocol_report.json"
