@@ -135,6 +135,23 @@ def _solution_from_dataset_record(record: dict[str, Any]) -> dict[str, Any] | No
     return None
 
 
+def _validate_phase_waits_schema(prediction_input: dict[str, Any], *, sample_id: str) -> None:
+    prediction = prediction_input.get("prediction")
+    if not isinstance(prediction, dict):
+        raise ValueError(f"prediction is not an object for sample_id={sample_id}")
+    waits = prediction.get("phase_waits", [])
+    if not isinstance(waits, list):
+        raise ValueError(f"phase_waits is not a list for sample_id={sample_id}")
+    for index, wait in enumerate(waits, start=1):
+        if not isinstance(wait, dict):
+            raise ValueError(f"phase_waits entry {index} is not an object for sample_id={sample_id}")
+        missing = sorted(field for field in ("phase_id", "pred_saturation", "min_green", "max_green") if field not in wait)
+        if missing:
+            raise ValueError(
+                f"phase_waits entry {index} missing required field(s) for sample_id={sample_id}: {', '.join(missing)}"
+            )
+
+
 def _project_record_phases(
     *,
     sample_id: str,
@@ -192,7 +209,13 @@ def project_dataset_phase_decisions(
             excluded_counts["missing_solution_or_input"] += 1
             excluded_samples.append({"sample_id": sample_id, "reason": "missing_solution_or_input"})
             continue
-        lint = validate(prediction_input, solution)
+        try:
+            _validate_phase_waits_schema(prediction_input, sample_id=sample_id)
+            lint = validate(prediction_input, solution)
+        except (KeyError, TypeError, ValueError) as exc:
+            excluded_counts["malformed_prediction_input"] += 1
+            excluded_samples.append({"sample_id": sample_id, "reason": "malformed_prediction_input", "error": str(exc)})
+            continue
         if not lint.ok:
             excluded_counts["hard_constraint_invalid"] += 1
             excluded_samples.append({"sample_id": sample_id, "reason": "hard_constraint_invalid", "violations": lint.violations})
@@ -257,7 +280,13 @@ def project_replay_phase_decisions(
             excluded_counts["missing_solution_or_input"] += 1
             excluded_samples.append({"sample_id": sample_id, "reason": "missing_solution_or_input"})
             continue
-        lint = validate(prediction_input, solution)
+        try:
+            _validate_phase_waits_schema(prediction_input, sample_id=sample_id)
+            lint = validate(prediction_input, solution)
+        except (KeyError, TypeError, ValueError) as exc:
+            excluded_counts["malformed_prediction_input"] += 1
+            excluded_samples.append({"sample_id": sample_id, "reason": "malformed_prediction_input", "error": str(exc)})
+            continue
         if not lint.ok:
             excluded_counts["hard_constraint_invalid"] += 1
             excluded_samples.append({"sample_id": sample_id, "reason": "hard_constraint_invalid", "violations": lint.violations})

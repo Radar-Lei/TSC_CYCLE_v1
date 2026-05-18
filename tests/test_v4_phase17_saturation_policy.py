@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import builtins
+import copy
 import hashlib
 import importlib
 import json
@@ -179,6 +180,108 @@ def test_dataset_projection_surfaces_malformed_and_hard_constraint_invalid_rows(
     assert projection["rows"] == []
     assert projection["excluded_counts"]["hard_constraint_invalid"] == 1
     assert projection["excluded_samples"][0]["sample_id"] == "bad"
+
+
+def _dataset_row_with_phase_waits(sample_id: str, phase_waits: object, solution: dict[str, int] | None = None) -> dict:
+    row = _dataset_row(sample_id, solution=solution)
+    row["input"] = {"prediction": {"phase_waits": phase_waits}}
+    return row
+
+
+
+def _malformed_phase_waits_cases() -> list[tuple[str, object, str]]:
+    valid_wait = {"phase_id": 1, "pred_saturation": 0.1, "min_green": 10, "max_green": 50, "pred_wait": 1.0, "capacity": 10}
+    cases: list[tuple[str, object, str]] = []
+    for field in ("phase_id", "min_green", "max_green"):
+        wait = copy.deepcopy(valid_wait)
+        del wait[field]
+        cases.append((f"missing-{field}", [wait], field))
+    cases.append(("non-object-entry", ["not-an-object"], "not an object"))
+    return cases
+
+
+
+@pytest.mark.parametrize(("sample_id", "phase_waits", "expected_error"), _malformed_phase_waits_cases())
+def test_dataset_projection_accounts_malformed_phase_waits_as_malformed_evidence(
+    tmp_path: Path,
+    sample_id: str,
+    phase_waits: object,
+    expected_error: str,
+) -> None:
+    mod = _policy_contract()
+    dataset = _write_jsonl(tmp_path / f"{sample_id}.jsonl", [_dataset_row_with_phase_waits(sample_id, phase_waits)])
+
+    projection = mod.project_dataset_phase_decisions(dataset)
+
+    assert projection["ok"] is True
+    assert projection["rows"] == []
+    assert projection["excluded_counts"] == {"malformed_prediction_input": 1}
+    assert projection["excluded_samples"][0]["sample_id"] == sample_id
+    assert projection["excluded_samples"][0]["reason"] == "malformed_prediction_input"
+    assert expected_error in projection["excluded_samples"][0]["error"]
+
+
+
+@pytest.mark.parametrize(("sample_id", "phase_waits", "expected_error"), _malformed_phase_waits_cases())
+def test_replay_projection_accounts_malformed_phase_waits_as_malformed_evidence(
+    tmp_path: Path,
+    sample_id: str,
+    phase_waits: object,
+    expected_error: str,
+) -> None:
+    mod = _policy_contract()
+    records = [{"sample_id": sample_id, "input": _dataset_row_with_phase_waits(sample_id, phase_waits)["input"]}]
+    manifest = tmp_path / f"{sample_id}-manifest.json"
+    manifest.write_text(json.dumps({"records": records}, ensure_ascii=False), encoding="utf-8")
+    per_sample = _write_jsonl(tmp_path / f"{sample_id}-per_sample.jsonl", [{"sample_id": sample_id, "solution": {"1": 50}}])
+
+    projection = mod.project_replay_phase_decisions(manifest, per_sample)
+
+    assert projection["ok"] is True
+    assert projection["rows"] == []
+    assert projection["excluded_counts"] == {"malformed_prediction_input": 1}
+    assert projection["excluded_samples"][0]["sample_id"] == sample_id
+    assert projection["excluded_samples"][0]["reason"] == "malformed_prediction_input"
+    assert expected_error in projection["excluded_samples"][0]["error"]
+
+
+
+def test_phase17_policy_gate_fails_closed_on_projected_malformed_phase_waits(tmp_path: Path) -> None:
+    audit_mod = _audit_contract()
+    malformed_dataset = _write_jsonl(
+        tmp_path / "malformed_dataset.jsonl",
+        [_dataset_row_with_phase_waits("bad-dataset", [{"pred_saturation": 0.1, "min_green": 10, "max_green": 50}])],
+    )
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {"records": [{"sample_id": "bad-replay", "input": _dataset_row_with_phase_waits("bad-replay", ["not-an-object"])["input"]}]},
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    per_sample = _write_jsonl(tmp_path / "per_sample.jsonl", [{"sample_id": "bad-replay", "solution": {"1": 50}}])
+    artifact_root = tmp_path / "artifacts" / "v4" / "phase17"
+    original_root = audit_mod.ARTIFACT_ROOT
+    try:
+        audit_mod.ARTIFACT_ROOT = artifact_root
+        report = audit_mod.evaluate_phase17_audit(
+            dataset_path=malformed_dataset,
+            split_dir=tmp_path / "splits",
+            phase12_manifest_path=manifest,
+            phase12_per_sample_path=per_sample,
+            out_path=artifact_root / "gate.json",
+            audit_out_path=artifact_root / "audit.json",
+            prompt_protocol_out_path=artifact_root / "prompt.json",
+        )
+    finally:
+        audit_mod.ARTIFACT_ROOT = original_root
+
+    assert report["ok"] is False
+    assert report["counts"]["excluded_counts"] == {"malformed_prediction_input": 2}
+    assert any(failure["gate"] == "data_threshold_excess_malformed_row_rate" for failure in report["fatal_failures"])
+    assert any(failure["gate"] == "replay_threshold_excess_malformed_row_rate" for failure in report["fatal_failures"])
+
 
 
 def test_replay_projection_uses_structured_phase12_evidence_and_fails_on_mismatch(tmp_path: Path) -> None:
