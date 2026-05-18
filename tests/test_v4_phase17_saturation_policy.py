@@ -292,6 +292,48 @@ def test_representative_failures_include_dataset_and_replay_fields() -> None:
     assert all(example["violation_category"] == mod.VIOLATION_UNSATURATED_MAX_GREEN for example in examples)
 
 
+def test_representative_examples_keep_replay_when_dataset_exhausts_limit() -> None:
+    mod = _policy_contract()
+    rows = [
+        {
+            "origin_artifact": "dataset:labeled_merged.jsonl",
+            "sample_id": f"sample-{idx:02d}",
+            "phase_id": "1",
+            "pred_saturation": 0.1,
+            "saturation_band": mod.BAND_NEAR_MIN,
+            "min_green": 10,
+            "max_green": 50,
+            "final_green": 50,
+            "split": "train",
+            "source": "phase8-source",
+            "violation_category": mod.VIOLATION_UNSATURATED_MAX_GREEN,
+            "trivial_range": False,
+        }
+        for idx in range(20)
+    ]
+    rows.append({
+        "origin_artifact": "replay:phase12",
+        "sample_id": "reality-9999",
+        "phase_id": "2",
+        "pred_saturation": 0.5,
+        "saturation_band": mod.BAND_INTERPOLATED,
+        "min_green": 20,
+        "max_green": 60,
+        "final_green": 60,
+        "split": "replay",
+        "source": "phase12_replay",
+        "violation_category": mod.VIOLATION_UNSATURATED_MAX_GREEN,
+        "trivial_range": False,
+    })
+
+    examples = mod.compute_saturation_audit(rows, example_limit=10)["representative_examples"]
+
+    origins = [example["origin_artifact"] for example in examples]
+    assert len(examples) == 10
+    assert origins[:2] == ["dataset:labeled_merged.jsonl", "replay:phase12"]
+    assert origins.count("replay:phase12") == 1
+
+
 def test_audit_rejects_inconsistent_derived_fields() -> None:
     mod = _policy_contract()
     forged = _phase_row(sat=0.1, final_green=50, max_green=50)
