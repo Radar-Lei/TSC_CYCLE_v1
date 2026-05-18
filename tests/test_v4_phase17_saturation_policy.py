@@ -325,6 +325,18 @@ def test_audit_fails_closed_on_missing_nonfinite_denominator_data() -> None:
         mod.compute_saturation_audit([{"sample_id": "missing-fields"}])
 
 
+def test_audit_and_eval_paths_reject_json_float_integer_fields(tmp_path: Path) -> None:
+    mod = _policy_contract()
+    audit_row = _phase_row()
+    audit_row["final_green"] = 50.0
+    with pytest.raises(ValueError, match="final_green must be an integer"):
+        mod.compute_saturation_audit([audit_row])
+
+    dataset = _dataset_row("float-final", {"1": 50.0, "2": 60})
+    with pytest.raises(ValueError, match="final_green must be an integer"):
+        mod.project_dataset_phase_decisions(_write_jsonl(tmp_path / "float_final.jsonl", [dataset]))
+
+
 def test_build_parser_exposes_phase17_defaults() -> None:
     mod = _audit_contract()
     args = mod.build_parser().parse_args([])

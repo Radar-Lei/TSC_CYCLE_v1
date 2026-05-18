@@ -47,12 +47,12 @@ def _finite_float(value: Any, *, field: str = "value") -> float:
     return out
 
 
-def _finite_int(value: Any, *, field: str) -> int:
+def _finite_int(value: Any, *, field: str, strict_json_int: bool = True) -> int:
     if isinstance(value, bool):
         raise ValueError(f"{field} must be an integer, got bool")
     if isinstance(value, int):
         return value
-    if isinstance(value, float) and math.isfinite(value) and value.is_integer():
+    if not strict_json_int and isinstance(value, float) and math.isfinite(value) and value.is_integer():
         return int(value)
     raise ValueError(f"{field} must be an integer, got {value!r}")
 
