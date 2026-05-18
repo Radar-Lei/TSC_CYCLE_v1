@@ -417,6 +417,31 @@ def test_default_thresholds_are_locked_and_sat_ge_1_has_no_max_failure_threshold
     assert "sat_ge_1.0_allowed_max" not in "\n".join(mod.DEFAULT_THRESHOLDS)
 
 
+def test_policy_gate_fails_closed_on_missing_outputs() -> None:
+    mod = _audit_contract()
+    projection = {
+        "ok": True,
+        "input_count": 2,
+        "rows": [_phase_row("complete", sat=0.3, final_green=20)],
+        "excluded_counts": {"missing_solution_or_input": 1},
+    }
+
+    report = mod.evaluate_saturation_policy_gate(projection, source_type="data")
+
+    assert report["ok"] is False
+    assert report["gates"]["data_missing_output_rate"] == {
+        "ok": False,
+        "threshold": 0.0,
+        "count": 1,
+        "denominator": 2,
+        "rate": 0.5,
+    }
+    assert any(failure["gate"] == "data_threshold_excess_missing_output_rate" for failure in report["fatal_failures"])
+
+    loosened = dict(mod.DEFAULT_THRESHOLDS, missing_output_rate=0.5)
+    assert mod.evaluate_saturation_policy_gate(projection, thresholds=loosened, source_type="data")["ok"] is True
+
+
 def test_policy_gate_fails_closed_on_eval_style_threshold_excess() -> None:
     mod = _audit_contract()
     report = mod.evaluate_saturation_policy_gate([_phase_row()], source_type="eval")
