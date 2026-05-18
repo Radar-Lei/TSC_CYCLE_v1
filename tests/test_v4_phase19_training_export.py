@@ -35,6 +35,25 @@ def _sft_v42_contract():
     return sft_v42
 
 
+def _write_json(path: Path, payload: dict) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def _write_jsonl(path: Path, rows: list[dict]) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as fh:
+        for row in rows:
+            fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True))
+            fh.write("\n")
+    return path
+
+
+def _read_json(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def test_v42_training_defaults_lock_phase18_data_and_qwen4b_stack(tmp_path: Path) -> None:
     sft_v42 = _sft_v42_contract()
 
@@ -109,3 +128,140 @@ def test_v42_training_defaults_lock_phase18_data_and_qwen4b_stack(tmp_path: Path
     assert "v4_2" in phase_choices
     assert "if args.phase == \"v4\"" in train_source
     assert "if args.phase == \"v4_2\"" in train_source
+
+
+class FakeQwen4BTokenizer:
+    eos_token = "<eos>"
+
+    def __init__(self) -> None:
+        self.chat_template_used = False
+        self.calls: list[dict] = []
+        self.checked_untruncated_native_ids: list[list[int]] = []
+
+    def __len__(self) -> int:
+        return 151669
+
+    def apply_chat_template(self, *args, **kwargs) -> None:
+        self.chat_template_used = True
+        raise AssertionError("Phase 19 tokenization must use raw prompt/assistant text")
+
+    def encode(self, text: str, add_special_tokens: bool = False) -> list[int]:
+        assert add_special_tokens is False
+        if text == "<think>":
+            return [151667]
+        if text == "</think>":
+            return [151668]
+        return self._ids(text)
+
+    def __call__(self, text: str, *, add_special_tokens: bool = False, truncation: bool = False, max_length: int | None = None) -> dict[str, list[int]]:
+        assert add_special_tokens is False
+        ids = self._ids(text)
+        self.calls.append({"add_special_tokens": add_special_tokens, "truncation": truncation, "max_length": max_length, "ids": list(ids)})
+        if not truncation and any(token_id in {151667, 151668} for token_id in ids):
+            self.checked_untruncated_native_ids.append(list(ids))
+        if truncation and max_length is not None:
+            ids = ids[:max_length]
+        return {"input_ids": ids}
+
+    def _ids(self, text: str) -> list[int]:
+        ids: list[int] = []
+        i = 0
+        while i < len(text):
+            if text.startswith("<think>", i):
+                ids.append(151667)
+                i += len("<think>")
+            elif text.startswith("</think>", i):
+                ids.append(151668)
+                i += len("</think>")
+            else:
+                ids.append(1000 + (ord(text[i]) % 200))
+                i += 1
+        return ids
+
+
+def _phase19_sample(sample_id: str, reasoning: str = "Balance green time by calibrated saturation.", split: str = "train") -> dict:
+    return {
+        "sample_id": sample_id,
+        "split": split,
+        "source": "same_dist",
+        "input": {
+            "sample_id": sample_id,
+            "prediction": {
+                "as_of": "2026-05-18 00:00:00",
+                "phase_waits": [
+                    {"phase_id": 1, "pred_wait": 5.0, "pred_saturation": 0.20, "min_green": 10, "max_green": 60, "capacity": 40},
+                    {"phase_id": 2, "pred_wait": 12.0, "pred_saturation": 0.55, "min_green": 15, "max_green": 70, "capacity": 40},
+                ],
+            },
+        },
+        "result": {"success": True, "reasoning": reasoning, "solution": {"1": 20, "2": 38}},
+    }
+
+
+def test_phase18_handoff_tokenizes_calibrated_splits_with_protocol_hashes(tmp_path: Path) -> None:
+    from tsc_cycle.v4_gates.phase19_training import Phase19TrainingConfig, tokenize_phase18_handoff  # noqa: PLC0415
+
+    rows = [_phase19_sample("train-1", split="train"), _phase19_sample("val-1", split="val"), _phase19_sample("ood-1", split="ood_val")]
+    dataset = _write_jsonl(tmp_path / "data/v4_2/phase18/labeled_calibrated.jsonl", rows)
+    split_dir = tmp_path / "data/v4_2/phase18/splits"
+    for split, sample_id in {"train": "train-1", "val": "val-1", "ood_val": "ood-1"}.items():
+        _write_jsonl(split_dir / f"{split}.index.jsonl", [{"sample_id": sample_id, "split": split, "record_hash": "r" * 64, "prompt_hash": "p" * 64, "assistant_hash": "a" * 64}])
+    _write_json(split_dir / "manifest.json", {"ok": True, "split_counts": {"train": 1, "val": 1, "ood_val": 1}, "split_ids_sha256": {"train": "t", "val": "v", "ood_val": "o"}})
+    report = _write_json(
+        tmp_path / "artifacts/v4_2/phase18/reconstruction_report.json",
+        {
+            "ok": True,
+            "next_phase_allowed": True,
+            "requirements_covered": ["DATA-01", "DATA-02"],
+            "counts": {"retained_rows": 3},
+            "dataset_hashes": {"calibrated_jsonl_sha256": __import__("hashlib").sha256(dataset.read_bytes()).hexdigest()},
+            "splits": {"split_counts": {"train": 1, "val": 1, "ood_val": 1}},
+        },
+    )
+    config = Phase19TrainingConfig(
+        calibrated_jsonl=dataset,
+        split_dir=split_dir,
+        tokenized_dir=tmp_path / V42_TOKENIZED_DIR,
+        phase18_report=report,
+        artifacts_dir=tmp_path / PHASE19_ARTIFACTS_DIR,
+        max_seq_length=2048,
+    )
+
+    result = tokenize_phase18_handoff(config, tokenizer=FakeQwen4BTokenizer())
+
+    assert result["ok"] is True
+    assert result["requirements_covered"] == ["TRAIN-01"]
+    assert result["split_counts"] == {"train": 1, "val": 1, "ood_val": 1}
+    assert result["phase18"]["calibrated_jsonl_sha256"] == __import__("hashlib").sha256(dataset.read_bytes()).hexdigest()
+    assert "phase18_report_sha256" in result["phase18"]
+    assert result["gates"]["phase18_handoff"]["ok"] is True
+    assert result["gates"]["native_think_token_leak"]["ok"] is True
+    assert result["gates"]["split_counts"]["ok"] is True
+    manifest = _read_json(config.tokenized_dir / "manifest.json")
+    assert manifest["ok"] is True
+    assert manifest["split_counts"] == {"train": 1, "val": 1, "ood_val": 1}
+    assert set(manifest["tokenized_sha256"]) == {"train", "val", "ood_val"}
+    for split in ("train", "val", "ood_val"):
+        arrow_path = config.tokenized_dir / f"{split}.arrow"
+        assert arrow_path.exists()
+        table = __import__("pyarrow").ipc.open_file(__import__("pyarrow").memory_map(str(arrow_path), "r")).read_all()
+        assert table.num_rows == 1
+        assert {"sample_id", "input_ids", "attention_mask", "labels", "raw_length", "truncated", "prompt_hash", "assistant_hash"} <= set(table.column_names)
+
+    bad_report = _write_json(tmp_path / "bad_phase18.json", {"ok": False, "next_phase_allowed": False})
+    bad_config = Phase19TrainingConfig(calibrated_jsonl=dataset, split_dir=split_dir, tokenized_dir=tmp_path / "bad-tokenized", phase18_report=bad_report, artifacts_dir=tmp_path / "bad-artifacts")
+    bad = tokenize_phase18_handoff(bad_config, tokenizer=FakeQwen4BTokenizer())
+    assert bad["ok"] is False
+    assert any(failure["gate"] == "phase18_handoff" for failure in bad["fatal_failures"])
+
+    leak_rows = [_phase19_sample("train-1", reasoning="native <think> leak", split="train"), _phase19_sample("val-1", split="val"), _phase19_sample("ood-1", split="ood_val")]
+    _write_jsonl(dataset, leak_rows)
+    leak_report = _write_json(
+        tmp_path / "leak_phase18.json",
+        {"ok": True, "next_phase_allowed": True, "requirements_covered": ["DATA-01", "DATA-02"], "dataset_hashes": {"calibrated_jsonl_sha256": __import__("hashlib").sha256(dataset.read_bytes()).hexdigest()}, "splits": {"split_counts": {"train": 1, "val": 1, "ood_val": 1}}},
+    )
+    leak_config = Phase19TrainingConfig(calibrated_jsonl=dataset, split_dir=split_dir, tokenized_dir=tmp_path / "leak-tokenized", phase18_report=leak_report, artifacts_dir=tmp_path / "leak-artifacts")
+    leak = tokenize_phase18_handoff(leak_config, tokenizer=FakeQwen4BTokenizer())
+    assert leak["ok"] is False
+    assert leak["gates"]["native_think_token_leak"]["ok"] is False
+    assert not (leak_config.tokenized_dir / "train.arrow").exists()
