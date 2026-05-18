@@ -6,7 +6,7 @@
 通过合成数据 SFT 蒸馏到 Qwen3-4B-Thinking-2507（学生），最终产出能在本地以
 GGUF（fp16 + q4_K_M）部署、且带显式思考过程的 4B 推理模型。
 
-服务对象是 EvoProgTSC 系列项目中需要「便宜、可本地部署、可解释」的 TSC 决策端点。
+服务对象是需要「便宜、可本地部署、可解释」的 TSC 周期绿灯时长决策场景。
 
 ## Core Value
 
@@ -36,7 +36,15 @@ See `milestones/v4.0-ROADMAP.md` and `milestones/v4.0-REQUIREMENTS.md` for shipp
 
 See `milestones/v4.1-ROADMAP.md` and `milestones/v4.1-REQUIREMENTS.md` for shipped v4.1 details.
 
-## Current Milestone: None — awaiting next milestone
+## Current Milestone: v4.2 饱和度-绿灯策略校准 / 教师标签重建
+
+**Goal:** 修复 v4.0 最新 4B 模型在 `reality_test.log` 中低饱和度相位仍取满绿的问题，先审计旧教师标签并固化饱和度-绿灯策略 gate，再在不改变最终部署 system prompt / 推理 prompt、且不显式暴露规则的前提下重标或过滤数据、重新训练 4B、导出新模型并生成新的 `reality_test.log`。
+
+**Target features:**
+- 量化 v4 教师标签与 v4 q4_K_M 学生输出中 `pred_saturation` 与 `final/max_green` 的错配，特别是低饱和度取满绿。
+- 建立 saturation policy gate：规则用于数据审计、重标/过滤、训练验收和评测，不写入最终部署 system prompt / 推理 prompt。
+- 产出校准后的训练数据，重新完成 4B QLoRA SFT、merge、GGUF 导出与评测。
+- 使用新模型重放 `reality.log`，生成新的 `reality_test.log`，并验证低饱和度不再异常取满绿，同时保持原有硬约束与输出协议稳定。
 
 **Last completed milestone:** v4.1 项目清理 / v4 最小复现包。
 
@@ -48,11 +56,10 @@ See `milestones/v4.1-ROADMAP.md` and `milestones/v4.1-REQUIREMENTS.md` for shipp
 
 ## Next Milestone Goals
 
-下一里程碑聚焦 v4.1 清理完成后的部署或分析方向，暂不纳入当前范围：
+v4.2 之后可能继续推进但不纳入当前范围：
 
-- 将 v4.0 q4_K_M artifact 接入 EvoProgTSC 决策端点并做端到端部署验证。
 - 对显式思考协议做 thinking on/off 对照，量化其对最终绿灯决策的边际收益。
-- 若部署端发现量化敏感性，补做 imatrix 或 q5_K_M fallback 路线。
+- 若后续部署端发现量化敏感性，补做 imatrix 或 q5_K_M fallback 路线。
 
 ## Requirements
 
@@ -88,7 +95,10 @@ See `milestones/v4.1-ROADMAP.md` and `milestones/v4.1-REQUIREMENTS.md` for shipp
 
 ### Active
 
-- [ ] 下一里程碑待定义。
+- [ ] v4.2 审计现有教师标签与学生 `reality_test.log` 中低饱和度取满绿的问题，形成可复核的分布统计与失败样例。
+- [ ] v4.2 建立 saturation policy gate，用于标签审计、数据重标/过滤、训练验收和最终 replay 验证。
+- [ ] v4.2 在不改变最终部署 system prompt / 推理 prompt、不显式暴露策略规则的前提下，重建校准训练数据并重新训练 Qwen3-4B-Thinking-2507。
+- [ ] v4.2 导出校准后 fp16/q4_K_M GGUF，完成评测矩阵与新的 `reality_test.log` replay。
 
 ### Out of Scope (current route)
 
@@ -101,6 +111,8 @@ See `milestones/v4.1-ROADMAP.md` and `milestones/v4.1-REQUIREMENTS.md` for shipp
 - vLLM 推理 — 本机现状不能用 vLLM，最终部署走 llama.cpp / GGUF
 - 引入新训练栈（Unsloth on Spark / Axolotl / 新 PyTorch 版本）— 锁定 `/dgx-spark-training` v1.0 已验证环境
 - v4.1 不重新训练、不新增模型能力、不做 imatrix/q5_K_M 或 thinking on/off 新实验、不接入 EvoProgTSC 部署端点 — 当前范围只做项目清理与复现打包
+- v4.2 不改变最终部署 system prompt / 推理 prompt，不在推理时显式写入饱和度分段规则；规则只能作为离线数据、训练和评测 gate
+- v4.2 与 EvoProgTSC 无关，不做任何 EvoProgTSC 端点集成；也不做 thinking on/off 对照、imatrix/q5_K_M fallback 或新基座切换
 
 ## Context
 
@@ -173,4 +185,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-12 after v4.1 milestone completion*
+*Last updated: 2026-05-18 after v4.2 milestone start*

@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.1
-milestone_name: 项目清理 / v4 最小复现包
-status: Awaiting next milestone
-stopped_at: Phase 16 completed
-last_updated: "2026-05-12T08:14:59.199Z"
-last_activity: 2026-05-12 — Milestone v4.1 completed and archived
+milestone: v4.2
+milestone_name: 饱和度-绿灯策略校准 / 教师标签重建
+status: planning
+last_updated: "2026-05-18T05:32:18.277Z"
+last_activity: 2026-05-18
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 6
-  completed_plans: 6
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # TSC-CYCLE State
@@ -25,10 +24,10 @@ See: `.planning/PROJECT.md` (updated 2026-05-12)
 
 ## Current Position
 
-Phase: Milestone v4.1 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-05-12 — Milestone v4.1 completed and archived
+Status: Defining requirements
+Last activity: 2026-05-18 — Milestone v4.2 started
 
 ## Performance Metrics
 
