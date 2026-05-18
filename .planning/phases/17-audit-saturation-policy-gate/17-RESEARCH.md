@@ -35,8 +35,8 @@ Current v4 artifacts already contain the exact inputs/outputs needed: `data/v4/p
 | AUDIT-01 | Maintainer can quantify how often existing v4 teacher labels assign `final == max_green` when `pred_saturation < 1.0`, broken down by saturation bands and split/source. [VERIFIED: REQUIREMENTS.md] | Use per-phase projection from `labeled_merged.jsonl` plus split indexes; current schema exposes `input.prediction.phase_waits[*]`, `result.solution`, `source_origin`, `source`, and `split_hint`. [VERIFIED: codebase Bash JSON audit] |
 | AUDIT-02 | Maintainer can inspect representative failure examples from both `data/v4/phase8/labeled_merged.jsonl` and `reality_test.log`, including sample id, phase id, saturation, min/max green, final green, and violation category. [VERIFIED: REQUIREMENTS.md] | Use deterministic sampling from violation rows; Phase 12 manifest/per-sample provides replay sample IDs, inputs, solutions, and raw text. [VERIFIED: artifacts/v4/phase12/manifest.json + per_sample.jsonl] |
 | POLICY-01 | Maintainer can run a saturation policy gate that classifies each phase decision against intended bands: `sat < 0.2` near min, `0.2 <= sat < 0.6` interpolated, `0.6 <= sat < 1.0` high but not max, and `sat >= 1.0` allowed max. [VERIFIED: REQUIREMENTS.md] | Implement one canonical classifier function and one canonical violation-category function in `saturation_policy.py`. [ASSUMED] |
-| POLICY-02 | Maintainer can fail data, model evaluation, or replay outputs when low-saturation max-green behavior exceeds configured thresholds. [VERIFIED: REQUIREMENTS.md] | Use config-driven thresholds with fail-closed defaults and nonzero CLI exit when report `ok=false`. [VERIFIED: existing Phase 8/11/12 fail-closed pattern; threshold defaults ASSUMED] |
-| POLICY-03 | Final deployment prompts remain unchanged from the v4 inference protocol and do not explicitly include the saturation band rule. [VERIFIED: REQUIREMENTS.md] | Add byte-for-byte golden prompt tests for `build_user_prompt()` and forbidden-band-rule checks against deployment prompt text. [VERIFIED: prompt_builder.py; test approach ASSUMED] |
+| POLICY-02 | Maintainer can fail data, model evaluation, or replay outputs when low-saturation max-green behavior exceeds configured thresholds. [VERIFIED: REQUIREMENTS.md] | Use config-driven thresholds with fail-closed defaults, reusable `evaluate_saturation_policy_gate(rows_or_audit, thresholds, source_type)`, and nonzero CLI exit when report `ok=false`. [VERIFIED: existing Phase 8/11/12 fail-closed pattern; threshold defaults RESOLVED below] |
+| POLICY-03 | Final deployment prompts remain unchanged from the v4 inference protocol and do not explicitly include the saturation band rule. [VERIFIED: REQUIREMENTS.md] | Add byte-for-byte golden prompt tests for `build_user_prompt()` and forbidden-band-rule checks against deployment prompt text and in-repo inference prompt helper surfaces discovered by grep. [VERIFIED: prompt_builder.py; grep prompt surfaces RESOLVED below] |
 </phase_requirements>
 
 ## Project Constraints (from CLAUDE.md)
@@ -56,6 +56,7 @@ Current v4 artifacts already contain the exact inputs/outputs needed: `data/v4/p
 | Saturation band classification | API / Backend offline gate | Database / Storage | Classification is deterministic business logic over persisted JSONL/log evidence. [VERIFIED: REQUIREMENTS.md + codebase artifact schema] |
 | Dataset mismatch audit | API / Backend offline gate | Database / Storage | Reads `data/v4/phase8/labeled_merged.jsonl` and split indexes; writes report artifacts only. [VERIFIED: codebase Bash audit] |
 | Replay mismatch audit | API / Backend offline gate | Database / Storage | Reads Phase 12 manifest/per-sample and optionally canonical `reality_test.log`; no deployment service call is needed. [VERIFIED: phase12_reality_test.py + phase12_report.py] |
+| Model-evaluation output gate | API / Backend offline gate | CI/Test runner | Later evaluation outputs can be projected to phase-decision rows and passed through the same reusable saturation policy gate contract, rather than duplicating threshold logic. [VERIFIED: POLICY-02 + phase11 decision pattern] |
 | Policy failure gate | API / Backend offline gate | CI/Test runner | Existing gates return structured `ok`, `next_phase_allowed`, and `fatal_failures`; Phase 17 should follow the same fail-closed pattern. [VERIFIED: phase8_report.py/phase11_eval_report.py/phase12_report.py patterns] |
 | Prompt protocol preservation | API / Backend prompt module | Test runner | `prompt_builder.py` is the single source of truth; tests should guard byte-for-byte output and absence of band-rule text. [VERIFIED: prompt_builder.py] |
 | Human inspection report | API / Backend offline gate | Filesystem artifacts | Maintainers consume JSON/markdown-like report artifacts generated from deterministic samples. [VERIFIED: existing v4 report patterns] |
@@ -129,6 +130,14 @@ No external packages should be installed for Phase 17. [VERIFIED: Standard Stack
         ▼
 [Replay per-phase projector] ─► [Saturation classifier] ─► [Replay examples/stats]
 
+[Eval-style phase-decision JSONL]
+        │  rows or precomputed audit [POLICY-02]
+        ▼
+[evaluate_saturation_policy_gate(rows_or_audit, thresholds, source_type)]
+        │
+        ├─ source_type=data|replay|eval
+        └─ fail-closed threshold payload
+
 [Policy config thresholds]
         │
         ▼
@@ -138,10 +147,10 @@ No external packages should be installed for Phase 17. [VERIFIED: Standard Stack
         ├─ ok=false + fatal_failures + nonzero CLI exit on excess [VERIFIED: existing gate pattern]
         └─ writes artifacts/v4/phase17/*.json only [ASSUMED]
 
-[prompt_builder.build_user_prompt]
+[prompt_builder.build_user_prompt + in-repo inference prompt call sites]
         │
         ▼
-[Golden prompt + forbidden band-rule tests] ─► POLICY-03 evidence [VERIFIED: prompt_builder.py]
+[Golden prompt + forbidden band-rule tests] ─► POLICY-03 evidence [VERIFIED: prompt_builder.py + grep]
 ```
 
 ### Recommended Project Structure
@@ -215,6 +224,11 @@ payload = {
 }
 ```
 
+### Pattern 4: Reusable Saturation Policy Gate Contract
+**What:** Expose `evaluate_saturation_policy_gate(rows_or_audit, thresholds, source_type)` so data, replay, and model-evaluation outputs use the same low-saturation threshold logic. [VERIFIED: POLICY-02]
+**When to use:** Use inside the Phase 17 CLI for dataset/replay reports and expose for later evaluation phases or CLI `--phase-decisions-jsonl` / `--eval-outputs` inputs. [ASSUMED]
+**Contract:** Accept either projected phase-decision rows or a `compute_saturation_audit(...)` payload; require `source_type` values such as `data`, `replay`, or `eval`; return a fail-closed payload with `ok`, `next_phase_allowed`, `thresholds`, `gates`, `fatal_failures`, and denominator details. [ASSUMED]
+
 ### Anti-Patterns to Avoid
 - **Putting saturation band rules into `prompt_builder.py`:** This violates POLICY-03; keep policy offline-only. [VERIFIED: REQUIREMENTS.md]
 - **Counting sample-level failures instead of per-phase failures:** A single sample can have multiple phase decisions, and the requirements ask for phase decision categories. [VERIFIED: requirements wording + artifact schema]
@@ -240,7 +254,7 @@ payload = {
 ### Pitfall 1: False prompt regression
 **What goes wrong:** The saturation band rule is added to `USER_TEMPLATE` to make the model behave better. [ASSUMED]
 **Why it happens:** The policy is useful for training/evaluation, but POLICY-03 says final deployment prompts must remain unchanged. [VERIFIED: REQUIREMENTS.md]
-**How to avoid:** Add a golden prompt hash/string test and explicit forbidden-band-rule checks over `build_user_prompt()` output. [ASSUMED]
+**How to avoid:** Add a golden prompt hash/string test and explicit forbidden-band-rule checks over `build_user_prompt()` output plus in-repo inference helpers that call it. [ASSUMED]
 **Warning signs:** `prompt_builder.py` contains literal strings like `sat < 0.2`, `0.2 <= sat < 0.6`, or `sat >= 1.0`. [ASSUMED]
 
 ### Pitfall 2: Trivial phases counted as policy failures
@@ -319,27 +333,21 @@ assert all(snippet not in prompt for snippet in FORBIDDEN_POLICY_SNIPPETS)
 | # | Claim | Section | Risk if Wrong |
 |---|-------|---------|---------------|
 | A1 | Implement one canonical classifier/report module named `saturation_policy.py` plus wrapper `phase17_audit.py`. | Architecture Patterns / Project Structure | File names may differ, but centralizing logic remains necessary. |
-| A2 | Use config-driven default thresholds; exact default threshold numbers are not locked by user decisions. | Phase Requirements / Policy Gate | Planner must choose or require human confirmation for threshold defaults. |
+| A2 | Use config-driven default thresholds; exact default threshold numbers are selected conservatively for offline gating and can be overridden by CLI/config. | Phase Requirements / Policy Gate | If thresholds are too strict for historical v4 artifacts, the gate intentionally fails and maintainers can inspect/override config for exploratory runs. |
 | A3 | Exclude or separately categorize per-phase trivial ranges where `min_green == max_green`. | Common Pitfalls | Wrong denominator can make the policy gate too strict or too lenient. |
 | A4 | JSON reports under `artifacts/v4/phase17/` are the right artifact location. | Project Structure | Different artifact path would require test/path guard adjustment. |
-| A5 | Golden prompt tests are sufficient to prove byte-for-byte prompt preservation. | POLICY-03 / Code Examples | If deployment uses another prompt path, planner must add that path to the verification set. |
+| A5 | Golden prompt tests over `build_user_prompt()` plus discovered in-repo inference prompt call sites are sufficient to prove byte-for-byte prompt preservation inside this repo. | POLICY-03 / Code Examples | External deployment prompt surfaces remain out of scope until DEPLOY-01. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **What exact default thresholds should the policy gate enforce?**
-   - What we know: POLICY-02 requires configured thresholds and current v4 data/replay exceed any strict low-saturation max-green zero-tolerance threshold. [VERIFIED: REQUIREMENTS.md + Bash audit]
-   - What's unclear: The user did not lock numeric thresholds for allowed violation rates. [VERIFIED: CONTEXT.md]
-   - Recommendation: Planner should add a checkpoint or choose conservative defaults with config override; threshold values remain [ASSUMED].
+   - Resolution: Use deterministic conservative offline-gate defaults with CLI/config override. `DEFAULT_THRESHOLDS` must be exactly `sat_lt_0.2_max_green_rate: 0.0`, `sat_0.2_0.6_max_green_rate: 0.02`, `sat_0.6_1.0_max_green_rate: 0.10`, `malformed_row_rate: 0.0`, and `missing_output_rate: 0.0`. `sat_ge_1.0_allowed_max` has no max-green failure threshold because max-green is allowed for saturated rows. Expose each threshold through `DEFAULT_THRESHOLDS`, CLI flags/config overrides, and the reusable gate API; report the active thresholds in JSON and test the exact defaults plus overrides. [RESOLVED: checker instruction + POLICY-02]
 
 2. **Should `min_green == max_green` phase rows be excluded from policy failure denominators?**
-   - What we know: Such rows exist in the current dataset audit examples. [VERIFIED: Bash audit]
-   - What's unclear: Requirements do not explicitly define trivial forced ranges. [VERIFIED: REQUIREMENTS.md]
-   - Recommendation: Report them separately and exclude from low-saturation max-green threshold failure by default. [ASSUMED]
+   - Resolution: Yes, by default. Report `min_green == max_green` rows separately as forced/trivial rows and exclude them from low-saturation threshold failure denominators by default, because `final == max_green` is unavoidable for those rows. Keep counts visible so denominator manipulation is detectable. [RESOLVED: Pitfall 2 + checker instruction]
 
 3. **Which deployment prompt surfaces need byte-for-byte checks besides `prompt_builder.build_user_prompt()`?**
-   - What we know: `prompt_builder.py` is documented as the single source of truth for teacher/student/eval prompt format. [VERIFIED: prompt_builder.py]
-   - What's unclear: External deployment integration is out of scope and may use a separate prompt later. [VERIFIED: REQUIREMENTS.md out-of-scope]
-   - Recommendation: Phase 17 should guard project prompt builder and any in-repo inference prompt helpers found by grep. [ASSUMED]
+   - Resolution: Guard `tsc_cycle.prompt_builder.build_user_prompt()` directly and scan/cover in-repo inference prompt helper surfaces discovered by grep that call it, including `tsc_cycle/v4_gates/phase12_reality_test.py`, `tsc_cycle/v4_gates/phase12_log_render.py`, `tsc_cycle/eval/run_eval.py`, `tsc_cycle/eval/generate_hf.py`, `tsc_cycle/eval/generate_gguf.py`, `tsc_cycle/eval/parity.py`, `tsc_cycle/teacher/labeler.py`, and `tsc_cycle/student/*` prompt construction paths. Do not add saturation band rules to the deployment prompt; external deployment integration remains out of scope for Phase 17. [RESOLVED: grep + POLICY-03]
 
 ## Environment Availability
 
@@ -372,8 +380,8 @@ assert all(snippet not in prompt for snippet in FORBIDDEN_POLICY_SNIPPETS)
 | AUDIT-01 | Dataset banded stats by band/split/source include counts and max-when-unsaturated rates. [VERIFIED: REQUIREMENTS.md] | unit/integration | `/home/samuel/TSC_CYCLE/.venv/bin/python -m pytest tests/test_v4_phase17_saturation_policy.py::test_dataset_audit_bands_by_split_and_source -q` [ASSUMED] | ❌ Wave 0 |
 | AUDIT-02 | Representative dataset and replay failures include required fields and violation categories. [VERIFIED: REQUIREMENTS.md] | unit/integration | `/home/samuel/TSC_CYCLE/.venv/bin/python -m pytest tests/test_v4_phase17_saturation_policy.py::test_representative_failures_include_dataset_and_replay_fields -q` [ASSUMED] | ❌ Wave 0 |
 | POLICY-01 | Boundary classifier maps exact saturation intervals correctly. [VERIFIED: REQUIREMENTS.md] | unit | `/home/samuel/TSC_CYCLE/.venv/bin/python -m pytest tests/test_v4_phase17_saturation_policy.py::test_saturation_band_boundaries -q` [ASSUMED] | ❌ Wave 0 |
-| POLICY-02 | Gate fails closed when configured low-saturation thresholds are exceeded and writes structured `fatal_failures`. [VERIFIED: REQUIREMENTS.md] | unit/integration | `/home/samuel/TSC_CYCLE/.venv/bin/python -m pytest tests/test_v4_phase17_saturation_policy.py::test_policy_gate_fails_closed_on_threshold_excess -q` [ASSUMED] | ❌ Wave 0 |
-| POLICY-03 | `build_user_prompt()` remains byte-for-byte v4 protocol and contains no explicit saturation band rule. [VERIFIED: REQUIREMENTS.md + prompt_builder.py] | unit | `/home/samuel/TSC_CYCLE/.venv/bin/python -m pytest tests/test_v4_phase17_saturation_policy.py::test_prompt_protocol_unchanged_and_no_band_rule -q` [ASSUMED] | ❌ Wave 0 |
+| POLICY-02 | Gate fails closed when configured low-saturation thresholds are exceeded for data, replay, and eval-style phase-decision outputs. [VERIFIED: REQUIREMENTS.md] | unit/integration | `/home/samuel/TSC_CYCLE/.venv/bin/python -m pytest tests/test_v4_phase17_saturation_policy.py::test_policy_gate_fails_closed_on_eval_style_threshold_excess -q` [ASSUMED] | ❌ Wave 0 |
+| POLICY-03 | `build_user_prompt()` remains byte-for-byte v4 protocol and contains no explicit saturation band rule; in-repo inference prompt helpers do not introduce band-rule text. [VERIFIED: REQUIREMENTS.md + prompt_builder.py + grep] | unit | `/home/samuel/TSC_CYCLE/.venv/bin/python -m pytest tests/test_v4_phase17_saturation_policy.py::test_prompt_protocol_unchanged_and_no_band_rule -q` [ASSUMED] | ❌ Wave 0 |
 
 ### Sampling Rate
 - **Per task commit:** `/home/samuel/TSC_CYCLE/.venv/bin/python -m pytest tests/test_v4_phase17_saturation_policy.py -q` [ASSUMED]
@@ -382,7 +390,7 @@ assert all(snippet not in prompt for snippet in FORBIDDEN_POLICY_SNIPPETS)
 
 ### Wave 0 Gaps
 - [ ] `/home/samuel/TSC_CYCLE/tests/test_v4_phase17_saturation_policy.py` — covers AUDIT-01, AUDIT-02, POLICY-01, POLICY-02, POLICY-03. [ASSUMED]
-- [ ] `/home/samuel/TSC_CYCLE/tsc_cycle/v4_gates/saturation_policy.py` — canonical classifier/projector/gate logic. [ASSUMED]
+- [ ] `/home/samuel/TSC_CYCLE/tsc_cycle/v4_gates/saturation_policy.py` — canonical classifier/projector/reusable gate logic. [ASSUMED]
 - [ ] `/home/samuel/TSC_CYCLE/tsc_cycle/v4_gates/phase17_audit.py` — CLI/report orchestration. [ASSUMED]
 
 ## Security Domain
@@ -434,7 +442,7 @@ assert all(snippet not in prompt for snippet in FORBIDDEN_POLICY_SNIPPETS)
 **Confidence breakdown:**
 - Standard stack: HIGH — Phase 17 needs no new packages and uses stdlib/existing project modules verified in code. [VERIFIED: pyproject.toml + codebase Read]
 - Architecture: HIGH — Existing v4 gates already establish report shape, path safety, and fail-closed patterns. [VERIFIED: codebase Read]
-- Pitfalls: MEDIUM — Prompt leakage and denominator issues are inferred from requirements and observed artifacts; exact threshold policy remains user/plan dependent. [VERIFIED: requirements + Bash audit; thresholds ASSUMED]
+- Pitfalls: MEDIUM — Prompt leakage and denominator issues are inferred from requirements and observed artifacts; exact threshold defaults are conservative offline-gate choices with override. [VERIFIED: requirements + Bash audit; thresholds RESOLVED]
 
 **Research date:** 2026-05-18 [VERIFIED: system context]
 **Valid until:** 2026-06-17 for internal codebase patterns; revisit if v4 artifacts or requirements change. [ASSUMED]
