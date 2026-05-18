@@ -30,6 +30,10 @@ def _policy_contract():
     return importlib.import_module("tsc_cycle.v4_gates.saturation_policy")
 
 
+def _audit_contract():
+    return importlib.import_module("tsc_cycle.v4_gates.phase17_audit")
+
+
 def test_phase17_policy_module_does_not_import_heavy_model_stacks(monkeypatch: pytest.MonkeyPatch) -> None:
     module_path = PROJECT_ROOT / "tsc_cycle" / "v4_gates" / "saturation_policy.py"
     source = module_path.read_text(encoding="utf-8")
@@ -306,3 +310,63 @@ def test_audit_fails_closed_on_missing_nonfinite_denominator_data() -> None:
 
     with pytest.raises(ValueError, match="missing required audit row field"):
         mod.compute_saturation_audit([{"sample_id": "missing-fields"}])
+
+
+def test_build_parser_exposes_phase17_defaults() -> None:
+    mod = _audit_contract()
+    args = mod.build_parser().parse_args([])
+
+    assert Path(args.dataset) == PROJECT_ROOT / "data" / "v4" / "phase8" / "labeled_merged.jsonl"
+    assert Path(args.split_dir) == PROJECT_ROOT / "data" / "v4" / "phase8" / "splits"
+    assert Path(args.phase12_manifest) == PROJECT_ROOT / "artifacts" / "v4" / "phase12" / "manifest.json"
+    assert Path(args.phase12_per_sample) == PROJECT_ROOT / "artifacts" / "v4" / "phase12" / "per_sample.jsonl"
+    assert Path(args.artifact_root) == PROJECT_ROOT / "artifacts" / "v4" / "phase17"
+    assert Path(args.out) == PROJECT_ROOT / "artifacts" / "v4" / "phase17" / "saturation_policy_gate.json"
+    assert Path(args.audit_out) == PROJECT_ROOT / "artifacts" / "v4" / "phase17" / "saturation_audit_report.json"
+    assert Path(args.prompt_protocol_out) == PROJECT_ROOT / "artifacts" / "v4" / "phase17" / "prompt_protocol_report.json"
+
+
+def test_phase17_report_paths_are_constrained_to_artifact_root(tmp_path: Path) -> None:
+    mod = _audit_contract()
+    allowed = mod.ARTIFACT_ROOT / "nested" / "report.json"
+    assert mod.reject_unsafe_phase17_output_path(allowed) == allowed.resolve(strict=False)
+
+    blocked_paths = [
+        Path("/tmp/phase17-report.json"),
+        PROJECT_ROOT / "runs" / "20260507T032419Z" / "report.json",
+        mod.ARTIFACT_ROOT / ".." / "phase12" / "stolen.json",
+        PROJECT_ROOT / "tsc_cycle" / "prompt_builder.py",
+    ]
+    for blocked in blocked_paths:
+        with pytest.raises(ValueError, match="Phase 17 report output path is not allowed"):
+            mod.reject_unsafe_phase17_output_path(blocked)
+
+    payload = {"ok": True, "value": 1.0}
+    out_path = tmp_path / "artifacts" / "v4" / "phase17" / "safe.json"
+    original_root = mod.ARTIFACT_ROOT
+    try:
+        mod.ARTIFACT_ROOT = tmp_path / "artifacts" / "v4" / "phase17"
+        mod._write_json(out_path, payload)
+        assert json.loads(out_path.read_text(encoding="utf-8")) == payload
+        with pytest.raises(ValueError):
+            mod._write_json(tmp_path / "outside.json", payload)
+        with pytest.raises(ValueError, match="Out of range float values"):
+            mod._write_json(out_path, {"bad": float("nan")})
+    finally:
+        mod.ARTIFACT_ROOT = original_root
+
+
+def test_phase17_cli_exit_reflects_report_status(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    mod = _audit_contract()
+    report = {"ok": False, "next_phase_allowed": False, "fatal_failures": [{"gate": "synthetic", "reason": "red"}]}
+    monkeypatch.setattr(mod, "evaluate_phase17_audit", lambda **kwargs: report)
+
+    exit_code = mod.main(["--out", str(mod.ARTIFACT_ROOT / "cli-red.json")])
+
+    assert exit_code == 1
+    assert '"ok": false' in capsys.readouterr().out
+
+    report["ok"] = True
+    report["next_phase_allowed"] = True
+    report["fatal_failures"] = []
+    assert mod.main(["--out", str(mod.ARTIFACT_ROOT / "cli-green.json")]) == 0
