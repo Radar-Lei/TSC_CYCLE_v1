@@ -53,9 +53,11 @@ def _base_model_from_adapter_config(adapter_dir: Path) -> str:
     return value if isinstance(value, str) and value else BASE_MODEL
 
 
-def merge_to_fp16(adapter_dir: Path, out_merged: Path, base_model: str | None = None) -> None:
+def merge_to_fp16(adapter_dir: Path, out_merged: Path, base_model: str | None = None, *, enforce_base_model: bool = False) -> None:
     torch, PeftModel, AutoModelForCausalLM, AutoTokenizer = _lazy_model_stack()
     model_name = base_model or _base_model_from_adapter_config(adapter_dir)
+    if enforce_base_model and model_name != BASE_MODEL:
+        raise Phase10ExportError(f"refusing unlocked base model: {model_name}")
     print(f"[MERGE] reload base with SDPA: {model_name}", flush=True)
     base = AutoModelForCausalLM.from_pretrained(
         model_name,
@@ -146,7 +148,7 @@ def run_export(args: argparse.Namespace) -> dict[str, Any]:
     q4_gguf = Path(args.q4_gguf)
     llama_cpp = plan["llama_cpp"]
 
-    merge_to_fp16(adapter_dir, merged_dir, base_model=args.base_model)
+    merge_to_fp16(adapter_dir, merged_dir, base_model=args.base_model, enforce_base_model=args.export_phase == "phase19")
     convert_cmd = hf_to_gguf_fp16(merged_dir, fp16_gguf, convert=Path(llama_cpp["convert"]), python=args.python)
     quant_cmd = quantize_q4(fp16_gguf, q4_gguf, quantize=Path(llama_cpp["quantize"]))
 

@@ -309,6 +309,7 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
             "phase18_artifact_hashes": {"calibrated_jsonl_sha256": "c" * 64, "phase18_report_sha256": "r" * 64, "train.arrow": "t" * 64, "val.arrow": "v" * 64, "ood_val.arrow": "o" * 64},
             "training_args": {"bf16": True, "attn_implementation": "sdpa", "load_in_4bit": True, "bnb_4bit_quant_type": "nf4", "packing": False},
             "lora_config": {"r": 64, "lora_alpha": 64, "lora_dropout": 0.0, "target_modules": "all-linear"},
+            "trainer_state": {"global_step": 657, "max_steps": 657},
             "requirements_covered": ["TRAIN-01"],
             "completed": True,
         },
@@ -344,7 +345,50 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     assert missing["ok"] is False
     assert any(failure["gate"] == "phase18_artifact_hashes" for failure in missing["fatal_failures"])
 
+    smoke = _read_json(report)
+    smoke["mode"] = "smoke"
+    smoke["trainer_state"] = {"global_step": 1, "max_steps": 1}
+    smoke_report = _write_json(run_root / "smoke_report.json", smoke)
+    smoke_rejected = validate_phase19_training_report(run_root, report_path=smoke_report)
+    assert smoke_rejected["ok"] is False
+    assert any(failure["gate"] == "completed" for failure in smoke_rejected["fatal_failures"])
+
+    incomplete = _read_json(report)
+    incomplete["trainer_state"] = {"global_step": 1, "max_steps": 657}
+    incomplete_report = _write_json(run_root / "incomplete_report.json", incomplete)
+    incomplete_rejected = validate_phase19_training_report(run_root, report_path=incomplete_report)
+    assert incomplete_rejected["ok"] is False
+    assert any(failure["gate"] == "completed" for failure in incomplete_rejected["fatal_failures"])
+
+    forged_manifest = _read_json(report)
+    forged_manifest["phase18_artifact_hashes"] = {"calibrated_jsonl_sha256": "x" * 64, "phase18_report_sha256": "r" * 64, "train.arrow": "t" * 64, "val.arrow": "v" * 64, "ood_val.arrow": "o" * 64}
+    forged_manifest_report = _write_json(run_root / "forged_manifest_report.json", forged_manifest)
+    forged_manifest_rejected = validate_phase19_training_report(run_root, report_path=forged_manifest_report)
+    assert forged_manifest_rejected["ok"] is False
+    assert any(failure["gate"] == "phase18_artifact_hashes" for failure in forged_manifest_rejected["fatal_failures"])
+
+    outside_adapter = tmp_path / "runs" / "v4.0-4B-20260509T184844Z" / "adapter"
+    outside_adapter_sha = _make_adapter(outside_adapter)
+    outside = _read_json(report)
+    outside["adapter_path"] = str(outside_adapter)
+    outside["adapter_sha256"] = outside_adapter_sha
+    outside_report = _write_json(run_root / "outside_adapter_report.json", outside)
+    outside_rejected = validate_phase19_training_report(run_root, report_path=outside_report)
+    assert outside_rejected["ok"] is False
+    assert any(failure["gate"] == "adapter_path" for failure in outside_rejected["fatal_failures"])
+
+    wrong_adapter_config = _read_json(report)
+    (adapter_dir / "adapter_config.json").write_text('{"base_model_name_or_path":"Qwen/Qwen3.5-9B"}\n', encoding="utf-8")
+    wrong_adapter_report = _write_json(run_root / "wrong_adapter_config_report.json", wrong_adapter_config)
+    wrong_adapter_rejected = validate_phase19_training_report(run_root, report_path=wrong_adapter_report)
+    assert wrong_adapter_rejected["ok"] is False
+    assert any(failure["gate"] == "adapter_config" for failure in wrong_adapter_rejected["fatal_failures"])
+    (adapter_dir / "adapter_config.json").write_text('{"base_model_name_or_path":"Qwen/Qwen3-4B-Thinking-2507"}\n', encoding="utf-8")
+
     wrapper = (PROJECT_ROOT / "scripts/run_v4_phase19_train.sh").read_text(encoding="utf-8")
+    assert "<<'PY'" in wrapper
+    assert 'Path("$RUN_ROOT")' not in wrapper
+    assert 'os.environ["RUN_ROOT"]' in wrapper
     assert "scripts/dgx_spark/run_safe.sh" in wrapper
     assert "100G --" in wrapper
     assert "tsc_cycle.student.train" in wrapper
@@ -384,6 +428,7 @@ def _make_phase19_training_handoff(run_root: Path) -> Path:
             "phase18_artifact_hashes": {"calibrated_jsonl_sha256": "c" * 64, "phase18_report_sha256": "r" * 64, "train.arrow": "t" * 64, "val.arrow": "v" * 64, "ood_val.arrow": "o" * 64},
             "training_args": {"bf16": True, "attn_implementation": "sdpa", "load_in_4bit": True, "bnb_4bit_quant_type": "nf4", "packing": False},
             "lora_config": {"r": 64, "lora_alpha": 64, "lora_dropout": 0.0, "target_modules": "all-linear"},
+            "trainer_state": {"global_step": 657, "max_steps": 657},
             "requirements_covered": ["TRAIN-01"],
             "completed": True,
         },
@@ -452,6 +497,16 @@ def test_v42_export_plan_and_report_require_merged_hf_and_gguf_hashes(tmp_path: 
     rejected_hash = validate_phase19_export_report(run_root=run_root, report_path=missing_hash_path)
     assert rejected_hash["ok"] is False
     assert any(failure["gate"] == "artifact_hash" for failure in rejected_hash["fatal_failures"])
+
+    forged = _read_json(run_root / "phase19_export_report.json")
+    (run_root / "gguf" / "model.q4_K_M.gguf").unlink()
+    forged["artifacts"]["gguf_q4_K_M"]["exists"] = True
+    forged["artifacts"]["gguf_q4_K_M"]["sha256"] = "f" * 64
+    forged_path = _write_json(run_root / "forged_export_report.json", forged)
+    rejected_forged = validate_phase19_export_report(run_root=run_root, report_path=forged_path)
+    assert rejected_forged["ok"] is False
+    assert any(failure["gate"] in {"artifact_exists", "artifact_hash"} for failure in rejected_forged["fatal_failures"])
+    (run_root / "gguf" / "model.q4_K_M.gguf").write_bytes(b"q4 gguf")
 
     with pytest.raises(ValueError):
         build_export_plan(run_root=tmp_path / "runs" / "v4.0-4B-20260509T184844Z", phase19_report=training_report, llama_cpp_dir=llama_cpp)

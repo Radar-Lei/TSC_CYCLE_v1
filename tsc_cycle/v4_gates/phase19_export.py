@@ -350,18 +350,51 @@ def validate_phase19_export_report(run_root: Path, report_path: Path | None = No
             failures.append({"gate": "commands", "reason": f"forbidden command evidence marker: {forbidden}"})
 
     artifacts = report.get("artifacts") if isinstance(report.get("artifacts"), dict) else {}
-    merged_records = artifacts.get("merged_hf_safetensors") if isinstance(artifacts.get("merged_hf_safetensors"), list) else []
-    tokenizer_records = artifacts.get("merged_hf_tokenizer") if isinstance(artifacts.get("merged_hf_tokenizer"), list) else []
-    for key in ("gguf_fp16", "gguf_q4_K_M"):
+    merged_path = Path(paths.get("merged_hf", "")) if isinstance(paths.get("merged_hf"), str) else root / "merged_hf"
+    actual_merged, merged_failures = _directory_manifest(merged_path, ("*.safetensors",))
+    failures.extend(merged_failures)
+    reported_merged = artifacts.get("merged_hf_safetensors") if isinstance(artifacts.get("merged_hf_safetensors"), list) else []
+    actual_merged_by_path = {record.get("path"): record for record in actual_merged}
+    for reported in reported_merged:
+        if not isinstance(reported, dict):
+            failures.append({"gate": "artifact_hash", "reason": "malformed merged HF safetensors record"})
+            continue
+        actual = actual_merged_by_path.get(reported.get("path"))
+        if actual is None or reported.get("sha256") != actual.get("sha256"):
+            failures.append({"gate": "artifact_hash", "reason": f"sha256 mismatch for merged HF artifact: {reported.get('path')}"})
+    if not reported_merged or len(reported_merged) != len(actual_merged):
+        failures.append({"gate": "artifact_hash", "reason": "merged HF safetensors report does not match on-disk artifacts"})
+
+    for key, path_key in (("gguf_fp16", "gguf_fp16"), ("gguf_q4_K_M", "gguf_q4_K_M")):
+        artifact_path = Path(paths.get(path_key, "")) if isinstance(paths.get(path_key), str) else root / "missing.gguf"
+        actual_record, actual_failures = _artifact_record(artifact_path)
+        failures.extend(actual_failures)
         record = artifacts.get(key) if isinstance(artifacts.get(key), dict) else {}
         if not record.get("sha256"):
             failures.append({"gate": "artifact_hash", "reason": f"missing sha256 for {key}"})
         if record.get("exists") is not True:
             failures.append({"gate": "artifact_exists", "reason": f"missing artifact for {key}"})
-    if not merged_records or not all(isinstance(record, dict) and record.get("sha256") for record in merged_records):
-        failures.append({"gate": "artifact_hash", "reason": "missing merged HF safetensors sha256 evidence"})
-    if not tokenizer_records:
+        if record.get("sha256") != actual_record.get("sha256"):
+            failures.append({"gate": "artifact_hash", "reason": f"sha256 mismatch for {key}"})
+
+    tokenizer_records = artifacts.get("merged_hf_tokenizer") if isinstance(artifacts.get("merged_hf_tokenizer"), list) else []
+    actual_tokenizer_records: list[dict[str, Any]] = []
+    for name in ("tokenizer.json", "tokenizer.model", "tokenizer_config.json", "special_tokens_map.json", "vocab.json", "merges.txt"):
+        token_path = merged_path / name
+        if token_path.exists():
+            token_record, _ = _artifact_record(token_path, required=False)
+            actual_tokenizer_records.append(token_record)
+    if not tokenizer_records or not actual_tokenizer_records:
         failures.append({"gate": "artifact_hash", "reason": "missing merged HF tokenizer/materializer evidence"})
+    else:
+        actual_tokenizer_by_path = {record.get("path"): record for record in actual_tokenizer_records}
+        for reported in tokenizer_records:
+            if not isinstance(reported, dict):
+                failures.append({"gate": "artifact_hash", "reason": "malformed tokenizer evidence record"})
+                continue
+            actual = actual_tokenizer_by_path.get(reported.get("path"))
+            if actual is None or reported.get("sha256") != actual.get("sha256"):
+                failures.append({"gate": "artifact_hash", "reason": f"sha256 mismatch for tokenizer artifact: {reported.get('path')}"})
 
     result = dict(report)
     result.update({

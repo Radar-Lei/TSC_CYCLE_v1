@@ -16,10 +16,11 @@ case "$RUN_ROOT" in
 esac
 cd "$ROOT"
 
-"$PY" - <<PY
+RUN_ROOT="$RUN_ROOT" "$PY" - <<'PY'
+import os
 from pathlib import Path
 from tsc_cycle.student.sft_v42 import check_phase18_handoff, validate_run_root
-root = validate_run_root(Path("$RUN_ROOT"))
+root = validate_run_root(Path(os.environ["RUN_ROOT"]))
 phase18 = check_phase18_handoff(Path("artifacts/v4_2/phase18/reconstruction_report.json"))
 if phase18.get("ok") is not True or phase18.get("next_phase_allowed") is not True:
     raise SystemExit("Phase 18 handoff is not green")

@@ -557,7 +557,7 @@ def main(argv: list[str] | None = None) -> int:
         tokenizer.save_pretrained(adapter_dir)
         from tsc_cycle.v4_gates.phase19_training import write_phase19_training_reports
 
-        report_path = write_phase19_training_reports(run_root, mode=mode, elapsed=elapsed, trainer_state=trainer.state, adapter_dir=adapter_dir, targs_kwargs=targs_kwargs)
+        report_path = write_phase19_training_reports(run_root, mode=mode, elapsed=elapsed, trainer_state=trainer.state, adapter_dir=adapter_dir, targs_kwargs=targs_kwargs, tokenized_dir=data_dir)
         with (run_root / "train_log.jsonl").open("a", encoding="utf-8") as f:
             f.write(json.dumps({"event": "training_complete", "phase": "v4_2", "mode": mode, "elapsed_h": elapsed / 3600, "report": str(report_path)}, ensure_ascii=False) + "\n")
         return 0

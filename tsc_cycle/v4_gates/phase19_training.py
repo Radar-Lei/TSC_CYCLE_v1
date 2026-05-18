@@ -91,8 +91,11 @@ def _record_reasoning(record: dict[str, Any]) -> str:
 def _record_solution(record: dict[str, Any]) -> dict[str, int]:
     value = _record_result(record).get("solution", {})
     if not isinstance(value, dict):
-        return {}
-    return {str(key): int(val) for key, val in value.items()}
+        raise ValueError("solution must be an object")
+    try:
+        return {str(key): int(val) for key, val in value.items()}
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"solution contains non-integer value: {exc}") from exc
 
 
 def _load_phase18_split_indexes(split_dir: Path) -> dict[str, list[dict[str, Any]]]:
@@ -148,7 +151,10 @@ def validate_phase18_handoff(config: Phase19TrainingConfig) -> tuple[bool, dict[
 
 def _tokenize_record(record: dict[str, Any], tokenizer: Any, *, native_ids: set[int], max_seq_length: int, split: str) -> dict[str, Any]:
     input_obj = _record_input(record)
-    solution = _record_solution(record)
+    try:
+        solution = _record_solution(record)
+    except ValueError as exc:
+        return {"ok": False, "error": "malformed_solution", "reason": str(exc), "sample_id": _record_sample_id(record), "split": split}
     prompt = build_user_prompt(input_obj)
     assistant = build_full_assistant(_record_reasoning(record), solution)
     full_text = prompt + assistant
@@ -387,7 +393,31 @@ def _tokenized_manifest_hashes(tokenized_manifest_path: Path = DEFAULT_TOKENIZED
     }
 
 
-def write_phase19_training_reports(run_root: Path, *, mode: str, elapsed: float, trainer_state: Any, adapter_dir: Path, targs_kwargs: dict[str, Any]) -> Path:
+def _require_under_root(path: Path, root: Path, gate: str) -> Path:
+    resolved = Path(path).resolve()
+    root_resolved = Path(root).resolve()
+    if "v4.0-4B-" in resolved.as_posix() or "20260507T032419Z" in resolved.as_posix():
+        raise ValueError(f"{gate} points at forbidden prior artifact: {resolved}")
+    try:
+        resolved.relative_to(root_resolved)
+    except ValueError as exc:
+        raise ValueError(f"{gate} must stay under run root {root}: {resolved}") from exc
+    return resolved
+
+
+def _expected_phase18_hashes_from_manifest(manifest: dict[str, Any]) -> dict[str, str]:
+    phase18 = manifest.get("phase18") if isinstance(manifest.get("phase18"), dict) else {}
+    tokenized = manifest.get("tokenized_sha256") if isinstance(manifest.get("tokenized_sha256"), dict) else {}
+    return {
+        "calibrated_jsonl_sha256": str(phase18.get("calibrated_jsonl_sha256", "")),
+        "phase18_report_sha256": str(phase18.get("phase18_report_sha256", "")),
+        "train.arrow": str(tokenized.get("train", "")),
+        "val.arrow": str(tokenized.get("val", "")),
+        "ood_val.arrow": str(tokenized.get("ood_val", "")),
+    }
+
+
+def write_phase19_training_reports(run_root: Path, *, mode: str, elapsed: float, trainer_state: Any, adapter_dir: Path, targs_kwargs: dict[str, Any], tokenized_dir: Path = DEFAULT_TOKENIZED_DIR) -> Path:
     state = _trainer_state_payload(trainer_state)
     loss_curve = [
         {"step": int(row.get("step", row.get("global_step", 0)) or 0), "loss": float(row["loss"])}
@@ -402,12 +432,8 @@ def write_phase19_training_reports(run_root: Path, *, mode: str, elapsed: float,
         peak_gb = torch.cuda.max_memory_allocated() / (1024**3) if torch.cuda.is_available() else 0.0
     except Exception:
         peak_gb = 0.0
-    tokenized = _tokenized_manifest_hashes()
-    phase18_hashes = {
-        "calibrated_jsonl_sha256": str(tokenized["phase18"].get("calibrated_jsonl_sha256", "")),
-        "phase18_report_sha256": str(tokenized["phase18"].get("phase18_report_sha256", "")),
-        **{f"{split}.arrow": str(value) for split, value in tokenized["tokenized_sha256"].items()},
-    }
+    tokenized = _tokenized_manifest_hashes(Path(tokenized_dir) / "manifest.json")
+    phase18_hashes = _expected_phase18_hashes_from_manifest(tokenized["manifest"])
     data_manifest = run_root / "phase19_data_manifest.json"
     _write_json(
         data_manifest,
@@ -420,7 +446,7 @@ def write_phase19_training_reports(run_root: Path, *, mode: str, elapsed: float,
     )
     global_step = int(state.get("global_step") or 0)
     max_steps = int(state.get("max_steps") or 0)
-    completed = mode != "full" or (max_steps > 0 and global_step >= max_steps) or max_steps == 0
+    completed = mode == "full" and global_step > 0 and (max_steps <= 0 or global_step >= max_steps)
     report = {
         "ok": completed,
         "next_phase_allowed": completed,
@@ -502,25 +528,44 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
         _fail(failures, "vram_peak_gb", "vram_peak_gb is missing")
 
     adapter = Path(training.get("adapter_path") or root / "adapter")
+    try:
+        adapter = _require_under_root(adapter, root, "adapter_path")
+        adapter_path_ok = True
+    except ValueError as exc:
+        adapter_path_ok = False
+        _fail(failures, "adapter_path", str(exc))
     adapter_hash = _adapter_hash(adapter)
-    adapter_ok = adapter_hash is not None and training.get("adapter_sha256") == adapter_hash and (adapter / "adapter_config.json").exists()
+    adapter_config = _read_json(adapter / "adapter_config.json")
+    adapter_base = adapter_config.get("base_model_name_or_path")
+    adapter_base_ok = adapter_base == MODEL_NAME
+    adapter_ok = adapter_path_ok and adapter_hash is not None and training.get("adapter_sha256") == adapter_hash and (adapter / "adapter_config.json").exists()
     gates["adapter_hash"] = _gate(adapter_ok, None if adapter_ok else "adapter hash mismatch or adapter files missing", {"expected": training.get("adapter_sha256"), "actual": adapter_hash})
     if not adapter_ok:
         _fail(failures, "adapter_hash", "adapter hash mismatch or adapter files missing")
+    gates["adapter_config"] = _gate(adapter_base_ok, None if adapter_base_ok else "adapter base model is not locked Qwen3-4B", {"base_model_name_or_path": adapter_base})
+    if not adapter_base_ok:
+        _fail(failures, "adapter_config", f"adapter base model must be {MODEL_NAME}, got {adapter_base}")
 
     data_manifest = Path(training.get("data_manifest_path") or root / "phase19_data_manifest.json")
+    try:
+        data_manifest = _require_under_root(data_manifest, root, "data_manifest_path")
+        data_manifest_path_ok = True
+    except ValueError as exc:
+        data_manifest_path_ok = False
+        _fail(failures, "data_manifest_path", str(exc))
+    data_manifest_payload = _read_json(data_manifest)
     data_hash = _sha256_file(data_manifest) if data_manifest.exists() else None
-    data_ok = data_hash is not None and training.get("data_manifest_sha256") == data_hash
+    data_ok = data_manifest_path_ok and data_hash is not None and training.get("data_manifest_sha256") == data_hash
     gates["data_manifest_hash"] = _gate(data_ok, None if data_ok else "data manifest hash mismatch or missing", {"expected": training.get("data_manifest_sha256"), "actual": data_hash})
     if not data_ok:
         _fail(failures, "data_manifest_hash", "data manifest hash mismatch or missing")
 
     phase18_hashes = training.get("phase18_artifact_hashes") if isinstance(training.get("phase18_artifact_hashes"), dict) else {}
-    required_hash_keys = {"calibrated_jsonl_sha256", "phase18_report_sha256", "train.arrow", "val.arrow", "ood_val.arrow"}
-    phase18_ok = required_hash_keys <= set(phase18_hashes) and all(phase18_hashes.get(key) for key in required_hash_keys)
-    gates["phase18_artifact_hashes"] = _gate(phase18_ok, None if phase18_ok else "Phase 18/tokenized artifact hashes are missing", {"keys": sorted(phase18_hashes)})
+    expected_phase18_hashes = _expected_phase18_hashes_from_manifest(data_manifest_payload)
+    phase18_ok = phase18_hashes == expected_phase18_hashes and all(expected_phase18_hashes.values())
+    gates["phase18_artifact_hashes"] = _gate(phase18_ok, None if phase18_ok else "Phase 18/tokenized artifact hashes do not match data manifest", {"expected": expected_phase18_hashes, "actual": phase18_hashes})
     if not phase18_ok:
-        _fail(failures, "phase18_artifact_hashes", "Phase 18/tokenized artifact hashes are missing")
+        _fail(failures, "phase18_artifact_hashes", "Phase 18/tokenized artifact hashes do not match data manifest")
 
     lora = training.get("lora_config") if isinstance(training.get("lora_config"), dict) else {}
     lora_ok = lora.get("r") == 64 and lora.get("lora_alpha") == 64 and float(lora.get("lora_dropout", -1)) == 0.0
@@ -540,10 +585,13 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
     if not requirements_ok:
         _fail(failures, "requirements_covered", "TRAIN-01 coverage missing")
 
-    completed_ok = training.get("completed") is True and training.get("ok") is True
-    gates["completed"] = _gate(completed_ok, None if completed_ok else "training report is not marked completed/ok", {"completed": training.get("completed"), "ok": training.get("ok")})
+    state = training.get("trainer_state") if isinstance(training.get("trainer_state"), dict) else {}
+    global_step = int(state.get("global_step") or 0)
+    max_steps = int(state.get("max_steps") or 0)
+    completed_ok = training.get("mode") == "full" and training.get("completed") is True and training.get("ok") is True and global_step > 0 and (max_steps <= 0 or global_step >= max_steps)
+    gates["completed"] = _gate(completed_ok, None if completed_ok else "training report lacks completed full-run evidence", {"completed": training.get("completed"), "ok": training.get("ok"), "mode": training.get("mode"), "global_step": global_step, "max_steps": max_steps})
     if not completed_ok:
-        _fail(failures, "completed", "training report is not marked completed/ok")
+        _fail(failures, "completed", "training report lacks completed full-run evidence")
 
     ok = not failures
     artifact_manifest = {
