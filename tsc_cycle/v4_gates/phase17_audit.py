@@ -33,6 +33,7 @@ ARTIFACT_ROOT = PROJECT_ROOT / "artifacts" / "v4" / "phase17"
 AUDIT_REPORT_PATH = ARTIFACT_ROOT / "saturation_audit_report.json"
 POLICY_GATE_PATH = ARTIFACT_ROOT / "saturation_policy_gate.json"
 PROMPT_PROTOCOL_REPORT_PATH = ARTIFACT_ROOT / "prompt_protocol_report.json"
+PROMPT_GOLDEN_FIXTURE_PATH = PROJECT_ROOT / "tsc_cycle" / "v4_gates" / "fixtures" / "v4_prompt_protocol_golden.json"
 FROZEN_V1_ROOT = PROJECT_ROOT / "runs" / "20260507T032419Z"
 REQUIREMENTS_COVERED = ["AUDIT-01", "AUDIT-02", "POLICY-01", "POLICY-02", "POLICY-03"]
 DEFAULT_THRESHOLDS = {
@@ -80,8 +81,26 @@ FIXTURE_PREDICTION_INPUT = {
         ],
     }
 }
-EXPECTED_V4_PROMPT = build_user_prompt(FIXTURE_PREDICTION_INPUT)
-EXPECTED_V4_PROMPT_SHA256 = hashlib.sha256(EXPECTED_V4_PROMPT.encode("utf-8")).hexdigest()
+
+
+def _load_prompt_golden_fixture(path: str | Path = PROMPT_GOLDEN_FIXTURE_PATH) -> dict[str, Any]:
+    fixture = json.loads(Path(path).read_text(encoding="utf-8"))
+    if not isinstance(fixture, dict):
+        raise ValueError(f"prompt golden fixture is not an object: {path}")
+    prompt_text = fixture.get("prompt_text")
+    prompt_sha256 = fixture.get("prompt_sha256")
+    if not isinstance(prompt_text, str) or not isinstance(prompt_sha256, str):
+        raise ValueError("prompt golden fixture must contain prompt_text and prompt_sha256 strings")
+    actual_sha256 = hashlib.sha256(prompt_text.encode("utf-8")).hexdigest()
+    if actual_sha256 != prompt_sha256:
+        raise ValueError("prompt golden fixture sha256 does not match prompt_text")
+    return fixture
+
+
+_PROMPT_GOLDEN_FIXTURE = _load_prompt_golden_fixture()
+FIXTURE_PREDICTION_INPUT = _PROMPT_GOLDEN_FIXTURE.get("fixture_input", FIXTURE_PREDICTION_INPUT)
+EXPECTED_V4_PROMPT = str(_PROMPT_GOLDEN_FIXTURE["prompt_text"])
+EXPECTED_V4_PROMPT_SHA256 = str(_PROMPT_GOLDEN_FIXTURE["prompt_sha256"])
 
 
 def _is_under(path: Path, root: Path) -> bool:
