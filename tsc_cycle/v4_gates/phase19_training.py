@@ -641,8 +641,22 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
     try:
         report_path_resolved = report_path.resolve()
         report_path_resolved.relative_to(root.resolve())
-    except ValueError as exc:
+    except ValueError:
         _fail(failures, "report_path", f"training report must stay under run root: {report_path}")
+        report = {
+            "ok": False,
+            "next_phase_allowed": False,
+            "requirements_covered": [],
+            "gates": gates,
+            "fatal_failures": failures,
+            "warnings": warnings,
+            "artifact_manifest": {"paths": {"run_root": str(root), "report": str(report_path)}, "sha256": {}},
+            "run_root": str(root),
+            "adapter_path": str(root / "adapter"),
+        }
+        if out is not None:
+            _write_json(Path(out), report)
+        return report
     training = _read_json(report_path)
     model_ok = training.get("model_name") == MODEL_NAME
     gates["model_config"] = _gate(model_ok, None if model_ok else "model_name is not locked Qwen3-4B", {"model_name": training.get("model_name")})

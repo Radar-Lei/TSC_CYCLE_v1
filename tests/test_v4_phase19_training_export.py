@@ -639,6 +639,15 @@ def test_v42_export_plan_and_report_require_merged_hf_and_gguf_hashes(tmp_path: 
     assert rejected_hash["ok"] is False
     assert any(failure["gate"] == "artifact_hash" for failure in rejected_hash["fatal_failures"])
 
+    original_tokenizer = (merged / "tokenizer.json").read_bytes()
+    (merged / "tokenizer.json").write_bytes(b"")
+    zero_tokenizer = _read_json(run_root / "phase19_export_report.json")
+    zero_tokenizer_path = _write_json(run_root / "zero_tokenizer.json", zero_tokenizer)
+    rejected_zero_tokenizer = validate_phase19_export_report(run_root=run_root, report_path=zero_tokenizer_path)
+    assert rejected_zero_tokenizer["ok"] is False
+    assert any("tokenizer materializer" in failure["reason"] for failure in rejected_zero_tokenizer["fatal_failures"])
+    (merged / "tokenizer.json").write_bytes(original_tokenizer)
+
     (merged / "special_tokens_map.json").write_text('{"eos_token":"<|endoftext|>"}\n', encoding="utf-8")
     missing_tokenizer = _read_json(run_root / "phase19_export_report.json")
     missing_tokenizer_path = _write_json(run_root / "missing_tokenizer.json", missing_tokenizer)
