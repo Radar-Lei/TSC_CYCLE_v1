@@ -351,3 +351,118 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     assert "--phase v4_2" in wrapper
     for forbidden in ["pip install", "uv pip install", "vllm", "flash-attn", "unsloth", "axolotl", "git worktree", "runs/20260507T032419Z"]:
         assert forbidden not in wrapper
+
+
+def _make_phase19_training_handoff(run_root: Path) -> Path:
+    adapter_dir = run_root / "adapter"
+    adapter_sha = _make_adapter(adapter_dir)
+    data_manifest = _write_json(
+        run_root / "phase19_data_manifest.json",
+        {
+            "phase18": {"calibrated_jsonl_sha256": "c" * 64, "phase18_report_sha256": "r" * 64},
+            "tokenized_sha256": {"train": "t" * 64, "val": "v" * 64, "ood_val": "o" * 64},
+            "split_counts": {"train": 3500, "val": 452, "ood_val": 580},
+            "requirements_covered": ["TRAIN-01"],
+        },
+    )
+    data_sha = __import__("hashlib").sha256(data_manifest.read_bytes()).hexdigest()
+    return _write_json(
+        run_root / "phase19_sft_report.json",
+        {
+            "ok": True,
+            "next_phase_allowed": True,
+            "model_name": EXPECTED_MODEL,
+            "run_root": str(run_root),
+            "mode": "full",
+            "loss_curve": [{"step": 1, "loss": 1.25}],
+            "duration_seconds": 123.0,
+            "vram_peak_gb": 42.0,
+            "adapter_path": str(adapter_dir),
+            "adapter_sha256": adapter_sha,
+            "data_manifest_path": str(data_manifest),
+            "data_manifest_sha256": data_sha,
+            "phase18_artifact_hashes": {"calibrated_jsonl_sha256": "c" * 64, "phase18_report_sha256": "r" * 64, "train.arrow": "t" * 64, "val.arrow": "v" * 64, "ood_val.arrow": "o" * 64},
+            "training_args": {"bf16": True, "attn_implementation": "sdpa", "load_in_4bit": True, "bnb_4bit_quant_type": "nf4", "packing": False},
+            "lora_config": {"r": 64, "lora_alpha": 64, "lora_dropout": 0.0, "target_modules": "all-linear"},
+            "requirements_covered": ["TRAIN-01"],
+            "completed": True,
+        },
+    )
+
+
+def _make_fake_llama_cpp(root: Path) -> Path:
+    root.mkdir(parents=True, exist_ok=True)
+    for name in ("convert_hf_to_gguf.py", "llama-quantize", "llama-tokenize", "llama-server"):
+        tool = root / name
+        tool.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+        tool.chmod(0o755)
+    return root
+
+
+def test_v42_export_plan_and_report_require_merged_hf_and_gguf_hashes(tmp_path: Path) -> None:
+    from tsc_cycle.v4_gates.phase19_export import build_export_plan, validate_phase19_export_report, write_export_report  # noqa: PLC0415
+
+    run_root = tmp_path / "runs" / "v4.2-4B-20260518T130000Z"
+    training_report = _make_phase19_training_handoff(run_root)
+    llama_cpp = _make_fake_llama_cpp(tmp_path / "llama.cpp")
+
+    plan = build_export_plan(run_root=run_root, phase19_report=training_report, llama_cpp_dir=llama_cpp)
+
+    assert plan["ok"] is True
+    assert plan["requirements_covered"] == ["TRAIN-02"]
+    assert plan["phase19_handoff"]["ok"] is True
+    assert plan["phase19_handoff"]["requirements_covered"] == ["TRAIN-01"]
+    assert Path(plan["paths"]["merged_hf"]) == run_root / "merged_hf"
+    assert Path(plan["paths"]["gguf_fp16"]) == run_root / "gguf" / "model.fp16.gguf"
+    assert Path(plan["paths"]["gguf_q4_K_M"]) == run_root / "gguf" / "model.q4_K_M.gguf"
+    assert Path(plan["paths"]["export_report"]) == run_root / "phase19_export_report.json"
+    commands_text = json.dumps(plan["commands"], ensure_ascii=False)
+    assert "convert_hf_to_gguf.py" in commands_text
+    assert "llama-quantize" in commands_text
+    assert "Q4_K_M" in commands_text
+
+    merged = run_root / "merged_hf"
+    merged.mkdir(parents=True)
+    (merged / "model.safetensors").write_bytes(b"merged hf weights")
+    (merged / "tokenizer.json").write_text('{"tokenizer":"qwen"}\n', encoding="utf-8")
+    (run_root / "gguf").mkdir(parents=True)
+    (run_root / "gguf" / "model.fp16.gguf").write_bytes(b"fp16 gguf")
+    (run_root / "gguf" / "model.q4_K_M.gguf").write_bytes(b"q4 gguf")
+
+    report = write_export_report(run_root=run_root, export_plan=plan, out=run_root / "phase19_export_report.json")
+    accepted = validate_phase19_export_report(run_root=run_root, report_path=run_root / "phase19_export_report.json")
+
+    assert report["ok"] is True
+    assert accepted["ok"] is True
+    assert accepted["requirements_covered"] == ["TRAIN-02"]
+    assert accepted["artifacts"]["gguf_fp16"]["sha256"] == __import__("hashlib").sha256(b"fp16 gguf").hexdigest()
+    assert accepted["artifacts"]["gguf_q4_K_M"]["sha256"] == __import__("hashlib").sha256(b"q4 gguf").hexdigest()
+    assert accepted["artifacts"]["merged_hf_safetensors"][0]["sha256"] == __import__("hashlib").sha256(b"merged hf weights").hexdigest()
+
+    missing_train02 = _read_json(run_root / "phase19_export_report.json")
+    missing_train02["requirements_covered"] = []
+    missing_train02_path = _write_json(run_root / "missing_train02.json", missing_train02)
+    rejected_train02 = validate_phase19_export_report(run_root=run_root, report_path=missing_train02_path)
+    assert rejected_train02["ok"] is False
+    assert any(failure["gate"] == "requirements_covered" for failure in rejected_train02["fatal_failures"])
+
+    missing_hash = _read_json(run_root / "phase19_export_report.json")
+    missing_hash["artifacts"]["gguf_q4_K_M"].pop("sha256")
+    missing_hash_path = _write_json(run_root / "missing_hash.json", missing_hash)
+    rejected_hash = validate_phase19_export_report(run_root=run_root, report_path=missing_hash_path)
+    assert rejected_hash["ok"] is False
+    assert any(failure["gate"] == "artifact_hash" for failure in rejected_hash["fatal_failures"])
+
+    with pytest.raises(ValueError):
+        build_export_plan(run_root=tmp_path / "runs" / "v4.0-4B-20260509T184844Z", phase19_report=training_report, llama_cpp_dir=llama_cpp)
+    with pytest.raises(ValueError):
+        build_export_plan(run_root=tmp_path / "runs" / "20260507T032419Z", phase19_report=training_report, llama_cpp_dir=llama_cpp)
+    with pytest.raises(ValueError):
+        build_export_plan(run_root=run_root, phase19_report=training_report, llama_cpp_dir=llama_cpp, merged_dir=tmp_path / "outside" / "merged_hf")
+
+    bad_training = _read_json(training_report)
+    bad_training["requirements_covered"] = []
+    bad_training_path = _write_json(run_root / "bad_training.json", bad_training)
+    bad_plan = build_export_plan(run_root=run_root, phase19_report=bad_training_path, llama_cpp_dir=llama_cpp)
+    assert bad_plan["ok"] is False
+    assert any(failure["gate"] == "phase19_handoff" for failure in bad_plan["fatal_failures"])
