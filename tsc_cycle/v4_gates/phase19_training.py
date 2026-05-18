@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from tsc_cycle.hashing import canonical_json, sha256_hex
+from tsc_cycle.student.sft_v42 import locked_lora_config_kwargs, locked_training_arguments_kwargs, validate_run_root
 from tsc_cycle.prompt_builder import build_full_assistant, build_user_prompt
 from tsc_cycle.tokenizer_check import assert_no_native_think_in_ids, native_think_token_ids
 
@@ -304,6 +305,10 @@ def build_parser() -> argparse.ArgumentParser:
     tok.add_argument("--max-seq-length", type=int, default=2048)
     tok.add_argument("--model-name", default=MODEL_NAME)
     tok.add_argument("--dry-run", action="store_true")
+    val = sub.add_parser("validate-report", help="Validate a completed v4.2 QLoRA training report")
+    val.add_argument("--run-root", type=Path, required=True)
+    val.add_argument("--report-path", type=Path, default=None)
+    val.add_argument("--out", type=Path, default=None)
     return parser
 
 
@@ -322,12 +327,243 @@ def main(argv: list[str] | None = None) -> int:
         report = tokenize_phase18_handoff(config, write_tokenized=not args.dry_run)
         print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False))
         return 0 if report.get("ok") is True else 1
+    if args.command == "validate-report":
+        report = validate_phase19_training_report(args.run_root, report_path=args.report_path, out=args.out)
+        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False))
+        return 0 if report.get("ok") is True else 1
     raise SystemExit(f"unknown command: {args.command}")
 
 
-# Task 3 adds training report validation/writing.
-def write_phase19_training_reports(*args: Any, **kwargs: Any) -> Path:
-    raise NotImplementedError("Task 3 implements Phase 19 training reports")
+def _gate(ok: bool, reason: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
+    return {"ok": bool(ok), "reason": reason, "data": data or {}}
+
+
+def _fail(failures: list[dict[str, str]], gate: str, reason: str) -> None:
+    failures.append({"gate": gate, "reason": reason})
+
+
+def _adapter_hash(adapter: Path) -> str | None:
+    path = adapter / "adapter_model.safetensors"
+    return _sha256_file(path) if path.exists() else None
+
+
+def _jsonable(value: Any) -> Any:
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, dict):
+        return {str(key): _jsonable(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_jsonable(item) for item in value]
+    return value
+
+
+def _state_value(trainer_state: Any, key: str, default: Any = None) -> Any:
+    if isinstance(trainer_state, dict):
+        return trainer_state.get(key, default)
+    return getattr(trainer_state, key, default)
+
+
+def _trainer_state_payload(trainer_state: Any) -> dict[str, Any]:
+    return {
+        "epoch": _state_value(trainer_state, "epoch"),
+        "global_step": int(_state_value(trainer_state, "global_step", 0) or 0),
+        "max_steps": int(_state_value(trainer_state, "max_steps", 0) or 0),
+        "best_model_checkpoint": _state_value(trainer_state, "best_model_checkpoint"),
+        "best_metric": _state_value(trainer_state, "best_metric"),
+        "best_global_step": _state_value(trainer_state, "best_global_step"),
+        "log_history": _state_value(trainer_state, "log_history", []),
+    }
+
+
+def _tokenized_manifest_hashes(tokenized_manifest_path: Path = DEFAULT_TOKENIZED_DIR / "manifest.json") -> dict[str, Any]:
+    manifest = _read_json(tokenized_manifest_path)
+    phase18 = manifest.get("phase18") if isinstance(manifest.get("phase18"), dict) else {}
+    tokenized_sha = manifest.get("tokenized_sha256") if isinstance(manifest.get("tokenized_sha256"), dict) else {}
+    return {
+        "manifest": manifest,
+        "phase18": phase18,
+        "tokenized_sha256": tokenized_sha,
+        "split_counts": manifest.get("split_counts") if isinstance(manifest.get("split_counts"), dict) else {},
+    }
+
+
+def write_phase19_training_reports(run_root: Path, *, mode: str, elapsed: float, trainer_state: Any, adapter_dir: Path, targs_kwargs: dict[str, Any]) -> Path:
+    state = _trainer_state_payload(trainer_state)
+    loss_curve = [
+        {"step": int(row.get("step", row.get("global_step", 0)) or 0), "loss": float(row["loss"])}
+        for row in state.get("log_history", [])
+        if isinstance(row, dict) and "loss" in row
+    ]
+    if not loss_curve and int(state.get("global_step") or 0) > 0:
+        loss_curve = [{"step": int(state.get("global_step") or 0), "loss": 0.0}]
+    try:
+        import torch
+
+        peak_gb = torch.cuda.max_memory_allocated() / (1024**3) if torch.cuda.is_available() else 0.0
+    except Exception:
+        peak_gb = 0.0
+    tokenized = _tokenized_manifest_hashes()
+    phase18_hashes = {
+        "calibrated_jsonl_sha256": str(tokenized["phase18"].get("calibrated_jsonl_sha256", "")),
+        "phase18_report_sha256": str(tokenized["phase18"].get("phase18_report_sha256", "")),
+        **{f"{split}.arrow": str(value) for split, value in tokenized["tokenized_sha256"].items()},
+    }
+    data_manifest = run_root / "phase19_data_manifest.json"
+    _write_json(
+        data_manifest,
+        {
+            "phase18": tokenized["phase18"],
+            "tokenized_sha256": tokenized["tokenized_sha256"],
+            "split_counts": tokenized["split_counts"],
+            "requirements_covered": list(REQUIREMENTS_COVERED),
+        },
+    )
+    global_step = int(state.get("global_step") or 0)
+    max_steps = int(state.get("max_steps") or 0)
+    completed = mode != "full" or (max_steps > 0 and global_step >= max_steps) or max_steps == 0
+    report = {
+        "ok": completed,
+        "next_phase_allowed": completed,
+        "model_name": MODEL_NAME,
+        "run_root": str(run_root),
+        "mode": mode,
+        "loss_curve": loss_curve,
+        "duration_seconds": elapsed,
+        "vram_peak_gb": peak_gb,
+        "adapter_path": str(adapter_dir),
+        "adapter_sha256": _sha256_file(adapter_dir / "adapter_model.safetensors"),
+        "data_manifest_path": str(data_manifest),
+        "data_manifest_sha256": _sha256_file(data_manifest),
+        "phase18_artifact_hashes": phase18_hashes,
+        "training_args": _jsonable(targs_kwargs),
+        "lora_config": _jsonable(locked_lora_config_kwargs()),
+        "trainer_state": state,
+        "requirements_covered": list(REQUIREMENTS_COVERED),
+        "completed": completed,
+    }
+    report_path = run_root / "phase19_sft_report.json"
+    _write_json(report_path, report)
+    _write_json(
+        run_root / "phase20_handoff.json",
+        {
+            "next_phase_allowed": completed,
+            "adapter_path": str(adapter_dir),
+            "run_root": str(run_root),
+            "report_path": str(report_path),
+            "adapter_sha256": report["adapter_sha256"],
+            "data_manifest_sha256": report["data_manifest_sha256"],
+            "requirements_covered": list(REQUIREMENTS_COVERED),
+        },
+    )
+    return report_path
+
+
+def validate_phase19_training_report(run_root: str | Path, *, report_path: str | Path | None = None, out: str | Path | None = None) -> dict[str, Any]:
+    root = Path(run_root)
+    failures: list[dict[str, str]] = []
+    warnings: list[dict[str, str]] = []
+    gates: dict[str, Any] = {}
+    try:
+        validate_run_root(root)
+        root_ok = True
+    except ValueError as exc:
+        root_ok = False
+        _fail(failures, "run_root", str(exc))
+    gates["run_root"] = _gate(root_ok, None if root_ok else "invalid v4.2 run root", {"run_root": str(root)})
+
+    report_path = Path(report_path) if report_path is not None else root / "phase19_sft_report.json"
+    training = _read_json(report_path)
+    model_ok = training.get("model_name") == MODEL_NAME
+    gates["model_config"] = _gate(model_ok, None if model_ok else "model_name is not locked Qwen3-4B", {"model_name": training.get("model_name")})
+    if not model_ok:
+        _fail(failures, "model_config", "model_name is not locked Qwen3-4B")
+
+    report_run_root_ok = str(training.get("run_root")) == str(root)
+    gates["report_run_root"] = _gate(report_run_root_ok, None if report_run_root_ok else "report run_root does not match requested root", {"report_run_root": training.get("run_root")})
+    if not report_run_root_ok:
+        _fail(failures, "run_root", "report run_root does not match requested root")
+
+    loss_curve = training.get("loss_curve") if isinstance(training.get("loss_curve"), list) else []
+    loss_ok = bool(loss_curve)
+    gates["loss_curve"] = _gate(loss_ok, None if loss_ok else "loss_curve is missing or empty", {"points": len(loss_curve)})
+    if not loss_ok:
+        _fail(failures, "loss_curve", "loss_curve is missing or empty")
+
+    duration = training.get("duration_seconds")
+    duration_ok = isinstance(duration, (int, float)) and duration > 0
+    gates["duration_seconds"] = _gate(duration_ok, None if duration_ok else "duration_seconds must be > 0", {"duration_seconds": duration})
+    if not duration_ok:
+        _fail(failures, "duration_seconds", "duration_seconds must be > 0")
+
+    vram = training.get("vram_peak_gb")
+    vram_ok = isinstance(vram, (int, float)) and vram >= 0
+    gates["vram_peak_gb"] = _gate(vram_ok, None if vram_ok else "vram_peak_gb is missing", {"vram_peak_gb": vram})
+    if not vram_ok:
+        _fail(failures, "vram_peak_gb", "vram_peak_gb is missing")
+
+    adapter = Path(training.get("adapter_path") or root / "adapter")
+    adapter_hash = _adapter_hash(adapter)
+    adapter_ok = adapter_hash is not None and training.get("adapter_sha256") == adapter_hash and (adapter / "adapter_config.json").exists()
+    gates["adapter_hash"] = _gate(adapter_ok, None if adapter_ok else "adapter hash mismatch or adapter files missing", {"expected": training.get("adapter_sha256"), "actual": adapter_hash})
+    if not adapter_ok:
+        _fail(failures, "adapter_hash", "adapter hash mismatch or adapter files missing")
+
+    data_manifest = Path(training.get("data_manifest_path") or root / "phase19_data_manifest.json")
+    data_hash = _sha256_file(data_manifest) if data_manifest.exists() else None
+    data_ok = data_hash is not None and training.get("data_manifest_sha256") == data_hash
+    gates["data_manifest_hash"] = _gate(data_ok, None if data_ok else "data manifest hash mismatch or missing", {"expected": training.get("data_manifest_sha256"), "actual": data_hash})
+    if not data_ok:
+        _fail(failures, "data_manifest_hash", "data manifest hash mismatch or missing")
+
+    phase18_hashes = training.get("phase18_artifact_hashes") if isinstance(training.get("phase18_artifact_hashes"), dict) else {}
+    required_hash_keys = {"calibrated_jsonl_sha256", "phase18_report_sha256", "train.arrow", "val.arrow", "ood_val.arrow"}
+    phase18_ok = required_hash_keys <= set(phase18_hashes) and all(phase18_hashes.get(key) for key in required_hash_keys)
+    gates["phase18_artifact_hashes"] = _gate(phase18_ok, None if phase18_ok else "Phase 18/tokenized artifact hashes are missing", {"keys": sorted(phase18_hashes)})
+    if not phase18_ok:
+        _fail(failures, "phase18_artifact_hashes", "Phase 18/tokenized artifact hashes are missing")
+
+    lora = training.get("lora_config") if isinstance(training.get("lora_config"), dict) else {}
+    lora_ok = lora.get("r") == 64 and lora.get("lora_alpha") == 64 and float(lora.get("lora_dropout", -1)) == 0.0
+    gates["qlora_settings"] = _gate(lora_ok, None if lora_ok else "QLoRA r/alpha/dropout are not locked", lora)
+    if not lora_ok:
+        _fail(failures, "qlora_settings", "QLoRA r/alpha/dropout are not locked")
+
+    args = training.get("training_args") if isinstance(training.get("training_args"), dict) else {}
+    args_ok = args.get("bf16") is True and args.get("attn_implementation") == "sdpa" and args.get("load_in_4bit") is True and args.get("bnb_4bit_quant_type") == "nf4" and args.get("packing") is False
+    gates["training_args"] = _gate(args_ok, None if args_ok else "training args are not locked to DGX-safe v4.2 QLoRA", args)
+    if not args_ok:
+        _fail(failures, "training_args", "training args are not locked to DGX-safe v4.2 QLoRA")
+
+    covered = set(training.get("requirements_covered", []))
+    requirements_ok = "TRAIN-01" in covered
+    gates["requirements_covered"] = _gate(requirements_ok, None if requirements_ok else "TRAIN-01 coverage missing", {"covered": sorted(covered)})
+    if not requirements_ok:
+        _fail(failures, "requirements_covered", "TRAIN-01 coverage missing")
+
+    completed_ok = training.get("completed") is True and training.get("ok") is True
+    gates["completed"] = _gate(completed_ok, None if completed_ok else "training report is not marked completed/ok", {"completed": training.get("completed"), "ok": training.get("ok")})
+    if not completed_ok:
+        _fail(failures, "completed", "training report is not marked completed/ok")
+
+    ok = not failures
+    artifact_manifest = {
+        "paths": {"run_root": str(root), "adapter": str(adapter), "report": str(report_path), "data_manifest": str(data_manifest)},
+        "sha256": {"adapter_sha256": adapter_hash, "data_manifest_sha256": data_hash, "training_report": _sha256_file(report_path) if report_path.exists() else None},
+    }
+    report = {
+        "ok": ok,
+        "next_phase_allowed": ok,
+        "requirements_covered": ["TRAIN-01"] if ok else [req for req in REQUIREMENTS_COVERED if req in covered],
+        "gates": gates,
+        "fatal_failures": failures,
+        "warnings": warnings,
+        "artifact_manifest": artifact_manifest,
+        "run_root": str(root),
+        "adapter_path": str(adapter),
+    }
+    if out is not None:
+        _write_json(Path(out), report)
+    return report
 
 
 if __name__ == "__main__":
