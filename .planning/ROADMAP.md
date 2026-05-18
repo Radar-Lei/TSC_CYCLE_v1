@@ -44,7 +44,7 @@ Full details: `milestones/v4.1-ROADMAP.md`
 - [ ] **Phase 17: Audit & Saturation Policy Gate** - Quantify existing low-saturation max-green failures and establish the offline saturation gate without changing deployment prompts.
 - [ ] **Phase 18: Calibrated Dataset Rebuild** - Filter or relabel v4 examples into a calibrated v4.2 training dataset with reproducible reports and splits.
 - [ ] **Phase 19: 4B QLoRA Retrain & Export** - Retrain the existing Qwen3-4B QLoRA route and export merged HF plus fp16/q4_K_M GGUF artifacts.
-- [ ] **Phase 20: Evaluation & Reality Replay Handoff** - Evaluate v4.2 against hard constraints, protocol, saturation policy, and produce a new gated `reality_test.log`.
+- [ ] **Phase 20: Evaluation & Reality Replay Handoff** - Evaluate v4.2 against hard constraints, output protocol, saturation policy, and produce a new gated `reality_test.log`.
 
 ## Phase Details
 
@@ -57,7 +57,10 @@ Full details: `milestones/v4.1-ROADMAP.md`
   2. Maintainer can inspect representative failure examples from both `data/v4/phase8/labeled_merged.jsonl` and `reality_test.log` with sample id, phase id, saturation, min/max green, final green, and violation category.
   3. Maintainer can run a saturation policy gate that classifies phase decisions into the intended saturation bands and fails outputs that exceed configured low-saturation max-green thresholds.
   4. Maintainer can verify that final deployment system/inference prompts remain byte-for-byte aligned with the v4 inference protocol and do not explicitly include the saturation band rule.
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 17-01-PLAN.md — Build canonical saturation classifier, per-phase projectors, banded audit statistics, and representative examples.
+- [ ] 17-02-PLAN.md — Add safe offline CLI/report gate, configured threshold failures, and v4 prompt protocol guard.
 
 ### Phase 18: Calibrated Dataset Rebuild
 **Goal**: Maintainer can build and review a calibrated v4.2 dataset that removes or repairs saturation-policy violations while preserving protocol format, hard constraints, provenance, hashes, and deterministic splits.
@@ -107,7 +110,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20
 | 14. Canonical v4 Reproduction Package | v4.1 | 1/1 | Complete | 2026-05-12 |
 | 15. Safe Cleanup Execution | v4.1 | 2/2 | Complete | 2026-05-12 |
 | 16. Verification & Handoff | v4.1 | 1/1 | Complete | 2026-05-12 |
-| 17. Audit & Saturation Policy Gate | v4.2 | 0/TBD | Not started | - |
+| 17. Audit & Saturation Policy Gate | v4.2 | 0/2 | Not started | - |
 | 18. Calibrated Dataset Rebuild | v4.2 | 0/TBD | Not started | - |
 | 19. 4B QLoRA Retrain & Export | v4.2 | 0/TBD | Not started | - |
 | 20. Evaluation & Reality Replay Handoff | v4.2 | 0/TBD | Not started | - |
