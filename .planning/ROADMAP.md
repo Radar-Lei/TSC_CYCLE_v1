@@ -127,7 +127,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20
 | 14. Canonical v4 Reproduction Package | v4.1 | 1/1 | Complete | 2026-05-12 |
 | 15. Safe Cleanup Execution | v4.1 | 2/2 | Complete | 2026-05-12 |
 | 16. Verification & Handoff | v4.1 | 1/1 | Complete | 2026-05-12 |
-| 17. Audit & Saturation Policy Gate | v4.2 | 2/2 | Complete   | 2026-05-18 |
+| 17. Audit & Saturation Policy Gate | v4.2 | 3/3 | Complete   | 2026-05-18 |
 | 18. Calibrated Dataset Rebuild | v4.2 | 0/TBD | Not started | - |
 | 19. 4B QLoRA Retrain & Export | v4.2 | 0/TBD | Not started | - |
 | 20. Evaluation & Reality Replay Handoff | v4.2 | 0/TBD | Not started | - |

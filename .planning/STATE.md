@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v4.2
 milestone_name: 饱和度-绿灯策略校准 / 教师标签重建
-status: executing
-stopped_at: v4.2 roadmap created; next step is Phase 17 planning.
-last_updated: "2026-05-18T06:52:36Z"
-last_activity: 2026-05-18 -- Phase 17 Plan 02 complete
+status: verifying
+stopped_at: Completed 17-02-PLAN.md
+last_updated: "2026-05-18T07:36:28.161Z"
+last_activity: 2026-05-18
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 100
+  total_plans: 3
+  completed_plans: 3
+  percent: 25
 ---
 
 # TSC-CYCLE State
@@ -27,8 +27,8 @@ See: `.planning/PROJECT.md` (updated 2026-05-18)
 
 Phase: 17 (audit-saturation-policy-gate) — COMPLETE
 Plan: 2 of 2
-Status: Phase 17 complete; ready for Phase 18 planning
-Last activity: 2026-05-18 -- Phase 17 Plan 02 complete
+Status: Phase complete — ready for verification
+Last activity: 2026-05-18
 
 Progress: [██████████] 100%
 
@@ -48,6 +48,7 @@ Progress: [██████████] 100%
 | 18. Calibrated Dataset Rebuild | 0/TBD | Not started | - |
 | 19. 4B QLoRA Retrain & Export | 0/TBD | Not started | - |
 | 20. Evaluation & Reality Replay Handoff | 0/TBD | Not started | - |
+| Phase 17-audit-saturation-policy-gate P03 | 6 min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -61,6 +62,9 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - v4.2 stays on `Qwen/Qwen3-4B-Thinking-2507` and the existing DGX Spark-safe QLoRA/export stack.
 - Phase 17 policy gate defaults intentionally fail current v4 dataset/replay evidence on low-saturation max-green excess, while prompt protocol evidence remains green.
 - `sat_ge_1.0_allowed_max` has no max-green failure threshold; saturated max-green is allowed by the offline policy.
+- [Phase 17-audit-saturation-policy-gate]: Store POLICY-03 expected prompt bytes in an independent JSON fixture instead of recomputing them from build_user_prompt at import time. — This makes byte-for-byte prompt drift detection independent of the implementation under test.
+- [Phase 17-audit-saturation-policy-gate]: Accept only artifact roots whose resolved path is explicitly an artifacts/v4/phase17 subtree. — This prevents broad maintainer-supplied trust roots from authorizing writes to data or source files.
+- [Phase 17-audit-saturation-policy-gate]: Select representative audit examples by deterministic per-origin coverage before filling remaining slots globally. — This keeps maintainer-facing audit output from hiding replay evidence behind dataset ordering.
 
 ### Pending Todos
 
@@ -80,7 +84,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 
 ## Session Continuity
 
-Last session: 2026-05-18
+Last session: 2026-05-18T07:36:28.153Z
 Stopped at: Completed 17-02-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 18`
