@@ -170,7 +170,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = _PhaseExportParser(description="Merge v4 adapter and export GGUF fp16/q4_K_M")
     parser.add_argument("--export-phase", choices=["phase10", "phase19"], default="phase10")
     parser.add_argument("--phase9-report", default=str(DEFAULT_PHASE9_REPORT))
-    parser.add_argument("--phase19-report", default=str(DEFAULT_PHASE19_REPORT))
+    parser.add_argument("--phase19-report", default=None)
     parser.add_argument("--run-root", default=str(PHASE9_RUN_ROOT))
     parser.add_argument("--llama-cpp", default=os.environ.get("LLAMA_CPP_DIR", str(DEFAULT_LLAMA_CPP)))
     parser.add_argument("--merged-dir", default=None)

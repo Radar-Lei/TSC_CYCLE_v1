@@ -425,18 +425,38 @@ def _manifest_file_hash(path: Path) -> str:
     return _sha256_file(path) if path.is_file() else ""
 
 
-def _actual_phase18_hashes_from_manifest(manifest: dict[str, Any]) -> dict[str, str]:
+def _project_root_for_run(run_root: Path) -> Path:
+    return run_root.parent.parent if run_root.parent.name == "runs" else Path(".")
+
+
+def _canonical_lineage_path(run_root: Path, relative_path: Path) -> Path:
+    return (_project_root_for_run(run_root) / relative_path).resolve()
+
+
+def _manifest_path(manifest_value: Any, expected: Path, failures: list[dict[str, str]], gate: str) -> Path:
+    if manifest_value is None or str(manifest_value) == "":
+        return expected
+    candidate = Path(str(manifest_value)).resolve()
+    if candidate != expected:
+        failures.append({"gate": gate, "reason": f"lineage path must be canonical {expected}: {candidate}"})
+    return candidate
+
+
+def _actual_phase18_hashes_from_manifest(manifest: dict[str, Any], run_root: Path) -> tuple[dict[str, str], list[dict[str, str]]]:
+    failures: list[dict[str, str]] = []
     phase18 = manifest.get("phase18") if isinstance(manifest.get("phase18"), dict) else {}
     tokenized_paths = manifest.get("tokenized_paths") if isinstance(manifest.get("tokenized_paths"), dict) else {}
-    calibrated_jsonl = Path(str(phase18.get("calibrated_jsonl") or DEFAULT_CALIBRATED_JSONL))
-    phase18_report = Path(str(phase18.get("phase18_report") or DEFAULT_PHASE18_REPORT))
+    calibrated_jsonl = _manifest_path(phase18.get("calibrated_jsonl"), _canonical_lineage_path(run_root, DEFAULT_CALIBRATED_JSONL), failures, "phase18_lineage_path")
+    phase18_report = _manifest_path(phase18.get("phase18_report"), _canonical_lineage_path(run_root, DEFAULT_PHASE18_REPORT), failures, "phase18_lineage_path")
+    canonical_tokenized = {split: _canonical_lineage_path(run_root, DEFAULT_TOKENIZED_DIR / f"{split}.arrow") for split in ("train", "val", "ood_val")}
+    tokenized = {split: _manifest_path(tokenized_paths.get(split), canonical_tokenized[split], failures, "phase18_lineage_path") for split in canonical_tokenized}
     return {
         "calibrated_jsonl_sha256": _manifest_file_hash(calibrated_jsonl),
         "phase18_report_sha256": _manifest_file_hash(phase18_report),
-        "train.arrow": _manifest_file_hash(Path(str(tokenized_paths.get("train") or DEFAULT_TOKENIZED_DIR / "train.arrow"))),
-        "val.arrow": _manifest_file_hash(Path(str(tokenized_paths.get("val") or DEFAULT_TOKENIZED_DIR / "val.arrow"))),
-        "ood_val.arrow": _manifest_file_hash(Path(str(tokenized_paths.get("ood_val") or DEFAULT_TOKENIZED_DIR / "ood_val.arrow"))),
-    }
+        "train.arrow": _manifest_file_hash(tokenized["train"]),
+        "val.arrow": _manifest_file_hash(tokenized["val"]),
+        "ood_val.arrow": _manifest_file_hash(tokenized["ood_val"]),
+    }, failures
 
 
 def write_phase19_training_reports(run_root: Path, *, mode: str, elapsed: float, trainer_state: Any, adapter_dir: Path, targs_kwargs: dict[str, Any], tokenized_dir: Path = DEFAULT_TOKENIZED_DIR) -> Path:
@@ -585,8 +605,9 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
 
     phase18_hashes = training.get("phase18_artifact_hashes") if isinstance(training.get("phase18_artifact_hashes"), dict) else {}
     expected_phase18_hashes = _expected_phase18_hashes_from_manifest(data_manifest_payload)
-    actual_phase18_hashes = _actual_phase18_hashes_from_manifest(data_manifest_payload)
-    phase18_ok = phase18_hashes == expected_phase18_hashes and expected_phase18_hashes == actual_phase18_hashes and all(actual_phase18_hashes.values())
+    actual_phase18_hashes, lineage_path_failures = _actual_phase18_hashes_from_manifest(data_manifest_payload, root)
+    failures.extend(lineage_path_failures)
+    phase18_ok = not lineage_path_failures and phase18_hashes == expected_phase18_hashes and expected_phase18_hashes == actual_phase18_hashes and all(actual_phase18_hashes.values())
     gates["phase18_artifact_hashes"] = _gate(phase18_ok, None if phase18_ok else "Phase 18/tokenized artifact hashes do not match data manifest and on-disk artifacts", {"expected": expected_phase18_hashes, "actual": phase18_hashes, "on_disk": actual_phase18_hashes})
     if not phase18_ok:
         _fail(failures, "phase18_artifact_hashes", "Phase 18/tokenized artifact hashes do not match data manifest and on-disk artifacts")

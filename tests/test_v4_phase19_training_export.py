@@ -428,6 +428,20 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     assert forged_manifest_rejected["ok"] is False
     assert any(failure["gate"] == "phase18_artifact_hashes" for failure in forged_manifest_rejected["fatal_failures"])
 
+    outside_lineage = tmp_path / "outside" / "labeled_calibrated.jsonl"
+    outside_lineage.parent.mkdir(parents=True, exist_ok=True)
+    outside_lineage.write_bytes(b"calibrated jsonl\n")
+    outside_manifest_payload = _read_json(data_manifest)
+    outside_manifest_payload["phase18"]["calibrated_jsonl"] = str(outside_lineage)
+    outside_manifest_path = _write_json(run_root / "outside_lineage_manifest.json", outside_manifest_payload)
+    outside_lineage_report = _read_json(report)
+    outside_lineage_report["data_manifest_path"] = str(outside_manifest_path)
+    outside_lineage_report["data_manifest_sha256"] = __import__("hashlib").sha256(outside_manifest_path.read_bytes()).hexdigest()
+    outside_lineage_report_path = _write_json(run_root / "outside_lineage_report.json", outside_lineage_report)
+    outside_lineage_rejected = validate_phase19_training_report(run_root, report_path=outside_lineage_report_path)
+    assert outside_lineage_rejected["ok"] is False
+    assert any(failure["gate"] == "phase18_lineage_path" for failure in outside_lineage_rejected["fatal_failures"])
+
     outside_adapter = tmp_path / "runs" / "v4.0-4B-20260509T184844Z" / "adapter"
     outside_adapter_sha = _make_adapter(outside_adapter)
     outside = _read_json(report)
@@ -613,6 +627,9 @@ def test_v42_wrappers_forbid_dependency_installs_unsupported_runtimes_and_frozen
     export_source = (PROJECT_ROOT / "tsc_cycle/student/export_gguf.py").read_text(encoding="utf-8")
     assert "trust_remote_code=not enforce_base_model" in export_source
     assert "tokenizer_source = model_name if enforce_base_model else adapter_dir" in export_source
+
+    phase19_defaults = parser.parse_args(["--export-phase", "phase19", "--run-root", str(run_root), "--llama-cpp", str(llama_cpp)])
+    assert Path(phase19_defaults.phase19_report) == run_root / "phase19_sft_report.json"
 
     phase19_args = parser.parse_args(["--export-phase", "phase19", "--run-root", str(run_root), "--phase19-report", str(training_report), "--llama-cpp", str(llama_cpp)])
     assert phase19_args.export_phase == "phase19"
