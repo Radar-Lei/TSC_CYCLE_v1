@@ -11,7 +11,7 @@ provides:
   - v4.2 QLoRA constants and run-root guards for Phase 18 calibrated data
   - Phase 18 calibrated train/val/ood_val Arrow tokenized handoff artifacts
   - Phase 19 TRAIN-01 training report validator and DGX Spark-safe launcher
-  - Real v4.2 QLoRA training attempt under runs/v4.2-4B-20260518T111519Z
+  - Real v4.2 QLoRA training completion under runs/v4.2-4B-20260518T111519Z with accepted TRAIN-01 report
 affects: [phase19-export, phase20-evaluation, TRAIN-01]
 
 tech-stack:
@@ -36,12 +36,12 @@ key-files:
 
 key-decisions:
   - "Add v4.2-specific training constants and gates instead of mutating v4.0 defaults."
-  - "Treat the real QLoRA training as launched but not yet complete; TRAIN-01 remains blocked until phase19_sft_report.json validates."
+  - "Treat TRAIN-01 as complete only after the real adapter exists and phase19_sft_report.json validates."
 
 patterns-established:
   - "Phase 19 gates validate Phase 18 calibrated JSONL, split counts, tokenized Arrow hashes, and TRAIN-01 coverage before accepting training evidence."
 
-requirements-completed: []
+requirements-completed: [TRAIN-01]
 
 duration: 34 min
 completed: 2026-05-18
@@ -49,7 +49,7 @@ completed: 2026-05-18
 
 # Phase 19 Plan 01: v4.2 QLoRA Training Handoff Summary
 
-**v4.2 QLoRA handoff now tokenizes Phase 18 calibrated data and launches the real DGX-safe Qwen3-4B training run, but TRAIN-01 remains blocked pending training completion/report validation.**
+**v4.2 QLoRA handoff tokenizes Phase 18 calibrated data and completed a real DGX-safe Qwen3-4B training run with accepted TRAIN-01 report evidence.**
 
 ## Performance
 
@@ -68,7 +68,7 @@ completed: 2026-05-18
   - `train.arrow`: 3500 rows, sha256 `38c0f2d69c67c79f3edb0a751e1a25ebf76897318df763ef1ec0db6e72fa6b45`
   - `val.arrow`: 452 rows, sha256 `860129d3c4f4eb9230154ca5427f73cc7f7023971ed4f7dafcb84ae5a852a9af`
   - `ood_val.arrow`: 580 rows, sha256 `44221e96a81ee3a11effc0e9f3bd228e72787432916b46fbc11749803ae0a29c`
-- Launched real QLoRA training via `scripts/run_v4_phase19_train.sh`; systemd scope `run-r6410c9fd80054ed985663446b82c2e79.scope`, run root `runs/v4.2-4B-20260518T111519Z`.
+- Completed real QLoRA training via `scripts/run_v4_phase19_train.sh`; run root `runs/v4.2-4B-20260518T111519Z`, adapter sha256 `7edad196a79d15649a40746865f0336e3b4aa1913be61661be122a1b5605fe5b`, data manifest sha256 `133f1d1cee35c0e9dff6385f681d5c991b28c663a00c6026aad34180d64516ee`.
 
 ## Task Commits
 
@@ -95,12 +95,12 @@ completed: 2026-05-18
 - PASS: `/home/samuel/TSC_CYCLE/.venv/bin/python -m pytest tests/test_v4_phase19_training_export.py -q` → 3 passed.
 - PASS: `/home/samuel/TSC_CYCLE/.venv/bin/python -m pytest tests/test_v4_phase19_training_export.py tests/test_v4_phase18_calibrated_dataset_rebuild.py tests/test_v4_phase9_sft_contracts.py -q` → 15 passed.
 - PASS: tokenization CLI on default Phase 18 artifacts wrote 3500/452/580 Arrow rows and `ok: true` tokenization report.
-- BLOCKED/PENDING: training report validation cannot pass yet because `runs/v4.2-4B-20260518T111519Z/phase19_sft_report.json` does not exist while training is still running.
+- PASS: `/home/samuel/TSC_CYCLE/.venv/bin/python -m tsc_cycle.v4_gates.phase19_training validate-report --run-root runs/v4.2-4B-20260518T111519Z --report-path runs/v4.2-4B-20260518T111519Z/phase19_sft_report.json` → `ok: true`, `next_phase_allowed: true`, `requirements_covered: ["TRAIN-01"]`.
 
 ## Decisions Made
 
 - Add v4.2-specific modules/wrappers to avoid changing existing v4.0 Phase 9 defaults.
-- Keep TRAIN-01 incomplete until a real adapter and accepted `phase19_sft_report.json` exist.
+- Keep TRAIN-01 incomplete until a real adapter and accepted `phase19_sft_report.json` exist; that condition is now satisfied for `runs/v4.2-4B-20260518T111519Z`.
 
 ## Deviations from Plan
 
@@ -121,14 +121,13 @@ completed: 2026-05-18
 
 ## Issues Encountered
 
-- Real QLoRA training was launched successfully but did not finish within this executor window. Evidence at 2026-05-18T11:38:02Z:
-  - Scope: `run-r6410c9fd80054ed985663446b82c2e79.scope`
-  - Active: running for 22 minutes
+- Real QLoRA training initially outlived the executor window and later completed when resumed against the same run root. Final evidence:
   - Run root: `runs/v4.2-4B-20260518T111519Z`
-  - Processes: PIDs 421015 and 421818
-  - Memory: current 2.4G, peak 8.6G, MemoryMax 100G, MemorySwapMax 0B
-  - GPU utilization observed: 95%
-  - Report status: `phase19_sft_report.json` missing, so adapter/report validation is pending.
+  - Adapter: `runs/v4.2-4B-20260518T111519Z/adapter/adapter_model.safetensors`
+  - Report: `runs/v4.2-4B-20260518T111519Z/phase19_sft_report.json`
+  - Duration: 14232.66 seconds
+  - VRAM peak: 8.64 GB
+  - Validation status: `ok: true`, `next_phase_allowed: true`.
 
 ## Known Stubs
 
@@ -140,7 +139,7 @@ None — new trust-boundary handling matches the plan threat model for Phase 18 
 
 ## TRAIN-01 Status
 
-Blocked/pending. TRAIN-01 is not complete yet because the real adapter directory and accepted `runs/v4.2-4B-20260518T111519Z/phase19_sft_report.json` do not exist at summary time. The launched training run must finish and pass `python -m tsc_cycle.v4_gates.phase19_training validate-report --run-root runs/v4.2-4B-20260518T111519Z --report-path runs/v4.2-4B-20260518T111519Z/phase19_sft_report.json` before marking TRAIN-01 complete.
+Complete. The real adapter directory exists and `runs/v4.2-4B-20260518T111519Z/phase19_sft_report.json` passes `python -m tsc_cycle.v4_gates.phase19_training validate-report --run-root runs/v4.2-4B-20260518T111519Z --report-path runs/v4.2-4B-20260518T111519Z/phase19_sft_report.json` with TRAIN-01 coverage.
 
 ## User Setup Required
 
@@ -148,7 +147,7 @@ None.
 
 ## Next Phase Readiness
 
-Phase 19 Plan 02 is not ready until the running QLoRA job completes and the Phase 19 training report validator accepts the real `phase19_sft_report.json`.
+Phase 19 Plan 02 is ready: the QLoRA job completed and the Phase 19 training report validator accepts the real `phase19_sft_report.json`.
 
 ## Self-Check: PASSED
 
