@@ -265,3 +265,89 @@ def test_phase18_handoff_tokenizes_calibrated_splits_with_protocol_hashes(tmp_pa
     assert leak["ok"] is False
     assert leak["gates"]["native_think_token_leak"]["ok"] is False
     assert not (leak_config.tokenized_dir / "train.arrow").exists()
+
+
+def _make_adapter(adapter_dir: Path) -> str:
+    adapter_dir.mkdir(parents=True, exist_ok=True)
+    (adapter_dir / "adapter_config.json").write_text('{"base_model_name_or_path":"Qwen/Qwen3-4B-Thinking-2507"}\n', encoding="utf-8")
+    weights = adapter_dir / "adapter_model.safetensors"
+    weights.write_bytes(b"phase19 adapter bytes")
+    return __import__("hashlib").sha256(weights.read_bytes()).hexdigest()
+
+
+def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Path) -> None:
+    from tsc_cycle.v4_gates.phase19_training import validate_phase19_training_report  # noqa: PLC0415
+
+    run_root = tmp_path / "runs" / "v4.2-4B-20260518T120000Z"
+    adapter_dir = run_root / "adapter"
+    adapter_sha = _make_adapter(adapter_dir)
+    data_manifest = _write_json(
+        run_root / "phase19_data_manifest.json",
+        {
+            "phase18": {"calibrated_jsonl_sha256": "c" * 64, "phase18_report_sha256": "r" * 64},
+            "tokenized_sha256": {"train": "t" * 64, "val": "v" * 64, "ood_val": "o" * 64},
+            "split_counts": {"train": 3500, "val": 452, "ood_val": 580},
+            "requirements_covered": ["TRAIN-01"],
+        },
+    )
+    data_sha = __import__("hashlib").sha256(data_manifest.read_bytes()).hexdigest()
+    report = _write_json(
+        run_root / "phase19_sft_report.json",
+        {
+            "ok": True,
+            "next_phase_allowed": True,
+            "model_name": EXPECTED_MODEL,
+            "run_root": str(run_root),
+            "mode": "full",
+            "loss_curve": [{"step": 1, "loss": 1.25}],
+            "duration_seconds": 123.0,
+            "vram_peak_gb": 42.0,
+            "adapter_path": str(adapter_dir),
+            "adapter_sha256": adapter_sha,
+            "data_manifest_path": str(data_manifest),
+            "data_manifest_sha256": data_sha,
+            "phase18_artifact_hashes": {"calibrated_jsonl_sha256": "c" * 64, "phase18_report_sha256": "r" * 64, "train.arrow": "t" * 64, "val.arrow": "v" * 64, "ood_val.arrow": "o" * 64},
+            "training_args": {"bf16": True, "attn_implementation": "sdpa", "load_in_4bit": True, "bnb_4bit_quant_type": "nf4", "packing": False},
+            "lora_config": {"r": 64, "lora_alpha": 64, "lora_dropout": 0.0, "target_modules": "all-linear"},
+            "requirements_covered": ["TRAIN-01"],
+            "completed": True,
+        },
+    )
+
+    accepted = validate_phase19_training_report(run_root, report_path=report)
+
+    assert accepted["ok"] is True
+    assert accepted["next_phase_allowed"] is True
+    assert accepted["requirements_covered"] == ["TRAIN-01"]
+    assert accepted["artifact_manifest"]["sha256"]["adapter_sha256"] == adapter_sha
+    assert accepted["artifact_manifest"]["sha256"]["data_manifest_sha256"] == data_sha
+    assert accepted["gates"]["phase18_artifact_hashes"]["ok"] is True
+
+    wrong_model = _read_json(report)
+    wrong_model["model_name"] = "Qwen/Qwen3.5-9B"
+    wrong_report = _write_json(run_root / "wrong_model.json", wrong_model)
+    rejected = validate_phase19_training_report(run_root, report_path=wrong_report)
+    assert rejected["ok"] is False
+    assert any(failure["gate"] == "model_config" for failure in rejected["fatal_failures"])
+
+    v40_root = tmp_path / "runs" / "v4.0-4B-20260509T184844Z"
+    v40_report = dict(_read_json(report), run_root=str(v40_root))
+    bad_root_report = _write_json(run_root / "bad_root.json", v40_report)
+    bad_root = validate_phase19_training_report(v40_root, report_path=bad_root_report)
+    assert bad_root["ok"] is False
+    assert any(failure["gate"] == "run_root" for failure in bad_root["fatal_failures"])
+
+    missing_hashes = _read_json(report)
+    missing_hashes["phase18_artifact_hashes"] = {}
+    missing_report = _write_json(run_root / "missing_hashes.json", missing_hashes)
+    missing = validate_phase19_training_report(run_root, report_path=missing_report)
+    assert missing["ok"] is False
+    assert any(failure["gate"] == "phase18_artifact_hashes" for failure in missing["fatal_failures"])
+
+    wrapper = (PROJECT_ROOT / "scripts/run_v4_phase19_train.sh").read_text(encoding="utf-8")
+    assert "scripts/dgx_spark/run_safe.sh" in wrapper
+    assert "100G --" in wrapper
+    assert "tsc_cycle.student.train" in wrapper
+    assert "--phase v4_2" in wrapper
+    for forbidden in ["pip install", "uv pip install", "vllm", "flash-attn", "unsloth", "axolotl", "git worktree", "runs/20260507T032419Z"]:
+        assert forbidden not in wrapper
