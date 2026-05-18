@@ -303,24 +303,10 @@ def _make_adapter(adapter_dir: Path) -> str:
 
 
 def _make_phase19_lineage(root: Path) -> tuple[dict, dict, dict, dict]:
-    phase18_root = root / "data/v4_2/phase18"
-    calibrated = phase18_root / "labeled_calibrated.jsonl"
-    calibrated.parent.mkdir(parents=True, exist_ok=True)
-    calibrated.write_bytes(b"calibrated jsonl\n")
-    phase18_report = root / "artifacts/v4_2/phase18/reconstruction_report.json"
-    _write_json(phase18_report, {"ok": True, "next_phase_allowed": True, "requirements_covered": ["DATA-01", "DATA-02"]})
-    tokenized_dir = phase18_root / "tokenized"
-    tokenized_dir.mkdir(parents=True, exist_ok=True)
-    for split in ("train", "val", "ood_val"):
-        (tokenized_dir / f"{split}.arrow").write_bytes(f"{split} arrow\n".encode("utf-8"))
-    phase18 = {
-        "calibrated_jsonl": str(calibrated),
-        "calibrated_jsonl_sha256": __import__("hashlib").sha256(calibrated.read_bytes()).hexdigest(),
-        "phase18_report": str(phase18_report),
-        "phase18_report_sha256": __import__("hashlib").sha256(phase18_report.read_bytes()).hexdigest(),
-    }
-    tokenized_paths = {split: str(tokenized_dir / f"{split}.arrow") for split in ("train", "val", "ood_val")}
-    tokenized_sha256 = {split: __import__("hashlib").sha256((tokenized_dir / f"{split}.arrow").read_bytes()).hexdigest() for split in ("train", "val", "ood_val")}
+    manifest = _read_json(PROJECT_ROOT / "data/v4_2/phase18/tokenized/manifest.json")
+    phase18 = manifest["phase18"]
+    tokenized_paths = manifest["tokenized_paths"]
+    tokenized_sha256 = manifest["tokenized_sha256"]
     phase18_artifact_hashes = {
         "calibrated_jsonl_sha256": phase18["calibrated_jsonl_sha256"],
         "phase18_report_sha256": phase18["phase18_report_sha256"],
@@ -449,6 +435,8 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
 
     with pytest.raises(ValueError, match="tokenized_dir must be canonical"):
         write_phase19_training_reports(run_root, mode="full", elapsed=1.0, trainer_state={"global_step": 1, "max_steps": 1}, adapter_dir=adapter_dir, targs_kwargs={"bf16": True}, tokenized_dir=tmp_path / "outside-tokenized")
+    with pytest.raises(ValueError, match="tokenized_dir must be canonical"):
+        write_phase19_training_reports(tmp_path / "outside" / "runs" / "v4.2-4B-20260518T150000Z", mode="full", elapsed=1.0, trainer_state={"global_step": 1, "max_steps": 1}, adapter_dir=adapter_dir, targs_kwargs={"bf16": True}, tokenized_dir=tmp_path / "outside" / "data/v4_2/phase18/tokenized")
 
     outside_adapter = tmp_path / "runs" / "v4.0-4B-20260509T184844Z" / "adapter"
     outside_adapter_sha = _make_adapter(outside_adapter)

@@ -12,6 +12,7 @@ from tsc_cycle.student.sft_v42 import locked_lora_config_kwargs, locked_training
 from tsc_cycle.prompt_builder import build_full_assistant, build_user_prompt
 from tsc_cycle.tokenizer_check import assert_no_native_think_in_ids, native_think_token_ids
 
+PROJECT_ROOT = Path("/home/samuel/TSC_CYCLE")
 MODEL_NAME = "Qwen/Qwen3-4B-Thinking-2507"
 RUN_ROOT_PREFIX = "v4.2-4B-"
 DEFAULT_CALIBRATED_JSONL = Path("data/v4_2/phase18/labeled_calibrated.jsonl")
@@ -425,12 +426,8 @@ def _manifest_file_hash(path: Path) -> str:
     return _sha256_file(path) if path.is_file() else ""
 
 
-def _project_root_for_run(run_root: Path) -> Path:
-    return run_root.parent.parent if run_root.parent.name == "runs" else Path(".")
-
-
 def _canonical_lineage_path(run_root: Path, relative_path: Path) -> Path:
-    return (_project_root_for_run(run_root) / relative_path).resolve()
+    return (PROJECT_ROOT / relative_path).resolve()
 
 
 def _manifest_path(manifest_value: Any, expected: Path, failures: list[dict[str, str]], gate: str) -> Path:
