@@ -503,3 +503,56 @@ def test_malformed_eval_output_jsonl_is_fatal(tmp_path: Path) -> None:
 
     assert report["ok"] is False
     assert any(failure["gate"] == "eval_malformed_evidence" for failure in report["fatal_failures"])
+
+
+def test_prompt_protocol_unchanged_and_no_band_rule() -> None:
+    mod = _audit_contract()
+    report = mod.evaluate_prompt_protocol_guard()
+
+    assert report["ok"] is True
+    assert report["prompt_text"] == mod.EXPECTED_V4_PROMPT
+    assert report["prompt_sha256"] == mod.EXPECTED_V4_PROMPT_SHA256
+    assert report["forbidden_snippets_present"] == []
+    assert "POLICY-03" in report["requirements_covered"]
+    scanned = {Path(item["path"]).name for item in report["scanned_prompt_surfaces"]}
+    assert "prompt_builder.py" in scanned
+    assert "phase12_reality_test.py" in scanned
+
+
+def test_prompt_protocol_guard_fails_on_simulated_policy_leakage() -> None:
+    mod = _audit_contract()
+    leaked = mod.EXPECTED_V4_PROMPT + "\nsat < 0.2 must be near min"
+    report = mod.evaluate_prompt_protocol_guard(prompt_text=leaked, prompt_surfaces={"synthetic.py": leaked})
+
+    assert report["ok"] is False
+    assert report["forbidden_snippets_present"]
+    assert any(failure["gate"] == "prompt_policy_leakage" for failure in report["fatal_failures"])
+
+
+def test_integrated_report_includes_prompt_protocol_guard(tmp_path: Path) -> None:
+    mod = _audit_contract()
+    artifact_root = tmp_path / "artifacts" / "v4" / "phase17"
+    manifest = tmp_path / "manifest.json"
+    per_sample = tmp_path / "per_sample.jsonl"
+    manifest.write_text(json.dumps({"records": []}), encoding="utf-8")
+    per_sample.write_text("", encoding="utf-8")
+    original_root = mod.ARTIFACT_ROOT
+    try:
+        mod.ARTIFACT_ROOT = artifact_root
+        report = mod.evaluate_phase17_audit(
+            dataset_path=tmp_path / "missing.jsonl",
+            split_dir=tmp_path / "splits",
+            phase12_manifest_path=manifest,
+            phase12_per_sample_path=per_sample,
+            out_path=artifact_root / "gate.json",
+            audit_out_path=artifact_root / "audit.json",
+            prompt_protocol_out_path=artifact_root / "prompt.json",
+        )
+    finally:
+        mod.ARTIFACT_ROOT = original_root
+
+    prompt_report = json.loads((artifact_root / "prompt.json").read_text(encoding="utf-8"))
+    assert prompt_report["ok"] is True
+    assert report["reports"]["prompt_protocol"].endswith("prompt.json")
+    assert report["prompt_protocol"]["prompt_sha256"] == mod.EXPECTED_V4_PROMPT_SHA256
+    assert not (PROJECT_ROOT / "tsc_cycle" / "prompt_builder.py").read_text(encoding="utf-8").count("sat < 0.2")
