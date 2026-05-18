@@ -10,6 +10,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from tsc_cycle.prompt_builder import build_user_prompt
+
 from tsc_cycle.v4_gates.saturation_policy import (
     BAND_ALLOWED_MAX,
     BAND_HIGH_NOT_MAX,
@@ -43,6 +45,41 @@ BAND_THRESHOLD_KEYS = {
     BAND_INTERPOLATED: "sat_0.2_0.6_max_green_rate",
     BAND_HIGH_NOT_MAX: "sat_0.6_1.0_max_green_rate",
 }
+FORBIDDEN_POLICY_SNIPPETS = (
+    "sat < 0.2",
+    "0.2 <= sat < 0.6",
+    "0.6 <= sat < 1.0",
+    "sat >= 1.0",
+    "sat_lt_0.2",
+    "sat_0.2_0.6",
+    "sat_0.6_1.0",
+    "sat_ge_1.0",
+)
+PROMPT_SURFACE_PATHS = [
+    PROJECT_ROOT / "tsc_cycle" / "prompt_builder.py",
+    PROJECT_ROOT / "tsc_cycle" / "v4_gates" / "phase12_reality_test.py",
+    PROJECT_ROOT / "tsc_cycle" / "v4_gates" / "phase12_log_render.py",
+    PROJECT_ROOT / "tsc_cycle" / "eval" / "run_eval.py",
+    PROJECT_ROOT / "tsc_cycle" / "eval" / "generate_hf.py",
+    PROJECT_ROOT / "tsc_cycle" / "eval" / "generate_gguf.py",
+    PROJECT_ROOT / "tsc_cycle" / "eval" / "parity.py",
+    PROJECT_ROOT / "tsc_cycle" / "teacher" / "labeler.py",
+    PROJECT_ROOT / "tsc_cycle" / "student" / "train.py",
+    PROJECT_ROOT / "tsc_cycle" / "student" / "dataset.py",
+    PROJECT_ROOT / "tsc_cycle" / "student" / "parity_hf.py",
+    PROJECT_ROOT / "tsc_cycle" / "student" / "parity_gguf.py",
+]
+FIXTURE_PREDICTION_INPUT = {
+    "prediction": {
+        "as_of": "2026-05-18T00:00:00Z",
+        "phase_waits": [
+            {"phase_id": 1, "pred_wait": 1.0, "pred_saturation": 0.05, "min_green": 20, "max_green": 45, "capacity": 30},
+            {"phase_id": 2, "pred_wait": 12.0, "pred_saturation": 0.75, "min_green": 25, "max_green": 60, "capacity": 40},
+        ],
+    }
+}
+EXPECTED_V4_PROMPT = build_user_prompt(FIXTURE_PREDICTION_INPUT)
+EXPECTED_V4_PROMPT_SHA256 = hashlib.sha256(EXPECTED_V4_PROMPT.encode("utf-8")).hexdigest()
 
 
 def _is_under(path: Path, root: Path) -> bool:
@@ -199,6 +236,57 @@ def evaluate_saturation_policy_gate(
     }
 
 
+def _scan_forbidden_snippets(text: str, *, path: str) -> list[dict[str, str]]:
+    return [{"path": path, "snippet": snippet} for snippet in FORBIDDEN_POLICY_SNIPPETS if snippet in text]
+
+
+def _default_prompt_surfaces() -> dict[str, str]:
+    surfaces: dict[str, str] = {}
+    for path in PROMPT_SURFACE_PATHS:
+        if path.exists():
+            surfaces[str(path)] = path.read_text(encoding="utf-8")
+    return surfaces
+
+
+def evaluate_prompt_protocol_guard(
+    *,
+    prompt_text: str | None = None,
+    prompt_surfaces: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    """Verify POLICY-03: v4 deployment prompt bytes are locked and policy text stays offline."""
+    rendered = prompt_text if prompt_text is not None else build_user_prompt(FIXTURE_PREDICTION_INPUT)
+    prompt_sha = hashlib.sha256(rendered.encode("utf-8")).hexdigest()
+    fatal_failures: list[dict[str, str]] = []
+    forbidden_present = _scan_forbidden_snippets(rendered, path="build_user_prompt")
+    surfaces = prompt_surfaces if prompt_surfaces is not None else _default_prompt_surfaces()
+    scanned_prompt_surfaces: list[dict[str, Any]] = []
+    for path, text in sorted(surfaces.items()):
+        found = _scan_forbidden_snippets(text, path=path)
+        forbidden_present.extend(found)
+        scanned_prompt_surfaces.append({
+            "path": path,
+            "sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+            "forbidden_snippets_present": found,
+        })
+    if rendered != EXPECTED_V4_PROMPT or prompt_sha != EXPECTED_V4_PROMPT_SHA256:
+        fatal_failures.append({"gate": "prompt_byte_for_byte", "reason": "rendered v4 prompt differs from locked fixture"})
+    if forbidden_present:
+        fatal_failures.append({"gate": "prompt_policy_leakage", "reason": "explicit saturation band policy text found in prompt surface"})
+    ok = not fatal_failures
+    return {
+        "ok": ok,
+        "next_phase_allowed": ok,
+        "prompt_sha256": prompt_sha,
+        "expected_prompt_sha256": EXPECTED_V4_PROMPT_SHA256,
+        "prompt_text": rendered,
+        "forbidden_snippets_present": forbidden_present,
+        "scanned_prompt_surfaces": scanned_prompt_surfaces,
+        "fatal_failures": fatal_failures,
+        "warnings": [],
+        "requirements_covered": ["POLICY-03"],
+    }
+
+
 def evaluate_phase17_audit(
     *,
     dataset_path: str | Path = DATASET_PATH,
@@ -276,6 +364,9 @@ def evaluate_phase17_audit(
     for threshold_report in threshold_reports.values():
         fatal_failures.extend(threshold_report.get("fatal_failures") or [])
 
+    prompt_protocol = evaluate_prompt_protocol_guard()
+    fatal_failures.extend(prompt_protocol.get("fatal_failures") or [])
+
     for label, path in {
         "dataset": dataset_path,
         "phase12_manifest": phase12_manifest_path,
@@ -297,6 +388,7 @@ def evaluate_phase17_audit(
             "eval_audit": {"ok": phase_decisions_jsonl is None or "eval" in projections},
             "audit_compute": {"ok": bool(audit.get("ok", False))},
             "policy_thresholds": threshold_reports,
+            "prompt_protocol": {"ok": prompt_protocol.get("ok") is True},
         },
         "fatal_failures": fatal_failures,
         "warnings": warnings,
@@ -312,10 +404,13 @@ def evaluate_phase17_audit(
             "excluded_counts": audit.get("excluded_counts", {}),
         },
         "audit": audit,
+        "policy_gate": threshold_reports,
+        "prompt_protocol": prompt_protocol,
         "input_hashes": input_hashes,
     }
 
     _write_json(audit_out_path, audit)
+    _write_json(prompt_protocol_out_path, prompt_protocol)
     _write_json(out_path, policy_gate)
     return policy_gate
 
