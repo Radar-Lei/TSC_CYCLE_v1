@@ -131,6 +131,9 @@ def test_v42_training_defaults_lock_phase18_data_and_qwen4b_stack(tmp_path: Path
     assert "v4_2" in phase_choices
     assert "if args.phase == \"v4\"" in train_source
     assert "if args.phase == \"v4_2\"" in train_source
+    v42_source = train_source[train_source.index('if args.phase == "v4_2"') : train_source.index('model_name = args.model or MODEL_NAME')]
+    assert "require_canonical_tokenized_dir(data_dir, run_root)" in v42_source
+    assert v42_source.index("require_canonical_tokenized_dir(data_dir, run_root)") < v42_source.index("load_qlora_model_and_tokenizer(model_name")
 
 
 class FakeQwen4BTokenizer:

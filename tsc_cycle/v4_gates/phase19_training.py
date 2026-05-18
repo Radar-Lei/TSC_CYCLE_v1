@@ -442,7 +442,7 @@ def _manifest_path(manifest_value: Any, expected: Path, failures: list[dict[str,
     return candidate
 
 
-def _require_canonical_tokenized_dir(tokenized_dir: Path, run_root: Path) -> Path:
+def require_canonical_tokenized_dir(tokenized_dir: Path, run_root: Path) -> Path:
     expected = _canonical_lineage_path(run_root, DEFAULT_TOKENIZED_DIR)
     actual = Path(tokenized_dir).resolve()
     if actual != expected:
@@ -482,7 +482,7 @@ def write_phase19_training_reports(run_root: Path, *, mode: str, elapsed: float,
         peak_gb = torch.cuda.max_memory_allocated() / (1024**3) if torch.cuda.is_available() else 0.0
     except Exception:
         peak_gb = 0.0
-    tokenized_dir = _require_canonical_tokenized_dir(Path(tokenized_dir), run_root)
+    tokenized_dir = require_canonical_tokenized_dir(Path(tokenized_dir), run_root)
     tokenized = _tokenized_manifest_hashes(tokenized_dir / "manifest.json")
     phase18_hashes = _expected_phase18_hashes_from_manifest(tokenized["manifest"])
     data_manifest = run_root / "phase19_data_manifest.json"

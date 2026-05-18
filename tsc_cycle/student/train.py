@@ -532,6 +532,9 @@ def main(argv: list[str] | None = None) -> int:
             raise SystemExit(f"TRAIN-01 fail: WANDB_PROJECT must be {sft_v42.WANDB_PROJECT}")
         mode = "smoke" if args.mode == "dry-run" else args.mode
         data_dir = Path(args.tokenized_dir or args.data_dir or sft_v42.TOKENIZED_DIR)
+        from tsc_cycle.v4_gates.phase19_training import require_canonical_tokenized_dir
+
+        data_dir = require_canonical_tokenized_dir(data_dir, run_root)
         model, tokenizer = load_qlora_model_and_tokenizer(model_name, lora_kwargs=sft_v42.locked_lora_config_kwargs())
         run_root.mkdir(parents=True, exist_ok=True)
         bnb_warmup(model, tokenizer)
