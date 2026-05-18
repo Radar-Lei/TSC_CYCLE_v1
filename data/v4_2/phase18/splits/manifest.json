@@ -1,0 +1,22 @@
+{
+  "ok": true,
+  "paths": {
+    "ood_val_index": "data/v4_2/phase18/splits/ood_val.index.jsonl",
+    "train_index": "data/v4_2/phase18/splits/train.index.jsonl",
+    "val_index": "data/v4_2/phase18/splits/val.index.jsonl"
+  },
+  "requirements_covered": [
+    "DATA-02"
+  ],
+  "seed": 42,
+  "split_counts": {
+    "ood_val": 580,
+    "train": 3500,
+    "val": 452
+  },
+  "split_ids_sha256": {
+    "ood_val": "d6c454b41afc347739cfcbfefabdea2d2ed45304689fa47aeaa8766325ee78ec",
+    "train": "6ed29a6a7ee470919716dbbda1ad0ce6d83068f5ba0e784a05f55883eed1a3fe",
+    "val": "47cd202efacb692665c6e030fdb1223cca527ab52b968c69d85e600bbd818088"
+  }
+}
