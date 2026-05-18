@@ -41,7 +41,7 @@ Full details: `milestones/v4.1-ROADMAP.md`
 
 </details>
 
-- [ ] **Phase 17: Audit & Saturation Policy Gate** - Quantify existing low-saturation max-green failures and establish the offline saturation gate without changing deployment prompts.
+- [x] **Phase 17: Audit & Saturation Policy Gate** - Quantify existing low-saturation max-green failures and establish the offline saturation gate without changing deployment prompts.
 - [ ] **Phase 18: Calibrated Dataset Rebuild** - Filter or relabel v4 examples into a calibrated v4.2 training dataset with reproducible reports and splits.
 - [ ] **Phase 19: 4B QLoRA Retrain & Export** - Retrain the existing Qwen3-4B QLoRA route and export merged HF plus fp16/q4_K_M GGUF artifacts.
 - [ ] **Phase 20: Evaluation & Reality Replay Handoff** - Evaluate v4.2 against hard constraints, output protocol, saturation policy, and produce a new gated `reality_test.log`.
@@ -68,7 +68,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 17-02-PLAN.md — Add safe offline CLI/report gate, configured threshold failures, and v4 prompt protocol guard.
+- [x] 17-02-PLAN.md — Add safe offline CLI/report gate, configured threshold failures, and v4 prompt protocol guard.
 
 ### Phase 18: Calibrated Dataset Rebuild
 
@@ -127,7 +127,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20
 | 14. Canonical v4 Reproduction Package | v4.1 | 1/1 | Complete | 2026-05-12 |
 | 15. Safe Cleanup Execution | v4.1 | 2/2 | Complete | 2026-05-12 |
 | 16. Verification & Handoff | v4.1 | 1/1 | Complete | 2026-05-12 |
-| 17. Audit & Saturation Policy Gate | v4.2 | 1/2 | In Progress|  |
+| 17. Audit & Saturation Policy Gate | v4.2 | 2/2 | Complete | 2026-05-18 |
 | 18. Calibrated Dataset Rebuild | v4.2 | 0/TBD | Not started | - |
 | 19. 4B QLoRA Retrain & Export | v4.2 | 0/TBD | Not started | - |
 | 20. Evaluation & Reality Replay Handoff | v4.2 | 0/TBD | Not started | - |

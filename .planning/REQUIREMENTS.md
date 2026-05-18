@@ -13,8 +13,8 @@
 ### Policy
 
 - [x] **POLICY-01**: Maintainer can run a saturation policy gate that classifies each phase decision against the intended bands: `sat < 0.2` near min, `0.2 <= sat < 0.6` interpolated, `0.6 <= sat < 1.0` high but not max, and `sat >= 1.0` allowed max.
-- [ ] **POLICY-02**: Maintainer can fail data, model evaluation, or replay outputs when low-saturation max-green behavior exceeds configured thresholds.
-- [ ] **POLICY-03**: Final deployment prompts remain unchanged from the v4 inference protocol and do not explicitly include the saturation band rule; the rule is used only for offline audit, data construction, training validation, and evaluation gates.
+- [x] **POLICY-02**: Maintainer can fail data, model evaluation, or replay outputs when low-saturation max-green behavior exceeds configured thresholds.
+- [x] **POLICY-03**: Final deployment prompts remain unchanged from the v4 inference protocol and do not explicitly include the saturation band rule; the rule is used only for offline audit, data construction, training validation, and evaluation gates.
 
 ### Data
 
@@ -63,8 +63,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUDIT-01 | Phase 17 | Complete in 17-01 |
 | AUDIT-02 | Phase 17 | Complete in 17-01 |
 | POLICY-01 | Phase 17 | Complete in 17-01 |
-| POLICY-02 | Phase 17 | Pending |
-| POLICY-03 | Phase 17 | Pending |
+| POLICY-02 | Phase 17 | Complete in 17-02 |
+| POLICY-03 | Phase 17 | Complete in 17-02 |
 | DATA-01 | Phase 18 | Pending |
 | DATA-02 | Phase 18 | Pending |
 | TRAIN-01 | Phase 19 | Pending |
@@ -76,8 +76,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 **Coverage:**
 - v4.2 requirements: 12 total
 - Mapped to phases: 12
+- Completed: 5
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-18*
-*Last updated: 2026-05-18 after Phase 17 Plan 01 execution*
+*Last updated: 2026-05-18 after Phase 17 Plan 02 execution*
