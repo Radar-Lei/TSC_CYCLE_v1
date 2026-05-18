@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -115,6 +116,8 @@ def test_v42_training_defaults_lock_phase18_data_and_qwen4b_stack(tmp_path: Path
         assert forbidden.lower() not in defaults_text
 
     assert "TRAIN-01" in sft_v42.REQUIREMENTS_COVERED
+    assert "transformers" not in sys.modules
+    assert "datasets" not in sys.modules
 
     train_source = (PROJECT_ROOT / "tsc_cycle/student/train.py").read_text(encoding="utf-8")
     tree = ast.parse(train_source)
@@ -253,6 +256,27 @@ def test_phase18_handoff_tokenizes_calibrated_splits_with_protocol_hashes(tmp_pa
     bad = tokenize_phase18_handoff(bad_config, tokenizer=FakeQwen4BTokenizer())
     assert bad["ok"] is False
     assert any(failure["gate"] == "phase18_handoff" for failure in bad["fatal_failures"])
+
+    missing_hash_report = _write_json(
+        tmp_path / "missing_hash_phase18.json",
+        {"ok": True, "next_phase_allowed": True, "requirements_covered": ["DATA-01", "DATA-02"], "splits": {"split_counts": {"train": 1, "val": 1, "ood_val": 1}}},
+    )
+    missing_hash_config = Phase19TrainingConfig(calibrated_jsonl=dataset, split_dir=split_dir, tokenized_dir=tmp_path / "missing-hash-tokenized", phase18_report=missing_hash_report, artifacts_dir=tmp_path / "missing-hash-artifacts")
+    missing_hash = tokenize_phase18_handoff(missing_hash_config, tokenizer=FakeQwen4BTokenizer())
+    assert missing_hash["ok"] is False
+    assert any(failure["gate"] == "calibrated_jsonl_sha256" for failure in missing_hash["fatal_failures"])
+
+    malformed_rows = [_phase19_sample("train-1", split="train"), _phase19_sample("val-1", split="val"), _phase19_sample("ood-1", split="ood_val")]
+    malformed_rows[0]["result"]["solution"] = {"1": 20.5, "2": True}
+    _write_jsonl(dataset, malformed_rows)
+    malformed_report = _write_json(
+        tmp_path / "malformed_phase18.json",
+        {"ok": True, "next_phase_allowed": True, "requirements_covered": ["DATA-01", "DATA-02"], "dataset_hashes": {"calibrated_jsonl_sha256": __import__("hashlib").sha256(dataset.read_bytes()).hexdigest()}, "splits": {"split_counts": {"train": 1, "val": 1, "ood_val": 1}}},
+    )
+    malformed_config = Phase19TrainingConfig(calibrated_jsonl=dataset, split_dir=split_dir, tokenized_dir=tmp_path / "malformed-tokenized", phase18_report=malformed_report, artifacts_dir=tmp_path / "malformed-artifacts")
+    malformed = tokenize_phase18_handoff(malformed_config, tokenizer=FakeQwen4BTokenizer())
+    assert malformed["ok"] is False
+    assert malformed["gates"]["native_think_token_leak"]["data"]["failures_sample"][0]["error"] == "malformed_solution"
 
     leak_rows = [_phase19_sample("train-1", reasoning="native <think> leak", split="train"), _phase19_sample("val-1", split="val"), _phase19_sample("ood-1", split="ood_val")]
     _write_jsonl(dataset, leak_rows)
@@ -507,6 +531,17 @@ def test_v42_export_plan_and_report_require_merged_hf_and_gguf_hashes(tmp_path: 
     assert rejected_forged["ok"] is False
     assert any(failure["gate"] in {"artifact_exists", "artifact_hash"} for failure in rejected_forged["fatal_failures"])
     (run_root / "gguf" / "model.q4_K_M.gguf").write_bytes(b"q4 gguf")
+
+    forged_handoff = _read_json(run_root / "phase19_export_report.json")
+    bad_training = _read_json(training_report)
+    bad_training["requirements_covered"] = []
+    _write_json(training_report, bad_training)
+    forged_handoff["phase19_handoff"] = {"ok": True, "next_phase_allowed": True, "requirements_covered": ["TRAIN-01"]}
+    forged_handoff_path = _write_json(run_root / "forged_handoff_export_report.json", forged_handoff)
+    rejected_handoff = validate_phase19_export_report(run_root=run_root, report_path=forged_handoff_path)
+    assert rejected_handoff["ok"] is False
+    assert any(failure["gate"] == "phase19_handoff" for failure in rejected_handoff["fatal_failures"])
+    training_report = _make_phase19_training_handoff(run_root)
 
     with pytest.raises(ValueError):
         build_export_plan(run_root=tmp_path / "runs" / "v4.0-4B-20260509T184844Z", phase19_report=training_report, llama_cpp_dir=llama_cpp)

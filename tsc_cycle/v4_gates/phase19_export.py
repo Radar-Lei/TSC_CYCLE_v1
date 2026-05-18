@@ -324,11 +324,13 @@ def validate_phase19_export_report(run_root: Path, report_path: Path | None = No
     if not requirements_ok:
         failures.append({"gate": "requirements_covered", "reason": "TRAIN-02 coverage missing"})
 
+    phase19_report = Path(report.get("phase19_report")) if isinstance(report.get("phase19_report"), str) else root / "phase19_sft_report.json"
+    training_validation = validate_phase19_training_report(root, report_path=phase19_report)
     handoff = report.get("phase19_handoff") if isinstance(report.get("phase19_handoff"), dict) else {}
-    handoff_ok = handoff.get("ok") is True and "TRAIN-01" in handoff.get("requirements_covered", [])
-    gates["phase19_handoff"] = {"ok": handoff_ok, "data": {"requirements_covered": handoff.get("requirements_covered", [])}}
+    handoff_ok = training_validation.get("ok") is True and "TRAIN-01" in training_validation.get("requirements_covered", [])
+    gates["phase19_handoff"] = {"ok": handoff_ok, "data": {"report_path": str(phase19_report), "requirements_covered": training_validation.get("requirements_covered", []), "reported_requirements_covered": handoff.get("requirements_covered", [])}}
     if not handoff_ok:
-        failures.append({"gate": "phase19_handoff", "reason": "accepted export report must include green TRAIN-01 handoff"})
+        failures.append({"gate": "phase19_handoff", "reason": "accepted export report must revalidate green TRAIN-01 training handoff"})
 
     paths = report.get("paths") if isinstance(report.get("paths"), dict) else {}
     for key in ("merged_hf", "gguf_fp16", "gguf_q4_K_M", "export_report"):

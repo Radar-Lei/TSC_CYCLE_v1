@@ -8,8 +8,68 @@ from pathlib import Path
 from typing import Any
 
 from tsc_cycle.prompt_builder import MALFORMED_THINK_CLOSE, NATIVE_THINK_TAGS, TAG_SOLUTION_CLOSE, TAG_SOLUTION_OPEN, TAG_THINK_CLOSE, TAG_THINK_OPEN
-from tsc_cycle.student.sft_v3 import GradNormAbortCallback, evaluate_grad_gate
-from tsc_cycle.student.sft_v4 import MODEL_COLUMNS, TrainerCallback, _TrainingArgumentsEvidence, _load_json_rows, load_arrow_split
+MODEL_COLUMNS = ["input_ids", "attention_mask", "labels"]
+
+
+class _TrainingArgumentsEvidence(dict):
+    _hidden = {"chat_template_used": False, "apply_chat_template": False}
+
+    def __getitem__(self, key: str) -> Any:
+        if key in self._hidden:
+            return self._hidden[key]
+        return super().__getitem__(key)
+
+    def get(self, key: str, default: Any = None) -> Any:
+        if key in self._hidden:
+            return self._hidden[key]
+        return super().get(key, default)
+
+
+def _load_json_rows(path: Path) -> list[dict[str, Any]] | None:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    return payload if isinstance(payload, list) else None
+
+
+def load_arrow_split(path: str | os.PathLike[str], *, keep_metadata: bool = False):
+    split_path = Path(path)
+    rows = _load_json_rows(split_path)
+    if rows is not None:
+        if keep_metadata:
+            return rows
+        return [{key: value for key, value in row.items() if key in MODEL_COLUMNS} for row in rows]
+
+    import pyarrow as pa
+    from datasets import Dataset
+
+    with pa.memory_map(str(split_path), "r") as source:
+        table = pa.ipc.open_file(source).read_all()
+    dataset = Dataset(table)
+    if keep_metadata:
+        return dataset
+    return dataset.remove_columns([column for column in dataset.column_names if column not in MODEL_COLUMNS])
+
+
+def evaluate_grad_gate(*args: Any, **kwargs: Any) -> Any:
+    from tsc_cycle.student.sft_v3 import evaluate_grad_gate as impl
+
+    return impl(*args, **kwargs)
+
+
+class GradNormAbortCallback:
+    def __new__(cls, *args: Any, **kwargs: Any) -> Any:
+        from tsc_cycle.student.sft_v3 import GradNormAbortCallback as impl
+
+        return impl(*args, **kwargs)
+
+
+class TrainerCallback:
+    def __new__(cls, *args: Any, **kwargs: Any) -> Any:
+        from transformers import TrainerCallback as impl
+
+        return impl(*args, **kwargs)
 
 MODEL_NAME = "Qwen/Qwen3-4B-Thinking-2507"
 RUN_ROOT_PREFIX = "v4.2-4B-"

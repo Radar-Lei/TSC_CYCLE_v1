@@ -92,10 +92,12 @@ def _record_solution(record: dict[str, Any]) -> dict[str, int]:
     value = _record_result(record).get("solution", {})
     if not isinstance(value, dict):
         raise ValueError("solution must be an object")
-    try:
-        return {str(key): int(val) for key, val in value.items()}
-    except (TypeError, ValueError) as exc:
-        raise ValueError(f"solution contains non-integer value: {exc}") from exc
+    solution: dict[str, int] = {}
+    for key, val in value.items():
+        if type(val) is not int:
+            raise ValueError(f"solution contains non-integer value for {key}: {val!r}")
+        solution[str(key)] = val
+    return solution
 
 
 def _load_phase18_split_indexes(split_dir: Path) -> dict[str, list[dict[str, Any]]]:
@@ -126,7 +128,9 @@ def validate_phase18_handoff(config: Phase19TrainingConfig) -> tuple[bool, dict[
         failures.append({"gate": "phase18_requirements", "reason": "Phase 18 report lacks DATA-01/DATA-02 coverage"})
     actual_hash = _sha256_file(config.calibrated_jsonl) if config.calibrated_jsonl.exists() else ""
     expected_hash = str(report.get("dataset_hashes", {}).get("calibrated_jsonl_sha256", "")) if isinstance(report.get("dataset_hashes"), dict) else ""
-    if expected_hash and actual_hash != expected_hash:
+    if not expected_hash:
+        failures.append({"gate": "calibrated_jsonl_sha256", "reason": "Phase 18 report lacks calibrated JSONL hash"})
+    elif actual_hash != expected_hash:
         failures.append({"gate": "calibrated_jsonl_sha256", "reason": "calibrated JSONL hash does not match Phase 18 report"})
     try:
         split_indexes = _load_phase18_split_indexes(config.split_dir)
