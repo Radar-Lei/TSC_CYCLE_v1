@@ -557,9 +557,21 @@ def test_prompt_protocol_unchanged_and_no_band_rule() -> None:
     assert "phase12_reality_test.py" in scanned
 
 
-def test_prompt_protocol_guard_fails_on_simulated_policy_leakage() -> None:
+@pytest.mark.parametrize(
+    "leak",
+    [
+        "sat<0.2 must be near min",
+        "pred_saturation < 0.2 must be near min",
+        "0.2 ≤ saturation < 0.6 should interpolate",
+        "0.6 ＜ pred_saturation ＜ 1.0 avoid max",
+        "sat≥1.0 may use max green",
+        "pred_saturation 小于 0.2 时接近最小绿灯",
+        "饱和度低时接近最小绿灯，高时达到最大绿灯",
+    ],
+)
+def test_prompt_protocol_guard_fails_on_simulated_policy_leakage(leak: str) -> None:
     mod = _audit_contract()
-    leaked = mod.EXPECTED_V4_PROMPT + "\nsat < 0.2 must be near min"
+    leaked = mod.EXPECTED_V4_PROMPT + "\n" + leak
     report = mod.evaluate_prompt_protocol_guard(prompt_text=leaked, prompt_surfaces={"synthetic.py": leaked})
 
     assert report["ok"] is False

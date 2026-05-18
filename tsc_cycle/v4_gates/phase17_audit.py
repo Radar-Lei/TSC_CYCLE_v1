@@ -6,7 +6,9 @@ import argparse
 import hashlib
 import json
 import math
+import re
 import sys
+import unicodedata
 from pathlib import Path
 from typing import Any
 
@@ -45,15 +47,15 @@ BAND_THRESHOLD_KEYS = {
     BAND_INTERPOLATED: "sat_0.2_0.6_max_green_rate",
     BAND_HIGH_NOT_MAX: "sat_0.6_1.0_max_green_rate",
 }
-FORBIDDEN_POLICY_SNIPPETS = (
-    "sat < 0.2",
-    "0.2 <= sat < 0.6",
-    "0.6 <= sat < 1.0",
-    "sat >= 1.0",
-    "sat_lt_0.2",
-    "sat_0.2_0.6",
-    "sat_0.6_1.0",
-    "sat_ge_1.0",
+FORBIDDEN_POLICY_PATTERNS = (
+    re.compile(r"\b(?:pred_)?sat(?:uration)?\s*(?:<|＜|≤|<=|小于|低于|低於)\s*0\.2", re.IGNORECASE),
+    re.compile(r"0\.2\s*(?:<=|≤|<|＜)\s*(?:pred_)?sat(?:uration)?\s*(?:<|＜|≤|<=|小于|低于|低於)\s*0\.6", re.IGNORECASE),
+    re.compile(r"0\.6\s*(?:<=|≤|<|＜)\s*(?:pred_)?sat(?:uration)?\s*(?:<|＜|≤|<=|小于|低于|低於)\s*1\.0", re.IGNORECASE),
+    re.compile(r"\b(?:pred_)?sat(?:uration)?\s*(?:>=|≥|>|大于等于|不小于|不低于|達到|达到)\s*1\.0", re.IGNORECASE),
+    re.compile(r"\bsat_(?:lt_0\.2|0\.2_0\.6|0\.6_1\.0|ge_1\.0)", re.IGNORECASE),
+    re.compile(r"饱和度.*(?:最小绿灯|最大绿灯|接近最小|插值|达到最大)"),
+    re.compile(r"飽和度.*(?:最小綠燈|最大綠燈|接近最小|插值|達到最大)"),
+    re.compile(r"pred_saturation\s*(?:小于|低于|低於).*?(?:最小绿灯|最大绿灯|最小綠燈|最大綠燈|接近最小|插值|达到最大|達到最大)", re.IGNORECASE),
 )
 PROMPT_SURFACE_PATHS = [
     PROJECT_ROOT / "tsc_cycle" / "prompt_builder.py",
@@ -269,7 +271,12 @@ def evaluate_saturation_policy_gate(
 
 
 def _scan_forbidden_snippets(text: str, *, path: str) -> list[dict[str, str]]:
-    return [{"path": path, "snippet": snippet} for snippet in FORBIDDEN_POLICY_SNIPPETS if snippet in text]
+    normalised = unicodedata.normalize("NFKC", text)
+    findings: list[dict[str, str]] = []
+    for pattern in FORBIDDEN_POLICY_PATTERNS:
+        for match in pattern.finditer(normalised):
+            findings.append({"path": path, "snippet": match.group(0), "pattern": pattern.pattern})
+    return findings
 
 
 def _default_prompt_surfaces() -> dict[str, str]:
