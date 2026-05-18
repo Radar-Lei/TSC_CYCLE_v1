@@ -730,6 +730,9 @@ def test_prompt_protocol_guard_fails_on_preimport_prompt_drift(monkeypatch: pyte
         "0.2 ≤ saturation < 0.6 should interpolate",
         "0.6 ＜ pred_saturation ＜ 1.0 avoid max",
         "sat≥1.0 may use max green",
+        "sat >= 1 may use max green",
+        "saturation >= 1 may use max green",
+        "pred_saturation >= 1 may use max green",
         "pred_saturation 小于 0.2 时接近最小绿灯",
         "饱和度低时接近最小绿灯，高时达到最大绿灯",
     ],
@@ -742,6 +745,21 @@ def test_prompt_protocol_guard_fails_on_simulated_policy_leakage(leak: str) -> N
     assert report["ok"] is False
     assert report["forbidden_snippets_present"]
     assert any(failure["gate"] == "prompt_policy_leakage" for failure in report["fatal_failures"])
+
+
+def test_prompt_protocol_guard_fails_on_scanned_surface_sat_ge_1_leakage() -> None:
+    mod = _audit_contract()
+    report = mod.evaluate_prompt_protocol_guard(
+        prompt_text=mod.EXPECTED_V4_PROMPT,
+        prompt_surfaces={"synthetic.py": "sat >= 1 may use max green"},
+    )
+
+    assert report["ok"] is False
+    assert report["prompt_text"] == mod.EXPECTED_V4_PROMPT
+    assert report["prompt_sha256"] == mod.EXPECTED_V4_PROMPT_SHA256
+    assert report["forbidden_snippets_present"]
+    assert any(failure["gate"] == "prompt_policy_leakage" for failure in report["fatal_failures"])
+
 
 
 def test_integrated_report_includes_prompt_protocol_guard(tmp_path: Path) -> None:
