@@ -1,0 +1,68 @@
+{
+  "fatal_failures": [],
+  "gates": {
+    "native_think_token_ids": {
+      "data": {
+        "native_think_token_ids": [
+          151667,
+          151668
+        ]
+      },
+      "ok": true
+    },
+    "native_think_token_leak": {
+      "data": {
+        "failures_sample": []
+      },
+      "ok": true
+    },
+    "phase18_handoff": {
+      "ok": true,
+      "reason": null
+    },
+    "split_counts": {
+      "data": {
+        "actual": {
+          "ood_val": 580,
+          "train": 3500,
+          "val": 452
+        },
+        "expected": {
+          "ood_val": 580,
+          "train": 3500,
+          "val": 452
+        }
+      },
+      "ok": true
+    }
+  },
+  "model_name": "Qwen/Qwen3-4B-Thinking-2507",
+  "ok": true,
+  "phase18": {
+    "calibrated_jsonl": "data/v4_2/phase18/labeled_calibrated.jsonl",
+    "calibrated_jsonl_sha256": "f60c263571c938c506db3dc919fdbd1528dba4e271764c8de106b4a626be0d00",
+    "phase18_report": "artifacts/v4_2/phase18/reconstruction_report.json",
+    "phase18_report_sha256": "808b211e80e1eb531ec3e09aacb3943b3726aee364f4ff8c64080280204598f7",
+    "split_manifest": "data/v4_2/phase18/splits/manifest.json"
+  },
+  "requirements_covered": [
+    "TRAIN-01"
+  ],
+  "split_counts": {
+    "ood_val": 580,
+    "train": 3500,
+    "val": 452
+  },
+  "tokenized_dir": "data/v4_2/phase18/tokenized",
+  "tokenized_sha256": {
+    "ood_val": "44221e96a81ee3a11effc0e9f3bd228e72787432916b46fbc11749803ae0a29c",
+    "train": "38c0f2d69c67c79f3edb0a751e1a25ebf76897318df763ef1ec0db6e72fa6b45",
+    "val": "860129d3c4f4eb9230154ca5427f73cc7f7023971ed4f7dafcb84ae5a852a9af"
+  },
+  "truncation": {
+    "max_raw_length": 1355,
+    "max_seq_length": 2048,
+    "over_length_count": 0,
+    "truncated_sample_ids_sample": []
+  }
+}
