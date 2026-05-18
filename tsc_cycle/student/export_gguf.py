@@ -96,6 +96,8 @@ def quantize_q4(in_gguf: Path, out_gguf: Path, *, quantize: Path) -> list[str]:
 def _defaulted_phase19_args(args: argparse.Namespace) -> argparse.Namespace:
     if args.export_phase != "phase19":
         return args
+    if args.run_root == str(PHASE9_RUN_ROOT):
+        args.run_root = str(PHASE19_RUN_ROOT)
     run_root = Path(args.run_root)
     phase10_defaults = {
         "merged_dir": str(PHASE9_RUN_ROOT / "merged_hf"),

@@ -389,6 +389,11 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     assert missing["ok"] is False
     assert any(failure["gate"] == "phase18_artifact_hashes" for failure in missing["fatal_failures"])
 
+    outside_report = _write_json(tmp_path / "outside_phase19_sft_report.json", _read_json(report))
+    outside_report_rejected = validate_phase19_training_report(run_root, report_path=outside_report)
+    assert outside_report_rejected["ok"] is False
+    assert any(failure["gate"] == "report_path" for failure in outside_report_rejected["fatal_failures"])
+
     smoke = _read_json(report)
     smoke["mode"] = "smoke"
     smoke["trainer_state"] = {"global_step": 1, "max_steps": 1}
@@ -619,6 +624,9 @@ def test_v42_wrappers_forbid_dependency_installs_unsupported_runtimes_and_frozen
     phase10_defaults = parser.parse_args([])
     assert phase10_defaults.phase9_report.endswith("phase9_sft_report.json")
     assert "v4.0-4B-20260509T184844Z" in phase10_defaults.run_root
+    phase19_no_root = parser.parse_args(["--export-phase", "phase19"])
+    assert "v4.2-4B-" in phase19_no_root.run_root
+    assert Path(phase19_no_root.phase19_report) == Path(phase19_no_root.run_root) / "phase19_sft_report.json"
 
     export_source = (PROJECT_ROOT / "tsc_cycle/student/export_gguf.py").read_text(encoding="utf-8")
     assert "trust_remote_code=not enforce_base_model" in export_source

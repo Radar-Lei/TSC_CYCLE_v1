@@ -547,6 +547,11 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
     gates["run_root"] = _gate(root_ok, None if root_ok else "invalid v4.2 run root", {"run_root": str(root)})
 
     report_path = Path(report_path) if report_path is not None else root / "phase19_sft_report.json"
+    try:
+        report_path_resolved = report_path.resolve()
+        report_path_resolved.relative_to(root.resolve())
+    except ValueError as exc:
+        _fail(failures, "report_path", f"training report must stay under run root: {report_path}")
     training = _read_json(report_path)
     model_ok = training.get("model_name") == MODEL_NAME
     gates["model_config"] = _gate(model_ok, None if model_ok else "model_name is not locked Qwen3-4B", {"model_name": training.get("model_name")})
