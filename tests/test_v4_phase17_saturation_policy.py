@@ -202,3 +202,107 @@ def test_replay_projection_uses_structured_phase12_evidence_and_fails_on_mismatc
     non_object = _write_jsonl(tmp_path / "non_object.jsonl", ['["not", "object"]'])
     with pytest.raises(ValueError, match="JSONL row is not an object"):
         mod.project_replay_phase_decisions(manifest, non_object)
+
+
+def test_representative_failures_include_dataset_and_replay_fields() -> None:
+    mod = _policy_contract()
+    rows = [
+        {
+            "origin_artifact": "dataset:labeled_merged.jsonl",
+            "sample_id": "sample-a",
+            "phase_id": "1",
+            "pred_saturation": 0.1,
+            "saturation_band": mod.BAND_NEAR_MIN,
+            "min_green": 10,
+            "max_green": 50,
+            "final_green": 50,
+            "split": "train",
+            "source": "phase8-source",
+            "violation_category": mod.VIOLATION_UNSATURATED_MAX_GREEN,
+            "trivial_range": False,
+        },
+        {
+            "origin_artifact": "replay:phase12",
+            "sample_id": "reality-0001",
+            "phase_id": "2",
+            "pred_saturation": 0.5,
+            "saturation_band": mod.BAND_INTERPOLATED,
+            "min_green": 20,
+            "max_green": 60,
+            "final_green": 60,
+            "split": "replay",
+            "source": "phase12_replay",
+            "violation_category": mod.VIOLATION_UNSATURATED_MAX_GREEN,
+            "trivial_range": False,
+        },
+        {
+            "origin_artifact": "dataset:labeled_merged.jsonl",
+            "sample_id": "forced",
+            "phase_id": "3",
+            "pred_saturation": 0.0,
+            "saturation_band": mod.BAND_NEAR_MIN,
+            "min_green": 30,
+            "max_green": 30,
+            "final_green": 30,
+            "split": "train",
+            "source": "phase8-source",
+            "violation_category": mod.VIOLATION_FORCED_TRIVIAL_RANGE,
+            "trivial_range": True,
+        },
+    ]
+
+    audit = mod.compute_saturation_audit(rows, example_limit=5, excluded_counts={"hard_constraint_invalid": 2})
+
+    assert audit["requirements_covered"] == ["AUDIT-01", "AUDIT-02", "POLICY-01"]
+    assert audit["total_rows"] == 3
+    assert audit["included_rows"] == 2
+    assert audit["trivial_rows"] == 1
+    assert audit["excluded_counts"]["hard_constraint_invalid"] == 2
+    near_min = audit["bands"][mod.BAND_NEAR_MIN]
+    assert near_min["total_rows"] == 2
+    assert near_min["trivial_rows"] == 1
+    assert near_min["final_equals_max_when_unsaturated"] == {"count": 1, "denominator": 1, "rate": 1.0}
+    assert audit["by_split"]["train"]["final_equals_max_when_unsaturated"] == {"count": 1, "denominator": 1, "rate": 1.0}
+    assert audit["by_source"]["phase8-source"]["trivial_rows"] == 1
+    assert audit["by_origin"]["dataset:labeled_merged.jsonl"]["trivial_rows"] == 1
+    assert audit["by_origin"]["replay:phase12"]["final_equals_max_when_unsaturated"]["count"] == 1
+
+    examples = audit["representative_examples"]
+    assert [example["origin_artifact"] for example in examples] == ["dataset:labeled_merged.jsonl", "replay:phase12"]
+    required = {
+        "origin_artifact",
+        "sample_id",
+        "phase_id",
+        "pred_saturation",
+        "saturation_band",
+        "min_green",
+        "max_green",
+        "final_green",
+        "split",
+        "source",
+        "violation_category",
+    }
+    assert all(required <= set(example) for example in examples)
+    assert all(example["violation_category"] == mod.VIOLATION_UNSATURATED_MAX_GREEN for example in examples)
+
+
+def test_audit_fails_closed_on_missing_nonfinite_denominator_data() -> None:
+    mod = _policy_contract()
+    with pytest.raises(ValueError, match="finite"):
+        mod.compute_saturation_audit([
+            {
+                "origin_artifact": "dataset:labeled_merged.jsonl",
+                "sample_id": "bad",
+                "phase_id": "1",
+                "pred_saturation": float("nan"),
+                "min_green": 10,
+                "max_green": 50,
+                "final_green": 50,
+                "split": "train",
+                "source": "phase8-source",
+                "trivial_range": False,
+            }
+        ])
+
+    with pytest.raises(ValueError, match="missing required audit row field"):
+        mod.compute_saturation_audit([{"sample_id": "missing-fields"}])
