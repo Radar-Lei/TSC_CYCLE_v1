@@ -119,6 +119,10 @@ def _phase18_counts(report: dict[str, Any], split_manifest: dict[str, Any]) -> d
     return {str(key): int(value) for key, value in counts.items() if key in {"train", "val", "ood_val"}}
 
 
+def _split_id_hashes(split_indexes: dict[str, list[dict[str, Any]]]) -> dict[str, str]:
+    return {split: sha256_hex(canonical_json([str(row.get("sample_id") or "") for row in rows])) for split, rows in split_indexes.items()}
+
+
 def validate_phase18_handoff(config: Phase19TrainingConfig) -> tuple[bool, dict[str, Any], list[dict[str, str]]]:
     failures: list[dict[str, str]] = []
     report = _read_json(config.phase18_report)
@@ -143,6 +147,15 @@ def validate_phase18_handoff(config: Phase19TrainingConfig) -> tuple[bool, dict[
     actual_counts = {split: len(rows) for split, rows in split_indexes.items()}
     if expected_counts and actual_counts != expected_counts:
         failures.append({"gate": "split_counts", "reason": f"split counts differ: expected {expected_counts}, actual {actual_counts}"})
+    report_split_ids = report.get("splits", {}).get("split_ids_sha256") if isinstance(report.get("splits"), dict) else {}
+    manifest_split_ids = split_manifest.get("split_ids_sha256") if isinstance(split_manifest.get("split_ids_sha256"), dict) else {}
+    actual_split_ids = _split_id_hashes(split_indexes)
+    if not report_split_ids:
+        failures.append({"gate": "split_ids", "reason": "Phase 18 report lacks split_ids_sha256"})
+    elif manifest_split_ids != report_split_ids:
+        failures.append({"gate": "split_ids", "reason": "split manifest IDs do not match Phase 18 report"})
+    if report_split_ids and actual_split_ids != report_split_ids:
+        failures.append({"gate": "split_ids", "reason": f"split index IDs differ: expected {report_split_ids}, actual {actual_split_ids}"})
     data = {
         "report": report,
         "split_manifest": split_manifest,
@@ -151,6 +164,8 @@ def validate_phase18_handoff(config: Phase19TrainingConfig) -> tuple[bool, dict[
         "expected_hash": expected_hash,
         "expected_counts": expected_counts,
         "actual_counts": actual_counts,
+        "expected_split_ids": report_split_ids,
+        "actual_split_ids": actual_split_ids,
     }
     return not failures, data, failures
 
@@ -219,7 +234,7 @@ def tokenize_phase18_handoff(config: Phase19TrainingConfig | None = None, *, tok
     if tokenizer is None:
         from transformers import AutoTokenizer
 
-        tokenizer = AutoTokenizer.from_pretrained(config.model_name)
+        tokenizer = AutoTokenizer.from_pretrained(config.model_name, trust_remote_code=False, local_files_only=True)
     native_ids = set(native_think_token_ids(tokenizer))
     gates["native_think_token_ids"] = {"ok": bool(native_ids), "data": {"native_think_token_ids": sorted(native_ids)}}
     if not native_ids:
@@ -500,22 +515,12 @@ def _tokenized_content_failures(run_root: Path) -> list[dict[str, str]]:
     split_dir = _canonical_lineage_path(run_root, DEFAULT_SPLIT_DIR)
     split_indexes = _load_phase18_split_indexes(split_dir)
     split_manifest_path = split_dir / "manifest.json"
-    split_manifest = _read_json(split_manifest_path)
     tokenized_manifest = _read_json(_canonical_lineage_path(run_root, DEFAULT_TOKENIZED_DIR / "manifest.json"))
     tokenized_phase18 = tokenized_manifest.get("phase18") if isinstance(tokenized_manifest.get("phase18"), dict) else {}
     expected_split_manifest_hash = str(tokenized_phase18.get("split_manifest_sha256", ""))
     actual_split_manifest_hash = _manifest_file_hash(split_manifest_path)
     if not expected_split_manifest_hash or actual_split_manifest_hash != expected_split_manifest_hash:
         failures.append({"gate": "tokenized_content", "reason": "split manifest hash mismatch against tokenized manifest"})
-    phase18_report = _read_json(_canonical_lineage_path(run_root, DEFAULT_PHASE18_REPORT))
-    report_split_ids = phase18_report.get("splits", {}).get("split_ids_sha256") if isinstance(phase18_report.get("splits"), dict) else {}
-    split_ids = split_manifest.get("split_ids_sha256") if isinstance(split_manifest.get("split_ids_sha256"), dict) else {}
-    if split_ids != report_split_ids:
-        failures.append({"gate": "tokenized_content", "reason": "split ids hash mismatch against Phase18 report"})
-    for split, rows in split_indexes.items():
-        actual_ids_hash = sha256_hex(canonical_json([str(row.get("sample_id") or "") for row in rows]))
-        if split_ids.get(split) != actual_ids_hash:
-            failures.append({"gate": "tokenized_content", "reason": f"{split} split index ids hash mismatch"})
     max_seq_length = 2048
     try:
         import pyarrow as pa
@@ -553,6 +558,43 @@ def _tokenized_content_failures(run_root: Path) -> list[dict[str, str]]:
             if failures and failures[-1]["gate"] == "tokenized_content":
                 break
     return failures
+
+
+def validate_phase19_pretrain_inputs(run_root: str | Path, *, tokenized_dir: str | Path = DEFAULT_TOKENIZED_DIR) -> dict[str, Any]:
+    root = Path(run_root)
+    failures: list[dict[str, str]] = []
+    warnings: list[dict[str, str]] = []
+    gates: dict[str, Any] = {}
+    try:
+        validate_run_root(root)
+        root_ok = True
+    except ValueError as exc:
+        root_ok = False
+        _fail(failures, "run_root", str(exc))
+    gates["run_root"] = _gate(root_ok, None if root_ok else "invalid v4.2 run root", {"run_root": str(root)})
+    try:
+        require_canonical_tokenized_dir(Path(tokenized_dir), root)
+        tokenized_dir_ok = True
+    except ValueError as exc:
+        tokenized_dir_ok = False
+        _fail(failures, "tokenized_dir", str(exc))
+    gates["tokenized_dir"] = _gate(tokenized_dir_ok, None if tokenized_dir_ok else "tokenized_dir is not canonical", {"tokenized_dir": str(tokenized_dir)})
+    phase18_ok, phase18_handoff, phase18_handoff_failures = validate_phase18_handoff(
+        Phase19TrainingConfig(
+            calibrated_jsonl=_canonical_lineage_path(root, DEFAULT_CALIBRATED_JSONL),
+            split_dir=_canonical_lineage_path(root, DEFAULT_SPLIT_DIR),
+            tokenized_dir=_canonical_lineage_path(root, DEFAULT_TOKENIZED_DIR),
+            phase18_report=_canonical_lineage_path(root, DEFAULT_PHASE18_REPORT),
+            artifacts_dir=_canonical_lineage_path(root, DEFAULT_ARTIFACTS_DIR),
+        )
+    )
+    tokenized_failures = _tokenized_content_failures(root) if root_ok and tokenized_dir_ok else []
+    failures.extend(phase18_handoff_failures)
+    failures.extend(tokenized_failures)
+    inputs_ok = phase18_ok and not tokenized_failures and root_ok and tokenized_dir_ok
+    gates["phase18_handoff"] = _gate(phase18_ok, None if phase18_ok else "Phase 18 handoff validation failed", {"expected_hash": phase18_handoff.get("expected_hash"), "actual_hash": phase18_handoff.get("actual_hash"), "expected_split_ids": phase18_handoff.get("expected_split_ids"), "actual_split_ids": phase18_handoff.get("actual_split_ids")})
+    gates["tokenized_content"] = _gate(not tokenized_failures, None if not tokenized_failures else "tokenized content audit failed", {"failure_count": len(tokenized_failures)})
+    return {"ok": inputs_ok, "next_phase_allowed": inputs_ok, "requirements_covered": list(REQUIREMENTS_COVERED) if inputs_ok else [], "gates": gates, "fatal_failures": failures, "warnings": warnings, "run_root": str(root)}
 
 
 def write_phase19_training_reports(run_root: Path, *, mode: str, elapsed: float, trainer_state: Any, adapter_dir: Path, targs_kwargs: dict[str, Any], tokenized_dir: Path = DEFAULT_TOKENIZED_DIR) -> Path:

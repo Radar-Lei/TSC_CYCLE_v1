@@ -119,6 +119,9 @@ def test_v42_training_defaults_lock_phase18_data_and_qwen4b_stack(tmp_path: Path
     assert "transformers" not in sys.modules
     assert "datasets" not in sys.modules
 
+    phase19_source = (PROJECT_ROOT / "tsc_cycle/v4_gates/phase19_training.py").read_text(encoding="utf-8")
+    assert "AutoTokenizer.from_pretrained(config.model_name, trust_remote_code=False, local_files_only=True)" in phase19_source
+
     train_source = (PROJECT_ROOT / "tsc_cycle/student/train.py").read_text(encoding="utf-8")
     tree = ast.parse(train_source)
     phase_choices = []
@@ -133,7 +136,8 @@ def test_v42_training_defaults_lock_phase18_data_and_qwen4b_stack(tmp_path: Path
     assert "if args.phase == \"v4_2\"" in train_source
     v42_source = train_source[train_source.index('if args.phase == "v4_2"') : train_source.index('model_name = args.model or MODEL_NAME')]
     assert "require_canonical_tokenized_dir(data_dir, run_root)" in v42_source
-    assert v42_source.index("require_canonical_tokenized_dir(data_dir, run_root)") < v42_source.index("load_qlora_model_and_tokenizer(model_name")
+    assert "validate_phase19_pretrain_inputs(run_root, tokenized_dir=data_dir)" in v42_source
+    assert v42_source.index("require_canonical_tokenized_dir(data_dir, run_root)") < v42_source.index("validate_phase19_pretrain_inputs(run_root, tokenized_dir=data_dir)") < v42_source.index("load_qlora_model_and_tokenizer(model_name")
 
 
 class FakeQwen4BTokenizer:
@@ -210,9 +214,11 @@ def test_phase18_handoff_tokenizes_calibrated_splits_with_protocol_hashes(tmp_pa
     rows = [_phase19_sample("train-1", split="train"), _phase19_sample("val-1", split="val"), _phase19_sample("ood-1", split="ood_val")]
     dataset = _write_jsonl(tmp_path / "data/v4_2/phase18/labeled_calibrated.jsonl", rows)
     split_dir = tmp_path / "data/v4_2/phase18/splits"
+    split_ids_sha256 = {}
     for split, sample_id in {"train": "train-1", "val": "val-1", "ood_val": "ood-1"}.items():
         _write_jsonl(split_dir / f"{split}.index.jsonl", [{"sample_id": sample_id, "split": split, "record_hash": "r" * 64, "prompt_hash": "p" * 64, "assistant_hash": "a" * 64}])
-    _write_json(split_dir / "manifest.json", {"ok": True, "split_counts": {"train": 1, "val": 1, "ood_val": 1}, "split_ids_sha256": {"train": "t", "val": "v", "ood_val": "o"}})
+        split_ids_sha256[split] = __import__("hashlib").sha256(json.dumps([sample_id], ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")).hexdigest()
+    _write_json(split_dir / "manifest.json", {"ok": True, "split_counts": {"train": 1, "val": 1, "ood_val": 1}, "split_ids_sha256": split_ids_sha256})
     report = _write_json(
         tmp_path / "artifacts/v4_2/phase18/reconstruction_report.json",
         {
@@ -221,7 +227,7 @@ def test_phase18_handoff_tokenizes_calibrated_splits_with_protocol_hashes(tmp_pa
             "requirements_covered": ["DATA-01", "DATA-02"],
             "counts": {"retained_rows": 3},
             "dataset_hashes": {"calibrated_jsonl_sha256": __import__("hashlib").sha256(dataset.read_bytes()).hexdigest()},
-            "splits": {"split_counts": {"train": 1, "val": 1, "ood_val": 1}},
+            "splits": {"split_counts": {"train": 1, "val": 1, "ood_val": 1}, "split_ids_sha256": split_ids_sha256},
         },
     )
     config = Phase19TrainingConfig(
@@ -236,6 +242,7 @@ def test_phase18_handoff_tokenizes_calibrated_splits_with_protocol_hashes(tmp_pa
     result = tokenize_phase18_handoff(config, tokenizer=FakeQwen4BTokenizer())
 
     assert result["ok"] is True
+    assert result["gates"]["phase18_handoff"]["ok"] is True
     assert result["requirements_covered"] == ["TRAIN-01"]
     assert result["split_counts"] == {"train": 1, "val": 1, "ood_val": 1}
     assert result["phase18"]["calibrated_jsonl_sha256"] == __import__("hashlib").sha256(dataset.read_bytes()).hexdigest()
@@ -254,6 +261,14 @@ def test_phase18_handoff_tokenizes_calibrated_splits_with_protocol_hashes(tmp_pa
         assert table.num_rows == 1
         assert {"sample_id", "input_ids", "attention_mask", "labels", "raw_length", "truncated", "prompt_hash", "assistant_hash"} <= set(table.column_names)
 
+    co_tamper_report = _write_json(
+        tmp_path / "co_tamper_phase18.json",
+        {"ok": True, "next_phase_allowed": True, "requirements_covered": ["DATA-01", "DATA-02"], "dataset_hashes": {"calibrated_jsonl_sha256": __import__("hashlib").sha256(dataset.read_bytes()).hexdigest()}, "splits": {"split_counts": {"train": 1, "val": 1, "ood_val": 1}, "split_ids_sha256": dict(split_ids_sha256, train="x" * 64)}},
+    )
+    co_tamper = tokenize_phase18_handoff(Phase19TrainingConfig(calibrated_jsonl=dataset, split_dir=split_dir, tokenized_dir=tmp_path / "co-tamper-tokenized", phase18_report=co_tamper_report, artifacts_dir=tmp_path / "co-tamper-artifacts"), tokenizer=FakeQwen4BTokenizer())
+    assert co_tamper["ok"] is False
+    assert any(failure["gate"] == "split_ids" for failure in co_tamper["fatal_failures"])
+
     bad_report = _write_json(tmp_path / "bad_phase18.json", {"ok": False, "next_phase_allowed": False})
     bad_config = Phase19TrainingConfig(calibrated_jsonl=dataset, split_dir=split_dir, tokenized_dir=tmp_path / "bad-tokenized", phase18_report=bad_report, artifacts_dir=tmp_path / "bad-artifacts")
     bad = tokenize_phase18_handoff(bad_config, tokenizer=FakeQwen4BTokenizer())
@@ -262,7 +277,7 @@ def test_phase18_handoff_tokenizes_calibrated_splits_with_protocol_hashes(tmp_pa
 
     missing_hash_report = _write_json(
         tmp_path / "missing_hash_phase18.json",
-        {"ok": True, "next_phase_allowed": True, "requirements_covered": ["DATA-01", "DATA-02"], "splits": {"split_counts": {"train": 1, "val": 1, "ood_val": 1}}},
+        {"ok": True, "next_phase_allowed": True, "requirements_covered": ["DATA-01", "DATA-02"], "splits": {"split_counts": {"train": 1, "val": 1, "ood_val": 1}, "split_ids_sha256": split_ids_sha256}},
     )
     missing_hash_config = Phase19TrainingConfig(calibrated_jsonl=dataset, split_dir=split_dir, tokenized_dir=tmp_path / "missing-hash-tokenized", phase18_report=missing_hash_report, artifacts_dir=tmp_path / "missing-hash-artifacts")
     missing_hash = tokenize_phase18_handoff(missing_hash_config, tokenizer=FakeQwen4BTokenizer())
@@ -274,7 +289,7 @@ def test_phase18_handoff_tokenizes_calibrated_splits_with_protocol_hashes(tmp_pa
     _write_jsonl(dataset, malformed_rows)
     malformed_report = _write_json(
         tmp_path / "malformed_phase18.json",
-        {"ok": True, "next_phase_allowed": True, "requirements_covered": ["DATA-01", "DATA-02"], "dataset_hashes": {"calibrated_jsonl_sha256": __import__("hashlib").sha256(dataset.read_bytes()).hexdigest()}, "splits": {"split_counts": {"train": 1, "val": 1, "ood_val": 1}}},
+        {"ok": True, "next_phase_allowed": True, "requirements_covered": ["DATA-01", "DATA-02"], "dataset_hashes": {"calibrated_jsonl_sha256": __import__("hashlib").sha256(dataset.read_bytes()).hexdigest()}, "splits": {"split_counts": {"train": 1, "val": 1, "ood_val": 1}, "split_ids_sha256": split_ids_sha256}},
     )
     malformed_config = Phase19TrainingConfig(calibrated_jsonl=dataset, split_dir=split_dir, tokenized_dir=tmp_path / "malformed-tokenized", phase18_report=malformed_report, artifacts_dir=tmp_path / "malformed-artifacts")
     malformed = tokenize_phase18_handoff(malformed_config, tokenizer=FakeQwen4BTokenizer())
@@ -285,7 +300,7 @@ def test_phase18_handoff_tokenizes_calibrated_splits_with_protocol_hashes(tmp_pa
     _write_jsonl(dataset, leak_rows)
     leak_report = _write_json(
         tmp_path / "leak_phase18.json",
-        {"ok": True, "next_phase_allowed": True, "requirements_covered": ["DATA-01", "DATA-02"], "dataset_hashes": {"calibrated_jsonl_sha256": __import__("hashlib").sha256(dataset.read_bytes()).hexdigest()}, "splits": {"split_counts": {"train": 1, "val": 1, "ood_val": 1}}},
+        {"ok": True, "next_phase_allowed": True, "requirements_covered": ["DATA-01", "DATA-02"], "dataset_hashes": {"calibrated_jsonl_sha256": __import__("hashlib").sha256(dataset.read_bytes()).hexdigest()}, "splits": {"split_counts": {"train": 1, "val": 1, "ood_val": 1}, "split_ids_sha256": split_ids_sha256}},
     )
     leak_config = Phase19TrainingConfig(calibrated_jsonl=dataset, split_dir=split_dir, tokenized_dir=tmp_path / "leak-tokenized", phase18_report=leak_report, artifacts_dir=tmp_path / "leak-artifacts")
     leak = tokenize_phase18_handoff(leak_config, tokenizer=FakeQwen4BTokenizer())
