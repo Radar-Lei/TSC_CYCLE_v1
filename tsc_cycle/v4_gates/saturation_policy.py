@@ -310,8 +310,35 @@ def _add_to_slice(stats: dict[str, Any], row: dict[str, Any]) -> None:
         metric["rate"] = metric["count"] / metric["denominator"] if metric["denominator"] else 0.0
 
 
+def _normalise_audit_row(row: dict[str, Any]) -> dict[str, Any]:
+    required = {
+        "origin_artifact",
+        "sample_id",
+        "phase_id",
+        "pred_saturation",
+        "min_green",
+        "max_green",
+        "final_green",
+        "split",
+        "source",
+    }
+    missing = sorted(field for field in required if field not in row)
+    if missing:
+        raise ValueError(f"missing required audit row field(s): {', '.join(missing)}")
+    out = dict(row)
+    out["pred_saturation"] = _finite_float(out["pred_saturation"], field="pred_saturation")
+    out["min_green"] = _finite_int(out["min_green"], field="min_green")
+    out["max_green"] = _finite_int(out["max_green"], field="max_green")
+    out["final_green"] = _finite_int(out["final_green"], field="final_green")
+    out["saturation_band"] = str(out.get("saturation_band") or classify_saturation_band(out["pred_saturation"]))
+    out["trivial_range"] = bool(out.get("trivial_range", is_trivial_phase_range(out)))
+    out["violation_category"] = str(out.get("violation_category") or classify_violation(out))
+    return out
+
+
 def compute_saturation_audit(rows: list[dict[str, Any]], *, example_limit: int = 10, excluded_counts: dict[str, int] | None = None) -> dict[str, Any]:
-    """Compute basic band/split/source/origin audit statistics from projected rows."""
+    """Compute band/split/source/origin audit statistics from projected rows."""
+    normalised_rows = [_normalise_audit_row(row) for row in rows]
     bands = {band: _empty_slice() for band in SATURATION_BANDS}
     by_split: dict[str, dict[str, Any]] = {}
     by_source: dict[str, dict[str, Any]] = {}
@@ -330,8 +357,8 @@ def compute_saturation_audit(rows: list[dict[str, Any]], *, example_limit: int =
         "source",
         "violation_category",
     ]
-    for row in sorted(rows, key=lambda r: (str(r.get("origin_artifact")), str(r.get("sample_id")), str(r.get("phase_id")))):
-        band = str(row.get("saturation_band") or classify_saturation_band(row.get("pred_saturation")))
+    for row in sorted(normalised_rows, key=lambda r: (str(r.get("origin_artifact")), str(r.get("sample_id")), str(r.get("phase_id")))):
+        band = str(row["saturation_band"])
         _add_to_slice(bands.setdefault(band, _empty_slice()), row)
         _add_to_slice(by_split.setdefault(str(row.get("split") or "unknown"), _empty_slice()), row)
         _add_to_slice(by_source.setdefault(str(row.get("source") or "unknown"), _empty_slice()), row)
@@ -341,9 +368,9 @@ def compute_saturation_audit(rows: list[dict[str, Any]], *, example_limit: int =
     return {
         "ok": True,
         "requirements_covered": list(REQUIREMENTS_COVERED),
-        "total_rows": len(rows),
-        "included_rows": sum(1 for row in rows if not row.get("trivial_range")),
-        "trivial_rows": sum(1 for row in rows if row.get("trivial_range")),
+        "total_rows": len(normalised_rows),
+        "included_rows": sum(1 for row in normalised_rows if not row.get("trivial_range")),
+        "trivial_rows": sum(1 for row in normalised_rows if row.get("trivial_range")),
         "excluded_counts": dict(excluded_counts or {}),
         "bands": bands,
         "by_split": by_split,
