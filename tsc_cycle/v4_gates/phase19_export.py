@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -89,9 +90,10 @@ def _require_output_path(path: Path, *, run_root: Path) -> None:
 
 
 def _tool(path: Path, name: str, failures: list[dict[str, str]], *, required: bool = True) -> str:
-    ok = Path(path).is_file() and Path(path).stat().st_size > 0
+    path = Path(path)
+    ok = path.is_file() and path.stat().st_size > 0 and (name.endswith(".py") or os.access(path, os.X_OK))
     if required and not ok:
-        failures.append({"gate": name, "reason": f"missing llama.cpp tool: {path}"})
+        failures.append({"gate": name, "reason": f"missing or non-executable llama.cpp tool: {path}"})
     return str(path)
 
 
@@ -344,13 +346,16 @@ def validate_phase19_export_report(run_root: Path, report_path: Path | None = No
         failures.append({"gate": "phase19_handoff", "reason": "accepted export report must revalidate green TRAIN-01 training handoff"})
 
     paths = report.get("paths") if isinstance(report.get("paths"), dict) else {}
+    validated_paths: dict[str, Path] = {}
     for key in ("merged_hf", "gguf_fp16", "gguf_q4_K_M", "export_report"):
         value = paths.get(key)
         if not isinstance(value, str) or not value:
             failures.append({"gate": "paths", "reason": f"missing export path: {key}"})
             continue
+        candidate = Path(value)
         try:
-            _require_output_path(Path(value), run_root=root)
+            _require_output_path(candidate, run_root=root)
+            validated_paths[key] = candidate
         except ValueError as exc:
             failures.append({"gate": "paths", "reason": str(exc)})
 
@@ -363,8 +368,8 @@ def validate_phase19_export_report(run_root: Path, report_path: Path | None = No
             failures.append({"gate": "commands", "reason": f"forbidden command evidence marker: {forbidden}"})
 
     artifacts = report.get("artifacts") if isinstance(report.get("artifacts"), dict) else {}
-    merged_path = Path(paths.get("merged_hf", "")) if isinstance(paths.get("merged_hf"), str) else root / "merged_hf"
-    actual_merged, merged_failures = _directory_manifest(merged_path, ("*.safetensors",))
+    merged_path = validated_paths.get("merged_hf")
+    actual_merged, merged_failures = _directory_manifest(merged_path, ("*.safetensors",)) if merged_path is not None else ([], [{"gate": "paths", "reason": "invalid merged_hf path; skipped artifact reads"}])
     failures.extend(merged_failures)
     reported_merged = artifacts.get("merged_hf_safetensors") if isinstance(artifacts.get("merged_hf_safetensors"), list) else []
     actual_merged_by_path = {record.get("path"): record for record in actual_merged}
@@ -379,9 +384,13 @@ def validate_phase19_export_report(run_root: Path, report_path: Path | None = No
         failures.append({"gate": "artifact_hash", "reason": "merged HF safetensors report does not match on-disk artifacts"})
 
     for key, path_key in (("gguf_fp16", "gguf_fp16"), ("gguf_q4_K_M", "gguf_q4_K_M")):
-        artifact_path = Path(paths.get(path_key, "")) if isinstance(paths.get(path_key), str) else root / "missing.gguf"
-        actual_record, actual_failures = _artifact_record(artifact_path)
-        failures.extend(actual_failures)
+        artifact_path = validated_paths.get(path_key)
+        if artifact_path is None:
+            actual_record = {}
+            failures.append({"gate": "paths", "reason": f"invalid {path_key} path; skipped artifact reads"})
+        else:
+            actual_record, actual_failures = _artifact_record(artifact_path)
+            failures.extend(actual_failures)
         record = artifacts.get(key) if isinstance(artifacts.get(key), dict) else {}
         if not record.get("sha256"):
             failures.append({"gate": "artifact_hash", "reason": f"missing sha256 for {key}"})
@@ -392,14 +401,17 @@ def validate_phase19_export_report(run_root: Path, report_path: Path | None = No
 
     tokenizer_records = artifacts.get("merged_hf_tokenizer") if isinstance(artifacts.get("merged_hf_tokenizer"), list) else []
     actual_tokenizer_records: list[dict[str, Any]] = []
-    tokenizer_materializer_ok = ((merged_path / "tokenizer.json").is_file() and (merged_path / "tokenizer.json").stat().st_size > 0) or ((merged_path / "tokenizer.model").is_file() and (merged_path / "tokenizer.model").stat().st_size > 0) or ((merged_path / "vocab.json").is_file() and (merged_path / "vocab.json").stat().st_size > 0 and (merged_path / "merges.txt").is_file() and (merged_path / "merges.txt").stat().st_size > 0)
+    tokenizer_materializer_ok = False
+    if merged_path is not None:
+        tokenizer_materializer_ok = ((merged_path / "tokenizer.json").is_file() and (merged_path / "tokenizer.json").stat().st_size > 0) or ((merged_path / "tokenizer.model").is_file() and (merged_path / "tokenizer.model").stat().st_size > 0) or ((merged_path / "vocab.json").is_file() and (merged_path / "vocab.json").stat().st_size > 0 and (merged_path / "merges.txt").is_file() and (merged_path / "merges.txt").stat().st_size > 0)
     if not tokenizer_materializer_ok:
         failures.append({"gate": "artifact_hash", "reason": "missing complete tokenizer materializer evidence"})
-    for name in ("tokenizer.json", "tokenizer.model", "tokenizer_config.json", "special_tokens_map.json", "vocab.json", "merges.txt"):
-        token_path = merged_path / name
-        if token_path.exists():
-            token_record, _ = _artifact_record(token_path, required=False)
-            actual_tokenizer_records.append(token_record)
+    if merged_path is not None:
+        for name in ("tokenizer.json", "tokenizer.model", "tokenizer_config.json", "special_tokens_map.json", "vocab.json", "merges.txt"):
+            token_path = merged_path / name
+            if token_path.exists():
+                token_record, _ = _artifact_record(token_path, required=False)
+                actual_tokenizer_records.append(token_record)
     if not tokenizer_records or not actual_tokenizer_records:
         failures.append({"gate": "artifact_hash", "reason": "missing merged HF tokenizer/materializer evidence"})
     else:

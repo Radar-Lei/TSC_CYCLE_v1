@@ -498,7 +498,19 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     outside_report = _write_json(run_root / "outside_adapter_report.json", outside)
     outside_rejected = validate_phase19_training_report(run_root, report_path=outside_report)
     assert outside_rejected["ok"] is False
+    assert outside_rejected["gates"]["adapter_hash"]["data"]["actual"] is None
     assert any(failure["gate"] == "adapter_path" for failure in outside_rejected["fatal_failures"])
+
+    outside_data_manifest = tmp_path / "outside_phase19_data_manifest.json"
+    outside_data_manifest.write_text("not json", encoding="utf-8")
+    outside_data = _read_json(report)
+    outside_data["data_manifest_path"] = str(outside_data_manifest)
+    outside_data["data_manifest_sha256"] = "x" * 64
+    outside_data_report = _write_json(run_root / "outside_data_report.json", outside_data)
+    outside_data_rejected = validate_phase19_training_report(run_root, report_path=outside_data_report)
+    assert outside_data_rejected["ok"] is False
+    assert outside_data_rejected["gates"]["data_manifest_hash"]["data"]["actual"] is None
+    assert any(failure["gate"] == "data_manifest_path" for failure in outside_data_rejected["fatal_failures"])
 
     wrong_adapter_config = _read_json(report)
     (adapter_dir / "adapter_config.json").write_text('{"base_model_name_or_path":"Qwen/Qwen3.5-9B"}\n', encoding="utf-8")
@@ -565,6 +577,7 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     assert 'os.environ["RUN_ROOT"]' in wrapper
     assert "scripts/dgx_spark/run_safe.sh" in wrapper
     assert "100G --" in wrapper
+    assert "TRITON_PTXAS_PATH" in wrapper
     assert "tsc_cycle.student.train" in wrapper
     assert "--phase v4_2" in wrapper
     for forbidden in ["pip install", "uv pip install", "vllm", "flash-attn", "unsloth", "axolotl", "git worktree", "runs/20260507T032419Z"]:
@@ -700,6 +713,25 @@ def test_v42_export_plan_and_report_require_merged_hf_and_gguf_hashes(tmp_path: 
     assert any("tokenizer evidence" in failure["reason"] for failure in rejected_tokenizer["fatal_failures"])
     (merged / "special_tokens_map.json").unlink()
 
+    outside_artifact = tmp_path / "outside_model.fp16.gguf"
+    outside_artifact.write_bytes(b"outside fp16")
+    outside_artifact_report = _read_json(run_root / "phase19_export_report.json")
+    outside_artifact_report["paths"]["gguf_fp16"] = str(outside_artifact)
+    outside_artifact_report_path = _write_json(run_root / "outside_artifact_report.json", outside_artifact_report)
+    rejected_outside_artifact = validate_phase19_export_report(run_root=run_root, report_path=outside_artifact_report_path)
+    assert rejected_outside_artifact["ok"] is False
+    assert any("invalid gguf_fp16 path" in failure["reason"] for failure in rejected_outside_artifact["fatal_failures"])
+
+    outside_merged = tmp_path / "outside_merged_hf"
+    outside_merged.mkdir()
+    (outside_merged / "model.safetensors").write_bytes(b"outside merged")
+    outside_merged_report = _read_json(run_root / "phase19_export_report.json")
+    outside_merged_report["paths"]["merged_hf"] = str(outside_merged)
+    outside_merged_report_path = _write_json(run_root / "outside_merged_report.json", outside_merged_report)
+    rejected_outside_merged = validate_phase19_export_report(run_root=run_root, report_path=outside_merged_report_path)
+    assert rejected_outside_merged["ok"] is False
+    assert any("invalid merged_hf path" in failure["reason"] for failure in rejected_outside_merged["fatal_failures"])
+
     forged = _read_json(run_root / "phase19_export_report.json")
     (run_root / "gguf" / "model.q4_K_M.gguf").unlink()
     forged["artifacts"]["gguf_q4_K_M"]["exists"] = True
@@ -777,6 +809,12 @@ def test_v42_wrappers_forbid_dependency_installs_unsupported_runtimes_and_frozen
     assert "phase19_sft_report.json" in wrapper
     assert "phase19_export_report.json" in wrapper
     assert "runs/v4.2-4B-" in wrapper
+
+    (llama_cpp / "llama-quantize").chmod(0o644)
+    bad_tool_plan = build_export_plan(run_root=run_root, phase19_report=training_report, llama_cpp_dir=llama_cpp)
+    assert bad_tool_plan["ok"] is False
+    assert any(failure["gate"] == "llama-quantize" for failure in bad_tool_plan["fatal_failures"])
+    (llama_cpp / "llama-quantize").chmod(0o755)
 
     plan = build_export_plan(run_root=run_root, phase19_report=training_report, llama_cpp_dir=llama_cpp)
     commands_text = json.dumps({"wrapper": wrapper, "commands": plan["commands"], "phase19_wrapper_commands": phase19_wrapper_commands(run_root, llama_cpp)}, ensure_ascii=False).lower()

@@ -735,10 +735,10 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
     except ValueError as exc:
         adapter_path_ok = False
         _fail(failures, "adapter_path", str(exc))
-    adapter_hash = _adapter_hash(adapter)
-    adapter_config = _read_json(adapter / "adapter_config.json")
+    adapter_hash = _adapter_hash(adapter) if adapter_path_ok else None
+    adapter_config = _read_json(adapter / "adapter_config.json") if adapter_path_ok else {}
     adapter_base = adapter_config.get("base_model_name_or_path")
-    adapter_base_ok = adapter_base == MODEL_NAME
+    adapter_base_ok = adapter_path_ok and adapter_base == MODEL_NAME
     adapter_ok = adapter_path_ok and adapter_hash is not None and training.get("adapter_sha256") == adapter_hash and (adapter / "adapter_config.json").exists()
     gates["adapter_hash"] = _gate(adapter_ok, None if adapter_ok else "adapter hash mismatch or adapter files missing", {"expected": training.get("adapter_sha256"), "actual": adapter_hash})
     if not adapter_ok:
@@ -754,8 +754,8 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
     except ValueError as exc:
         data_manifest_path_ok = False
         _fail(failures, "data_manifest_path", str(exc))
-    data_manifest_payload = _read_json(data_manifest)
-    data_hash = _sha256_file(data_manifest) if data_manifest.exists() else None
+    data_manifest_payload = _read_json(data_manifest) if data_manifest_path_ok else {}
+    data_hash = _sha256_file(data_manifest) if data_manifest_path_ok and data_manifest.exists() else None
     data_ok = data_manifest_path_ok and data_hash is not None and training.get("data_manifest_sha256") == data_hash
     gates["data_manifest_hash"] = _gate(data_ok, None if data_ok else "data manifest hash mismatch or missing", {"expected": training.get("data_manifest_sha256"), "actual": data_hash})
     if not data_ok:

@@ -15,6 +15,7 @@ case "$RUN_ROOT" in
   *) printf 'RUN_ROOT must match runs/v4.2-4B-*\n' >&2; exit 2 ;;
 esac
 cd "$ROOT"
+export TRITON_PTXAS_PATH="${TRITON_PTXAS_PATH:-/usr/local/cuda/bin/ptxas}"
 
 RUN_ROOT="$RUN_ROOT" "$PY" - <<'PY'
 import os
