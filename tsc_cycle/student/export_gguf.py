@@ -23,6 +23,12 @@ from tsc_cycle.v4_gates.phase10_export import (
     plan_phase10_export,
     write_export_report,
 )
+from tsc_cycle.v4_gates.phase19_export import (
+    DEFAULT_PHASE19_REPORT,
+    DEFAULT_RUN_ROOT as PHASE19_RUN_ROOT,
+    build_export_plan as build_phase19_export_plan,
+    write_export_report as write_phase19_export_report,
+)
 
 BASE_MODEL = "Qwen/Qwen3-4B-Thinking-2507"
 
@@ -84,18 +90,55 @@ def quantize_q4(in_gguf: Path, out_gguf: Path, *, quantize: Path) -> list[str]:
     return cmd
 
 
+def _defaulted_phase19_args(args: argparse.Namespace) -> argparse.Namespace:
+    if args.export_phase != "phase19":
+        return args
+    run_root = Path(args.run_root)
+    phase10_defaults = {
+        "merged_dir": str(PHASE9_RUN_ROOT / "merged_hf"),
+        "fp16_gguf": str(PHASE9_RUN_ROOT / "gguf" / "model.fp16.gguf"),
+        "q4_gguf": str(PHASE9_RUN_ROOT / "gguf" / "model.q4_K_M.gguf"),
+        "report": str(PHASE9_RUN_ROOT / "phase10_export_report.json"),
+    }
+    if args.merged_dir is None or args.merged_dir == phase10_defaults["merged_dir"]:
+        args.merged_dir = str(run_root / "merged_hf")
+    if args.fp16_gguf is None or args.fp16_gguf == phase10_defaults["fp16_gguf"]:
+        args.fp16_gguf = str(run_root / "gguf" / "model.fp16.gguf")
+    if args.q4_gguf is None or args.q4_gguf == phase10_defaults["q4_gguf"]:
+        args.q4_gguf = str(run_root / "gguf" / "model.q4_K_M.gguf")
+    if args.report is None or args.report == phase10_defaults["report"]:
+        args.report = str(run_root / "phase19_export_report.json")
+    if args.phase19_report is None:
+        args.phase19_report = str(run_root / "phase19_sft_report.json")
+    return args
+
+
 def run_export(args: argparse.Namespace) -> dict[str, Any]:
-    plan = plan_phase10_export(
-        phase9_report=Path(args.phase9_report),
-        run_root=Path(args.run_root),
-        llama_cpp_dir=Path(args.llama_cpp),
-        merged_dir=Path(args.merged_dir),
-        fp16_gguf=Path(args.fp16_gguf),
-        q4_gguf=Path(args.q4_gguf),
-        report=Path(args.report),
-    )
-    if not plan["ok"]:
-        raise Phase10ExportError(f"phase10 export plan is red: {plan['fatal_failures']}")
+    args = _defaulted_phase19_args(args)
+    if args.export_phase == "phase19":
+        plan = build_phase19_export_plan(
+            phase19_report=Path(args.phase19_report),
+            run_root=Path(args.run_root),
+            llama_cpp_dir=Path(args.llama_cpp),
+            merged_dir=Path(args.merged_dir),
+            fp16_gguf=Path(args.fp16_gguf),
+            q4_gguf=Path(args.q4_gguf),
+            report=Path(args.report),
+        )
+        if not plan["ok"]:
+            raise Phase10ExportError(f"phase19 export plan is red: {plan['fatal_failures']}")
+    else:
+        plan = plan_phase10_export(
+            phase9_report=Path(args.phase9_report),
+            run_root=Path(args.run_root),
+            llama_cpp_dir=Path(args.llama_cpp),
+            merged_dir=Path(args.merged_dir),
+            fp16_gguf=Path(args.fp16_gguf),
+            q4_gguf=Path(args.q4_gguf),
+            report=Path(args.report),
+        )
+        if not plan["ok"]:
+            raise Phase10ExportError(f"phase10 export plan is red: {plan['fatal_failures']}")
 
     adapter_dir = Path(str(plan["adapter_path"]))
     merged_dir = Path(args.merged_dir)
@@ -109,20 +152,36 @@ def run_export(args: argparse.Namespace) -> dict[str, Any]:
 
     plan.setdefault("commands", {})["convert_fp16"] = convert_cmd
     plan.setdefault("commands", {})["quantize_q4_K_M"] = quant_cmd
+    if args.export_phase == "phase19":
+        return write_phase19_export_report(Path(args.run_root), plan, Path(args.report))
     return write_export_report(Path(args.run_root), plan, Path(args.report))
 
 
+class _PhaseExportParser(argparse.ArgumentParser):
+    def parse_args(self, args: list[str] | None = None, namespace: argparse.Namespace | None = None) -> argparse.Namespace:
+        parsed = super().parse_args(args, namespace)
+        return _defaulted_phase19_args(parsed)
+
+
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Merge v4 adapter and export GGUF fp16/q4_K_M")
+    parser = _PhaseExportParser(description="Merge v4 adapter and export GGUF fp16/q4_K_M")
+    parser.add_argument("--export-phase", choices=["phase10", "phase19"], default="phase10")
     parser.add_argument("--phase9-report", default=str(DEFAULT_PHASE9_REPORT))
+    parser.add_argument("--phase19-report", default=str(DEFAULT_PHASE19_REPORT))
     parser.add_argument("--run-root", default=str(PHASE9_RUN_ROOT))
     parser.add_argument("--llama-cpp", default=os.environ.get("LLAMA_CPP_DIR", str(DEFAULT_LLAMA_CPP)))
-    parser.add_argument("--merged-dir", default=str(PHASE9_RUN_ROOT / "merged_hf"))
-    parser.add_argument("--fp16-gguf", default=str(PHASE9_RUN_ROOT / "gguf" / "model.fp16.gguf"))
-    parser.add_argument("--q4-gguf", default=str(PHASE9_RUN_ROOT / "gguf" / "model.q4_K_M.gguf"))
-    parser.add_argument("--report", default=str(PHASE9_RUN_ROOT / "phase10_export_report.json"))
+    parser.add_argument("--merged-dir", default=None)
+    parser.add_argument("--fp16-gguf", default=None)
+    parser.add_argument("--q4-gguf", default=None)
+    parser.add_argument("--report", default=None)
     parser.add_argument("--base-model", default=None)
     parser.add_argument("--python", default=sys.executable)
+    parser.set_defaults(
+        merged_dir=str(PHASE9_RUN_ROOT / "merged_hf"),
+        fp16_gguf=str(PHASE9_RUN_ROOT / "gguf" / "model.fp16.gguf"),
+        q4_gguf=str(PHASE9_RUN_ROOT / "gguf" / "model.q4_K_M.gguf"),
+        report=str(PHASE9_RUN_ROOT / "phase10_export_report.json"),
+    )
     return parser
 
 
