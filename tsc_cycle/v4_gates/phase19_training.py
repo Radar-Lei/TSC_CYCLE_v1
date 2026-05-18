@@ -118,11 +118,31 @@ def _load_phase18_split_indexes(split_dir: Path) -> dict[str, list[dict[str, Any
     return output
 
 
-def _phase18_counts(report: dict[str, Any], split_manifest: dict[str, Any]) -> dict[str, int]:
+def _parse_nonnegative_int(value: Any, *, gate: str, field: str, failures: list[dict[str, str]] | None = None) -> int | None:
+    parsed: int | None = None
+    if type(value) is int:
+        parsed = value
+    elif isinstance(value, str) and value and all(char in "0123456789" for char in value):
+        parsed = int(value)
+    if parsed is None or parsed < 0:
+        if failures is not None:
+            failures.append({"gate": gate, "reason": f"{field} must be a non-negative integer"})
+        return None
+    return parsed
+
+
+def _phase18_counts(report: dict[str, Any], split_manifest: dict[str, Any], failures: list[dict[str, str]] | None = None) -> dict[str, int]:
     counts = report.get("splits", {}).get("split_counts") if isinstance(report.get("splits"), dict) else None
     if not isinstance(counts, dict):
         counts = split_manifest.get("split_counts") if isinstance(split_manifest.get("split_counts"), dict) else {}
-    return {str(key): int(value) for key, value in counts.items() if key in {"train", "val", "ood_val"}}
+    parsed: dict[str, int] = {}
+    for key, value in counts.items():
+        if key not in {"train", "val", "ood_val"}:
+            continue
+        count = _parse_nonnegative_int(value, gate="split_counts", field=f"split count {key}", failures=failures)
+        if count is not None:
+            parsed[str(key)] = count
+    return parsed
 
 
 def _split_id_hashes(split_indexes: dict[str, list[dict[str, Any]]]) -> dict[str, str]:
@@ -133,9 +153,19 @@ def validate_phase18_handoff(config: Phase19TrainingConfig) -> tuple[bool, dict[
     failures: list[dict[str, str]] = []
     report = _read_json(config.phase18_report)
     split_manifest = _read_json(config.split_dir / "manifest.json")
+    report_failures = report.get("fatal_failures", [])
+    if not isinstance(report_failures, list):
+        failures.append({"gate": "phase18_handoff", "reason": "Phase 18 fatal_failures must be a list"})
+    elif report_failures:
+        failures.append({"gate": "phase18_handoff", "reason": "Phase 18 report contains fatal_failures"})
     if report.get("ok") is not True or report.get("next_phase_allowed") is not True:
         failures.append({"gate": "phase18_handoff", "reason": "Phase 18 reconstruction report is not green"})
-    covered = set(report.get("requirements_covered", []))
+    covered_raw = report.get("requirements_covered", [])
+    if not isinstance(covered_raw, list):
+        failures.append({"gate": "phase18_requirements", "reason": "Phase 18 requirements_covered must be a list"})
+        covered = set()
+    else:
+        covered = {str(item) for item in covered_raw}
     if not {"DATA-01", "DATA-02"} <= covered:
         failures.append({"gate": "phase18_requirements", "reason": "Phase 18 report lacks DATA-01/DATA-02 coverage"})
     actual_hash = _sha256_file(config.calibrated_jsonl) if config.calibrated_jsonl.exists() else ""
@@ -149,7 +179,7 @@ def validate_phase18_handoff(config: Phase19TrainingConfig) -> tuple[bool, dict[
     except FileNotFoundError as exc:
         failures.append({"gate": "split_indexes", "reason": f"missing split index: {exc}"})
         split_indexes = {"train": [], "val": [], "ood_val": []}
-    expected_counts = _phase18_counts(report, split_manifest)
+    expected_counts = _phase18_counts(report, split_manifest, failures)
     actual_counts = {split: len(rows) for split, rows in split_indexes.items()}
     if expected_counts and actual_counts != expected_counts:
         failures.append({"gate": "split_counts", "reason": f"split counts differ: expected {expected_counts}, actual {actual_counts}"})
@@ -236,6 +266,29 @@ def tokenize_phase18_handoff(config: Phase19TrainingConfig | None = None, *, tok
     handoff_ok, handoff, handoff_failures = validate_phase18_handoff(config)
     fatal_failures.extend(handoff_failures)
     gates["phase18_handoff"] = {"ok": handoff_ok, "reason": None if handoff_ok else "Phase 18 handoff validation failed"}
+
+    if fatal_failures:
+        report = {
+            "ok": False,
+            "requirements_covered": [],
+            "model_name": config.model_name,
+            "split_counts": {},
+            "tokenized_dir": str(config.tokenized_dir),
+            "tokenized_sha256": {},
+            "phase18": {
+                "calibrated_jsonl": str(config.calibrated_jsonl),
+                "calibrated_jsonl_sha256": handoff["actual_hash"],
+                "phase18_report": str(config.phase18_report),
+                "phase18_report_sha256": _sha256_file(config.phase18_report) if config.phase18_report.exists() else "",
+                "split_manifest": str(config.split_dir / "manifest.json"),
+            },
+            "truncation": {"max_seq_length": config.max_seq_length, "over_length_count": 0, "truncated_sample_ids_sample": [], "max_raw_length": 0},
+            "gates": gates,
+            "fatal_failures": fatal_failures,
+        }
+        config.artifacts_dir.mkdir(parents=True, exist_ok=True)
+        _write_json(config.artifacts_dir / "tokenization_report.json", report)
+        return report
 
     if tokenizer is None:
         from transformers import AutoTokenizer
@@ -347,7 +400,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    if args.command in {None, "tokenize"}:
+    if args.command is None:
+        config = Phase19TrainingConfig()
+        report = tokenize_phase18_handoff(config)
+        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False))
+        return 0 if report.get("ok") is True else 1
+    if args.command == "tokenize":
         config = Phase19TrainingConfig(
             calibrated_jsonl=args.calibrated_jsonl,
             split_dir=args.split_dir,
@@ -420,10 +478,9 @@ def _training_args_match(actual: dict[str, Any], expected: dict[str, Any]) -> tu
     return not mismatches and not forbidden and not extra, {"expected": expected, "actual": actual, "mismatches": mismatches, "forbidden": forbidden, "extra": extra}
 
 
-def _expected_full_steps(data_manifest: dict[str, Any]) -> int:
-    split_counts = data_manifest.get("split_counts") if isinstance(data_manifest.get("split_counts"), dict) else {}
-    train_rows = int(split_counts.get("train") or 0)
-    if train_rows <= 0:
+def _expected_full_steps(split_counts: dict[str, Any], failures: list[dict[str, str]] | None = None) -> int:
+    train_rows = _parse_nonnegative_int(split_counts.get("train", 0), gate="completed", field="train split count", failures=failures)
+    if train_rows is None or train_rows <= 0:
         return 0
     args = _expected_training_args(Path("runs") / "v4.2-4B-placeholder")
     total_items = train_rows * int(args["num_train_epochs"])
@@ -432,11 +489,8 @@ def _expected_full_steps(data_manifest: dict[str, Any]) -> int:
 
 
 def _safe_int(value: Any, *, gate: str, field: str, failures: list[dict[str, str]]) -> int:
-    try:
-        return int(value or 0)
-    except (TypeError, ValueError):
-        failures.append({"gate": gate, "reason": f"{field} must be an integer"})
-        return 0
+    parsed = _parse_nonnegative_int(0 if value is None else value, gate=gate, field=field, failures=failures)
+    return parsed if parsed is not None else 0
 
 
 def _state_value(trainer_state: Any, key: str, default: Any = None) -> Any:
@@ -747,6 +801,11 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
             _write_json(Path(out), report)
         return report
     training = _read_json(report_path)
+    training_failures = training.get("fatal_failures", [])
+    if not isinstance(training_failures, list):
+        _fail(failures, "fatal_failures", "fatal_failures must be a list")
+    elif training_failures:
+        _fail(failures, "fatal_failures", "training report contains fatal_failures")
     model_ok = training.get("model_name") == MODEL_NAME
     gates["model_config"] = _gate(model_ok, None if model_ok else "model_name is not locked Qwen3-4B", {"model_name": training.get("model_name")})
     if not model_ok:
@@ -829,7 +888,13 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
         "calibrated_jsonl_sha256": str(phase18_handoff.get("expected_hash", "")),
         "phase18_report_sha256": _manifest_file_hash(_canonical_lineage_path(root, DEFAULT_PHASE18_REPORT)),
     }
-    phase18_ok = phase18_ok and not lineage_path_failures and not tokenized_content_failures and phase18_hashes == expected_phase18_hashes and expected_phase18_hashes == actual_phase18_hashes and actual_phase18_hashes == tokenization_report_hashes and all(actual_phase18_hashes.values()) and actual_phase18_hashes["calibrated_jsonl_sha256"] == phase18_anchor_hashes["calibrated_jsonl_sha256"]
+    data_manifest_counts = _phase18_counts({"splits": {"split_counts": data_manifest_payload.get("split_counts")}}, {}, failures)
+    canonical_counts = phase18_handoff.get("actual_counts") if isinstance(phase18_handoff.get("actual_counts"), dict) else {}
+    split_counts_ok = bool(canonical_counts) and data_manifest_counts == canonical_counts
+    gates["split_counts"] = _gate(split_counts_ok, None if split_counts_ok else "data manifest split counts do not match canonical Phase18 counts", {"data_manifest": data_manifest_counts, "canonical": canonical_counts})
+    if not split_counts_ok:
+        _fail(failures, "split_counts", "data manifest split counts do not match canonical Phase18 counts")
+    phase18_ok = phase18_ok and split_counts_ok and not lineage_path_failures and not tokenized_content_failures and phase18_hashes == expected_phase18_hashes and expected_phase18_hashes == actual_phase18_hashes and actual_phase18_hashes == tokenization_report_hashes and all(actual_phase18_hashes.values()) and actual_phase18_hashes["calibrated_jsonl_sha256"] == phase18_anchor_hashes["calibrated_jsonl_sha256"]
     gates["phase18_artifact_hashes"] = _gate(phase18_ok, None if phase18_ok else "Phase 18/tokenized artifact hashes do not match data manifest, tokenization report, Phase 18 report, and on-disk artifacts", {"expected": expected_phase18_hashes, "actual": phase18_hashes, "on_disk": actual_phase18_hashes, "tokenization_report": tokenization_report_hashes, "phase18_report_anchor": phase18_anchor_hashes})
     if not phase18_ok:
         _fail(failures, "phase18_artifact_hashes", "Phase 18/tokenized artifact hashes do not match data manifest, tokenization report, and on-disk artifacts")
@@ -848,7 +913,12 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
     if not args_ok:
         _fail(failures, "training_args", "training args are not locked to DGX-safe v4.2 QLoRA")
 
-    covered = set(training.get("requirements_covered", []))
+    covered_raw = training.get("requirements_covered", [])
+    if not isinstance(covered_raw, list):
+        _fail(failures, "requirements_covered", "requirements_covered must be a list")
+        covered = set()
+    else:
+        covered = {str(item) for item in covered_raw}
     requirements_ok = "TRAIN-01" in covered
     gates["requirements_covered"] = _gate(requirements_ok, None if requirements_ok else "TRAIN-01 coverage missing", {"covered": sorted(covered)})
     if not requirements_ok:
@@ -857,9 +927,13 @@ def validate_phase19_training_report(run_root: str | Path, *, report_path: str |
     state = training.get("trainer_state") if isinstance(training.get("trainer_state"), dict) else {}
     global_step = _safe_int(state.get("global_step"), gate="completed", field="global_step", failures=failures)
     max_steps = _safe_int(state.get("max_steps"), gate="completed", field="max_steps", failures=failures)
-    expected_full_steps = _expected_full_steps(data_manifest_payload)
-    completed_ok = training.get("mode") == "full" and training.get("completed") is True and training.get("ok") is True and global_step > 0 and expected_full_steps > 0 and global_step >= expected_full_steps and (max_steps <= 0 or max_steps >= expected_full_steps)
-    gates["completed"] = _gate(completed_ok, None if completed_ok else "training report lacks completed full-run evidence", {"completed": training.get("completed"), "ok": training.get("ok"), "mode": training.get("mode"), "global_step": global_step, "max_steps": max_steps, "expected_full_steps": expected_full_steps})
+    expected_full_steps = _expected_full_steps(canonical_counts, failures)
+    next_phase_allowed_ok = training.get("next_phase_allowed") is True
+    gates["next_phase_allowed"] = _gate(next_phase_allowed_ok, None if next_phase_allowed_ok else "training report next_phase_allowed must be true", {"next_phase_allowed": training.get("next_phase_allowed")})
+    if not next_phase_allowed_ok:
+        _fail(failures, "next_phase_allowed", "training report next_phase_allowed must be true")
+    completed_ok = training.get("mode") == "full" and training.get("completed") is True and training.get("ok") is True and next_phase_allowed_ok and global_step > 0 and expected_full_steps > 0 and global_step >= expected_full_steps and (max_steps <= 0 or max_steps >= expected_full_steps)
+    gates["completed"] = _gate(completed_ok, None if completed_ok else "training report lacks completed full-run evidence", {"completed": training.get("completed"), "ok": training.get("ok"), "next_phase_allowed": training.get("next_phase_allowed"), "mode": training.get("mode"), "global_step": global_step, "max_steps": max_steps, "expected_full_steps": expected_full_steps})
     if not completed_ok:
         _fail(failures, "completed", "training report lacks completed full-run evidence")
 

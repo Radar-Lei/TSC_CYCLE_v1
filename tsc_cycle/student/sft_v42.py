@@ -147,18 +147,32 @@ def validate_run_root(path: str | os.PathLike[str]) -> Path:
 
 def check_phase18_handoff(phase18_report: str | os.PathLike[str] = PHASE18_RECONSTRUCTION_REPORT) -> dict[str, Any]:
     path = Path(phase18_report)
-    if not path.exists():
+    if not path.is_file():
         return {"ok": False, "next_phase_allowed": False, "fatal_failures": [{"gate": "phase18_handoff", "reason": f"missing {path}"}]}
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         return {"ok": False, "next_phase_allowed": False, "fatal_failures": [{"gate": "phase18_handoff", "reason": f"invalid Phase 18 report JSON: {exc}"}]}
+    if not isinstance(payload, dict):
+        return {"ok": False, "next_phase_allowed": False, "fatal_failures": [{"gate": "phase18_handoff", "reason": "Phase 18 report JSON must be an object"}]}
+    fatal_failures = payload.get("fatal_failures", [])
+    if not isinstance(fatal_failures, list):
+        return {"ok": False, "next_phase_allowed": False, "fatal_failures": [{"gate": "phase18_handoff", "reason": "Phase 18 fatal_failures must be a list"}]}
+    if fatal_failures:
+        return {"ok": False, "next_phase_allowed": False, "fatal_failures": fatal_failures}
     required = {"DATA-01", "DATA-02"}
-    covered = set(payload.get("requirements_covered", []))
+    requirements_covered = payload.get("requirements_covered", [])
+    if not isinstance(requirements_covered, list):
+        return {"ok": False, "next_phase_allowed": False, "fatal_failures": [{"gate": "phase18_handoff", "reason": "Phase 18 requirements_covered must be a list"}]}
+    covered = {str(item) for item in requirements_covered}
     ok = payload.get("ok") is True and payload.get("next_phase_allowed") is True and required <= covered
     if not ok:
         payload = dict(payload)
-        payload.setdefault("fatal_failures", []).append({"gate": "phase18_handoff", "reason": "Phase 18 handoff is not green or lacks DATA coverage"})
+        fatal_failures = payload.get("fatal_failures", [])
+        if not isinstance(fatal_failures, list):
+            fatal_failures = []
+        payload["fatal_failures"] = fatal_failures
+        fatal_failures.append({"gate": "phase18_handoff", "reason": "Phase 18 handoff is not green or lacks DATA coverage"})
         payload["ok"] = False
     return payload
 

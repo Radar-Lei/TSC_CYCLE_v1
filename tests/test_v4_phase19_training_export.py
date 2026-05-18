@@ -310,6 +310,33 @@ def test_phase18_handoff_tokenizes_calibrated_splits_with_protocol_hashes(tmp_pa
     assert not (leak_config.tokenized_dir / "train.arrow").exists()
 
 
+def test_phase19_training_default_cli_fails_closed_without_handoff(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    from tsc_cycle.v4_gates import phase19_training  # noqa: PLC0415
+
+    original_config = phase19_training.Phase19TrainingConfig
+    artifacts_dir = tmp_path / PHASE19_ARTIFACTS_DIR
+    monkeypatch.setattr(
+        phase19_training,
+        "Phase19TrainingConfig",
+        lambda: original_config(
+            calibrated_jsonl=tmp_path / "data/v4_2/phase18/labeled_calibrated.jsonl",
+            split_dir=tmp_path / "data/v4_2/phase18/splits",
+            tokenized_dir=tmp_path / V42_TOKENIZED_DIR,
+            phase18_report=tmp_path / PHASE18_REPORT,
+            artifacts_dir=artifacts_dir,
+        ),
+    )
+
+    exit_code = phase19_training.main([])
+    output = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 1
+    assert output["ok"] is False
+    assert output["requirements_covered"] == []
+    assert any(failure["gate"] == "phase18_handoff" for failure in output["fatal_failures"])
+    assert _read_json(artifacts_dir / "tokenization_report.json") == output
+
+
 def _hash_directory(root: Path) -> str:
     h = __import__("hashlib").sha256()
     for path in sorted(item for item in root.rglob("*") if item.is_file()):
@@ -443,6 +470,25 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
         },
     )
 
+    non_object_phase18 = run_root / "non_object_phase18.json"
+    non_object_phase18.write_text("[]\n", encoding="utf-8")
+    handoff_rejected = _sft_v42_contract().check_phase18_handoff(non_object_phase18)
+    assert handoff_rejected["ok"] is False
+    assert any("must be an object" in failure["reason"] for failure in handoff_rejected["fatal_failures"])
+    bad_requirements_phase18 = _write_json(run_root / "bad_requirements_phase18.json", {"ok": True, "next_phase_allowed": True, "requirements_covered": 1})
+    bad_requirements_rejected = _sft_v42_contract().check_phase18_handoff(bad_requirements_phase18)
+    assert bad_requirements_rejected["ok"] is False
+    assert any("must be a list" in failure["reason"] for failure in bad_requirements_rejected["fatal_failures"])
+    malformed_failures_phase18 = _write_json(run_root / "malformed_failures_phase18.json", {"ok": False, "next_phase_allowed": False, "requirements_covered": ["DATA-01", "DATA-02"], "fatal_failures": "bad"})
+    malformed_failures_rejected = _sft_v42_contract().check_phase18_handoff(malformed_failures_phase18)
+    assert malformed_failures_rejected["ok"] is False
+    assert isinstance(malformed_failures_rejected["fatal_failures"], list)
+    assert any("fatal_failures must be a list" in failure["reason"] for failure in malformed_failures_rejected["fatal_failures"])
+    nonempty_failures_phase18 = _write_json(run_root / "nonempty_failures_phase18.json", {"ok": True, "next_phase_allowed": True, "requirements_covered": ["DATA-01", "DATA-02"], "fatal_failures": [{"gate": "x", "reason": "bad"}]})
+    nonempty_failures_rejected = _sft_v42_contract().check_phase18_handoff(nonempty_failures_phase18)
+    assert nonempty_failures_rejected["ok"] is False
+    assert nonempty_failures_rejected["fatal_failures"]
+
     accepted = validate_phase19_training_report(run_root, report_path=report)
 
     assert accepted["ok"] is True
@@ -451,6 +497,20 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     assert accepted["artifact_manifest"]["sha256"]["adapter_sha256"] == adapter_sha
     assert accepted["artifact_manifest"]["sha256"]["data_manifest_sha256"] == data_sha
     assert accepted["gates"]["phase18_artifact_hashes"]["ok"] is True
+
+    malformed_training_coverage = _read_json(report)
+    malformed_training_coverage["requirements_covered"] = {"TRAIN-01": False}
+    malformed_training_coverage_report = _write_json(run_root / "malformed_training_coverage.json", malformed_training_coverage)
+    malformed_training_coverage_rejected = validate_phase19_training_report(run_root, report_path=malformed_training_coverage_report)
+    assert malformed_training_coverage_rejected["ok"] is False
+    assert any(failure["gate"] == "requirements_covered" and "must be a list" in failure["reason"] for failure in malformed_training_coverage_rejected["fatal_failures"])
+
+    nonempty_training_failures = _read_json(report)
+    nonempty_training_failures["fatal_failures"] = [{"gate": "x", "reason": "bad"}]
+    nonempty_training_failures_report = _write_json(run_root / "nonempty_training_failures.json", nonempty_training_failures)
+    nonempty_training_failures_rejected = validate_phase19_training_report(run_root, report_path=nonempty_training_failures_report)
+    assert nonempty_training_failures_rejected["ok"] is False
+    assert any(failure["gate"] == "fatal_failures" for failure in nonempty_training_failures_rejected["fatal_failures"])
 
     wrong_lora = _read_json(report)
     wrong_lora["lora_config"]["target_modules"] = ["q_proj"]
@@ -512,7 +572,49 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     bad_steps_report = _write_json(run_root / "bad_steps.json", bad_steps)
     bad_steps_rejected = validate_phase19_training_report(run_root, report_path=bad_steps_report)
     assert bad_steps_rejected["ok"] is False
-    assert any(failure["gate"] == "completed" and "must be an integer" in failure["reason"] for failure in bad_steps_rejected["fatal_failures"])
+    assert any(failure["gate"] == "completed" and "non-negative integer" in failure["reason"] for failure in bad_steps_rejected["fatal_failures"])
+
+    next_phase_false = _read_json(report)
+    next_phase_false["next_phase_allowed"] = False
+    next_phase_false_report = _write_json(run_root / "next_phase_false.json", next_phase_false)
+    next_phase_false_rejected = validate_phase19_training_report(run_root, report_path=next_phase_false_report)
+    assert next_phase_false_rejected["ok"] is False
+    assert any(failure["gate"] == "next_phase_allowed" for failure in next_phase_false_rejected["fatal_failures"])
+
+    malformed_count_manifest = _read_json(data_manifest)
+    malformed_count_manifest["split_counts"]["train"] = 1.9
+    malformed_count_manifest_path = _write_json(run_root / "malformed_count_manifest.json", malformed_count_manifest)
+    malformed_count_report = _read_json(report)
+    malformed_count_report["data_manifest_path"] = str(malformed_count_manifest_path)
+    malformed_count_report["data_manifest_sha256"] = __import__("hashlib").sha256(malformed_count_manifest_path.read_bytes()).hexdigest()
+    malformed_count_report_path = _write_json(run_root / "malformed_count_report.json", malformed_count_report)
+    malformed_count_rejected = validate_phase19_training_report(run_root, report_path=malformed_count_report_path)
+    assert malformed_count_rejected["ok"] is False
+    assert any(failure["gate"] == "split_counts" and "non-negative integer" in failure["reason"] for failure in malformed_count_rejected["fatal_failures"])
+
+    low_count_manifest = _read_json(data_manifest)
+    low_count_manifest["split_counts"]["train"] = 1
+    low_count_manifest_path = _write_json(run_root / "low_count_manifest.json", low_count_manifest)
+    low_count_report = _read_json(report)
+    low_count_report["data_manifest_path"] = str(low_count_manifest_path)
+    low_count_report["data_manifest_sha256"] = __import__("hashlib").sha256(low_count_manifest_path.read_bytes()).hexdigest()
+    low_count_report["trainer_state"] = {"global_step": 1, "max_steps": 1}
+    low_count_report_path = _write_json(run_root / "low_count_report.json", low_count_report)
+    low_count_rejected = validate_phase19_training_report(run_root, report_path=low_count_report_path)
+    assert low_count_rejected["ok"] is False
+    assert any(failure["gate"] == "split_counts" for failure in low_count_rejected["fatal_failures"])
+    assert any(failure["gate"] == "completed" for failure in low_count_rejected["fatal_failures"])
+
+    unicode_count_manifest = _read_json(data_manifest)
+    unicode_count_manifest["split_counts"]["train"] = "１２"
+    unicode_count_manifest_path = _write_json(run_root / "unicode_count_manifest.json", unicode_count_manifest)
+    unicode_count_report = _read_json(report)
+    unicode_count_report["data_manifest_path"] = str(unicode_count_manifest_path)
+    unicode_count_report["data_manifest_sha256"] = __import__("hashlib").sha256(unicode_count_manifest_path.read_bytes()).hexdigest()
+    unicode_count_report_path = _write_json(run_root / "unicode_count_report.json", unicode_count_report)
+    unicode_count_rejected = validate_phase19_training_report(run_root, report_path=unicode_count_report_path)
+    assert unicode_count_rejected["ok"] is False
+    assert any(failure["gate"] == "split_counts" and "non-negative integer" in failure["reason"] for failure in unicode_count_rejected["fatal_failures"])
 
     smoke = _read_json(report)
     smoke["mode"] = "smoke"
@@ -771,6 +873,21 @@ def test_v42_export_plan_and_report_require_merged_hf_and_gguf_hashes(tmp_path: 
     assert rejected_train02["ok"] is False
     assert any(failure["gate"] == "requirements_covered" for failure in rejected_train02["fatal_failures"])
 
+    malformed_export_coverage = _read_json(run_root / "phase19_export_report.json")
+    malformed_export_coverage["requirements_covered"] = {"TRAIN-02": False}
+    malformed_export_coverage_path = _write_json(run_root / "malformed_export_coverage.json", malformed_export_coverage)
+    rejected_export_coverage = validate_phase19_export_report(run_root=run_root, report_path=malformed_export_coverage_path)
+    assert rejected_export_coverage["ok"] is False
+    assert rejected_export_coverage["requirements_covered"] == []
+    assert any(failure["gate"] == "requirements_covered" and "must be a list" in failure["reason"] for failure in rejected_export_coverage["fatal_failures"])
+
+    export_not_allowed = _read_json(run_root / "phase19_export_report.json")
+    export_not_allowed["next_phase_allowed"] = False
+    export_not_allowed_path = _write_json(run_root / "export_not_allowed.json", export_not_allowed)
+    rejected_export_not_allowed = validate_phase19_export_report(run_root=run_root, report_path=export_not_allowed_path)
+    assert rejected_export_not_allowed["ok"] is False
+    assert any(failure["gate"] == "next_phase_allowed" for failure in rejected_export_not_allowed["fatal_failures"])
+
     outside_export_report = _write_json(tmp_path / "outside_phase19_export_report.json", _read_json(run_root / "phase19_export_report.json"))
     rejected_outside_export = validate_phase19_export_report(run_root=run_root, report_path=outside_export_report)
     assert rejected_outside_export["ok"] is False
@@ -782,6 +899,48 @@ def test_v42_export_plan_and_report_require_merged_hf_and_gguf_hashes(tmp_path: 
     rejected_hash = validate_phase19_export_report(run_root=run_root, report_path=missing_hash_path)
     assert rejected_hash["ok"] is False
     assert any(failure["gate"] == "artifact_hash" for failure in rejected_hash["fatal_failures"])
+
+    wrong_tool = _read_json(run_root / "phase19_export_report.json")
+    wrong_tool["llama_cpp"]["quantize"] = "/bin/true"
+    wrong_tool_path = _write_json(run_root / "wrong_tool.json", wrong_tool)
+    rejected_tool = validate_phase19_export_report(run_root=run_root, report_path=wrong_tool_path)
+    assert rejected_tool["ok"] is False
+    assert any(failure["gate"] == "llama-quantize" for failure in rejected_tool["fatal_failures"])
+
+    wrong_command = _read_json(run_root / "phase19_export_report.json")
+    wrong_command["commands"]["quantize_q4_K_M"][0] = "/bin/true"
+    wrong_command_path = _write_json(run_root / "wrong_command.json", wrong_command)
+    rejected_command = validate_phase19_export_report(run_root=run_root, report_path=wrong_command_path)
+    assert rejected_command["ok"] is False
+    assert any(failure["gate"] == "commands" and "reported quantize tool" in failure["reason"] for failure in rejected_command["fatal_failures"])
+
+    wrong_merge_command = _read_json(run_root / "phase19_export_report.json")
+    wrong_merge_command["commands"]["merge_hf"][wrong_merge_command["commands"]["merge_hf"].index("--run-root") + 1] = str(tmp_path / "runs" / "v4.2-4B-other")
+    wrong_merge_command_path = _write_json(run_root / "wrong_merge_command.json", wrong_merge_command)
+    rejected_merge_command = validate_phase19_export_report(run_root=run_root, report_path=wrong_merge_command_path)
+    assert rejected_merge_command["ok"] is False
+    assert any(failure["gate"] == "commands" and "reported run_root" in failure["reason"] for failure in rejected_merge_command["fatal_failures"])
+
+    wrong_outtype_command = _read_json(run_root / "phase19_export_report.json")
+    wrong_outtype_command["commands"]["convert_fp16"][wrong_outtype_command["commands"]["convert_fp16"].index("--outtype") + 1] = "q8_0"
+    wrong_outtype_command_path = _write_json(run_root / "wrong_outtype_command.json", wrong_outtype_command)
+    rejected_outtype_command = validate_phase19_export_report(run_root=run_root, report_path=wrong_outtype_command_path)
+    assert rejected_outtype_command["ok"] is False
+    assert any(failure["gate"] == "commands" and "f16 outtype" in failure["reason"] for failure in rejected_outtype_command["fatal_failures"])
+
+    malformed_export_failures = _read_json(run_root / "phase19_export_report.json")
+    malformed_export_failures["fatal_failures"] = "bad"
+    malformed_export_failures_path = _write_json(run_root / "malformed_export_failures.json", malformed_export_failures)
+    rejected_export_failures = validate_phase19_export_report(run_root=run_root, report_path=malformed_export_failures_path)
+    assert rejected_export_failures["ok"] is False
+    assert any(failure["gate"] == "fatal_failures" for failure in rejected_export_failures["fatal_failures"])
+
+    nonempty_export_failures = _read_json(run_root / "phase19_export_report.json")
+    nonempty_export_failures["fatal_failures"] = [{"gate": "x", "reason": "bad"}]
+    nonempty_export_failures_path = _write_json(run_root / "nonempty_export_failures.json", nonempty_export_failures)
+    rejected_nonempty_export_failures = validate_phase19_export_report(run_root=run_root, report_path=nonempty_export_failures_path)
+    assert rejected_nonempty_export_failures["ok"] is False
+    assert any(failure["gate"] == "fatal_failures" for failure in rejected_nonempty_export_failures["fatal_failures"])
 
     original_tokenizer = (merged / "tokenizer.json").read_bytes()
     (merged / "tokenizer.json").write_bytes(b"")

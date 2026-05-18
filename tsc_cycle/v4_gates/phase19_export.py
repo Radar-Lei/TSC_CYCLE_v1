@@ -96,7 +96,8 @@ def _require_output_path(path: Path, *, run_root: Path) -> None:
 
 def _tool(path: Path, name: str, failures: list[dict[str, str]], *, required: bool = True) -> str:
     path = Path(path)
-    ok = path.is_file() and path.stat().st_size > 0 and (name.endswith(".py") or os.access(path, os.X_OK))
+    name_ok = path.name == name
+    ok = name_ok and path.is_file() and path.stat().st_size > 0 and (name.endswith(".py") or os.access(path, os.X_OK))
     if required and not ok:
         failures.append({"gate": name, "reason": f"missing or non-executable llama.cpp tool: {path}"})
     return str(path)
@@ -292,16 +293,20 @@ def _hf_materializer_manifest(root: Path) -> tuple[list[dict[str, Any]], list[di
 def _records_match(reported_records: Any, actual_records: list[dict[str, Any]], gate: str, label: str) -> list[dict[str, str]]:
     failures: list[dict[str, str]] = []
     reported = reported_records if isinstance(reported_records, list) else []
-    actual_by_path = {record.get("path"): record for record in actual_records}
-    reported_paths: set[Any] = set()
+    actual_by_path = {record.get("path"): record for record in actual_records if isinstance(record.get("path"), str)}
+    reported_paths: set[str] = set()
     for item in reported:
         if not isinstance(item, dict):
             failures.append({"gate": gate, "reason": f"malformed {label} record"})
             continue
-        reported_paths.add(item.get("path"))
-        actual = actual_by_path.get(item.get("path"))
+        item_path = item.get("path")
+        if not isinstance(item_path, str) or not item_path:
+            failures.append({"gate": gate, "reason": f"malformed {label} path"})
+            continue
+        reported_paths.add(item_path)
+        actual = actual_by_path.get(item_path)
         if actual is None or item.get("sha256") != actual.get("sha256"):
-            failures.append({"gate": gate, "reason": f"sha256 mismatch for {label}: {item.get('path')}"})
+            failures.append({"gate": gate, "reason": f"sha256 mismatch for {label}: {item_path}"})
     if reported_paths != set(actual_by_path):
         failures.append({"gate": gate, "reason": f"{label} report does not match on-disk artifacts"})
     return failures
@@ -378,14 +383,29 @@ def validate_phase19_export_report(run_root: Path, report_path: Path | None = No
         return result
     report = _read_json(path)
     failures = list(report.get("fatal_failures", [])) if isinstance(report.get("fatal_failures"), list) else []
+    if "fatal_failures" in report and not isinstance(report.get("fatal_failures"), list):
+        failures.append({"gate": "fatal_failures", "reason": "fatal_failures must be a list"})
+    elif failures:
+        failures.append({"gate": "fatal_failures", "reason": "export report contains fatal_failures"})
+
+    report_green_ok = report.get("ok") is True and report.get("next_phase_allowed") is True
+    gates["report_green"] = {"ok": report_green_ok, "data": {"ok": report.get("ok"), "next_phase_allowed": report.get("next_phase_allowed")}}
+    if not report_green_ok:
+        failures.append({"gate": "next_phase_allowed", "reason": "export report ok and next_phase_allowed must both be true"})
 
     report_run_root_ok = str(report.get("run_root")) == str(root)
     gates["run_root"] = {"ok": report_run_root_ok, "data": {"run_root": report.get("run_root")}}
     if not report_run_root_ok:
         failures.append({"gate": "run_root", "reason": "report run_root does not match requested v4.2 root"})
 
-    requirements_ok = "TRAIN-02" in report.get("requirements_covered", [])
-    gates["requirements_covered"] = {"ok": requirements_ok, "data": {"covered": report.get("requirements_covered", [])}}
+    covered_raw = report.get("requirements_covered", [])
+    if not isinstance(covered_raw, list):
+        failures.append({"gate": "requirements_covered", "reason": "requirements_covered must be a list"})
+        covered = set()
+    else:
+        covered = {str(item) for item in covered_raw}
+    requirements_ok = "TRAIN-02" in covered
+    gates["requirements_covered"] = {"ok": requirements_ok, "data": {"covered": sorted(covered)}}
     if not requirements_ok:
         failures.append({"gate": "requirements_covered", "reason": "TRAIN-02 coverage missing"})
 
@@ -419,13 +439,62 @@ def validate_phase19_export_report(run_root: Path, report_path: Path | None = No
         except ValueError as exc:
             failures.append({"gate": "paths", "reason": str(exc)})
 
-    commands_text = json.dumps(report.get("commands", {}), ensure_ascii=False).lower()
-    for marker in ("convert_hf_to_gguf.py", "llama-quantize", "q4_k_m"):
-        if marker not in commands_text:
-            failures.append({"gate": "commands", "reason": f"missing command evidence marker: {marker}"})
+    commands = report.get("commands") if isinstance(report.get("commands"), dict) else {}
+    commands_text = json.dumps(commands, ensure_ascii=False).lower()
     for forbidden in ("pip install", "uv pip install", "vllm", "flash-attn", "unsloth", "axolotl", "git worktree", "runs/20260507t032419z", "runs/v4.0-4b-"):
         if forbidden in commands_text:
             failures.append({"gate": "commands", "reason": f"forbidden command evidence marker: {forbidden}"})
+
+    llama_cpp = report.get("llama_cpp") if isinstance(report.get("llama_cpp"), dict) else {}
+    llama_root_value = llama_cpp.get("root")
+    llama_root = Path(llama_root_value) if isinstance(llama_root_value, str) and llama_root_value else None
+    if llama_root is None or not llama_root.is_dir():
+        failures.append({"gate": "llama_cpp", "reason": "missing llama.cpp root evidence"})
+    tool_paths: dict[str, Path] = {}
+    for key, tool_name in (("convert", "convert_hf_to_gguf.py"), ("quantize", "llama-quantize")):
+        tool_path = llama_cpp.get(key)
+        if not isinstance(tool_path, str) or not tool_path:
+            failures.append({"gate": tool_name, "reason": f"missing llama.cpp tool evidence: {key}"})
+            continue
+        candidate = Path(tool_path)
+        tool_paths[key] = candidate
+        if llama_root is not None:
+            try:
+                if candidate.resolve() != (llama_root / tool_name).resolve():
+                    failures.append({"gate": tool_name, "reason": f"llama.cpp tool path must be under reported root: {candidate}"})
+            except OSError as exc:
+                failures.append({"gate": tool_name, "reason": f"invalid llama.cpp tool path: {exc}"})
+        _tool(candidate, tool_name, failures)
+
+    merge_cmd = commands.get("merge_hf") if isinstance(commands.get("merge_hf"), list) else []
+    convert_cmd = commands.get("convert_fp16") if isinstance(commands.get("convert_fp16"), list) else []
+    quantize_cmd = commands.get("quantize_q4_K_M") if isinstance(commands.get("quantize_q4_K_M"), list) else []
+    merged_cmd_path = Path(str(convert_cmd[2])) if len(convert_cmd) > 2 else None
+    fp16_out_idx = convert_cmd.index("--outfile") + 1 if "--outfile" in convert_cmd and convert_cmd.index("--outfile") + 1 < len(convert_cmd) else None
+    fp16_cmd_path = Path(str(convert_cmd[fp16_out_idx])) if fp16_out_idx is not None else None
+    export_phase_idx = merge_cmd.index("--export-phase") + 1 if "--export-phase" in merge_cmd and merge_cmd.index("--export-phase") + 1 < len(merge_cmd) else None
+    phase19_report_idx = merge_cmd.index("--phase19-report") + 1 if "--phase19-report" in merge_cmd and merge_cmd.index("--phase19-report") + 1 < len(merge_cmd) else None
+    run_root_idx = merge_cmd.index("--run-root") + 1 if "--run-root" in merge_cmd and merge_cmd.index("--run-root") + 1 < len(merge_cmd) else None
+    merged_dir_idx = merge_cmd.index("--merged-dir") + 1 if "--merged-dir" in merge_cmd and merge_cmd.index("--merged-dir") + 1 < len(merge_cmd) else None
+    outtype_idx = convert_cmd.index("--outtype") + 1 if "--outtype" in convert_cmd and convert_cmd.index("--outtype") + 1 < len(convert_cmd) else None
+    command_checks = [
+        ("-m" in merge_cmd and "tsc_cycle.student.export_gguf" in merge_cmd, "merge_hf must invoke tsc_cycle.student.export_gguf"),
+        (export_phase_idx is not None and str(merge_cmd[export_phase_idx]) == "phase19", "merge_hf must use export phase19"),
+        (phase19_report_idx is not None and _same_path(merge_cmd[phase19_report_idx], phase19_report), "merge_hf must use reported phase19 report"),
+        (run_root_idx is not None and _same_path(merge_cmd[run_root_idx], root), "merge_hf must use reported run_root"),
+        (merged_dir_idx is not None and "merged_hf" in validated_paths and _same_path(merge_cmd[merged_dir_idx], validated_paths["merged_hf"]), "merge_hf must write reported merged_hf path"),
+        (len(convert_cmd) > 1 and "convert" in tool_paths and _same_path(convert_cmd[1], tool_paths["convert"]), "convert_fp16 must use reported convert tool"),
+        (merged_cmd_path is not None and "merged_hf" in validated_paths and _same_path(merged_cmd_path, validated_paths["merged_hf"]), "convert_fp16 must use reported merged_hf path"),
+        (fp16_cmd_path is not None and "gguf_fp16" in validated_paths and _same_path(fp16_cmd_path, validated_paths["gguf_fp16"]), "convert_fp16 must write reported fp16 path"),
+        (outtype_idx is not None and str(convert_cmd[outtype_idx]) == "f16", "convert_fp16 must use f16 outtype"),
+        (len(quantize_cmd) > 0 and "quantize" in tool_paths and _same_path(quantize_cmd[0], tool_paths["quantize"]), "quantize_q4_K_M must use reported quantize tool"),
+        (len(quantize_cmd) > 1 and "gguf_fp16" in validated_paths and _same_path(quantize_cmd[1], validated_paths["gguf_fp16"]), "quantize_q4_K_M must read reported fp16 path"),
+        (len(quantize_cmd) > 2 and "gguf_q4_K_M" in validated_paths and _same_path(quantize_cmd[2], validated_paths["gguf_q4_K_M"]), "quantize_q4_K_M must write reported q4_K_M path"),
+        (len(quantize_cmd) > 3 and str(quantize_cmd[3]) == "Q4_K_M", "quantize_q4_K_M must use Q4_K_M quantization"),
+    ]
+    for ok, reason in command_checks:
+        if not ok:
+            failures.append({"gate": "commands", "reason": reason})
 
     artifacts = report.get("artifacts") if isinstance(report.get("artifacts"), dict) else {}
     merged_path = validated_paths.get("merged_hf")
@@ -474,7 +543,7 @@ def validate_phase19_export_report(run_root: Path, report_path: Path | None = No
     result.update({
         "ok": not failures,
         "next_phase_allowed": not failures,
-        "requirements_covered": list(REQUIREMENTS_COVERED) if not failures else report.get("requirements_covered", []),
+        "requirements_covered": list(REQUIREMENTS_COVERED) if not failures else [req for req in REQUIREMENTS_COVERED if req in covered],
         "gates": gates,
         "fatal_failures": failures,
         "report_path": str(path),
