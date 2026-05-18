@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v4.2
 milestone_name: 饱和度-绿灯策略校准 / 教师标签重建
-status: verifying
-stopped_at: Completed 17-02-PLAN.md
-last_updated: "2026-05-18T07:36:28.161Z"
+status: ready_to_plan
+stopped_at: Phase 17 complete (3/3) — ready to discuss Phase 18
+last_updated: 2026-05-18T07:59:23.017Z
 last_activity: 2026-05-18
 progress:
   total_phases: 4
@@ -21,13 +21,13 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-05-18)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近正确的饱和度-绿灯策略，不是过拟合旧教师标签或 reality.log。
-**Current focus:** Phase 17 — audit-saturation-policy-gate
+**Current focus:** Phase 18 — calibrated dataset rebuild
 
 ## Current Position
 
-Phase: 17 (audit-saturation-policy-gate) — COMPLETE
-Plan: 2 of 2
-Status: Phase complete — ready for verification
+Phase: 18
+Plan: Not started
+Status: Ready to plan
 Last activity: 2026-05-18
 
 Progress: [██████████] 100%
