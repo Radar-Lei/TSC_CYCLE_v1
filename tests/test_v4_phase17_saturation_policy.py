@@ -714,7 +714,6 @@ def test_prompt_protocol_guard_fails_on_preimport_prompt_drift(monkeypatch: pyte
         report = drifted_mod.evaluate_prompt_protocol_guard()
     finally:
         sys.modules.pop("tsc_cycle.v4_gates.phase17_audit", None)
-        importlib.import_module("tsc_cycle.v4_gates.phase17_audit")
 
     assert drifted_mod.EXPECTED_V4_PROMPT == original.EXPECTED_V4_PROMPT
     assert report["ok"] is False
