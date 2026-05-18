@@ -193,20 +193,47 @@ def _finite_rate_metric(audit: dict[str, Any], band: str) -> tuple[dict[str, Any
     return {"count": count, "denominator": denominator, "rate": rate}, None
 
 
-def _missing_output_rate_metric(rows_or_audit: Any, audit: dict[str, Any]) -> tuple[dict[str, Any] | None, str | None]:
+def _excluded_counts(rows_or_audit: Any, audit: dict[str, Any]) -> dict[str, Any] | None:
     evidence = rows_or_audit if isinstance(rows_or_audit, dict) else {}
     excluded_counts = evidence.get("excluded_counts") if isinstance(evidence.get("excluded_counts"), dict) else audit.get("excluded_counts")
     if excluded_counts is None:
-        excluded_counts = {}
+        return {}
     if not isinstance(excluded_counts, dict):
+        return None
+    return excluded_counts
+
+
+def _metric_denominator(rows_or_audit: Any, audit: dict[str, Any]) -> int:
+    evidence = rows_or_audit if isinstance(rows_or_audit, dict) else {}
+    return int(evidence.get("input_count", audit.get("total_rows", 0)))
+
+
+def _missing_output_rate_metric(rows_or_audit: Any, audit: dict[str, Any]) -> tuple[dict[str, Any] | None, str | None]:
+    excluded_counts = _excluded_counts(rows_or_audit, audit)
+    if excluded_counts is None:
         return None, "excluded_counts must be an object"
     try:
-        denominator = int(evidence.get("input_count", audit.get("total_rows", 0)))
+        denominator = _metric_denominator(rows_or_audit, audit)
         count = int(excluded_counts.get("missing_solution_or_input", 0))
     except (TypeError, ValueError) as exc:
         return None, f"non-numeric missing_output_rate metric: {exc}"
     if denominator < 0 or count < 0 or count > denominator:
         return None, "invalid missing_output_rate denominator/count"
+    rate = count / denominator if denominator else 0.0
+    return {"count": count, "denominator": denominator, "rate": rate}, None
+
+
+def _malformed_row_rate_metric(rows_or_audit: Any, audit: dict[str, Any]) -> tuple[dict[str, Any] | None, str | None]:
+    excluded_counts = _excluded_counts(rows_or_audit, audit)
+    if excluded_counts is None:
+        return None, "excluded_counts must be an object"
+    try:
+        denominator = _metric_denominator(rows_or_audit, audit)
+        count = sum(int(value) for key, value in excluded_counts.items() if key != "missing_solution_or_input")
+    except (AttributeError, TypeError, ValueError) as exc:
+        return None, f"non-numeric malformed_row_rate metric: {exc}"
+    if denominator < 0 or count < 0 or count > denominator:
+        return None, "invalid malformed_row_rate denominator/count"
     rate = count / denominator if denominator else 0.0
     return {"count": count, "denominator": denominator, "rate": rate}, None
 
@@ -241,20 +268,24 @@ def evaluate_saturation_policy_gate(
                     "reason": f"{metric['rate']} > {threshold}",
                 })
         gates[f"{source}_{BAND_ALLOWED_MAX}"] = {"ok": True, "reason": "no max-green failure threshold; max-green is allowed for saturated rows"}
-        metric, reason = _missing_output_rate_metric(rows_or_audit, audit)
-        gate_name = f"{source}_missing_output_rate"
-        threshold = active_thresholds.get("missing_output_rate")
-        if metric is None:
-            gates[gate_name] = {"ok": False, "reason": reason}
-            fatal_failures.append({"gate": f"{gate_name}_denominator", "reason": reason or "invalid missing_output_rate denominator"})
-        else:
-            ok_missing = threshold is not None and metric["rate"] <= threshold
-            gates[gate_name] = {"ok": ok_missing, "threshold": threshold, **metric}
-            if not ok_missing:
-                fatal_failures.append({
-                    "gate": f"{source}_threshold_excess_missing_output_rate",
-                    "reason": f"{metric['rate']} > {threshold}",
-                })
+        for rate_key, metric_func in (
+            ("malformed_row_rate", _malformed_row_rate_metric),
+            ("missing_output_rate", _missing_output_rate_metric),
+        ):
+            metric, reason = metric_func(rows_or_audit, audit)
+            gate_name = f"{source}_{rate_key}"
+            threshold = active_thresholds.get(rate_key)
+            if metric is None:
+                gates[gate_name] = {"ok": False, "reason": reason}
+                fatal_failures.append({"gate": f"{gate_name}_denominator", "reason": reason or f"invalid {rate_key} denominator"})
+            else:
+                ok_rate = threshold is not None and metric["rate"] <= threshold
+                gates[gate_name] = {"ok": ok_rate, "threshold": threshold, **metric}
+                if not ok_rate:
+                    fatal_failures.append({
+                        "gate": f"{source}_threshold_excess_{rate_key}",
+                        "reason": f"{metric['rate']} > {threshold}",
+                    })
 
     ok = not fatal_failures
     return {
