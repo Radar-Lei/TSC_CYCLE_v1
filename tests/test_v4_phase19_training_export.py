@@ -466,3 +466,51 @@ def test_v42_export_plan_and_report_require_merged_hf_and_gguf_hashes(tmp_path: 
     bad_plan = build_export_plan(run_root=run_root, phase19_report=bad_training_path, llama_cpp_dir=llama_cpp)
     assert bad_plan["ok"] is False
     assert any(failure["gate"] == "phase19_handoff" for failure in bad_plan["fatal_failures"])
+
+
+def test_v42_wrappers_forbid_dependency_installs_unsupported_runtimes_and_frozen_roots(tmp_path: Path) -> None:
+    from tsc_cycle.student.export_gguf import build_parser  # noqa: PLC0415
+    from tsc_cycle.v4_gates.phase19_export import build_export_plan, phase19_wrapper_commands  # noqa: PLC0415
+
+    run_root = tmp_path / "runs" / "v4.2-4B-20260518T140000Z"
+    training_report = _make_phase19_training_handoff(run_root)
+    llama_cpp = _make_fake_llama_cpp(tmp_path / "llama.cpp")
+    parser = build_parser()
+
+    phase10_defaults = parser.parse_args([])
+    assert phase10_defaults.phase9_report.endswith("phase9_sft_report.json")
+    assert "v4.0-4B-20260509T184844Z" in phase10_defaults.run_root
+
+    phase19_args = parser.parse_args(["--export-phase", "phase19", "--run-root", str(run_root), "--phase19-report", str(training_report), "--llama-cpp", str(llama_cpp)])
+    assert phase19_args.export_phase == "phase19"
+    assert Path(phase19_args.phase19_report) == training_report
+    assert Path(phase19_args.merged_dir) == run_root / "merged_hf"
+    assert Path(phase19_args.fp16_gguf) == run_root / "gguf" / "model.fp16.gguf"
+    assert Path(phase19_args.q4_gguf) == run_root / "gguf" / "model.q4_K_M.gguf"
+    assert Path(phase19_args.report) == run_root / "phase19_export_report.json"
+
+    wrapper_path = PROJECT_ROOT / "scripts/run_v4_phase19_export.sh"
+    wrapper = wrapper_path.read_text(encoding="utf-8")
+    assert "scripts/dgx_spark/run_safe.sh" in wrapper
+    assert "100G --" in wrapper
+    assert "python" in wrapper and "-m tsc_cycle.student.export_gguf" in wrapper
+    assert "--export-phase phase19" in wrapper
+    assert "--phase19-report" in wrapper
+    assert "phase19_sft_report.json" in wrapper
+    assert "phase19_export_report.json" in wrapper
+    assert "runs/v4.2-4B-" in wrapper
+
+    plan = build_export_plan(run_root=run_root, phase19_report=training_report, llama_cpp_dir=llama_cpp)
+    commands_text = json.dumps({"wrapper": wrapper, "commands": plan["commands"], "phase19_wrapper_commands": phase19_wrapper_commands(run_root, llama_cpp)}, ensure_ascii=False).lower()
+    for forbidden in ["pip install", "uv pip install", "vllm", "flash-attn", "flash_attn", "unsloth", "axolotl", "git worktree", "runs/20260507T032419Z", "runs/v4.0-4B-"]:
+        assert forbidden.lower() not in commands_text
+    assert "scripts/dgx_spark/run_safe.sh" in commands_text
+    assert "convert_hf_to_gguf.py" in commands_text
+    assert "llama-quantize" in commands_text
+    assert str(run_root).lower() in commands_text
+
+    for broad in [tmp_path, tmp_path / "runs", tmp_path / "data", tmp_path / "artifacts"]:
+        with pytest.raises(ValueError):
+            build_export_plan(run_root=broad, phase19_report=training_report, llama_cpp_dir=llama_cpp)
+    with pytest.raises(ValueError):
+        build_export_plan(run_root=run_root, phase19_report=training_report, llama_cpp_dir=llama_cpp, q4_gguf=tmp_path / "outside.gguf")
