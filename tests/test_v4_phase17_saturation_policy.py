@@ -290,6 +290,20 @@ def test_representative_failures_include_dataset_and_replay_fields() -> None:
     assert all(example["violation_category"] == mod.VIOLATION_UNSATURATED_MAX_GREEN for example in examples)
 
 
+def test_audit_rejects_inconsistent_derived_fields() -> None:
+    mod = _policy_contract()
+    forged = _phase_row(sat=0.1, final_green=50, max_green=50)
+
+    for field, bad_value in {
+        "saturation_band": mod.BAND_ALLOWED_MAX,
+        "trivial_range": True,
+        "violation_category": mod.VIOLATION_NONE,
+    }.items():
+        row = dict(forged, **{field: bad_value})
+        with pytest.raises(ValueError, match=f"inconsistent derived audit row field {field}"):
+            mod.compute_saturation_audit([row])
+
+
 def test_audit_fails_closed_on_missing_nonfinite_denominator_data() -> None:
     mod = _policy_contract()
     with pytest.raises(ValueError, match="finite"):
@@ -304,7 +318,6 @@ def test_audit_fails_closed_on_missing_nonfinite_denominator_data() -> None:
                 "final_green": 50,
                 "split": "train",
                 "source": "phase8-source",
-                "trivial_range": False,
             }
         ])
 

@@ -330,9 +330,18 @@ def _normalise_audit_row(row: dict[str, Any]) -> dict[str, Any]:
     out["min_green"] = _finite_int(out["min_green"], field="min_green")
     out["max_green"] = _finite_int(out["max_green"], field="max_green")
     out["final_green"] = _finite_int(out["final_green"], field="final_green")
-    out["saturation_band"] = str(out.get("saturation_band") or classify_saturation_band(out["pred_saturation"]))
-    out["trivial_range"] = bool(out.get("trivial_range", is_trivial_phase_range(out)))
-    out["violation_category"] = str(out.get("violation_category") or classify_violation(out))
+
+    computed_band = classify_saturation_band(out["pred_saturation"])
+    computed_trivial = is_trivial_phase_range(out)
+    computed_violation = classify_violation({**out, "saturation_band": computed_band})
+    for field, computed in {
+        "saturation_band": computed_band,
+        "trivial_range": computed_trivial,
+        "violation_category": computed_violation,
+    }.items():
+        if field in row and row[field] != computed:
+            raise ValueError(f"inconsistent derived audit row field {field}")
+        out[field] = computed
     return out
 
 
