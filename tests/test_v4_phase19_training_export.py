@@ -481,6 +481,24 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
     assert any(failure["gate"] == "phase18_artifact_hashes" for failure in token_report_rejected["fatal_failures"])
     token_report.write_text(original_token_report, encoding="utf-8")
 
+    import pyarrow as pa  # noqa: PLC0415
+
+    train_arrow = PROJECT_ROOT / "data/v4_2/phase18/tokenized/train.arrow"
+    original_arrow = train_arrow.read_bytes()
+    with pa.memory_map(str(train_arrow), "r") as source:
+        table = pa.ipc.open_file(source).read_all()
+    rows = table.to_pylist()
+    rows[0]["input_ids"] = list(rows[0]["input_ids"])
+    rows[0]["input_ids"][0] = 999999
+    tampered = pa.Table.from_pylist(rows, schema=table.schema)
+    with pa.OSFile(str(train_arrow), "wb") as sink:
+        with pa.ipc.new_file(sink, tampered.schema) as writer:
+            writer.write_table(tampered)
+    tampered_arrow_rejected = validate_phase19_training_report(run_root, report_path=report)
+    assert tampered_arrow_rejected["ok"] is False
+    assert any(failure["gate"] == "tokenized_content" for failure in tampered_arrow_rejected["fatal_failures"])
+    train_arrow.write_bytes(original_arrow)
+
     wrapper = (PROJECT_ROOT / "scripts/run_v4_phase19_train.sh").read_text(encoding="utf-8")
     assert "<<'PY'" in wrapper
     assert 'Path("$RUN_ROOT")' not in wrapper
@@ -567,6 +585,10 @@ def test_v42_export_plan_and_report_require_merged_hf_and_gguf_hashes(tmp_path: 
     merged = run_root / "merged_hf"
     merged.mkdir(parents=True)
     (merged / "model.safetensors").write_bytes(b"merged hf weights")
+    (merged / "tokenizer_config.json").write_text('{"tokenizer_class":"Qwen2Tokenizer"}\n', encoding="utf-8")
+    config_only_report = write_export_report(run_root=run_root, export_plan=plan, out=run_root / "config_only_export_report.json")
+    assert config_only_report["ok"] is False
+    assert any("tokenizer materializer" in failure["reason"] for failure in config_only_report["fatal_failures"])
     (merged / "tokenizer.json").write_text('{"tokenizer":"qwen"}\n', encoding="utf-8")
     (run_root / "gguf").mkdir(parents=True)
     (run_root / "gguf" / "model.fp16.gguf").write_bytes(b"fp16 gguf")
@@ -596,13 +618,13 @@ def test_v42_export_plan_and_report_require_merged_hf_and_gguf_hashes(tmp_path: 
     assert rejected_hash["ok"] is False
     assert any(failure["gate"] == "artifact_hash" for failure in rejected_hash["fatal_failures"])
 
-    (merged / "tokenizer_config.json").write_text('{"tokenizer_class":"Qwen2Tokenizer"}\n', encoding="utf-8")
+    (merged / "special_tokens_map.json").write_text('{"eos_token":"<|endoftext|>"}\n', encoding="utf-8")
     missing_tokenizer = _read_json(run_root / "phase19_export_report.json")
     missing_tokenizer_path = _write_json(run_root / "missing_tokenizer.json", missing_tokenizer)
     rejected_tokenizer = validate_phase19_export_report(run_root=run_root, report_path=missing_tokenizer_path)
     assert rejected_tokenizer["ok"] is False
     assert any("tokenizer evidence" in failure["reason"] for failure in rejected_tokenizer["fatal_failures"])
-    (merged / "tokenizer_config.json").unlink()
+    (merged / "special_tokens_map.json").unlink()
 
     forged = _read_json(run_root / "phase19_export_report.json")
     (run_root / "gguf" / "model.q4_K_M.gguf").unlink()

@@ -498,10 +498,16 @@ def _tokenized_content_failures(run_root: Path) -> list[dict[str, str]]:
     rows = _read_jsonl(_canonical_lineage_path(run_root, DEFAULT_CALIBRATED_JSONL))
     rows_by_id = {_record_sample_id(row): row for row in rows}
     split_indexes = _load_phase18_split_indexes(_canonical_lineage_path(run_root, DEFAULT_SPLIT_DIR))
+    tokenization_report = _read_json(PROJECT_ROOT / DEFAULT_TOKENIZATION_REPORT)
+    max_seq_length = int(tokenization_report.get("truncation", {}).get("max_seq_length", 2048)) if isinstance(tokenization_report.get("truncation"), dict) else 2048
     try:
         import pyarrow as pa
-    except ImportError as exc:
-        return [{"gate": "tokenized_content", "reason": f"pyarrow unavailable for tokenized content audit: {exc}"}]
+        from transformers import AutoTokenizer
+
+        tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=False, local_files_only=True)
+        native_ids = set(native_think_token_ids(tokenizer))
+    except Exception as exc:
+        return [{"gate": "tokenized_content", "reason": f"tokenized content audit unavailable: {exc}"}]
     for split, index_rows in split_indexes.items():
         path = _canonical_lineage_path(run_root, DEFAULT_TOKENIZED_DIR / f"{split}.arrow")
         if not path.is_file():
@@ -509,7 +515,7 @@ def _tokenized_content_failures(run_root: Path) -> list[dict[str, str]]:
             continue
         with pa.memory_map(str(path), "r") as source:
             table = pa.ipc.open_file(source).read_all()
-        actual = table.select(["sample_id", "prompt_hash", "assistant_hash"]).to_pylist()
+        actual = table.to_pylist()
         if len(actual) != len(index_rows):
             failures.append({"gate": "tokenized_content", "reason": f"{split} row count mismatch: {len(actual)} != {len(index_rows)}"})
             continue
@@ -519,14 +525,15 @@ def _tokenized_content_failures(run_root: Path) -> list[dict[str, str]]:
             if record is None:
                 failures.append({"gate": "tokenized_content", "reason": f"{split} sample missing from calibrated JSONL: {sample_id}"})
                 continue
-            try:
-                assistant = build_full_assistant(_record_reasoning(record), _record_solution(record))
-            except ValueError as exc:
-                failures.append({"gate": "tokenized_content", "reason": f"{split} malformed solution for {sample_id}: {exc}"})
+            expected = _tokenize_record(record, tokenizer, native_ids=native_ids, max_seq_length=max_seq_length, split=split)
+            if not expected.get("ok"):
+                failures.append({"gate": "tokenized_content", "reason": f"{split} canonical tokenization failed for {sample_id}: {expected.get('error')}"})
                 continue
-            prompt = build_user_prompt(_record_input(record))
-            if row.get("sample_id") != sample_id or row.get("prompt_hash") != sha256_hex(prompt) or row.get("assistant_hash") != sha256_hex(assistant):
-                failures.append({"gate": "tokenized_content", "reason": f"{split} tokenized row does not match canonical Phase18 record: {sample_id}"})
+            for key in ("sample_id", "input_ids", "attention_mask", "labels", "raw_length", "truncated", "prompt_hash", "assistant_hash"):
+                if row.get(key) != expected.get(key):
+                    failures.append({"gate": "tokenized_content", "reason": f"{split} tokenized {key} does not match canonical Phase18 record: {sample_id}"})
+                    break
+            if failures and failures[-1]["gate"] == "tokenized_content":
                 break
     return failures
 

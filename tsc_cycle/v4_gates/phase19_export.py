@@ -275,6 +275,9 @@ def write_export_report(run_root: Path, export_plan: dict[str, Any], out: Path) 
     fatal_failures.extend(q4_failures)
 
     tokenizer_files: list[dict[str, Any]] = []
+    tokenizer_materializer_ok = (merged_hf / "tokenizer.json").is_file() or (merged_hf / "tokenizer.model").is_file() or ((merged_hf / "vocab.json").is_file() and (merged_hf / "merges.txt").is_file())
+    if not tokenizer_materializer_ok:
+        fatal_failures.append({"gate": "merged_hf_tokenizer", "reason": f"no complete tokenizer materializer evidence found under {merged_hf}"})
     for name in ("tokenizer.json", "tokenizer.model", "tokenizer_config.json", "special_tokens_map.json", "vocab.json", "merges.txt"):
         path = merged_hf / name
         if path.exists():
@@ -381,6 +384,9 @@ def validate_phase19_export_report(run_root: Path, report_path: Path | None = No
 
     tokenizer_records = artifacts.get("merged_hf_tokenizer") if isinstance(artifacts.get("merged_hf_tokenizer"), list) else []
     actual_tokenizer_records: list[dict[str, Any]] = []
+    tokenizer_materializer_ok = (merged_path / "tokenizer.json").is_file() or (merged_path / "tokenizer.model").is_file() or ((merged_path / "vocab.json").is_file() and (merged_path / "merges.txt").is_file())
+    if not tokenizer_materializer_ok:
+        failures.append({"gate": "artifact_hash", "reason": "missing complete tokenizer materializer evidence"})
     for name in ("tokenizer.json", "tokenizer.model", "tokenizer_config.json", "special_tokens_map.json", "vocab.json", "merges.txt"):
         token_path = merged_path / name
         if token_path.exists():
