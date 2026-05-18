@@ -64,7 +64,7 @@ Full details: `milestones/v4.1-ROADMAP.md`
 Plans:
 **Wave 1**
 
-- [ ] 17-01-PLAN.md — Build canonical saturation classifier, per-phase projectors, banded audit statistics, and representative examples.
+- [x] 17-01-PLAN.md — Build canonical saturation classifier, per-phase projectors, banded audit statistics, and representative examples.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -127,7 +127,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20
 | 14. Canonical v4 Reproduction Package | v4.1 | 1/1 | Complete | 2026-05-12 |
 | 15. Safe Cleanup Execution | v4.1 | 2/2 | Complete | 2026-05-12 |
 | 16. Verification & Handoff | v4.1 | 1/1 | Complete | 2026-05-12 |
-| 17. Audit & Saturation Policy Gate | v4.2 | 0/2 | Not started | - |
+| 17. Audit & Saturation Policy Gate | v4.2 | 1/2 | In Progress | - |
 | 18. Calibrated Dataset Rebuild | v4.2 | 0/TBD | Not started | - |
 | 19. 4B QLoRA Retrain & Export | v4.2 | 0/TBD | Not started | - |
 | 20. Evaluation & Reality Replay Handoff | v4.2 | 0/TBD | Not started | - |

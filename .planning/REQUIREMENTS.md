@@ -7,12 +7,12 @@
 
 ### Audit
 
-- [ ] **AUDIT-01**: Maintainer can quantify how often existing v4 teacher labels assign `final == max_green` when `pred_saturation < 1.0`, broken down by saturation bands and split/source.
-- [ ] **AUDIT-02**: Maintainer can inspect representative failure examples from both `data/v4/phase8/labeled_merged.jsonl` and `reality_test.log`, including sample id, phase id, saturation, min/max green, final green, and violation category.
+- [x] **AUDIT-01**: Maintainer can quantify how often existing v4 teacher labels assign `final == max_green` when `pred_saturation < 1.0`, broken down by saturation bands and split/source.
+- [x] **AUDIT-02**: Maintainer can inspect representative failure examples from both `data/v4/phase8/labeled_merged.jsonl` and `reality_test.log`, including sample id, phase id, saturation, min/max green, final green, and violation category.
 
 ### Policy
 
-- [ ] **POLICY-01**: Maintainer can run a saturation policy gate that classifies each phase decision against the intended bands: `sat < 0.2` near min, `0.2 <= sat < 0.6` interpolated, `0.6 <= sat < 1.0` high but not max, and `sat >= 1.0` allowed max.
+- [x] **POLICY-01**: Maintainer can run a saturation policy gate that classifies each phase decision against the intended bands: `sat < 0.2` near min, `0.2 <= sat < 0.6` interpolated, `0.6 <= sat < 1.0` high but not max, and `sat >= 1.0` allowed max.
 - [ ] **POLICY-02**: Maintainer can fail data, model evaluation, or replay outputs when low-saturation max-green behavior exceeds configured thresholds.
 - [ ] **POLICY-03**: Final deployment prompts remain unchanged from the v4 inference protocol and do not explicitly include the saturation band rule; the rule is used only for offline audit, data construction, training validation, and evaluation gates.
 
@@ -60,9 +60,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUDIT-01 | Phase 17 | Pending |
-| AUDIT-02 | Phase 17 | Pending |
-| POLICY-01 | Phase 17 | Pending |
+| AUDIT-01 | Phase 17 | Complete in 17-01 |
+| AUDIT-02 | Phase 17 | Complete in 17-01 |
+| POLICY-01 | Phase 17 | Complete in 17-01 |
 | POLICY-02 | Phase 17 | Pending |
 | POLICY-03 | Phase 17 | Pending |
 | DATA-01 | Phase 18 | Pending |
@@ -80,4 +80,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-05-18*
-*Last updated: 2026-05-18 after v4.2 roadmap creation*
+*Last updated: 2026-05-18 after Phase 17 Plan 01 execution*
