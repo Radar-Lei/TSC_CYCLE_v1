@@ -497,9 +497,15 @@ def _tokenized_content_failures(run_root: Path) -> list[dict[str, str]]:
     failures: list[dict[str, str]] = []
     rows = _read_jsonl(_canonical_lineage_path(run_root, DEFAULT_CALIBRATED_JSONL))
     rows_by_id = {_record_sample_id(row): row for row in rows}
-    split_indexes = _load_phase18_split_indexes(_canonical_lineage_path(run_root, DEFAULT_SPLIT_DIR))
-    tokenization_report = _read_json(PROJECT_ROOT / DEFAULT_TOKENIZATION_REPORT)
-    max_seq_length = int(tokenization_report.get("truncation", {}).get("max_seq_length", 2048)) if isinstance(tokenization_report.get("truncation"), dict) else 2048
+    split_dir = _canonical_lineage_path(run_root, DEFAULT_SPLIT_DIR)
+    split_indexes = _load_phase18_split_indexes(split_dir)
+    split_manifest = _read_json(split_dir / "manifest.json")
+    split_ids = split_manifest.get("split_ids_sha256") if isinstance(split_manifest.get("split_ids_sha256"), dict) else {}
+    for split, rows in split_indexes.items():
+        actual_ids_hash = sha256_hex(canonical_json([str(row.get("sample_id") or "") for row in rows]))
+        if split_ids.get(split) != actual_ids_hash:
+            failures.append({"gate": "tokenized_content", "reason": f"{split} split index ids hash mismatch"})
+    max_seq_length = 2048
     try:
         import pyarrow as pa
         from transformers import AutoTokenizer

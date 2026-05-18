@@ -473,31 +473,35 @@ def test_phase19_training_report_gate_requires_v42_handoff_evidence(tmp_path: Pa
 
     token_report = PROJECT_ROOT / "artifacts/v4_2/phase19/tokenization_report.json"
     original_token_report = token_report.read_text(encoding="utf-8")
-    token_payload = json.loads(original_token_report)
-    token_payload["tokenized_sha256"]["train"] = "z" * 64
-    token_report.write_text(json.dumps(token_payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    token_report_rejected = validate_phase19_training_report(run_root, report_path=report)
-    assert token_report_rejected["ok"] is False
-    assert any(failure["gate"] == "phase18_artifact_hashes" for failure in token_report_rejected["fatal_failures"])
-    token_report.write_text(original_token_report, encoding="utf-8")
+    try:
+        token_payload = json.loads(original_token_report)
+        token_payload["tokenized_sha256"]["train"] = "z" * 64
+        token_report.write_text(json.dumps(token_payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        token_report_rejected = validate_phase19_training_report(run_root, report_path=report)
+        assert token_report_rejected["ok"] is False
+        assert any(failure["gate"] == "phase18_artifact_hashes" for failure in token_report_rejected["fatal_failures"])
+    finally:
+        token_report.write_text(original_token_report, encoding="utf-8")
 
     import pyarrow as pa  # noqa: PLC0415
 
     train_arrow = PROJECT_ROOT / "data/v4_2/phase18/tokenized/train.arrow"
     original_arrow = train_arrow.read_bytes()
-    with pa.memory_map(str(train_arrow), "r") as source:
-        table = pa.ipc.open_file(source).read_all()
-    rows = table.to_pylist()
-    rows[0]["input_ids"] = list(rows[0]["input_ids"])
-    rows[0]["input_ids"][0] = 999999
-    tampered = pa.Table.from_pylist(rows, schema=table.schema)
-    with pa.OSFile(str(train_arrow), "wb") as sink:
-        with pa.ipc.new_file(sink, tampered.schema) as writer:
-            writer.write_table(tampered)
-    tampered_arrow_rejected = validate_phase19_training_report(run_root, report_path=report)
-    assert tampered_arrow_rejected["ok"] is False
-    assert any(failure["gate"] == "tokenized_content" for failure in tampered_arrow_rejected["fatal_failures"])
-    train_arrow.write_bytes(original_arrow)
+    try:
+        with pa.memory_map(str(train_arrow), "r") as source:
+            table = pa.ipc.open_file(source).read_all()
+        rows = table.to_pylist()
+        rows[0]["input_ids"] = list(rows[0]["input_ids"])
+        rows[0]["input_ids"][0] = 999999
+        tampered = pa.Table.from_pylist(rows, schema=table.schema)
+        with pa.OSFile(str(train_arrow), "wb") as sink:
+            with pa.ipc.new_file(sink, tampered.schema) as writer:
+                writer.write_table(tampered)
+        tampered_arrow_rejected = validate_phase19_training_report(run_root, report_path=report)
+        assert tampered_arrow_rejected["ok"] is False
+        assert any(failure["gate"] == "tokenized_content" for failure in tampered_arrow_rejected["fatal_failures"])
+    finally:
+        train_arrow.write_bytes(original_arrow)
 
     wrapper = (PROJECT_ROOT / "scripts/run_v4_phase19_train.sh").read_text(encoding="utf-8")
     assert "<<'PY'" in wrapper
