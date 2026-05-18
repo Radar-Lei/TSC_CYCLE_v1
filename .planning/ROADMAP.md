@@ -120,7 +120,19 @@ Plans:
   3. Maintainer can compare v4.0 and v4.2 outputs and confirm low-saturation max-green failures are removed or reduced to the approved threshold without regressing hard-constraint validity.
   4. Maintainer can hand off the accepted v4.2 HF/GGUF artifacts, reports, and new replay log as the latest reproducible calibration result.
 
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+**Wave 1**
+
+- [ ] 20-01-PLAN.md — Build EVAL-01 v4.2 evaluation gate with teacher-MAE advisory-only and fail-closed parse/lint/protocol/saturation checks.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 20-02-PLAN.md — Generate and validate the v4.2 q4_K_M `reality.log` replay with parse/lint/protocol/saturation gates.
+
+**Wave 3** *(blocked on Wave 1 and Wave 2 completion)*
+
+- [ ] 20-03-PLAN.md — Compare v4.0 vs v4.2 saturation/hard-constraint outcomes and write the final hashed handoff manifest.
 
 ## Progress
 
@@ -142,4 +154,4 @@ Phases execute in numeric order: 17 → 18 → 19 → 20
 | 17. Audit & Saturation Policy Gate | v4.2 | 3/3 | Complete    | 2026-05-18 |
 | 18. Calibrated Dataset Rebuild | v4.2 | 1/1 | Complete | 2026-05-18 |
 | 19. 4B QLoRA Retrain & Export | v4.2 | 2/2 | Complete    | 2026-05-18 |
-| 20. Evaluation & Reality Replay Handoff | v4.2 | 0/TBD | Not started | - |
+| 20. Evaluation & Reality Replay Handoff | v4.2 | 0/3 | Not started | - |
