@@ -98,7 +98,15 @@ Plans:
   2. Maintainer can inspect the training report and confirm it references the calibrated v4.2 dataset, expected protocol, and reproducible run paths.
   3. Maintainer can export the calibrated adapter into merged HF, GGUF fp16, and GGUF q4_K_M artifacts with recorded paths, hashes, and export reports.
 
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+**Wave 1**
+
+- [ ] 19-01-PLAN.md — Add v4.2 training handoff/tokenization contracts, then run real QLoRA retraining with accepted TRAIN-01 report evidence.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 19-02-PLAN.md — Add v4.2 export plan/report contracts, then export real merged HF, GGUF fp16, and GGUF q4_K_M artifacts with accepted TRAIN-02 hashes.
 
 ### Phase 20: Evaluation & Reality Replay Handoff
 
@@ -133,5 +141,5 @@ Phases execute in numeric order: 17 → 18 → 19 → 20
 | 16. Verification & Handoff | v4.1 | 1/1 | Complete | 2026-05-12 |
 | 17. Audit & Saturation Policy Gate | v4.2 | 3/3 | Complete    | 2026-05-18 |
 | 18. Calibrated Dataset Rebuild | v4.2 | 1/1 | Complete | 2026-05-18 |
-| 19. 4B QLoRA Retrain & Export | v4.2 | 0/TBD | Not started | - |
+| 19. 4B QLoRA Retrain & Export | v4.2 | 0/2 | Planned | - |
 | 20. Evaluation & Reality Replay Handoff | v4.2 | 0/TBD | Not started | - |
