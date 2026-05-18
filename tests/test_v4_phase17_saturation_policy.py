@@ -370,3 +370,136 @@ def test_phase17_cli_exit_reflects_report_status(monkeypatch: pytest.MonkeyPatch
     report["next_phase_allowed"] = True
     report["fatal_failures"] = []
     assert mod.main(["--out", str(mod.ARTIFACT_ROOT / "cli-green.json")]) == 0
+
+
+def _phase_row(sample_id: str = "eval-a", sat: float = 0.1, final_green: int = 50, max_green: int = 50) -> dict:
+    mod = _policy_contract()
+    row = {
+        "origin_artifact": "eval:phase-decisions",
+        "sample_id": sample_id,
+        "phase_id": "1",
+        "pred_saturation": sat,
+        "min_green": 10,
+        "max_green": max_green,
+        "final_green": final_green,
+        "split": "eval",
+        "source": "phase11_eval",
+        "source_origin": "phase11_eval",
+    }
+    row["saturation_band"] = mod.classify_saturation_band(sat)
+    row["trivial_range"] = False
+    row["violation_category"] = mod.classify_violation(row)
+    return row
+
+
+def test_default_thresholds_are_locked_and_sat_ge_1_has_no_max_failure_threshold() -> None:
+    mod = _audit_contract()
+    assert mod.DEFAULT_THRESHOLDS == {
+        "sat_lt_0.2_max_green_rate": 0.0,
+        "sat_0.2_0.6_max_green_rate": 0.02,
+        "sat_0.6_1.0_max_green_rate": 0.10,
+        "malformed_row_rate": 0.0,
+        "missing_output_rate": 0.0,
+    }
+    assert "sat_ge_1.0_allowed_max" not in "\n".join(mod.DEFAULT_THRESHOLDS)
+
+
+def test_policy_gate_fails_closed_on_eval_style_threshold_excess() -> None:
+    mod = _audit_contract()
+    report = mod.evaluate_saturation_policy_gate([_phase_row()], source_type="eval")
+
+    assert report["ok"] is False
+    assert report["next_phase_allowed"] is False
+    assert any("eval" in failure["gate"] and "threshold_excess" in failure["gate"] for failure in report["fatal_failures"])
+    assert report["thresholds"] == mod.DEFAULT_THRESHOLDS
+
+    loosened = dict(mod.DEFAULT_THRESHOLDS, **{"sat_lt_0.2_max_green_rate": 1.0})
+    assert mod.evaluate_saturation_policy_gate([_phase_row()], thresholds=loosened, source_type="eval")["ok"] is True
+
+    tightened = dict(mod.DEFAULT_THRESHOLDS, **{"sat_0.6_1.0_max_green_rate": 0.0})
+    high_not_max = _phase_row("eval-b", sat=0.8, final_green=49)
+    assert mod.evaluate_saturation_policy_gate([high_not_max], thresholds=tightened, source_type="eval")["ok"] is True
+    high_max = _phase_row("eval-c", sat=0.8, final_green=50)
+    assert mod.evaluate_saturation_policy_gate([high_max], thresholds=tightened, source_type="eval")["ok"] is False
+
+
+def test_policy_gate_fails_closed_on_bad_denominators_and_malformed_rates() -> None:
+    mod = _audit_contract()
+    audit = _policy_contract().compute_saturation_audit([_phase_row("ok", sat=0.3, final_green=20)])
+    del audit["bands"][_policy_contract().BAND_INTERPOLATED]["final_equals_max_when_unsaturated"]["denominator"]
+
+    report = mod.evaluate_saturation_policy_gate(audit, source_type="data")
+
+    assert report["ok"] is False
+    assert any("denominator" in failure["gate"] for failure in report["fatal_failures"])
+
+
+def test_evaluate_phase17_audit_routes_eval_jsonl_and_reports_failures(tmp_path: Path) -> None:
+    mod = _audit_contract()
+    missing_dataset = tmp_path / "missing.jsonl"
+    manifest = tmp_path / "manifest.json"
+    per_sample = tmp_path / "per_sample.jsonl"
+    manifest.write_text(json.dumps({"records": []}), encoding="utf-8")
+    per_sample.write_text("", encoding="utf-8")
+    eval_rows = _write_jsonl(tmp_path / "eval.jsonl", [_phase_row()])
+    artifact_root = tmp_path / "artifacts" / "v4" / "phase17"
+    original_root = mod.ARTIFACT_ROOT
+    try:
+        mod.ARTIFACT_ROOT = artifact_root
+        report = mod.evaluate_phase17_audit(
+            dataset_path=missing_dataset,
+            split_dir=tmp_path / "splits",
+            phase12_manifest_path=manifest,
+            phase12_per_sample_path=per_sample,
+            phase_decisions_jsonl=eval_rows,
+            out_path=artifact_root / "gate.json",
+            audit_out_path=artifact_root / "audit.json",
+            prompt_protocol_out_path=artifact_root / "prompt.json",
+        )
+    finally:
+        mod.ARTIFACT_ROOT = original_root
+
+    assert report["ok"] is False
+    gates = {failure["gate"] for failure in report["fatal_failures"]}
+    assert "dataset_audit" in gates
+    assert any("eval_threshold_excess" in gate for gate in gates)
+    assert report["reports"]["audit"].endswith("audit.json")
+    assert report["reports"]["policy_gate"].endswith("gate.json")
+
+
+def test_phase17_cli_threshold_override_precedence(monkeypatch: pytest.MonkeyPatch) -> None:
+    mod = _audit_contract()
+    seen: dict[str, object] = {}
+
+    def fake_evaluate_phase17_audit(**kwargs):
+        seen.update(kwargs)
+        return {"ok": True, "next_phase_allowed": True, "fatal_failures": []}
+
+    monkeypatch.setattr(mod, "evaluate_phase17_audit", fake_evaluate_phase17_audit)
+    exit_code = mod.main([
+        "--sat-lt-0-2-max-green-rate", "1.0",
+        "--sat-0-2-0-6-max-green-rate", "0.5",
+        "--sat-0-6-1-0-max-green-rate", "0.25",
+        "--malformed-row-rate", "0.01",
+        "--missing-output-rate", "0.02",
+    ])
+
+    assert exit_code == 0
+    assert seen["thresholds"] == {
+        "sat_lt_0.2_max_green_rate": 1.0,
+        "sat_0.2_0.6_max_green_rate": 0.5,
+        "sat_0.6_1.0_max_green_rate": 0.25,
+        "malformed_row_rate": 0.01,
+        "missing_output_rate": 0.02,
+    }
+
+
+def test_malformed_eval_output_jsonl_is_fatal(tmp_path: Path) -> None:
+    mod = _audit_contract()
+    bad = tmp_path / "bad_eval.jsonl"
+    bad.write_text("not-json\n", encoding="utf-8")
+
+    report = mod.evaluate_saturation_policy_gate(bad, source_type="eval")
+
+    assert report["ok"] is False
+    assert any(failure["gate"] == "eval_malformed_evidence" for failure in report["fatal_failures"])
