@@ -324,3 +324,111 @@ def test_phase20_reality_launcher_contract_is_v42_dgx_safe() -> None:
     assert "/home/samuel/TSC_CYCLE/reality_test.log" not in script
     assert "artifacts/v4/phase12" not in script
     assert "runs/v4.0-4B-" not in script
+
+
+def _phase_row(sample_id: str, phase_id: str, *, final_green: int, hard_ok: bool = True, sat: float = 0.1, max_green: int = 60) -> dict:
+    violation = "final_equals_max_when_unsaturated" if final_green == max_green and sat < 1.0 else "none"
+    return {
+        "sample_id": sample_id,
+        "phase_id": phase_id,
+        "pred_saturation": sat,
+        "min_green": 20,
+        "max_green": max_green,
+        "final_green": final_green,
+        "split": "replay",
+        "source": "fixture",
+        "origin_artifact": "fixture",
+        "hard_constraint_ok": hard_ok,
+        "violation_category": violation,
+    }
+
+
+def test_phase20_comparison_gate_blocks_hard_regression_or_unreduced_saturation(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    mod = importlib.import_module("tsc_cycle.v4_gates.phase20_comparison")
+    monkeypatch.setattr(mod, "validate_phase20_eval_report", lambda *a, **k: {"ok": True, "next_phase_allowed": True, "requirements_covered": ["EVAL-01"], "fatal_failures": []})
+    monkeypatch.setattr(mod, "validate_phase20_replay_report", lambda *a, **k: {"ok": True, "next_phase_allowed": True, "requirements_covered": ["EVAL-02"], "fatal_failures": []})
+    baseline = [_phase_row("s1", "1", final_green=60), _phase_row("s2", "1", final_green=60)]
+    improved = [_phase_row("s1", "1", final_green=20), _phase_row("s2", "1", final_green=20)]
+    report_path = tmp_path / "artifacts" / "v4_2" / "phase20" / "comparison_report.json"
+
+    report = mod.compare_v4_v42_outputs(baseline_rows=baseline, v42_rows=improved, report_path=report_path)
+    assert report["ok"] is True
+    assert report["requirements_covered"] == ["EVAL-03"]
+    assert "teacher_mae" not in json.dumps(report.get("decision_inputs", {})).lower()
+
+    hard_regression = mod.compare_v4_v42_outputs(baseline_rows=baseline, v42_rows=[{**improved[0], "hard_constraint_ok": False}, improved[1]], report_path=report_path)
+    assert hard_regression["ok"] is False
+    assert hard_regression["requirements_covered"] == []
+    assert any(failure["gate"] == "hard_constraint_regression" for failure in hard_regression["fatal_failures"])
+
+    unchanged = mod.compare_v4_v42_outputs(baseline_rows=baseline, v42_rows=baseline, report_path=report_path)
+    assert unchanged["ok"] is False
+    assert any(failure["gate"] == "saturation_not_reduced" for failure in unchanged["fatal_failures"])
+
+    monkeypatch.setattr(mod, "validate_phase20_eval_report", lambda *a, **k: {"ok": False, "next_phase_allowed": False, "requirements_covered": [], "fatal_failures": [{"gate": "eval"}]})
+    blocked = mod.compare_v4_v42_outputs(baseline_rows=baseline, v42_rows=improved, report_path=report_path)
+    assert blocked["ok"] is False
+    assert any(failure["gate"] == "phase20_eval" for failure in blocked["fatal_failures"])
+
+
+def test_phase20_handoff_recomputes_hashes_and_requires_green_gates(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    mod = importlib.import_module("tsc_cycle.v4_gates.phase20_handoff")
+    monkeypatch.setattr(mod, "validate_phase20_eval_report", lambda *a, **k: {"ok": True, "next_phase_allowed": True, "requirements_covered": ["EVAL-01"], "fatal_failures": []})
+    monkeypatch.setattr(mod, "validate_phase20_replay_report", lambda *a, **k: {"ok": True, "next_phase_allowed": True, "requirements_covered": ["EVAL-02"], "fatal_failures": []})
+    monkeypatch.setattr(mod, "validate_phase20_comparison_report", lambda *a, **k: {"ok": True, "next_phase_allowed": True, "requirements_covered": ["EVAL-03"], "fatal_failures": []})
+    run_root = tmp_path / "runs" / "v4.2-4B-test"
+    artifact_root = tmp_path / "artifacts" / "v4_2" / "phase20"
+    paths = {
+        "training_report": run_root / "phase19_sft_report.json",
+        "export_report": run_root / "phase19_export_report.json",
+        "q4_gguf": run_root / "gguf" / "model.q4_K_M.gguf",
+        "eval_report": artifact_root / "eval_report.json",
+        "replay_log": artifact_root / "reality_test.log",
+        "replay_report": artifact_root / "reality_replay_report.json",
+        "comparison_report": artifact_root / "comparison_report.json",
+    }
+    for name, path in paths.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"name": name, "ok": True}), encoding="utf-8")
+    manifest_path = artifact_root / "handoff_manifest.json"
+
+    manifest = mod.write_phase20_handoff(run_root=run_root, artifact_root=artifact_root, manifest_path=manifest_path)
+    assert manifest["ok"] is True
+    assert manifest["requirements_covered"] == ["EVAL-01", "EVAL-02", "EVAL-03"]
+    assert manifest["artifacts"]["q4_gguf"]["sha256"] == mod.sha256_file(paths["q4_gguf"])
+    assert manifest_path.exists()
+    validated = mod.validate_phase20_handoff(manifest_path=manifest_path, run_root=run_root, artifact_root=artifact_root)
+    assert validated["ok"] is True
+
+    paths["eval_report"].unlink()
+    failed = mod.validate_phase20_handoff(manifest_path=manifest_path, run_root=run_root, artifact_root=artifact_root)
+    assert failed["ok"] is False
+    assert failed["requirements_covered"] == []
+
+    paths["eval_report"].write_text("{}", encoding="utf-8")
+    bad_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    bad_manifest["artifacts"]["q4_gguf"]["path"] = str(tmp_path / "runs" / "v4.0-4B-bad" / "gguf" / "model.q4_K_M.gguf")
+    manifest_path.write_text(json.dumps(bad_manifest), encoding="utf-8")
+    rejected = mod.validate_phase20_handoff(manifest_path=manifest_path, run_root=run_root, artifact_root=artifact_root)
+    assert rejected["ok"] is False
+    assert any(failure["gate"] == "artifact_scope" for failure in rejected["fatal_failures"])
+
+
+def test_phase20_comparison_and_handoff_imports_are_lightweight() -> None:
+    for rel, names in {
+        "tsc_cycle/v4_gates/phase20_comparison.py": ("compare_v4_v42_outputs", "write_phase20_comparison_report", "validate_phase20_comparison_report", "main"),
+        "tsc_cycle/v4_gates/phase20_handoff.py": ("write_phase20_handoff", "validate_phase20_handoff", "main"),
+    }.items():
+        path = PROJECT_ROOT / rel
+        source = path.read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        imported_roots: set[str] = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imported_roots.update(alias.name.split(".", 1)[0] for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                imported_roots.add(node.module.split(".", 1)[0])
+        assert not (imported_roots & FORBIDDEN_IMPORT_ROOTS)
+        mod = importlib.import_module(rel.removesuffix(".py").replace("/", "."))
+        for name in names:
+            assert hasattr(mod, name)
