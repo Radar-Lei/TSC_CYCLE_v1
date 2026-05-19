@@ -228,3 +228,99 @@ def test_phase20_eval_launcher_contract_is_v42_dgx_safe() -> None:
     assert "phase12" not in script
     assert "runs/v4.0-4B-" in script
     assert "RUN_ROOT must match runs/v4.2-4B-*" in script
+
+
+def test_phase20_replay_renderer_rejects_protocol_lint_or_saturation_failure() -> None:
+    mod = importlib.import_module("tsc_cycle.v4_gates.phase20_log_render")
+    record = {"sample_id": "r1", "crossing_id": "c1", "timestamp": "2026-05-19 00:00:00", "input": _input(0.1, max_green=60), "input_sha256": "abc"}
+    ok_output = {"sample_id": "r1", "input_sha256": "abc", "raw_text": _raw({"1": 20, "2": 70}), "backend": "tsc-cycle-v4.2-q4_K_M"}
+    mod.ensure_phase20_output_passes(record, ok_output)
+    rendered = mod.render_phase20_reality_test_log([record], [ok_output])
+    assert "tsc-cycle-v4.2-q4_K_M" in rendered
+    assert "【cycle_predict_input_json】" in rendered
+    assert "sat_lt_0.2" not in rendered
+
+    for bad_output in (
+        {**ok_output, "sample_id": "other"},
+        {**ok_output, "input_sha256": "wrong"},
+        {**ok_output, "raw_text": _raw(native_think=True)},
+        {**ok_output, "raw_text": _raw({"1": 999, "2": 70})},
+        {**ok_output, "raw_text": _raw({"1": 60, "2": 70})},
+    ):
+        with pytest.raises(ValueError):
+            mod.ensure_phase20_output_passes(record, bad_output)
+
+
+def test_phase20_reality_report_requires_full_non_dry_run_and_preflights(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    mod = importlib.import_module("tsc_cycle.v4_gates.phase20_reality_test")
+    monkeypatch.setattr(mod, "validate_phase19_export_report", _phase19_ok)
+    monkeypatch.setattr(mod, "validate_phase20_eval_report", lambda *a, **k: {"ok": True, "next_phase_allowed": True, "requirements_covered": ["EVAL-01"], "fatal_failures": []})
+    model = tmp_path / "runs" / "v4.2-4B-test" / "gguf" / "model.q4_K_M.gguf"
+    model.parent.mkdir(parents=True)
+    model.write_bytes(b"model")
+    final_log = tmp_path / "artifacts" / "v4_2" / "phase20" / "reality_test.log"
+    report_path = tmp_path / "artifacts" / "v4_2" / "phase20" / "reality_replay_report.json"
+    record = {"sample_id": "r1", "crossing_id": "c1", "timestamp": "2026-05-19 00:00:00", "input": _input(0.1), "input_sha256": "abc"}
+    output = {"sample_id": "r1", "input_sha256": "abc", "raw_text": _raw({"1": 20, "2": 70}), "backend": "tsc-cycle-v4.2-q4_K_M", "timeout": False}
+
+    dry = mod.evaluate_phase20_replay_report(records=[record], outputs=[output], model_artifact=model, model_sha256=mod.sha256_file(model), input_sha256="input", output_sha256="output", final_log_path=final_log, report_path=report_path, dry_run=True)
+    assert dry["ok"] is False
+    assert "EVAL-02" not in dry["requirements_covered"]
+
+    limited = mod.evaluate_phase20_replay_report(records=[record], outputs=[output], model_artifact=model, model_sha256=mod.sha256_file(model), input_sha256="input", output_sha256="output", final_log_path=final_log, report_path=report_path, dry_run=False, limit=1, total_input_count=2)
+    assert limited["ok"] is False
+    assert "EVAL-02" not in limited["requirements_covered"]
+
+    text = importlib.import_module("tsc_cycle.v4_gates.phase20_log_render").render_phase20_reality_test_log([record], [output])
+    final_log.parent.mkdir(parents=True, exist_ok=True)
+    final_log.write_text(text, encoding="utf-8")
+    accepted = mod.evaluate_phase20_replay_report(records=[record], outputs=[output], model_artifact=model, model_sha256=mod.sha256_file(model), input_sha256="input", output_sha256=mod.sha256_text(text), final_log_path=final_log, report_path=report_path, dry_run=False)
+    assert accepted["ok"] is True
+    assert accepted["requirements_covered"] == ["EVAL-02"]
+
+    monkeypatch.setattr(mod, "validate_phase20_eval_report", lambda *a, **k: {"ok": False, "next_phase_allowed": False, "requirements_covered": [], "fatal_failures": [{"gate": "eval"}]})
+    blocked = mod.evaluate_phase20_replay_report(records=[record], outputs=[output], model_artifact=model, model_sha256=mod.sha256_file(model), input_sha256="input", output_sha256=mod.sha256_text(text), final_log_path=final_log, report_path=report_path, dry_run=False)
+    assert blocked["ok"] is False
+    assert any(failure["gate"].startswith("phase20_eval") for failure in blocked["fatal_failures"])
+
+
+def test_phase20_reality_module_imports_no_heavy_stack_and_lazy_gguf_helpers() -> None:
+    path = PROJECT_ROOT / "tsc_cycle" / "v4_gates" / "phase20_reality_test.py"
+    source = path.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    imported_roots: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imported_roots.update(alias.name.split(".", 1)[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            imported_roots.add(node.module.split(".", 1)[0])
+    assert not (imported_roots & FORBIDDEN_IMPORT_ROOTS)
+    assert "from tsc_cycle.student.parity_gguf import" in source
+    assert "def _run_live" in source
+    assert source.index("def _run_live") < source.index("from tsc_cycle.student.parity_gguf import")
+    mod = importlib.import_module("tsc_cycle.v4_gates.phase20_reality_test")
+    for name in ("extract_reality_inputs", "run_phase20_reality_replay", "validate_phase20_replay_report", "main"):
+        assert hasattr(mod, name)
+
+
+def test_phase20_reality_launcher_contract_is_v42_dgx_safe() -> None:
+    script_path = PROJECT_ROOT / "scripts" / "run_v4_phase20_reality_test.sh"
+    if not script_path.exists():
+        pytest.skip("launcher is added by Task 20-02-02")
+    script = script_path.read_text(encoding="utf-8")
+    assert "/home/samuel/TSC_CYCLE/runs/v4.2-4B-20260518T111519Z/gguf/model.q4_K_M.gguf" in script
+    assert "/home/samuel/TSC_CYCLE/artifacts/v4_2/phase20" in script
+    assert "/home/samuel/TSC_CYCLE/artifacts/v4_2/phase20/reality_test.log" in script
+    assert "/home/samuel/llama.cpp/build/bin/llama-server" in script
+    assert "--resume" in script
+    assert "--n-predict 384" in script
+    assert "--retry-n-predict 768" in script
+    assert "--timeout-sec 600" in script
+    assert "--ngl 99" in script
+    assert "--threads 4" in script
+    assert "--ctx-size 4096" in script
+    assert "tsc-cycle-v4.2-q4_K_M" in script
+    assert "vllm" not in script.lower()
+    assert "/home/samuel/TSC_CYCLE/reality_test.log" not in script
+    assert "artifacts/v4/phase12" not in script
+    assert "runs/v4.0-4B-" not in script
