@@ -235,9 +235,29 @@ def _run_live(records: list[dict[str, Any]], args: argparse.Namespace, cache_dir
         _kill_server(proc)
 
 
+def _phase19_export_preflight(run_root: Path) -> dict[str, Any]:
+    candidates = [run_root]
+    try:
+        relative = run_root.resolve(strict=False).relative_to(PROJECT_ROOT.resolve(strict=False))
+    except ValueError:
+        relative = None
+    if relative is not None:
+        candidates.append(relative)
+    last: dict[str, Any] | None = None
+    for candidate in candidates:
+        report_path = Path(candidate) / "phase19_export_report.json"
+        if not report_path.is_file() and candidate != run_root:
+            report_path = run_root / "phase19_export_report.json"
+        result = validate_phase19_export_report(candidate, report_path)
+        if result.get("ok") is True and result.get("next_phase_allowed") is True:
+            return result
+        last = result
+    return last or {"ok": False, "next_phase_allowed": False, "requirements_covered": [], "fatal_failures": [{"gate": "phase19_export", "reason": "Phase 19 export validation did not run"}]}
+
+
 def _preflight(run_root: Path, eval_report_path: Path) -> list[dict[str, Any]]:
     failures: list[dict[str, Any]] = []
-    phase19 = validate_phase19_export_report(run_root, run_root / "phase19_export_report.json")
+    phase19 = _phase19_export_preflight(run_root)
     if phase19.get("ok") is not True or phase19.get("next_phase_allowed") is not True:
         failures.append({"gate": "phase19_export", "reason": "Phase 19 export report is not accepted", "details": phase19.get("fatal_failures", [])})
     phase20_eval = validate_phase20_eval_report(report_path=eval_report_path, run_root=run_root)

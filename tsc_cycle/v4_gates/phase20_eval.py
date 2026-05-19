@@ -224,15 +224,36 @@ def _phase_rows_for_output(row: dict[str, Any], solution: dict[str, int]) -> lis
 
 
 def _phase19_gate(run_root: Path) -> dict[str, Any]:
+    candidates = [run_root]
     try:
-        return validate_phase19_export_report(run_root, run_root / "phase19_export_report.json")
-    except Exception as exc:  # pragma: no cover - fail-closed boundary
-        return {
-            "ok": False,
-            "next_phase_allowed": False,
-            "requirements_covered": [],
-            "fatal_failures": [{"gate": "phase19_export", "reason": f"{type(exc).__name__}: {exc}"}],
-        }
+        relative = run_root.resolve(strict=False).relative_to(PROJECT_ROOT.resolve(strict=False))
+    except ValueError:
+        relative = None
+    if relative is not None:
+        candidates.append(relative)
+    last: dict[str, Any] | None = None
+    for candidate in candidates:
+        try:
+            report_path = Path(candidate) / "phase19_export_report.json"
+            if not report_path.is_file() and candidate != run_root:
+                report_path = run_root / "phase19_export_report.json"
+            result = validate_phase19_export_report(candidate, report_path)
+        except Exception as exc:  # pragma: no cover - fail-closed boundary
+            result = {
+                "ok": False,
+                "next_phase_allowed": False,
+                "requirements_covered": [],
+                "fatal_failures": [{"gate": "phase19_export", "reason": f"{type(exc).__name__}: {exc}"}],
+            }
+        if result.get("ok") is True and result.get("next_phase_allowed") is True:
+            return result
+        last = result
+    return last or {
+        "ok": False,
+        "next_phase_allowed": False,
+        "requirements_covered": [],
+        "fatal_failures": [{"gate": "phase19_export", "reason": "Phase 19 export validation did not run"}],
+    }
 
 
 def evaluate_phase20_outputs(
