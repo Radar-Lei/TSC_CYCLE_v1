@@ -9,7 +9,8 @@ data/labeled.jsonl
 data/rejected.jsonl
 data/inputs.jsonl
 data/ood_inputs.jsonl
-data/tokenized/
+**/tokenized/
+*.arrow
 *.gguf
 wandb/
 reality.log
