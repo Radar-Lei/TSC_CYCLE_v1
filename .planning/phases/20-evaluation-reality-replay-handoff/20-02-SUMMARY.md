@@ -1,7 +1,7 @@
 ---
 phase: 20-evaluation-reality-replay-handoff
 plan: "02"
-status: code-complete-pending-live-replay
+status: code-complete-blocked-by-eval-red
 completed: 2026-05-19
 requirements: [EVAL-02]
 ---
@@ -25,7 +25,8 @@ requirements: [EVAL-02]
 ## Pending live evidence
 
 - Full non-dry-run q4_K_M replay is hardware-dependent and remains pending.
-- Acceptance command after `artifacts/v4_2/phase20/eval_report.json` exists:
+- Replay is currently blocked because `artifacts/v4_2/phase20/eval_report.json` is red on one hard-constraint violation in EVAL-01.
+- Acceptance command after `artifacts/v4_2/phase20/eval_report.json` is green:
   `/home/samuel/TSC_CYCLE/scripts/run_v4_phase20_reality_test.sh`
 - Validation command:
   `/home/samuel/TSC_CYCLE/.venv/bin/python -m tsc_cycle.v4_gates.phase20_reality_test --validate-report --report /home/samuel/TSC_CYCLE/artifacts/v4_2/phase20/reality_replay_report.json`

@@ -1,7 +1,7 @@
 ---
 phase: 20-evaluation-reality-replay-handoff
 plan: "03"
-status: code-complete-pending-live-replay-evidence
+status: code-complete-blocked-by-eval-red
 completed: 2026-05-19
 requirements: [EVAL-03]
 ---
@@ -25,7 +25,8 @@ requirements: [EVAL-03]
 ## Pending live evidence
 
 - Final green comparison and handoff manifest still depend on accepted full non-dry-run `EVAL-02` replay evidence under `artifacts/v4_2/phase20`.
-- Once live replay is green, run:
+- Comparison and handoff are currently blocked because `artifacts/v4_2/phase20/eval_report.json` is red on one EVAL-01 hard-constraint violation.
+- Once eval and live replay are green, run:
   `/home/samuel/TSC_CYCLE/.venv/bin/python -m tsc_cycle.v4_gates.phase20_comparison --report /home/samuel/TSC_CYCLE/artifacts/v4_2/phase20/comparison_report.json`
 - Then run:
   `/home/samuel/TSC_CYCLE/.venv/bin/python -m tsc_cycle.v4_gates.phase20_handoff --manifest /home/samuel/TSC_CYCLE/artifacts/v4_2/phase20/handoff_manifest.json`

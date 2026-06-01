@@ -15,7 +15,7 @@ from tsc_cycle.eval.metrics_reasoning import score_reasoning
 from tsc_cycle.prompt_builder import build_assistant_prefill, build_user_prompt, parse_assistant_output
 from tsc_cycle.v4_gates.phase19_export import validate_phase19_export_report
 from tsc_cycle.v4_gates.phase20_eval import validate_phase20_eval_report
-from tsc_cycle.v4_gates.phase20_log_render import DEFAULT_BACKEND_LABEL, lint_phase20_payload, render_phase20_reality_test_log
+from tsc_cycle.v4_gates.phase20_log_render import DEFAULT_BACKEND_LABEL, lint_phase20_payload, render_phase20_reality_test_log, _phase_rows
 
 PROJECT_ROOT = Path("/home/samuel/TSC_CYCLE")
 REALITY_LOG = PROJECT_ROOT / "reality.log"
@@ -309,6 +309,7 @@ def evaluate_phase20_replay_report(
     lint_ok_count = 0
     protocol_ok_count = 0
     timeout_count = 0
+    phase_rows: list[dict[str, Any]] = []
     for record, output in zip(recs, outs, strict=False):
         if output.get("timeout") is True:
             timeout_count += 1
@@ -320,6 +321,7 @@ def evaluate_phase20_replay_report(
             lint = lint_phase20_payload(record["input"], solution)
             if lint.get("ok") is True:
                 lint_ok_count += 1
+                phase_rows.extend(_phase_rows(record, solution))
             if output.get("solution") is not None and output.get("solution") != solution:
                 fatal_failures.append({"gate": "solution_consistency", "reason": f"serialized solution mismatch for {record.get('sample_id')}"})
         try:
@@ -357,7 +359,7 @@ def evaluate_phase20_replay_report(
             if actual != output_sha256:
                 fatal_failures.append({"gate": "output_sha256", "reason": "final log hash mismatch"})
             try:
-                canonical = render_phase20_reality_test_log(recs, outs, backend_label=DEFAULT_BACKEND_LABEL)
+                canonical = render_phase20_reality_test_log(recs, outs, backend_label=str(outs[0].get("backend") or DEFAULT_BACKEND_LABEL) if outs else DEFAULT_BACKEND_LABEL)
             except (KeyError, TypeError, ValueError) as exc:
                 fatal_failures.append({"gate": "canonical_final_log", "reason": f"canonical render failed: {exc}"})
             else:
@@ -380,6 +382,7 @@ def evaluate_phase20_replay_report(
         "lint_ok_count": lint_ok_count,
         "protocol_ok_count": protocol_ok_count,
         "timeout_count": timeout_count,
+        "phase_rows": phase_rows,
         "model_artifact": str(model_path),
         "model_sha256": str(model_sha256),
         "input_sha256": str(input_sha256),

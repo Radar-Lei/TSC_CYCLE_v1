@@ -130,6 +130,27 @@ def test_load_phase20_generated_outputs_normalizes_cache_and_fails_closed_on_mis
     assert rows[0]["raw_text"].startswith("<start_working_out>")
 
 
+def test_load_phase20_generated_outputs_repairs_single_bound_drift(tmp_path: Path) -> None:
+    mod = _mod()
+    prompts = tmp_path / "artifacts" / "v4_2" / "phase20" / "eval_prompts.jsonl"
+    cache_dir = tmp_path / "artifacts" / "v4_2" / "phase20" / "gen_cache" / "v4_2_hf"
+    outputs = tmp_path / "artifacts" / "v4_2" / "phase20" / "eval_outputs.jsonl"
+    prompt_rows = [
+        {"sample_id": "s1", "split_hint": "ood_val", "slice_hint": "ood_val", "input": _input(0.3, max_green=57), "teacher_solution": {"1": 57, "2": 70}, "phase_count": 2, "trivial": False},
+    ]
+    prompt_rows[0]["input"]["prediction"]["phase_waits"][0]["min_green"] = 57
+    _write_jsonl(prompts, prompt_rows)
+    cache_dir.mkdir(parents=True)
+    (cache_dir / "s1.json").write_text(json.dumps({"sample_id": "s1", "raw_text": _raw({"1": 59, "2": 70}), "solution": {"1": 59, "2": 70}, "parse_error": None}), encoding="utf-8")
+
+    rows = mod.load_phase20_generated_outputs(prompts_path=prompts, cache_dir=cache_dir, out_path=outputs)
+
+    assert rows[0]["solution"] == {"1": 57, "2": 70}
+    assert rows[0]["normalization_repair"]["kind"] == "hard_bound_clamp"
+    assert rows[0]["normalization_repair"]["changes"] == [{"phase": "1", "from": 59, "to": 57, "min": 57, "max": 57}]
+    assert '"1": 59' in rows[0]["raw_text"]
+
+
 def test_phase20_report_requires_phase19_export_and_teacher_mae_is_advisory_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     mod = _mod()
     outputs = tmp_path / "artifacts" / "v4_2" / "phase20" / "eval_outputs.jsonl"
@@ -163,6 +184,7 @@ def test_phase20_report_requires_phase19_export_and_teacher_mae_is_advisory_only
     assert "teacher_mae" in report["advisory"]
     assert "decision_inputs" not in report or "teacher_mae" not in json.dumps(report.get("decision_inputs", {})).lower()
     assert "teacher_mae" not in json.dumps(report["gates"]).lower()
+    assert report["advisory"]["normalization_repairs"] == 0
     written = mod.write_phase20_eval_report(report, report_path)
     assert written["ok"] is True
     assert mod.validate_phase20_eval_report(report_path=report_path, run_root=tmp_path / "runs" / "v4.2-4B-test")["ok"] is True

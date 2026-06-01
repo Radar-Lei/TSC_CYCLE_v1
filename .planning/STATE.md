@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v4.2
 milestone_name: 饱和度-绿灯策略校准 / 教师标签重建
-status: executing
-stopped_at: Phase 19 executed
-last_updated: "2026-05-19T00:07:47.845Z"
-last_activity: 2026-05-19 -- Phase 20 planning complete
+status: Complete
+stopped_at: Phase 20.1 complete
+last_updated: "2026-05-19T14:30:00.000Z"
+last_activity: 2026-05-19 -- Phase 20.1 generated reality_test_v2.log and comparison report
 progress:
-  total_phases: 4
-  completed_phases: 3
-  total_plans: 9
-  completed_plans: 6
-  percent: 67
+  total_phases: 5
+  completed_phases: 5
+  total_plans: 10
+  completed_plans: 10
+  percent: 100
 ---
 
 # TSC-CYCLE State
@@ -21,14 +21,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-05-18)
 
 **Core value:** 学生模型在 OOD 上仍满足硬约束，并在数值决策上接近正确的饱和度-绿灯策略，不是过拟合旧教师标签或 reality.log。
-**Current focus:** Phase 20 — evaluation & reality replay handoff
+**Current focus:** Phase 20.1 — 以新训练好的模型 replay reality.log 并对比 reality_test.log
 
 ## Current Position
 
-Phase: 20
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-05-19 -- Phase 20 planning complete
+Phase: 20.1
+Plan: 20.1-PLAN.md
+Status: Complete
+Last activity: 2026-05-19 -- Phase 20.1 generated reality_test_v2.log and comparison report
 
 Progress: [██████████] 100%
 
@@ -36,9 +36,9 @@ Progress: [██████████] 100%
 
 **Velocity:**
 
-- v4.2 plans completed: 4
+- v4.2 plans completed: 10
 - Average duration: 10 min
-- Total execution time: 40 min
+- Total execution time: 50 min
 
 **By Phase:**
 
@@ -46,10 +46,15 @@ Progress: [██████████] 100%
 |-------|-------|--------|-----------|
 | 17. Audit & Saturation Policy Gate | 3/3 | Complete | 2026-05-18 |
 | 18. Calibrated Dataset Rebuild | 1/1 | Complete | 2026-05-18 |
-| 19. 4B QLoRA Retrain & Export | 2/2 | Executed | - |
-| 20. Evaluation & Reality Replay Handoff | 0/TBD | Not started | - |
+| 19. 4B QLoRA Retrain & Export | 2/2 | Complete | 2026-05-18 |
+| 20. Evaluation & Reality Replay Handoff | 3/3 | Complete | 2026-05-19 |
+| 20.1. reality_test_v2 replay comparison | 1/1 | Complete | 2026-05-19 |
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 20.1 inserted after Phase 20: 以新训练好的模型，以/home/samuel/TSC_CYCLE/reality.log为输入，以模型输出为输出，得到reality_test_v2.log好与之前reality_test.log做对比 (URGENT)
 
 ### Decisions
 
@@ -69,7 +74,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 
 ### Pending Todos
 
-- Verify Phase 19 goal achievement and run final adjacent regression.
+- None.
 
 ### Blockers/Concerns
 
@@ -88,4 +93,4 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 Last session: 2026-05-19T00:05:00.000Z
 Stopped at: Phase 19 executed
 Resume file: None
-Next action: verify Phase 19
+Next action: Milestone audit / ship decision

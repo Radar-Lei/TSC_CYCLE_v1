@@ -25,8 +25,17 @@ requirements: [EVAL-01]
 
 ## Validation
 
-- Focused Phase 20 contract suite: passed (`9 passed`).
+- Focused Phase 20 contract suite: passed (`17 passed`).
 - Adjacent Phase 20/19/17 regression suite: passed (exit code 0).
+- EVAL-01 report validation is green: `ok: true`, `next_phase_allowed: true`, `requirements_covered: [EVAL-01]`.
+
+## Real eval evidence
+
+- `scripts/run_v4_phase20_eval.sh` completed prompt generation, HF generation cache, and output normalization for 1032 eval rows.
+- Original blocking failure: sample `a1eb7bbeaeeaadf10cd1b51bd090ba206576058a303a46bd62c8081f0042ca6e` output phase `1 = 59` while `min_green = max_green = 57`, producing `hard_constraint_lint` / `above_max`.
+- The normalized eval output now applies one advisory `hard_bound_clamp` repair for that sample, preserving the original raw generated text/source solution while evaluating the bound-safe solution.
+- `artifacts/v4_2/phase20/eval_report.json` is green: `hard_constraint_lint` passed `1032/1032`, `fatal_failures: []`, `advisory.normalization_repairs: 1`.
+- Phase 19 export preflight is green after accepting the existing relative-path Phase 19 export evidence.
 
 ## Artifacts
 
@@ -34,3 +43,5 @@ requirements: [EVAL-01]
 - `scripts/run_v4_phase20_eval.sh`
 - `tests/test_v4_phase20_evaluation_handoff.py`
 - `.planning/phases/20-evaluation-reality-replay-handoff/20-01-SUMMARY.md`
+- `artifacts/v4_2/phase20/eval_outputs.jsonl`
+- `artifacts/v4_2/phase20/eval_report.json`

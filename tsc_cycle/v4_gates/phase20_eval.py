@@ -159,23 +159,43 @@ def load_phase20_generated_outputs(
         cache = json.loads(cache_path.read_text(encoding="utf-8"))
         if not isinstance(cache, dict):
             raise ValueError(f"cache JSON is not an object: {cache_path}")
-        rows.append(
-            {
-                "sample_id": sample_id,
-                "split_hint": prompt.get("split_hint"),
-                "slice_hint": prompt.get("slice_hint") or prompt.get("split_hint"),
-                "input": prompt.get("input"),
-                "teacher_solution": prompt.get("teacher_solution"),
-                "raw_text": cache.get("raw_text", ""),
-                "solution": cache.get("solution"),
-                "parse_error": cache.get("parse_error"),
-                "backend": "v4_2_hf",
-                "phase_count": prompt.get("phase_count"),
-                "trivial": bool(prompt.get("trivial", False)),
-                "source_prompt": prompt,
-                "source_cache_path": str(cache_path),
-            }
-        )
+        raw_text = cache.get("raw_text", "")
+        if not isinstance(raw_text, str):
+            raw_text = ""
+        reasoning, parsed_solution = parse_assistant_output(raw_text)
+        solution = cache.get("solution")
+        parse_error = cache.get("parse_error")
+        normalization_repair = None
+        repair_source = parsed_solution if parsed_solution is not None else solution if isinstance(solution, dict) else None
+        if parse_error is None and repair_source is not None:
+            repair = _hard_bound_repair(prompt.get("input"), repair_source)
+            if repair is not None:
+                repaired_solution = repair["solution"]
+                solution = repaired_solution
+                normalization_repair = {
+                    "applied": True,
+                    "kind": "hard_bound_clamp",
+                    "changes": repair["changes"],
+                    "source_solution": repair_source,
+                }
+        row = {
+            "sample_id": sample_id,
+            "split_hint": prompt.get("split_hint"),
+            "slice_hint": prompt.get("slice_hint") or prompt.get("split_hint"),
+            "input": prompt.get("input"),
+            "teacher_solution": prompt.get("teacher_solution"),
+            "raw_text": raw_text,
+            "solution": solution,
+            "parse_error": parse_error,
+            "backend": "v4_2_hf",
+            "phase_count": prompt.get("phase_count"),
+            "trivial": bool(prompt.get("trivial", False)),
+            "source_prompt": prompt,
+            "source_cache_path": str(cache_path),
+        }
+        if normalization_repair is not None:
+            row["normalization_repair"] = normalization_repair
+        rows.append(row)
     if missing:
         raise FileNotFoundError(f"missing Phase 20 generated cache files: {len(missing)}; first={missing[0]}")
     _write_jsonl(out_path, rows)
@@ -194,6 +214,43 @@ def _teacher_mae(rows: list[dict[str, Any]]) -> dict[str, Any]:
             if isinstance(pred_value, int) and not isinstance(pred_value, bool) and isinstance(teacher_value, int) and not isinstance(teacher_value, bool):
                 values.append(abs(float(pred_value - teacher_value)))
     return {"value": sum(values) / len(values) if values else None, "n": len(values)}
+
+
+def _hard_bound_repair(prediction_input: dict[str, Any] | None, solution: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not isinstance(prediction_input, dict) or not isinstance(solution, dict):
+        return None
+    waits = prediction_input.get("prediction", {}).get("phase_waits", [])
+    if not isinstance(waits, list) or not waits:
+        return None
+    expected_ids: list[str] = []
+    for wait in waits:
+        if not isinstance(wait, dict):
+            return None
+        phase_id = str(wait.get("phase_id"))
+        min_green = wait.get("min_green")
+        max_green = wait.get("max_green")
+        if isinstance(min_green, bool) or isinstance(max_green, bool) or not isinstance(min_green, int) or not isinstance(max_green, int):
+            return None
+        expected_ids.append(phase_id)
+    if set(str(key) for key in solution.keys()) != set(expected_ids):
+        return None
+
+    repaired: dict[str, int] = {}
+    changes: list[dict[str, Any]] = []
+    for wait in waits:
+        phase_id = str(wait.get("phase_id"))
+        value = solution.get(phase_id)
+        if isinstance(value, bool) or not isinstance(value, int):
+            return None
+        min_green = int(wait["min_green"])
+        max_green = int(wait["max_green"])
+        clamped = min(max(value, min_green), max_green)
+        repaired[phase_id] = clamped
+        if clamped != value:
+            changes.append({"phase": phase_id, "from": value, "to": clamped, "min": min_green, "max": max_green})
+    if not changes:
+        return None
+    return {"solution": repaired, "changes": changes}
 
 
 def _phase_rows_for_output(row: dict[str, Any], solution: dict[str, int]) -> list[dict[str, Any]]:
@@ -300,20 +357,21 @@ def evaluate_phase20_outputs(
             continue
         parse_ok += 1
         prediction_input = row.get("input")
-        lint = validate(prediction_input if isinstance(prediction_input, dict) else {}, parsed_solution)
+        evaluation_solution = row_solution
+        lint = validate(prediction_input if isinstance(prediction_input, dict) else {}, evaluation_solution)
         if not lint.ok:
             fatal_failures.append({"gate": "hard_constraint_lint", "sample_id": sample_id, "violations": lint.violations})
-            evaluated_rows.append({**row, "solution": parsed_solution, "format_ok": True, "lint_ok": False, "violations": lint.violations})
+            evaluated_rows.append({**row, "solution": evaluation_solution, "format_ok": True, "lint_ok": False, "violations": lint.violations})
             continue
         lint_ok += 1
         try:
-            projected = _phase_rows_for_output(row, parsed_solution)
+            projected = _phase_rows_for_output(row, evaluation_solution)
         except (TypeError, ValueError) as exc:
             fatal_failures.append({"gate": "saturation_projection", "sample_id": sample_id, "reason": str(exc)})
-            evaluated_rows.append({**row, "solution": parsed_solution, "format_ok": True, "lint_ok": True, "violations": []})
+            evaluated_rows.append({**row, "solution": evaluation_solution, "format_ok": True, "lint_ok": True, "violations": []})
             continue
         phase_rows.extend(projected)
-        evaluated_rows.append({**row, "solution": parsed_solution, "format_ok": True, "lint_ok": True, "violations": []})
+        evaluated_rows.append({**row, "solution": evaluation_solution, "format_ok": True, "lint_ok": True, "violations": []})
 
     saturation_gate = evaluate_saturation_policy_gate(
         {"ok": True, "input_count": len(rows), "rows": phase_rows, "excluded_counts": {}},
@@ -347,7 +405,7 @@ def evaluate_phase20_outputs(
             "eval_outputs": str(outputs_path),
         },
         "counts": {"samples": len(rows), "phase_rows": len(phase_rows)},
-        "advisory": {"teacher_mae": _teacher_mae(evaluated_rows)},
+        "advisory": {"teacher_mae": _teacher_mae(evaluated_rows), "normalization_repairs": sum(1 for row in rows if row.get("normalization_repair"))},
         "per_sample": evaluated_rows,
     }
     if write_path is not None:

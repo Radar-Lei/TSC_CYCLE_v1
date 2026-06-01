@@ -2,7 +2,7 @@
 
 ## Overview
 
-v4.2 repairs the low-saturation max-green failure observed in the latest v4.0 4B model outputs. The milestone first makes the failure measurable and gates it offline, then rebuilds calibrated training data without changing the final deployment system/inference prompt, retrains the existing Qwen3-4B QLoRA route, exports merged HF and GGUF artifacts, and finishes with a new gated `reality_test.log` replay.
+v4.2 repairs the low-saturation max-green failure observed in the latest v4.0 4B model outputs. The milestone first makes the failure measurable and gates it offline, then rebuilds calibrated training data without changing the final deployment system/inference prompt, retrains the existing Qwen3-4B QLoRA route, exports merged HF and GGUF artifacts, and finishes with a new gated `reality_test.log` replay plus root-level `reality_test_v2.log` comparison handoff.
 
 ## Milestones
 
@@ -44,7 +44,7 @@ Full details: `milestones/v4.1-ROADMAP.md`
 - [x] **Phase 17: Audit & Saturation Policy Gate** - Quantify existing low-saturation max-green failures and establish the offline saturation gate without changing deployment prompts.
 - [x] **Phase 18: Calibrated Dataset Rebuild** - Filter or relabel v4 examples into a calibrated v4.2 training dataset with reproducible reports and splits.
 - [x] **Phase 19: 4B QLoRA Retrain & Export** - Retrain the existing Qwen3-4B QLoRA route and export merged HF plus fp16/q4_K_M GGUF artifacts. (completed 2026-05-18)
-- [ ] **Phase 20: Evaluation & Reality Replay Handoff** - Evaluate v4.2 against hard constraints, output protocol, saturation policy, and produce a new gated `reality_test.log`.
+- [x] **Phase 20: Evaluation & Reality Replay Handoff** - Evaluate v4.2 against hard constraints, output protocol, saturation policy, and produce a new gated `reality_test.log`. (completed 2026-05-19)
 
 ## Phase Details
 
@@ -124,15 +124,15 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 20-01-PLAN.md — Build EVAL-01 v4.2 evaluation gate with teacher-MAE advisory-only and fail-closed parse/lint/protocol/saturation checks.
+- [x] 20-01-PLAN.md — Build EVAL-01 v4.2 evaluation gate with teacher-MAE advisory-only and fail-closed parse/lint/protocol/saturation checks.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 20-02-PLAN.md — Generate and validate the v4.2 q4_K_M `reality.log` replay with parse/lint/protocol/saturation gates.
+- [x] 20-02-PLAN.md — Generate and validate the v4.2 q4_K_M `reality.log` replay with parse/lint/protocol/saturation gates.
 
 **Wave 3** *(blocked on Wave 1 and Wave 2 completion)*
 
-- [ ] 20-03-PLAN.md — Compare v4.0 vs v4.2 saturation/hard-constraint outcomes and write the final hashed handoff manifest.
+- [x] 20-03-PLAN.md — Compare v4.0 vs v4.2 saturation/hard-constraint outcomes and write the final hashed handoff manifest.
 
 ## Progress
 
@@ -154,4 +154,15 @@ Phases execute in numeric order: 17 → 18 → 19 → 20
 | 17. Audit & Saturation Policy Gate | v4.2 | 3/3 | Complete    | 2026-05-18 |
 | 18. Calibrated Dataset Rebuild | v4.2 | 1/1 | Complete | 2026-05-18 |
 | 19. 4B QLoRA Retrain & Export | v4.2 | 2/2 | Complete    | 2026-05-18 |
-| 20. Evaluation & Reality Replay Handoff | v4.2 | 0/3 | Not started | - |
+| 20. Evaluation & Reality Replay Handoff | v4.2 | 3/3 | Complete | 2026-05-19 |
+| 20.1. reality_test_v2 replay comparison | v4.2 | 1/1 | Complete | 2026-05-19 |
+
+### Phase 20.1: 以新训练好的模型，以/home/samuel/TSC_CYCLE/reality.log为输入，以模型输出为输出，得到reality_test_v2.log好与之前reality_test.log做对比 (INSERTED)
+
+**Goal:** 使用新训练好的 v4.2 q4_K_M 模型 replay `/home/samuel/TSC_CYCLE/reality.log`，在项目根目录生成 `reality_test_v2.log`，并与旧 `reality_test.log` 做可复查对比。
+**Requirements**: URGENT-20.1
+**Depends on:** Phase 20
+**Plans:** 1 plan
+
+Plans:
+- [x] 20.1-PLAN.md — Publish accepted v4.2 replay as `reality_test_v2.log` and compare against old `reality_test.log`.

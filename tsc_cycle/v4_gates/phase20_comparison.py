@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -15,6 +16,7 @@ ARTIFACT_ROOT = PROJECT_ROOT / "artifacts" / "v4_2" / "phase20"
 DEFAULT_RUN_ROOT = PROJECT_ROOT / "runs" / "v4.2-4B-20260518T111519Z"
 BASELINE_PHASE12_PER_SAMPLE = PROJECT_ROOT / "artifacts" / "v4" / "phase12" / "per_sample.jsonl"
 BASELINE_PHASE17_GATE = PROJECT_ROOT / "artifacts" / "v4" / "phase17" / "saturation_policy_gate.json"
+BASELINE_PHASE12_MANIFEST = PROJECT_ROOT / "artifacts" / "v4" / "phase12" / "manifest.json"
 EVAL_REPORT_PATH = ARTIFACT_ROOT / "eval_report.json"
 REPLAY_REPORT_PATH = ARTIFACT_ROOT / "reality_replay_report.json"
 COMPARISON_REPORT_PATH = ARTIFACT_ROOT / "comparison_report.json"
@@ -94,10 +96,23 @@ def _comparable_rows(baseline_rows: list[dict[str, Any]], v42_rows: list[dict[st
 
 def _baseline_rows_from_reports(path: Path) -> list[dict[str, Any]]:
     rows = _read_jsonl(path)
+    manifest_path = path.with_name("manifest.json")
+    records_by_id: dict[str, dict[str, Any]] = {}
+    if manifest_path.is_file():
+        try:
+            manifest = _read_json(manifest_path)
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError):
+            manifest = {}
+        records = manifest.get("records") if isinstance(manifest, dict) else []
+        if isinstance(records, list):
+            records_by_id = {str(record.get("sample_id")): record for record in records if isinstance(record, dict)}
     out: list[dict[str, Any]] = []
     for row in rows:
         solution = row.get("solution") if isinstance(row.get("solution"), dict) else None
         prediction_input = row.get("input") if isinstance(row.get("input"), dict) else None
+        if prediction_input is None:
+            record = records_by_id.get(str(row.get("sample_id")))
+            prediction_input = record.get("input") if isinstance(record, dict) and isinstance(record.get("input"), dict) else None
         waits = prediction_input.get("prediction", {}).get("phase_waits", []) if isinstance(prediction_input, dict) else []
         for wait in waits if isinstance(waits, list) else []:
             phase_id = str(wait.get("phase_id"))
